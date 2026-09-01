@@ -3,15 +3,15 @@ import type { ReactNode } from 'react';
 type Props = {
   children: ReactNode;
   onClick: () => void;
-  /** quiet 用在次要動作，例如音效開關 */
+  /** quiet is for secondary actions such as the sound toggle */
   tone?: 'primary' | 'quiet';
   disabled?: boolean;
   label?: string;
 };
 
 /**
- * 全遊戲唯一的按鈕。觸控目標下限 64px、字級 24px 都鎖在這裡，
- * 各畫面不自行決定尺寸（spec §8）。
+ * The only button in the game. The 64px touch floor and 24px type are locked in here,
+ * so no screen invents its own sizes (spec §8).
  */
 export const BigButton = ({ children, onClick, tone = 'primary', disabled, label }: Props) => (
   <button

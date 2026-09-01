@@ -1,29 +1,29 @@
 /**
- * 音效用 WebAudio 直接合成，不載入任何 mp3。
- * 理由：三個音效都是簡單的音階，合成出來只要幾行程式，
- * 省掉二進位素材、省掉載入等待，而且行動網路斷線也還有聲音。
- * 遊戲不依賴聲音——全靜音也能完整通關（spec §8）。
+ * Sound is synthesised with WebAudio; no mp3 is ever loaded.
+ * All three cues are short note runs, so synthesising them takes a few lines, ships no
+ * binary assets, waits on no download, and still works on a flaky mobile connection.
+ * The game never depends on sound: it is fully completable muted (spec §8).
  */
 
 type Tone = 'tap' | 'found' | 'complete';
 
 type ToneSpec = {
-  /** 依序播放的音高（Hz） */
+  /** Pitches played in order (Hz) */
   notes: number[];
-  /** 每個音之間的間隔（秒） */
+  /** Gap between notes (seconds) */
   step: number;
-  /** 單音長度（秒） */
+  /** Length of a single note (seconds) */
   duration: number;
   peak: number;
   wave: OscillatorType;
 };
 
 const TONES: Record<Tone, ToneSpec> = {
-  // 點到空白：低而輕的一下，只是觸感回饋，不能像「錯誤」音
+  // Empty tap: one low, quiet blip. Tactile feedback only, it must never sound like an error
   tap: { notes: [196], step: 0, duration: 0.07, peak: 0.05, wave: 'sine' },
-  // 找到一樣東西：往上兩個音
+  // Found one thing: two notes going up
   found: { notes: [523.25, 659.25], step: 0.1, duration: 0.2, peak: 0.16, wave: 'triangle' },
-  // 三樣都找到：往上四個音
+  // All three found: four notes going up
   complete: {
     notes: [523.25, 659.25, 783.99, 1046.5],
     step: 0.13,
@@ -35,13 +35,13 @@ const TONES: Record<Tone, ToneSpec> = {
 
 let context: AudioContext | null = null;
 
-/** iOS Safari 必須在使用者手勢裡建立／恢復 AudioContext（spec §8）。 */
+/** iOS Safari only lets an AudioContext be created or resumed inside a user gesture (spec §8). */
 export function unlockAudio(): void {
   try {
     context ??= new AudioContext();
     if (context.state === 'suspended') void context.resume();
   } catch {
-    context = null; // 沒有音訊也要能玩
+    context = null; // The game must stay playable with no audio at all
   }
 }
 
@@ -58,7 +58,7 @@ export function playTone(tone: Tone, enabled: boolean): void {
 
     oscillator.type = spec.wave;
     oscillator.frequency.value = frequency;
-    // 起音 20ms、之後指數收尾，避免爆音
+    // 20ms attack then an exponential tail, so nothing clicks
     envelope.gain.setValueAtTime(0.0001, at);
     envelope.gain.exponentialRampToValueAtTime(spec.peak, at + 0.02);
     envelope.gain.exponentialRampToValueAtTime(0.0001, at + spec.duration);

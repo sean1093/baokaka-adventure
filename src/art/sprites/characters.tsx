@@ -2,12 +2,12 @@ import type { Sprite } from '../sprite';
 import { C } from '../palette';
 
 /**
- * 摩卡貓：褐色虎斑貓。虎斑的三個辨識點都畫出來——
- * 額頭的 M 字紋、身側的直條紋、尾巴的環紋——否則在小尺寸下只會像一隻棕色的貓。
+ * Mocha Cat, a brown tabby. All three tabby markers are drawn - the forehead M, the
+ * flank stripes and the ringed tail - or it just reads as "a brown cat" at small sizes.
  */
 export const MochaCat: Sprite = () => (
   <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    {/* 尾巴，從右側捲上來 */}
+    {/* Tail, curling up from the right */}
     <path
       d="M64,86 C90,86 98,60 88,42 C82,32 68,30 62,40 C58,47 64,52 70,50 C78,47 82,55 78,64 C74,74 66,78 58,76 Z"
       fill={C.mocha}
@@ -15,12 +15,12 @@ export const MochaCat: Sprite = () => (
       strokeWidth={4}
       strokeLinejoin="round"
     />
-    {/* 尾巴環紋：與尾巴走向垂直，才讀得出是「一圈一圈」 */}
+    {/* Tail rings: perpendicular to the tail, otherwise they read as random slashes */}
     <path d="M76,77 L85,70" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
     <path d="M79,61 L87,55" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
     <path d="M73,36 L71,47" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
 
-    {/* 坐姿的後半身 */}
+    {/* Haunches, sitting */}
     <path
       d="M22,90 C18,74 18,64 34,59 C40,56 60,56 66,59 C82,64 82,74 78,90 Z"
       fill={C.mocha}
@@ -28,7 +28,7 @@ export const MochaCat: Sprite = () => (
       strokeWidth={4}
       strokeLinejoin="round"
     />
-    {/* 身側的鯖魚紋 */}
+    {/* Mackerel flank stripes */}
     <path d="M27,64 Q24,72 26,80" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
     <path d="M35,61 Q32,70 34,78" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
     <path d="M73,64 Q76,72 74,80" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
@@ -38,12 +38,12 @@ export const MochaCat: Sprite = () => (
     <ellipse cx={39} cy={89} rx={9} ry={7} fill={C.mocha} stroke={C.ink} strokeWidth={4} />
     <ellipse cx={61} cy={89} rx={9} ry={7} fill={C.mocha} stroke={C.ink} strokeWidth={4} />
 
-    {/* 耳朵從圓頭後面露出來 */}
+    {/* Ears peek out from behind the round head */}
     <polygon points="20,3 46,30 26,38" fill={C.mocha} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
     <polygon points="80,3 54,30 74,38" fill={C.mocha} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
     <circle cx={50} cy={42} r={27} fill={C.mocha} stroke={C.ink} strokeWidth={4} />
 
-    {/* 額頭的 M 字紋，虎斑貓最關鍵的辨識特徵 */}
+    {/* The forehead M: the single most recognisable tabby marking */}
     <path
       d="M39,26 L44,18 L50,25 L56,18 L61,26"
       stroke={C.mochaDeep}
@@ -57,7 +57,7 @@ export const MochaCat: Sprite = () => (
 
     <ellipse cx={50} cy={54} rx={16} ry={11} fill={C.cream} stroke={C.ink} strokeWidth={3} />
 
-    {/* 綠眼睛：褐虎斑最常見的眼色，也讓臉更有精神 */}
+    {/* Green eyes: the usual colour on a brown tabby, and it brightens the face */}
     <circle cx={38} cy={36} r={10} fill={C.white} stroke={C.ink} strokeWidth={4} />
     <circle cx={62} cy={36} r={10} fill={C.white} stroke={C.ink} strokeWidth={4} />
     <circle cx={39} cy={37} r={6.5} fill={C.leaf} />

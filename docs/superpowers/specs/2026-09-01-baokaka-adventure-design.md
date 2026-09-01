@@ -279,7 +279,14 @@ type Progress = {
 - icons 與 OG 圖從 `assets/og.svg` 與 `public/icons/icon.svg` 用 macOS 內建的 `qlmanage` + `sips` 轉出 PNG，不引入任何圖形處理依賴
 - `index.html` 附 OG title / description / image，LINE 貼連結時有預覽圖
 
-## 14. 日後可加（現在不做）
+## 14. 語言慣例
+
+- **commit message 與程式碼註解一律英文**，包含 JSDoc、測試名稱、以及只有開發者看得到的字串（`validate.ts` 的錯誤訊息、`throw` 的訊息）。
+- **玩家看得到的文字一律繁體中文**：UI 字串、關卡標題、物品名稱、劇情文字、`index.html` 的 title 與 OG 描述。
+- 這份設計文件維持中文。
+- 測試 fixture 裡的 `name: '奶瓶'`、`title: '摩卡貓躲在客廳'` 刻意保留中文，因為它們就是真實資料長的樣子。
+
+## 15. 日後可加（現在不做）
 
 - 劇情頁放寶咖咖的真實照片（`Level.story` 加一個選填圖片欄位即可）
 - 更多關卡（加一筆 `Level` 資料；需要新圖案時才動 sprite）

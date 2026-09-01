@@ -4,7 +4,7 @@ import { App } from './App';
 import './index.css';
 
 const host = document.getElementById('root');
-if (!host) throw new Error('找不到 #root');
+if (!host) throw new Error('Missing #root element');
 
 createRoot(host).render(
   <StrictMode>

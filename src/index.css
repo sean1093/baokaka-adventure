@@ -10,7 +10,8 @@
   body {
     @apply bg-cream text-ink;
     font-family: ui-rounded, 'Hiragino Maru Gothic ProN', 'Noto Sans TC', 'PingFang TC', system-ui, sans-serif;
-    /* 長輩 UI：只有單擊。關掉點擊高亮、雙擊縮放延遲、長按選字、橡皮筋捲動 */
+    /* Elderly UI: single tap only. Kill the tap highlight, double-tap zoom delay,
+       long-press selection and rubber-band scrolling */
     -webkit-tap-highlight-color: transparent;
     -webkit-user-select: none;
     user-select: none;
@@ -22,7 +23,7 @@
   }
 }
 
-/* 點到空白處的漣漪：唯一的「沒找到」回饋，不帶任何負面語意 */
+/* Ripple for tapping empty space: the only "not found" feedback, and it carries no blame */
 @keyframes ripple {
   from {
     transform: scale(0.3);
@@ -38,7 +39,7 @@
   animation: ripple 600ms ease-out forwards;
 }
 
-/* 提示光圈：慢速呼吸，不刺眼 */
+/* Hint halo: a slow breath, never harsh */
 @keyframes breathe {
   0%,
   100% {
@@ -55,7 +56,7 @@
   animation: breathe 2.4s ease-in-out infinite;
 }
 
-/* 找到東西時的彈跳 */
+/* Pop when something is found */
 @keyframes pop {
   0% {
     transform: scale(1);

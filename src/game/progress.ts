@@ -4,13 +4,13 @@ export const PROGRESS_KEY = 'baokaka.progress';
 
 export const DEFAULT_PROGRESS: Progress = { unlockedLevel: 1, completed: [], sound: true };
 
-/** 只用得到這兩個方法，注入假 storage 就能測，不需要 jsdom。 */
+/** Only these two methods are used, so a fake storage makes this testable without jsdom. */
 export type StorageLike = {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
 };
 
-/** 隱私瀏覽模式下，光是碰 `window.localStorage` 就可能拋 SecurityError。 */
+/** In private browsing, merely touching `window.localStorage` can throw SecurityError. */
 function browserStorage(): StorageLike | null {
   try {
     return typeof window === 'undefined' ? null : window.localStorage;
@@ -49,11 +49,11 @@ export function saveProgress(progress: Progress, storage: StorageLike | null = b
   try {
     storage?.setItem(PROGRESS_KEY, JSON.stringify(progress));
   } catch {
-    // 隱私瀏覽或配額不足：進度只活在記憶體，遊戲繼續可玩（spec §9）
+    // Private browsing or a full quota: progress lives in memory only and the game stays playable (spec §9)
   }
 }
 
-/** spec §9：unlockedLevel = max(舊值, min(n + 1, 最後一關))，重玩舊關卡不會讓進度倒退。 */
+/** spec §9: unlockedLevel = max(previous, min(n + 1, last level)), so replaying an old level never rewinds. */
 export function completeLevel(progress: Progress, levelId: number, lastLevelId: number): Progress {
   return {
     ...progress,

@@ -1,17 +1,17 @@
-/** 長輩 UI 規則集中在這裡，元件不自行決定字級與觸控尺寸。 */
+/** Elderly-friendly UI rules live here; components never pick their own type scale or touch size. */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       fontSize: {
-        // 最小 20px，主文 24px，行高 1.6（spec §8）
+        // Minimum 20px, body copy 24px, line-height 1.6 (spec §8)
         base: ['20px', '1.6'],
         body: ['24px', '1.6'],
         title: ['34px', '1.3'],
         huge: ['44px', '1.2'],
       },
       spacing: {
-        // 觸控目標下限 64px
+        // Touch target floor: 64px
         touch: '64px',
       },
       colors: {

@@ -1,12 +1,12 @@
 import type { Level } from './types';
 
 /**
- * 六關的關卡資料（spec §10）。
+ * The six levels (spec §10).
  *
- * 目標一律 r = 0.11（在 375px 寬的螢幕上邊長 ≈ 82px），
- * 三個目標分散在畫面上中下，彼此的 Chebyshev 距離都留足 r+r 以上，
- * 由 levels.test.ts 跑 validateLevels 把關。
- * decor 不可點擊、畫在目標下層，所以不受幾何規則限制。
+ * Every target uses r = 0.11, roughly an 82px edge on a 375px-wide screen. The three
+ * targets sit high, middle and low, with a Chebyshev gap of at least r+r between any
+ * pair; levels.test.ts runs validateLevels to enforce that.
+ * Decor is not tappable and is drawn below the targets, so it is exempt from the geometry rules.
  */
 export const LEVELS: Level[] = [
   {

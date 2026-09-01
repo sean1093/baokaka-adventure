@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import type { PaletteName } from '../game/types';
 import { C } from './palette';
 
-/** 場景容器固定 3:4，所以 viewBox 用 300×400，座標可以直接對應版面。 */
+/** The scene box is always 3:4, so a 300x400 viewBox maps straight onto the layout. */
 const Bands = ({ sky, ground, split }: { sky: string; ground: string; split: number }) => (
   <>
     <rect x={0} y={0} width={300} height={split} fill={sky} />

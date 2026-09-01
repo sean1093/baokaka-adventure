@@ -4,8 +4,8 @@ import { SPRITES } from '../art/sprites';
 type Props = { targets: Target[]; found: string[] };
 
 /**
- * 底部「要找的三樣東西」。未找到的用淡色剪影 + 名字，
- * 讓玩家隨時知道目標是什麼，不必記住題目（spec §7）。
+ * The "three things to find" tray. Anything not yet found shows as a faded silhouette
+ * plus its name, so the player never has to remember the goal (spec §7).
  */
 export const FoundTray = ({ targets, found }: Props) => (
   <div className="mx-auto flex w-full max-w-md justify-center gap-2 px-3">

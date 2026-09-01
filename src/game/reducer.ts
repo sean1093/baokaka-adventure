@@ -25,8 +25,8 @@ export const initialState = (progress: Progress): State => ({
 });
 
 /**
- * spec §4 的狀態機。純函式：不碰 localStorage、不排計時器。
- * 存檔由 App 在 progress 變動時的 effect 負責。
+ * The spec §4 state machine. Pure: it never touches localStorage and never schedules timers.
+ * Persisting is the job of App's effect on progress changes.
  */
 export function makeReducer(levels: Level[]): (state: State, action: Action) => State {
   const lastLevelId = levels.at(-1)?.id ?? 1;

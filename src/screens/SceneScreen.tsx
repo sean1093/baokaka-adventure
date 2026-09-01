@@ -7,10 +7,10 @@ import { BigButton } from '../components/BigButton';
 import { FoundTray } from '../components/FoundTray';
 import { playTone } from '../game/audio';
 
-/** 卡住幾秒後浮現提示光圈；再幾秒後變明顯（spec §7）。 */
+/** Idle seconds before the hint halo appears, then before it gets stronger (spec §7). */
 const HINT_AFTER = 15;
 const STRONG_HINT_AFTER = 30;
-/** 找齊之後停在畫面上多久再翻到劇情頁（毫秒）。 */
+/** How long a cleared scene stays on screen before the story page (ms). */
 const CLEARED_DELAY = 1200;
 
 type Props = {
@@ -36,7 +36,7 @@ export const SceneScreen = ({
   const [idleSeconds, setIdleSeconds] = useState(0);
   const [ripple, setRipple] = useState<{ x: number; y: number; key: number } | null>(null);
 
-  // 每找到一樣東西就重新計時；分頁在背景時不算（spec §7）
+  // Restart the timer on every find, and do not count time while the tab is hidden (spec §7)
   useEffect(() => {
     setIdleSeconds(0);
     const timer = window.setInterval(() => {
@@ -96,8 +96,8 @@ export const SceneScreen = ({
         >
           <Backdrop />
 
-          {/* 點到空白處：只有漣漪，沒有任何負面回饋（spec §7）。
-              這一層在目標按鈕底下，所以點到目標時不會觸發。 */}
+          {/* Tapping empty space: a ripple and nothing else, never negative feedback (spec §7).
+              This layer sits below the target buttons, so hitting a target never reaches it. */}
           <div className="absolute inset-0" onClick={handleMiss}>
             {ripple && (
               <span

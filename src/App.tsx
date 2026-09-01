@@ -11,10 +11,10 @@ import { SceneScreen } from './screens/SceneScreen';
 import { StoryScreen } from './screens/StoryScreen';
 import { TitleScreen } from './screens/TitleScreen';
 
-// 關卡資料錯了就在開發時直接爆掉，不要默默做出一個點不到的關卡（spec §6）
+// Blow up during development instead of silently shipping an unreachable target (spec §6)
 if (import.meta.env.DEV) {
   const errors = validateLevels(LEVELS);
-  if (errors.length > 0) throw new Error(`關卡資料有問題：\n${errors.join('\n')}`);
+  if (errors.length > 0) throw new Error(`Invalid level data:\n${errors.join('\n')}`);
 }
 
 export const App = () => {
@@ -35,7 +35,7 @@ export const App = () => {
       {view.screen === 'title' && (
         <TitleScreen
           onStart={() => {
-            unlockAudio(); // iOS 只允許在使用者手勢裡解鎖音訊
+            unlockAudio(); // iOS only unlocks audio inside a user gesture
             dispatch({ type: 'start' });
           }}
         />

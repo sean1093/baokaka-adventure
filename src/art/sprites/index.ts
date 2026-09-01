@@ -10,8 +10,8 @@ import * as targets from './targets';
 import * as yard from './yard';
 
 /**
- * sprite key → 圖案。型別是 Record<SpriteName, Sprite>，
- * 所以少一個或多一個都會編譯失敗——關卡資料與美術不可能對不上。
+ * sprite key -> drawing. Typed as Record<SpriteName, Sprite>, so a missing or extra
+ * entry fails the build: level data and art cannot drift apart.
  */
 export const SPRITES: Record<SpriteName, Sprite> = {
   bottle: targets.Bottle,

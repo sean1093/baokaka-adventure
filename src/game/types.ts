@@ -1,14 +1,14 @@
 /**
- * 關卡資料契約。
+ * Level data contract.
  *
- * 座標系統（spec §6）：場景容器固定 3:4 直向。
- *   x, y  熱區「中心」，x 相對容器寬、y 相對容器高，皆 0..1
- *   r     熱區半邊長，相對容器寬（正方形，寬高相等，用 aspect-ratio 維持）
- * 因為容器 height = width × 4/3，垂直方向佔容器高的比例是 r × 3/4。
+ * Coordinate system (spec §6): the scene box is always 3:4 portrait.
+ *   x, y  hotspot CENTRE; x relative to box width, y relative to box height, both 0..1
+ *   r     hotspot half-edge, relative to box width (square, kept square by aspect-ratio)
+ * Because box height = width * 4/3, a hotspot covers r * 3/4 of the box height.
  */
 
 export type SpriteName =
-  // 目標物件（18 個尋物點）
+  // Target objects (the 18 hidden objects)
   | 'bottle'
   | 'sock'
   | 'clothBook'
@@ -26,44 +26,44 @@ export type SpriteName =
   | 'toyBoat'
   | 'comfortDoll'
   | 'nightLight'
-  // 角色
+  // Characters
   | 'mochaCat'
   | 'baokaka'
-  // 客廳
+  // Living room
   | 'sofa'
   | 'coffeeTable'
   | 'floorLamp'
   | 'pottedPlant'
   | 'wallClock'
   | 'rug'
-  // 睡前
+  // Bedtime
   | 'bed'
   | 'moonWindow'
   | 'star'
   | 'blanket'
   | 'pillow'
   | 'slipper'
-  // 院子
+  // Yard
   | 'tree'
   | 'fence'
   | 'flowerPot'
   | 'wateringCan'
   | 'butterfly'
   | 'stone'
-  // 公園
+  // Park
   | 'bench'
   | 'slide'
   | 'cloud'
   | 'kite'
   | 'bird'
-  // 市場
+  // Market
   | 'crate'
   | 'fishStall'
   | 'lantern'
   | 'awning'
   | 'scale'
   | 'apple'
-  // 海邊
+  // Beach
   | 'sunDisc'
   | 'wave'
   | 'sandcastle'
@@ -76,38 +76,38 @@ export type Placement = {
   x: number;
   y: number;
   r: number;
-  /** 水平翻轉，讓同一個 sprite 重複出現時不會太呆板 */
+  /** Mirror horizontally so a repeated sprite does not look stamped out */
   flip?: boolean;
 };
 
-/** 可點擊的尋物目標。 */
+/** A tappable hidden-object target. */
 export type Target = Placement & {
-  /** 關卡內唯一 */
+  /** Unique within the level */
   id: string;
-  /** 顯示名稱，例如「奶瓶」 */
+  /** Display name shown to the player, e.g. 奶瓶 */
   name: string;
 };
 
 export type PaletteName = 'living' | 'yard' | 'park' | 'market' | 'beach' | 'night';
 
 export type Level = {
-  /** 1 起算，連續 */
+  /** Starts at 1, contiguous */
   id: number;
-  /** 「摩卡貓躲在客廳」 */
+  /** e.g. 摩卡貓躲在客廳 */
   title: string;
   palette: PaletteName;
-  /** 背景裝飾，不可點擊，畫在目標下層 */
+  /** Background decor: not tappable, drawn below the targets */
   decor: Placement[];
-  /** 固定 3 個 */
+  /** Always exactly 3 */
   targets: Target[];
-  /** 過關後的繪本頁文字 */
+  /** Storybook text shown once the level is cleared */
   story: string;
 };
 
 export type Progress = {
-  /** 目前最高可進入的關卡 id，預設 1 */
+  /** Highest level id the player may enter; defaults to 1 */
   unlockedLevel: number;
-  /** 已完成的關卡 id，升冪、不重複 */
+  /** Completed level ids, ascending and unique */
   completed: number[];
   sound: boolean;
 };
