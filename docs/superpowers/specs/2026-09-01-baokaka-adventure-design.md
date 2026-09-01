@@ -74,90 +74,98 @@ ending --再玩一次-->        map
 baokaka-adventure/
   index.html
   vite.config.ts
-  tailwind.config.js
+  tailwind.config.js               # 長輩 UI 規則（字級、觸控尺寸、色票）集中在這裡
+  assets/og.svg                    # OG 圖原始檔，用 qlmanage 轉 PNG
   public/
-    levels/levels.json
-    scenes/level-01.webp … level-06.webp
-    story/story-01.webp … story-06.webp
-    audio/{found,complete,tap}.mp3
     manifest.webmanifest
-    icons/icon-192.png, icon-512.png, apple-touch-icon.png
+    icons/icon.svg, icon-512.png, apple-touch-icon.png, og.png
   src/
     main.tsx
-    App.tsx                    # 狀態機與畫面切換
+    App.tsx                        # 狀態機與畫面切換
+    index.css                      # 全域長輩規則 + 三組動畫 keyframes
     game/
-      types.ts                 # Level / Target / Progress 型別
-      levels.ts                # 載入與驗證關卡資料
-      validate.ts              # 純函式驗證規則（可單獨測試）
-      progress.ts              # localStorage 存取與容錯
-      reducer.ts               # 遊戲狀態機（可單獨測試）
-      audio.ts                 # 音效播放與 iOS 解鎖
+      types.ts                     # SpriteName / Placement / Target / Level / Progress
+      levels.ts                    # 六關的關卡資料（TS 常數，不是 JSON）
+      validate.ts                  # 純函式驗證規則
+      progress.ts                  # localStorage 存取、容錯、completeLevel
+      reducer.ts                   # 遊戲狀態機
+      audio.ts                     # WebAudio 合成音效與 iOS 解鎖
+    art/
+      palette.ts                   # 唯一色票來源
+      sprite.ts                    # Sprite 型別與六條作圖規約
+      backdrops.tsx                # 六種場景的背景色帶
+      sprites/                     # 54 個扁平向量 sprite，依場景分檔
+        index.ts                   # Record<SpriteName, Sprite> 註冊表
+        targets.tsx  characters.tsx  living.tsx  night.tsx
+        yard.tsx     park.tsx        market.tsx  beach.tsx
     screens/
-      TitleScreen.tsx
-      MapScreen.tsx
-      SceneScreen.tsx          # 尋物核心
-      StoryScreen.tsx
-      EndingScreen.tsx
+      TitleScreen.tsx  MapScreen.tsx  SceneScreen.tsx
+      StoryScreen.tsx  EndingScreen.tsx
     components/
-      BigButton.tsx            # 統一 ≥64px 觸控目標
-      Hotspot.tsx
-      FoundTray.tsx            # 底部「找到 3 樣」格子
-      OrientationGuard.tsx     # 橫向時的提示
+      BigButton.tsx                # 統一 ≥64px 觸控目標
+      FoundTray.tsx                # 底部「找到 3 樣」格子
+      OrientationGuard.tsx         # 橫向時的提示
+  .github/workflows/deploy.yml
   docs/superpowers/specs/
 ```
 
 ## 6. 關卡資料契約
 
 ```ts
-type Target = {
-  id: string;      // 關卡內唯一
-  name: string;    // 顯示名稱，例如「奶瓶」
-  x: number;       // 0..1，相對場景容器寬度
-  y: number;       // 0..1，相對場景容器高度
-  r: number;       // 圓形熱區半徑，相對場景容器寬度
+type Placement = {
+  sprite: SpriteName;  // 對應 art/sprites 註冊表的一個圖案
+  x: number;           // 0..1，相對場景容器寬度
+  y: number;           // 0..1，相對場景容器高度
+  r: number;           // 方形熱區半邊長，相對場景容器寬度
+  flip?: boolean;      // 水平翻轉，同一個 sprite 重複出現時不會太呆板
+};
+
+type Target = Placement & {
+  id: string;          // 關卡內唯一
+  name: string;        // 顯示名稱，例如「奶瓶」
 };
 
 type Level = {
   id: number;              // 1 起算，連續
   title: string;           // 「摩卡貓躲在客廳」
-  sceneImage: string;      // public 路徑
+  palette: PaletteName;    // 決定背景色帶
+  decor: Placement[];      // 背景裝飾，不可點擊，畫在目標下層
   targets: Target[];       // 固定 3 個
-  story: { text: string; image?: string };
+  story: string;           // 過關後的繪本頁文字
 };
 ```
 
+`SpriteName` 是一個字串聯集，註冊表型別是 `Record<SpriteName, Sprite>`，所以關卡資料引用了不存在的圖案、或畫了沒人用的圖案，都會在編譯期爆掉。
+
 ### 座標系統
 
-**所有場景圖必須是 3:4 直向比例。** 場景容器用 CSS `aspect-ratio: 3 / 4; width: 100%; position: relative`，圖片直接鋪滿容器。因為圖與容器比例相同，座標可以純用百分比定位，**不需要任何 JavaScript 量測**，也消除了「圖片 letterbox 偏移」這一整類座標對不上的 bug。
+**場景固定 3:4 直向。** 容器用 `aspect-ratio: 3 / 4; position: relative`，sprite 以百分比絕對定位，**不需要任何 JavaScript 量測**。
 
-`x`／`y` 是熱區**中心**，不是左上角，所以必須配 `translate(-50%, -50%)`。`r` 以容器寬度為基準，圓形要保持圓形就必須用 `aspect-ratio: 1` 讓高度跟隨寬度，不能寫 `height: %`（CSS 的 `height: %` 會解析成容器高度，圓形會被壓成橢圓）：
+`x`／`y` 是**中心**不是左上角，所以必須配 `translate(-50%, -50%)`。`r` 以容器寬度為基準；方框要保持正方就必須用 `aspect-ratio: 1` 讓高度跟隨寬度，不能寫 `height: %`（CSS 的 `height: %` 會解析成容器高度，方框會被壓扁）：
 
 ```css
 left: calc(x * 100%);
 top: calc(y * 100%);
 width: calc(2r * 100%);   /* 相對容器寬度 */
-aspect-ratio: 1;          /* 高度跟隨寬度，維持正圓 */
+aspect-ratio: 1;          /* 高度跟隨寬度 */
 transform: translate(-50%, -50%);
-border-radius: 9999px;
 ```
 
-對應地，熱區在垂直方向佔容器高度的比例是 `r * 3/4`（因為容器 height = width × 4/3），這是驗證規則第 6 條的來源。
+對應地，熱區在垂直方向佔容器高度的比例是 `r × 3/4`（因為容器 height = width × 4/3）。反過來，一段垂直距離 `dy`（高度比例）換算成寬度比例是 `dy × 4/3`。這兩個換算是驗證規則 5 與 6 的來源。
 
 ### 驗證規則
 
-`validate.ts` 是純函式，回傳錯誤清單。開發模式下有錯直接 throw；`npm run validate` 也會跑同一份規則，讓內容錯誤在 build 前就爆掉。
+`validate.ts` 是純函式，回傳錯誤清單。開發模式下 `App.tsx` 在模組載入時直接 throw；`levels.test.ts` 對實際關卡資料跑同一份規則，內容錯誤在 CI 就爆掉。
 
 1. `targets.length === 3`
 2. 每個 target 的 `id` 在關卡內唯一
-3. `0 ≤ x ≤ 1`、`0 ≤ y ≤ 1`
-4. `r ≥ 0.09` — 在 375px 寬的螢幕上直徑 ≈ 67px，滿足觸控下限
-5. 熱區不重疊：任兩個 target 的中心距離 ≥ `r_i + r_j`（避免一次點擊同時命中兩個目標）
-6. 熱區完整落在畫面內：`x - r ≥ 0`、`x + r ≤ 1`、`y - r*(3/4) ≥ 0`、`y + r*(3/4) ≤ 1`
+3. `x`、`y`、`r` 必須是有限數字（`NaN` 會讓後面所有幾何比較無聲通過）
+4. `r ≥ 0.09` — 在 375px 寬的螢幕上邊長 ≈ 67px，滿足觸控下限
+5. 熱區不重疊：`max(|dx|, |dy| × 4/3) ≥ r_i + r_j`（方形熱區用 Chebyshev 距離，避免一次點擊同時命中兩個目標）
+6. 熱區完整落在畫面內：`x - r ≥ 0`、`x + r ≤ 1`、`y - r×3/4 ≥ 0`、`y + r×3/4 ≤ 1`。這條同時涵蓋了「座標必須在 0..1」
 7. `level.id` 從 1 開始連續遞增
 
-### 標點工具（dev-only）
-
-網址加 `?edit=1` 時，點擊場景圖會把 `{ x, y }`（四位小數）印到 console，並在畫面上顯示目前座標。18 個熱區用手算座標不可行，這是內容生產的必要工具。此模式不影響正式版行為，只在 `import.meta.env.DEV` 下啟用。
+原本規劃的 `?edit=1` 標點工具**沒有實作，也不需要**：場景由 sprite 組成，熱區座標就是 sprite 的擺放座標，同一份資料，不存在「圖畫好了再去標座標」這個步驟，也就沒有座標漂移的問題。
 
 ## 7. 尋物互動細節
 
@@ -177,13 +185,15 @@ border-radius: 9999px;
 - 文字對比 ≥ 4.5:1；禁止淺灰字配淺色底
 - **只有單擊**：不使用滑動、拖曳、長按、雙擊、pinch
 - 直向鎖定：`OrientationGuard` 在橫向時蓋一層「請把手機豎起來」的提示
-- 音效預設開啟，但遊戲**不依賴聲音**（全靜音也能完整通關）。喇叭開關放右上角，尺寸同樣 ≥64px
+- 音效預設開啟，但遊戲**不依賴聲音**（全靜音也能完整通關）。開關放右上角，用文字「聲音 開／關」而不是喇叭圖示，尺寸同樣 ≥64px
 - 不設計 hover 狀態
 - 按鈕文字用動詞短句（「開始冒險」、「繼續」），不用圖示代替文字
 
-### iOS 音訊解鎖
+### 音效
 
-iOS Safari 要求使用者手勢後才能播放音訊。在標題畫面的「開始冒險」按鈕點擊時解鎖 AudioContext 並預載三個音效。
+三個音效（點空白、找到、全找齊）用 **WebAudio 直接合成**，不載入任何 mp3：都是簡單音階，合成只要幾行程式，省掉二進位素材與載入等待，行動網路不穩也還有聲音。「找到」是往上兩個音，「全找齊」是往上四個音，「點空白」是一下低而輕的觸感回饋——絕對不能聽起來像錯誤音。
+
+iOS Safari 要求使用者手勢後才能播放音訊，所以在標題畫面「開始冒險」按鈕的點擊裡建立並 resume `AudioContext`。
 
 ## 9. 進度儲存
 
@@ -218,10 +228,25 @@ type Progress = {
 
 ## 11. 美術素材
 
-- **AI 生成插畫**。先固定角色設定：寶咖咖與摩卡貓各一張三視圖當風格參考，之後每關場景都沿用同一套 prompt 與角色參考，避免關卡之間角色長得不一樣
-- 場景圖：3:4 直向，WebP，長邊 ≤ 1280px，**每張 ≤ 150KB**（長輩可能用行動網路）
-- 劇情頁圖同規格。`story.image` 是選填欄位，日後想放寶咖咖的真實照片只需填這個欄位，不必改程式
-- 場景構圖要求：目標物件要「藏得自然但看得見」——不做需要放大才能看見的細節（不支援 pinch zoom）
+**場景不是點陣圖，是由 54 個手寫的扁平向量 sprite 組成的。**
+
+原本規劃 AI 生成插畫，實作時改掉了，理由有三個，而且改完比原案更好：
+
+1. **座標與圖案同一份資料**。sprite 用擺放座標定位，熱區座標就是擺放座標，不可能對不上；點陣圖方案得先出圖、再標熱區，兩份資料會漂移。
+2. **風格強制一致**。所有 sprite 共用 `palette.ts` 的色票與 `sprite.ts` 的六條規約（固定 `viewBox="0 0 100 100"`、平塗色塊、`C.ink` 4px 描邊、只用色票顏色），不會出現「第 3 關的貓跟第 5 關的貓長得不一樣」。
+3. **對長輩更好讀**。大色塊 + 粗描邊 + 高對比，比寫實插畫更容易辨認，而且整包 gzip 後只有 58KB，行動網路秒開。
+
+作圖規約（`src/art/sprite.ts` 是唯一權威，這裡是摘要）：
+
+- 根節點固定 `<svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">`
+- 主體撐到 viewBox 的 80% 以上且不可超出 0..100
+- 平塗色塊 + `stroke={C.ink} strokeWidth={4} strokeLinejoin="round"`
+- 只用 `palette.ts` 的顏色；不用漸層、濾鏡、外部字型、`<text>`
+- sprite 內不放互動屬性，點擊一律由外層 `<button>` 負責
+
+目標物件要比背景裝飾搶眼：裝飾用低彩度的 `sand`／`paper`／`grey`／`leaf`，目標用鮮明主色。目標一律畫在裝飾上層，所以裝飾永遠不會蓋住目標。
+
+日後若要換成 AI 插畫或真實照片：關卡資料的 `x`／`y`／`r` 完全不用動，只要在 `SceneScreen` 的 `Backdrop` 之上多疊一張 `<img>`，並把對應的 sprite 從 `decor` 拿掉。
 
 ## 12. 測試策略
 
@@ -229,10 +254,12 @@ type Progress = {
 
 自動化測試（Vitest）：
 
-1. `validate.ts` — 七條驗證規則各自的通過與失敗案例，特別是 `r` 下限與熱區重疊
-2. `progress.ts` — 損壞 JSON、欄位型別錯誤、寫入拋錯（模擬配額滿）三種情況都不能讓遊戲掛掉
-3. `reducer.ts` — 第 4 節列出的每一條狀態轉移，包含最後一關通往 `ending`
-4. `levels.json` 實際資料跑一次驗證（內容錯誤要在 CI 就爆掉）
+1. `validate.ts` — 七條驗證規則各自的通過與失敗案例，特別是 `r` 下限、Chebyshev 重疊判斷、垂直方向的 3/4 換算
+2. `progress.ts` — 損壞 JSON、欄位型別錯誤、讀取拋錯（隱私模式）、寫入拋錯（配額滿）都不能讓遊戲掛掉
+3. `reducer.ts` — 第 4 節列出的每一條狀態轉移，包含最後一關通往 `ending`、重玩舊關卡不讓進度倒退
+4. `levels.ts` 實際資料跑一次驗證（內容錯誤要在 CI 就爆掉）
+
+實測結果：4 個測試檔、49 個測試全綠。
 
 實機驗收（主要證據，用 `browser` 以 iPhone 尺寸實跑）：
 
@@ -247,13 +274,14 @@ type Progress = {
 
 ## 13. 部署
 
-- `vite build`，部署到 GitHub Pages（`base: '/baokaka-adventure/'`）或 Firebase Hosting
+- `vite build`（`base: '/baokaka-adventure/'`），GitHub Actions 在 push 到 `main` 時跑 `npm test` + `npm run build` 並發佈到 GitHub Pages
 - `manifest.webmanifest` + icons，讓長輩可以「加到主畫面」，不必每次回去翻 LINE 訊息找連結。**不加 Service Worker**
+- icons 與 OG 圖從 `assets/og.svg` 與 `public/icons/icon.svg` 用 macOS 內建的 `qlmanage` + `sips` 轉出 PNG，不引入任何圖形處理依賴
 - `index.html` 附 OG title / description / image，LINE 貼連結時有預覽圖
 
 ## 14. 日後可加（現在不做）
 
-- 劇情頁換成寶咖咖的真實照片（只需填 `story.image`）
-- 更多關卡（只需加圖 + 一筆 JSON）
+- 劇情頁放寶咖咖的真實照片（`Level.story` 加一個選填圖片欄位即可）
+- 更多關卡（加一筆 `Level` 資料；需要新圖案時才動 sprite）
 - 語音朗讀劇情文字（若發現長輩讀字吃力）
 - 跨裝置進度同步（需要後端，代價是登入流程）

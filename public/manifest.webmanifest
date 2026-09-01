@@ -1,0 +1,31 @@
+{
+  "name": "寶咖咖與摩卡貓的冒險",
+  "short_name": "寶咖咖冒險",
+  "description": "陪寶咖咖和摩卡貓去冒險，找出摩卡貓藏起來的東西。慢慢玩，沒有時間限制。",
+  "start_url": "/baokaka-adventure/",
+  "scope": "/baokaka-adventure/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF7E8",
+  "theme_color": "#FFF7E8",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
