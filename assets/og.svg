@@ -11,6 +11,7 @@
     <path d="M35 52q3 3 7 0" fill="none" stroke="#3B2A20" stroke-width="3" stroke-linecap="round"/>
     <path d="M62 82V58a12 12 0 0 1 24 0v24z" fill="#A8703E" stroke="#3B2A20" stroke-width="4"/>
     <path d="M64 58l-3-11 10 6zM84 58l3-11-10 6z" fill="#A8703E" stroke="#3B2A20" stroke-width="4"/>
+    <path d="M68 64l3-5 3 4 3-4 3 5" fill="none" stroke="#7E5029" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     <circle cx="70" cy="68" r="3" fill="#3B2A20"/><circle cx="79" cy="68" r="3" fill="#3B2A20"/>
   </g>
 </svg>

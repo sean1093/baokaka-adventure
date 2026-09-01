@@ -1,9 +1,13 @@
 import type { Sprite } from '../sprite';
 import { C } from '../palette';
 
+/**
+ * 摩卡貓：褐色虎斑貓。虎斑的三個辨識點都畫出來——
+ * 額頭的 M 字紋、身側的直條紋、尾巴的環紋——否則在小尺寸下只會像一隻棕色的貓。
+ */
 export const MochaCat: Sprite = () => (
   <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    {/* tail, curling up from the right */}
+    {/* 尾巴，從右側捲上來 */}
     <path
       d="M64,86 C90,86 98,60 88,42 C82,32 68,30 62,40 C58,47 64,52 70,50 C78,47 82,55 78,64 C74,74 66,78 58,76 Z"
       fill={C.mocha}
@@ -11,11 +15,12 @@ export const MochaCat: Sprite = () => (
       strokeWidth={4}
       strokeLinejoin="round"
     />
-    <path d="M84,78 L92,66" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
-    <path d="M90,52 L80,40" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
-    <path d="M72,35 L62,44" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+    {/* 尾巴環紋：與尾巴走向垂直，才讀得出是「一圈一圈」 */}
+    <path d="M76,77 L85,70" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+    <path d="M79,61 L87,55" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+    <path d="M73,36 L71,47" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
 
-    {/* haunches, sitting */}
+    {/* 坐姿的後半身 */}
     <path
       d="M22,90 C18,74 18,64 34,59 C40,56 60,56 66,59 C82,64 82,74 78,90 Z"
       fill={C.mocha}
@@ -23,23 +28,42 @@ export const MochaCat: Sprite = () => (
       strokeWidth={4}
       strokeLinejoin="round"
     />
+    {/* 身側的鯖魚紋 */}
+    <path d="M27,64 Q24,72 26,80" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+    <path d="M35,61 Q32,70 34,78" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+    <path d="M73,64 Q76,72 74,80" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+    <path d="M65,61 Q68,70 66,78" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+
     <ellipse cx={50} cy={76} rx={13} ry={14} fill={C.cream} stroke={C.ink} strokeWidth={3} />
     <ellipse cx={39} cy={89} rx={9} ry={7} fill={C.mocha} stroke={C.ink} strokeWidth={4} />
     <ellipse cx={61} cy={89} rx={9} ry={7} fill={C.mocha} stroke={C.ink} strokeWidth={4} />
 
-    {/* ears peek out from behind the round head */}
+    {/* 耳朵從圓頭後面露出來 */}
     <polygon points="20,3 46,30 26,38" fill={C.mocha} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
     <polygon points="80,3 54,30 74,38" fill={C.mocha} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
     <circle cx={50} cy={42} r={27} fill={C.mocha} stroke={C.ink} strokeWidth={4} />
-    <path d="M40,20 Q36,26 34,32" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
-    <path d="M60,20 Q64,26 66,32" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+
+    {/* 額頭的 M 字紋，虎斑貓最關鍵的辨識特徵 */}
+    <path
+      d="M39,26 L44,18 L50,25 L56,18 L61,26"
+      stroke={C.mochaDeep}
+      strokeWidth={5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    <path d="M29,33 L26,41" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+    <path d="M71,33 L74,41" stroke={C.mochaDeep} strokeWidth={5} strokeLinecap="round" fill="none" />
+
     <ellipse cx={50} cy={54} rx={16} ry={11} fill={C.cream} stroke={C.ink} strokeWidth={3} />
 
-    {/* big friendly eyes */}
+    {/* 綠眼睛：褐虎斑最常見的眼色，也讓臉更有精神 */}
     <circle cx={38} cy={36} r={10} fill={C.white} stroke={C.ink} strokeWidth={4} />
     <circle cx={62} cy={36} r={10} fill={C.white} stroke={C.ink} strokeWidth={4} />
-    <circle cx={39} cy={38} r={5.5} fill={C.ink} />
-    <circle cx={61} cy={38} r={5.5} fill={C.ink} />
+    <circle cx={39} cy={37} r={6.5} fill={C.leaf} />
+    <circle cx={61} cy={37} r={6.5} fill={C.leaf} />
+    <circle cx={39} cy={37} r={4} fill={C.ink} />
+    <circle cx={61} cy={37} r={4} fill={C.ink} />
     <circle cx={36} cy={34} r={2.2} fill={C.white} />
     <circle cx={58} cy={34} r={2.2} fill={C.white} />
 
