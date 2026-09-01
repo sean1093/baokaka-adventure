@@ -74,32 +74,66 @@ export const MochaCat: Sprite = () => (
   </svg>
 );
 
+/**
+ * Baokaka, drawn from the reference photo: thick black hair with a fringe, eyes
+ * squeezed into happy arcs, an open laugh showing the two lower teeth, the pale blue
+ * petal bib and a white romper with a green leaf print.
+ *
+ * Deliberately no toy in his hands. This sprite appears as decor in every scene, and a
+ * bright hand-held object would be mistaken for a hidden-object target.
+ */
 export const Baokaka: Sprite = () => (
   <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <ellipse cx={17} cy={60} rx={15} ry={9} fill={C.sky} stroke={C.ink} strokeWidth={4} transform="rotate(-30 17 60)" />
-    <ellipse cx={83} cy={60} rx={15} ry={9} fill={C.sky} stroke={C.ink} strokeWidth={4} transform="rotate(30 83 60)" />
+    {/* Short sleeves with bare hands poking out */}
+    <ellipse cx={17} cy={60} rx={15} ry={9} fill={C.white} stroke={C.ink} strokeWidth={4} transform="rotate(-30 17 60)" />
+    <ellipse cx={83} cy={60} rx={15} ry={9} fill={C.white} stroke={C.ink} strokeWidth={4} transform="rotate(30 83 60)" />
+    <circle cx={6} cy={67} r={6} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+    <circle cx={94} cy={67} r={6} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+
+    {/* White romper */}
     <path
       d="M22,90 C18,72 20,60 38,56 C44,54 56,54 62,56 C80,60 82,72 78,90 Z"
+      fill={C.white}
+      stroke={C.ink}
+      strokeWidth={4}
+      strokeLinejoin="round"
+    />
+    {/* Leaf print, the giveaway detail of the real romper */}
+    <ellipse cx={26} cy={70} rx={4} ry={2.2} fill={C.leaf} transform="rotate(-35 26 70)" />
+    <ellipse cx={74} cy={70} rx={4} ry={2.2} fill={C.leaf} transform="rotate(35 74 70)" />
+    <ellipse cx={28} cy={84} rx={4} ry={2.2} fill={C.leaf} transform="rotate(20 28 84)" />
+    <ellipse cx={72} cy={84} rx={4} ry={2.2} fill={C.leaf} transform="rotate(-20 72 84)" />
+
+    <ellipse cx={40} cy={90} rx={9} ry={7} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+    <ellipse cx={60} cy={90} rx={9} ry={7} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+
+    <circle cx={50} cy={37} r={26} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+
+    {/* Thick black hair. No outline: the silhouette is already the darkest shape on the sprite. */}
+    <path
+      d="M25,42 C22,16 36,8 50,8 C64,8 78,16 75,42 C71,32 66,27 60,30 C55,32 52,28 48,30 C43,32 38,28 34,30 C29,32 27,34 25,42 Z"
+      fill={C.ink}
+    />
+
+    <circle cx={31} cy={45} r={5} fill={C.berry} />
+    <circle cx={69} cy={45} r={5} fill={C.berry} />
+
+    {/* Laughing eyes: arcs, not dots */}
+    <path d="M35,40 Q40,34 45,40" stroke={C.ink} strokeWidth={4} strokeLinecap="round" fill="none" />
+    <path d="M55,40 Q60,34 65,40" stroke={C.ink} strokeWidth={4} strokeLinecap="round" fill="none" />
+
+    {/* Open laugh with the two lower front teeth */}
+    <path d="M40,45 h20 a10 10 0 0 1 -20 0 z" fill={C.berryDeep} stroke={C.ink} strokeWidth={3} strokeLinejoin="round" />
+    <rect x={45.8} y={49.5} width={3.6} height={4} rx={1} fill={C.white} />
+    <rect x={50.6} y={49.5} width={3.6} height={4} rx={1} fill={C.white} />
+
+    {/* Pale blue bib, scalloped like the petal one in the photo */}
+    <path
+      d="M34,60 C34,68 35,70 38,70 A6 6 0 0 0 50,70 A6 6 0 0 0 62,70 C65,70 66,68 66,60 Z"
       fill={C.sky}
       stroke={C.ink}
       strokeWidth={4}
       strokeLinejoin="round"
     />
-    <ellipse cx={40} cy={90} rx={9} ry={7} fill={C.paper} stroke={C.ink} strokeWidth={4} />
-    <ellipse cx={60} cy={90} rx={9} ry={7} fill={C.paper} stroke={C.ink} strokeWidth={4} />
-
-    <circle cx={50} cy={37} r={26} fill={C.paper} stroke={C.ink} strokeWidth={4} />
-    <path
-      d="M46,15 C41,5 58,1 62,9 C64,15 54,18 46,15 Z"
-      fill={C.mochaDeep}
-      stroke={C.ink}
-      strokeWidth={4}
-      strokeLinejoin="round"
-    />
-    <circle cx={30} cy={44} r={6} fill={C.berry} />
-    <circle cx={70} cy={44} r={6} fill={C.berry} />
-    <circle cx={40} cy={36} r={5} fill={C.ink} />
-    <circle cx={60} cy={36} r={5} fill={C.ink} />
-    <path d="M40,48 Q50,56 60,48" stroke={C.ink} strokeWidth={4} strokeLinecap="round" fill="none" />
   </svg>
 );
