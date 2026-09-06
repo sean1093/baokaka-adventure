@@ -23,6 +23,15 @@ describe('the shipped quest content', () => {
     for (const foe of Object.keys(FOES)) expect(used.has(foe as keyof typeof FOES)).toBe(true);
   });
 
+  test('every chapter map has a stop per node, reachable left to right, and at least one pickup', () => {
+    for (const chapter of CHAPTERS) {
+      expect(chapter.world.stops).toHaveLength(chapter.nodes.length);
+      expect([...chapter.world.stops].sort((a, b) => a - b)).toEqual(chapter.world.stops);
+      expect(chapter.world.pickups.length).toBeGreaterThanOrEqual(1);
+      expect(chapter.world.decor.length).toBeGreaterThanOrEqual(5);
+    }
+  });
+
   test('foes get tougher chapter by chapter', () => {
     const bossHp = CHAPTERS.map((chapter) => {
       const boss = chapter.nodes.at(-1);

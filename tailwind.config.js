@@ -25,6 +25,7 @@ export default {
         berry: '#D9564F',
         mocha: '#A8703E',
         plum: '#8E6E9E',
+        teal: '#3F8F88',
         grey: '#B9AFA4',
       },
     },

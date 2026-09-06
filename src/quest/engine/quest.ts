@@ -48,6 +48,8 @@ export type QuestAction =
   | { type: 'storyContinue' }
   /** The seed comes from the caller so the reducer stays pure and battles replay from their seed */
   | { type: 'beginNode'; seed: number }
+  /** Baokaka walked over a ground item on the chapter map */
+  | { type: 'pickup'; id: string }
   | { type: 'battle'; action: BattleAction }
   | { type: 'battleWon' }
   | { type: 'battleLost' }
@@ -71,6 +73,7 @@ export const freshRun = (cleared = false): Run => ({
   xp: 0,
   hp: fullHp(1),
   items: { ...STARTING_ITEMS },
+  picked: [],
   cleared,
 });
 
@@ -173,6 +176,16 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
       return {
         ...state,
         view: { screen: 'battle', battle: startBattle(run, node.foes, action.seed, node.kind === 'boss') },
+      };
+    }
+
+    case 'pickup': {
+      if (view.screen !== 'chapter' || run.picked.includes(action.id)) return state;
+      const pickup = chapter.world.pickups.find((entry) => entry.id === action.id);
+      if (!pickup) return state;
+      return {
+        ...state,
+        run: { ...run, items: addItems(run.items, [pickup.item]), picked: [...run.picked, action.id] },
       };
     }
 

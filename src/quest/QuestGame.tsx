@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from 'react';
-import { unlockAudio } from '../shared/audio';
+import { playTone, unlockAudio } from '../shared/audio';
 import { CHAPTERS, PROLOGUE } from './engine/chapters';
 import { initialState, questReducer } from './engine/quest';
 import { loadQuest, saveQuest } from './engine/save';
@@ -73,6 +73,10 @@ export const QuestGame = ({ onExit }: Props) => {
           run={run}
           soundOn={sound}
           onBegin={() => dispatch({ type: 'beginNode', seed: Date.now() })}
+          onPickup={(id) => {
+            playTone('found', sound);
+            dispatch({ type: 'pickup', id });
+          }}
           onToggleSound={() => dispatch({ type: 'toggleSound' })}
           onBackToTitle={() => dispatch({ type: 'backToTitle' })}
         />

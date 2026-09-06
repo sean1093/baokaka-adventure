@@ -1,10 +1,14 @@
 import { CHAPTERS } from './chapters';
 import { FOES } from './foes';
 import { MAX_ENERGY, MAX_LEVEL, SKILLS, XP_TABLE } from './heroes';
-import { HERO_ORDER, type Chapter } from './types';
+import { HERO_ORDER, WORLD_WIDTH, type Chapter } from './types';
 
 /** The battle box lays foes out in up to three columns */
 export const MAX_FOES_PER_BATTLE = 3;
+/** Baokaka starts here on every chapter map; the first stop must be further right */
+export const WORLD_START_X = 0.2;
+/** A pickup this close to a stop would be swallowed by the encounter that starts there */
+const PICKUP_CLEARANCE = 0.15;
 
 function validateChapter(chapter: Chapter): string[] {
   const errors: string[] = [];
@@ -27,6 +31,24 @@ function validateChapter(chapter: Chapter): string[] {
     if (!inside) errors.push(`decor ${index} (${placement.sprite}) is outside the box`);
   });
 
+  const { stops, pickups, decor } = chapter.world;
+  if (stops.length !== chapter.nodes.length) errors.push(`world has ${stops.length} stops for ${chapter.nodes.length} nodes`);
+  stops.forEach((stop, index) => {
+    if (!Number.isFinite(stop) || stop <= WORLD_START_X + 0.3 || stop > WORLD_WIDTH - 0.15) {
+      errors.push(`stop ${index} at x=${stop} is off the walkable path`);
+    }
+    if (index > 0 && stop <= stops[index - 1] + 0.3) errors.push(`stop ${index} is not clearly right of stop ${index - 1}`);
+  });
+  pickups.forEach((pickup) => {
+    if (!Number.isFinite(pickup.x) || pickup.x < 0 || pickup.x > WORLD_WIDTH) errors.push(`pickup ${pickup.id} is off the map`);
+    if (stops.some((stop) => Math.abs(stop - pickup.x) < PICKUP_CLEARANCE)) errors.push(`pickup ${pickup.id} sits on a stop`);
+  });
+  decor.forEach((entry, index) => {
+    const inside = [entry.x, entry.foot, entry.r].every(Number.isFinite) && entry.x >= -0.3 && entry.x <= WORLD_WIDTH + 0.3 && entry.foot > 0 && entry.foot <= 1 && entry.r > 0;
+    if (!inside) errors.push(`world decor ${index} (${entry.sprite}) is off the map`);
+    if (entry.depth !== undefined && (entry.depth <= 0 || entry.depth > 1)) errors.push(`world decor ${index} (${entry.sprite}) has depth outside (0, 1]`);
+  });
+
   return errors;
 }
 
@@ -38,6 +60,13 @@ export function validateQuestContent(): string[] {
     if (chapter.id !== index + 1) errors.push(`chapter ids must start at 1 and increase by 1: entry ${index + 1} has id ${chapter.id}`);
     errors.push(...validateChapter(chapter).map((error) => `chapter ${chapter.id}: ${error}`));
   });
+
+  // Picked-up ids are remembered per run across chapters, so they must be unique globally
+  const seenPickups = new Set<string>();
+  for (const pickup of CHAPTERS.flatMap((chapter) => chapter.world.pickups)) {
+    if (seenPickups.has(pickup.id)) errors.push(`pickup id ${pickup.id} is used in more than one place`);
+    seenPickups.add(pickup.id);
+  }
 
   for (const foe of Object.values(FOES)) {
     if (foe.maxHp <= 0 || foe.atk <= 0 || foe.xp <= 0) errors.push(`foe ${foe.id}: hp, atk and xp must be positive`);

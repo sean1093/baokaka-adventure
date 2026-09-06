@@ -74,3 +74,35 @@ export const BACKDROPS: Record<PaletteName, () => ReactElement> = {
     </Frame>
   ),
 };
+
+const WORLD_BANDS: Record<PaletteName, { sky: string; ground: string; sea?: string; dusk?: boolean }> = {
+  living: { sky: C.paper, ground: C.sandDeep },
+  yard: { sky: C.sky, ground: C.leaf },
+  park: { sky: C.sky, ground: C.leaf },
+  market: { sky: C.paper, ground: C.sandDeep },
+  beach: { sky: C.sky, ground: C.sand, sea: C.skyDeep },
+  night: { sky: C.skyDeep, ground: C.mochaDeep, dusk: true },
+};
+
+/** Where the ground band starts on the chapter map, as a fraction of the scene height */
+export const WORLD_HORIZON = 0.62;
+
+/**
+ * The chapter map is a side-scroller: sky and ground are plain horizontal bands that never
+ * scroll (only decor and characters do), so any aspect ratio keeps a straight horizon.
+ */
+export const WorldBackdrop = ({ palette }: { palette: PaletteName }) => {
+  const bands = WORLD_BANDS[palette];
+  const horizon = `${WORLD_HORIZON * 100}%`;
+  return (
+    <div className="absolute inset-0" aria-hidden="true">
+      <div className="absolute inset-x-0 top-0" style={{ height: horizon, background: bands.sky }} />
+      {bands.sea && (
+        <div className="absolute inset-x-0" style={{ top: '44%', height: '18%', background: bands.sea }} />
+      )}
+      <div className="absolute inset-x-0 bottom-0" style={{ top: horizon, background: bands.ground }} />
+      <div className="absolute inset-x-0" style={{ top: horizon, height: 3, background: C.ink, opacity: 0.15 }} />
+      {bands.dusk && <div className="absolute inset-x-0 top-0" style={{ height: horizon, background: C.ink, opacity: 0.25 }} />}
+    </div>
+  );
+};

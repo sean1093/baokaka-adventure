@@ -10,9 +10,12 @@ export type QuestSave = { run: Run; sound: boolean };
 
 const isCount = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
 
-function isRun(value: unknown): value is Run {
+/** The run as it may sit in storage: `picked` was added after the first release, so it may be missing. */
+type StoredRun = Omit<Run, 'picked'> & { picked?: string[] };
+
+function isStoredRun(value: unknown): value is StoredRun {
   if (typeof value !== 'object' || value === null) return false;
-  const run = value as Partial<Run>;
+  const run = value as Partial<StoredRun>;
   const chapter = CHAPTERS[(run.chapter ?? 0) - 1];
   return (
     chapter !== undefined &&
@@ -28,19 +31,22 @@ function isRun(value: unknown): value is Run {
     typeof run.items === 'object' &&
     run.items !== null &&
     ITEM_ORDER.every((item) => isCount(run.items?.[item])) &&
+    (run.picked === undefined || (Array.isArray(run.picked) && run.picked.every((id) => typeof id === 'string'))) &&
     typeof run.cleared === 'boolean'
   );
 }
 
-function isQuestSave(value: unknown): value is QuestSave {
+function isStoredSave(value: unknown): value is { run: StoredRun; sound: boolean } {
   if (typeof value !== 'object' || value === null) return false;
   const save = value as Partial<QuestSave>;
-  return typeof save.sound === 'boolean' && isRun(save.run);
+  return typeof save.sound === 'boolean' && isStoredRun(save.run);
 }
 
 /** Anything unreadable comes back as a fresh run; the player is never shown an error. */
 export function loadQuest(storage: StorageLike | null = browserStorage()): QuestSave {
-  return loadJson(QUEST_KEY, isQuestSave, storage) ?? { run: freshRun(), sound: true };
+  const stored = loadJson(QUEST_KEY, isStoredSave, storage);
+  if (!stored) return { run: freshRun(), sound: true };
+  return { run: { ...stored.run, picked: stored.run.picked ?? [] }, sound: stored.sound };
 }
 
 export function saveQuest(save: QuestSave, storage: StorageLike | null = browserStorage()): void {

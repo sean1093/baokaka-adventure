@@ -116,3 +116,66 @@
 .shake {
   animation: shake 420ms ease-in-out;
 }
+
+/* Chapter map: a little hop while walking */
+@keyframes walk {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-7%) rotate(-3deg);
+  }
+  75% {
+    transform: translateY(-7%) rotate(3deg);
+  }
+}
+
+.walk {
+  animation: walk 360ms ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+
+/* Chapter map: foes and pickups sway while they wait */
+@keyframes idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5%);
+  }
+}
+
+.idle {
+  animation: idle 2.4s ease-in-out infinite;
+}
+
+/* Battle: the actor steps forward as it acts */
+@keyframes lunge-up {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  35% {
+    transform: translateY(-12%) scale(1.06);
+  }
+}
+
+@keyframes lunge-down {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  35% {
+    transform: translateY(12%) scale(1.06);
+  }
+}
+
+.lunge-up {
+  animation: lunge-up 420ms ease-out;
+}
+
+.lunge-down {
+  animation: lunge-down 420ms ease-out;
+}

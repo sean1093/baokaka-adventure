@@ -75,65 +75,75 @@ export const MochaCat: Sprite = () => (
 );
 
 /**
- * Baokaka, drawn from the reference photo: thick black hair with a fringe, eyes
- * squeezed into happy arcs, an open laugh showing the two lower teeth, the pale blue
- * petal bib and a white romper with a green leaf print.
+ * Baokaka, drawn from the milestone photos: a big round head with full cheeks, thick black
+ * hair that sticks up in soft tufts, dark almond eyes looking straight at you with that calm,
+ * slightly serious baby stare, a tiny button nose and a small pouty mouth. He wears the teal
+ * romper with wooden buttons from the 11-month photo, arms out, chubby bare legs.
  *
- * Deliberately no toy in his hands. This sprite appears as decor in every scene, and a
- * bright hand-held object would be mistaken for a hidden-object target.
+ * Deliberately no toy in his hands. This sprite appears as decor in every hidden-object scene,
+ * and a bright hand-held object would be mistaken for a target.
  */
 export const Baokaka: Sprite = () => (
   <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    {/* Short sleeves with bare hands poking out */}
-    <ellipse cx={17} cy={60} rx={15} ry={9} fill={C.white} stroke={C.ink} strokeWidth={4} transform="rotate(-30 17 60)" />
-    <ellipse cx={83} cy={60} rx={15} ry={9} fill={C.white} stroke={C.ink} strokeWidth={4} transform="rotate(30 83 60)" />
-    <circle cx={6} cy={67} r={6} fill={C.paper} stroke={C.ink} strokeWidth={4} />
-    <circle cx={94} cy={67} r={6} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+    {/* Chubby bare legs */}
+    <ellipse cx={39} cy={89} rx={10} ry={7.5} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+    <ellipse cx={61} cy={89} rx={10} ry={7.5} fill={C.paper} stroke={C.ink} strokeWidth={4} />
 
-    {/* White romper */}
+    {/* Short sleeves with hands poking out */}
+    <ellipse cx={17} cy={63} rx={14} ry={9} fill={C.teal} stroke={C.ink} strokeWidth={4} transform="rotate(-28 17 63)" />
+    <ellipse cx={83} cy={63} rx={14} ry={9} fill={C.teal} stroke={C.ink} strokeWidth={4} transform="rotate(28 83 63)" />
+    <circle cx={7} cy={70} r={6} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+    <circle cx={93} cy={70} r={6} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+
+    {/* Teal romper */}
     <path
-      d="M22,90 C18,72 20,60 38,56 C44,54 56,54 62,56 C80,60 82,72 78,90 Z"
-      fill={C.white}
+      d="M24,92 C20,74 22,60 38,57 C44,55 56,55 62,57 C78,60 80,74 76,92 Z"
+      fill={C.teal}
       stroke={C.ink}
       strokeWidth={4}
       strokeLinejoin="round"
     />
-    {/* Leaf print, the giveaway detail of the real romper */}
-    <ellipse cx={26} cy={70} rx={4} ry={2.2} fill={C.leaf} transform="rotate(-35 26 70)" />
-    <ellipse cx={74} cy={70} rx={4} ry={2.2} fill={C.leaf} transform="rotate(35 74 70)" />
-    <ellipse cx={28} cy={84} rx={4} ry={2.2} fill={C.leaf} transform="rotate(20 28 84)" />
-    <ellipse cx={72} cy={84} rx={4} ry={2.2} fill={C.leaf} transform="rotate(-20 72 84)" />
+    {/* Front placket with the wooden buttons, the giveaway detail of the real romper */}
+    <line x1={50} y1={62} x2={50} y2={90} stroke={C.ink} strokeWidth={2} opacity={0.35} />
+    <circle cx={50} cy={68} r={3} fill={C.sandDeep} stroke={C.ink} strokeWidth={2} />
+    <circle cx={50} cy={77} r={3} fill={C.sandDeep} stroke={C.ink} strokeWidth={2} />
+    <circle cx={50} cy={86} r={3} fill={C.sandDeep} stroke={C.ink} strokeWidth={2} />
 
-    <ellipse cx={40} cy={90} rx={9} ry={7} fill={C.paper} stroke={C.ink} strokeWidth={4} />
-    <ellipse cx={60} cy={90} rx={9} ry={7} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+    {/* Round chubby head, a little wider than tall */}
+    <ellipse cx={50} cy={38} rx={28} ry={26} fill={C.paper} stroke={C.ink} strokeWidth={4} />
+    {/* Small ears */}
+    <ellipse cx={22.5} cy={41} rx={4} ry={5.5} fill={C.paper} stroke={C.ink} strokeWidth={3} />
+    <ellipse cx={77.5} cy={41} rx={4} ry={5.5} fill={C.paper} stroke={C.ink} strokeWidth={3} />
 
-    <circle cx={50} cy={37} r={26} fill={C.paper} stroke={C.ink} strokeWidth={4} />
-
-    {/* Thick black hair. No outline: the silhouette is already the darkest shape on the sprite. */}
+    {/* Thick black hair: a big soft mass with tufts sticking up, and a short uneven fringe.
+        No outline: the silhouette is already the darkest shape on the sprite. */}
     <path
-      d="M25,42 C22,16 36,8 50,8 C64,8 78,16 75,42 C71,32 66,27 60,30 C55,32 52,28 48,30 C43,32 38,28 34,30 C29,32 27,34 25,42 Z"
+      d="M22,38 C20,26 25,16 32,13 C33,6 39,3 43,8 C46,1 54,1 57,8 C61,3 68,5 68,13 C75,16 80,26 78,38
+         C75,31 71,29 67,31 C64,26 59,28 56,28 C53,24 47,24 44,28 C41,28 36,26 33,31 C29,29 25,31 22,38 Z"
       fill={C.ink}
     />
+    {/* A stray tuft on top, the one that never lies flat */}
+    <path d="M50,4 C52,0 57,0 58,4 C55,5 52,5 50,4 Z" fill={C.ink} />
 
-    <circle cx={31} cy={45} r={5} fill={C.berry} />
-    <circle cx={69} cy={45} r={5} fill={C.berry} />
+    {/* Full cheeks */}
+    <circle cx={29} cy={48} r={5.5} fill={C.berry} opacity={0.7} />
+    <circle cx={71} cy={48} r={5.5} fill={C.berry} opacity={0.7} />
 
-    {/* Laughing eyes: arcs, not dots */}
-    <path d="M35,40 Q40,34 45,40" stroke={C.ink} strokeWidth={4} strokeLinecap="round" fill="none" />
-    <path d="M55,40 Q60,34 65,40" stroke={C.ink} strokeWidth={4} strokeLinecap="round" fill="none" />
+    {/* Dark round eyes: open, calm, looking right at you */}
+    <ellipse cx={37} cy={42} rx={5} ry={5.2} fill={C.ink} />
+    <ellipse cx={63} cy={42} rx={5} ry={5.2} fill={C.ink} />
+    <circle cx={35.3} cy={40} r={1.7} fill={C.white} />
+    <circle cx={61.3} cy={40} r={1.7} fill={C.white} />
+    {/* Faint straight baby brows */}
+    <path d="M33,34 Q37,32.8 41,34" stroke={C.ink} strokeWidth={2} strokeLinecap="round" fill="none" opacity={0.3} />
+    <path d="M59,34 Q63,32.8 67,34" stroke={C.ink} strokeWidth={2} strokeLinecap="round" fill="none" opacity={0.3} />
 
-    {/* Open laugh with the two lower front teeth */}
-    <path d="M40,45 h20 a10 10 0 0 1 -20 0 z" fill={C.berryDeep} stroke={C.ink} strokeWidth={3} strokeLinejoin="round" />
-    <rect x={45.8} y={49.5} width={3.6} height={4} rx={1} fill={C.white} />
-    <rect x={50.6} y={49.5} width={3.6} height={4} rx={1} fill={C.white} />
+    {/* Tiny button nose */}
+    <path d="M47.5,50 Q50,52.5 52.5,50" stroke={C.ink} strokeWidth={2.5} strokeLinecap="round" fill="none" />
 
-    {/* Pale blue bib, scalloped like the petal one in the photo */}
-    <path
-      d="M34,60 C34,68 35,70 38,70 A6 6 0 0 0 50,70 A6 6 0 0 0 62,70 C65,70 66,68 66,60 Z"
-      fill={C.sky}
-      stroke={C.ink}
-      strokeWidth={4}
-      strokeLinejoin="round"
-    />
+    {/* Small pursed mouth */}
+    <ellipse cx={50} cy={57.5} rx={3.8} ry={2.4} fill={C.berryDeep} stroke={C.ink} strokeWidth={2} />
+    <path d="M44,56.5 Q46,57.5 47,57.2" stroke={C.ink} strokeWidth={1.8} strokeLinecap="round" fill="none" opacity={0.6} />
+    <path d="M56,56.5 Q54,57.5 53,57.2" stroke={C.ink} strokeWidth={1.8} strokeLinecap="round" fill="none" opacity={0.6} />
   </svg>
 );

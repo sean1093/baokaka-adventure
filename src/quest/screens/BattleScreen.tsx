@@ -193,8 +193,14 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
     if (pending?.kind === 'item') act({ type: 'item', item: pending.item, target: hero });
   };
 
-  const hitThisStep = (who: Who) =>
-    battle.events.some((event) => event.kind === 'hit' && sameWho(event.who, who));
+  /** One-shot animation for this step: a jolt when hit, a lunge when acting. Keyed on the step so it replays. */
+  const motion = (who: Who): { key: number; className: string } => {
+    const hit = battle.events.some((event) => event.kind === 'hit' && sameWho(event.who, who));
+    const acted = battle.events.some((event) => event.kind === 'act' && sameWho(event.who, who));
+    if (hit) return { key: battle.step, className: 'shake' };
+    if (acted) return { key: battle.step, className: who.side === 'hero' ? 'lunge-up' : 'lunge-down' };
+    return { key: -1, className: '' };
+  };
 
   const headline =
     phase.kind === 'won'
@@ -283,7 +289,7 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
                     )}
                   </span>
                 )}
-                <span key={hitThisStep({ side: 'foe', slot }) ? battle.step : -1} className={`relative block aspect-square w-full ${hitThisStep({ side: 'foe', slot }) ? 'shake' : ''}`}>
+                <span key={motion({ side: 'foe', slot }).key} className={`relative block aspect-square w-full ${motion({ side: 'foe', slot }).className}`}>
                   <Art />
                   {state.guard && !dead && (
                     <span className="absolute -right-1 top-0 rounded-full border-2 border-ink bg-sky px-1.5 text-xs font-bold">防</span>
@@ -315,7 +321,7 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
                 className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
                 style={{ left: `${HERO_X[hero] * 100}%`, top: `${HERO_Y * 100}%`, width: '27%' }}
               >
-                <span key={hitThisStep({ side: 'hero', hero }) ? battle.step : -1} className={`relative block aspect-square w-full ${hitThisStep({ side: 'hero', hero }) ? 'shake' : ''} ${ko ? 'opacity-40 grayscale' : ''}`}>
+                <span key={motion({ side: 'hero', hero }).key} className={`relative block aspect-square w-full ${motion({ side: 'hero', hero }).className} ${ko ? 'opacity-40 grayscale' : ''}`}>
                   <Art />
                   {active && <span className="breathe pointer-events-none absolute -inset-1 rounded-full border-4 border-sun" />}
                   {targetable && (

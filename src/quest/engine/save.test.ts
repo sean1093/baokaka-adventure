@@ -31,6 +31,17 @@ describe('loadQuest', () => {
     expect(loadQuest(fakeStorage('{nope'))).toEqual(fresh);
   });
 
+  test('fills in an empty picked list for saves written before pickups existed', () => {
+    const { picked: _picked, ...legacy } = freshRun();
+    const loaded = loadQuest(fakeStorage(JSON.stringify({ run: { ...legacy, chapter: 2, node: 1 }, sound: true })));
+    expect(loaded.run.picked).toEqual([]);
+    expect(loaded.run.chapter).toBe(2);
+  });
+
+  test('rejects a picked list that is not a list of strings', () => {
+    expect(loadQuest(fakeStorage(JSON.stringify({ run: { ...freshRun(), picked: [1] }, sound: true })))).toEqual(fresh);
+  });
+
   test('falls back when the chapter or node does not exist', () => {
     expect(loadQuest(fakeStorage(JSON.stringify({ run: { ...freshRun(), chapter: 99 }, sound: true })))).toEqual(fresh);
     expect(loadQuest(fakeStorage(JSON.stringify({ run: { ...freshRun(), node: 40 }, sound: true })))).toEqual(fresh);

@@ -14,6 +14,7 @@ export const C = {
   mocha: '#A8703E',    // Mocha Cat's fur
   mochaDeep: '#7E5029',
   plum: '#8E6E9E',     // Purple
+  teal: '#3F8F88',     // Baokaka's romper
   sand: '#E8CE9A',     // Sand and wood
   sandDeep: '#C9A96A',
   white: '#FFFFFF',

@@ -223,3 +223,28 @@ describe('runStarted', () => {
     expect(runStarted({ ...freshRun(), chapter: 2 })).toBe(true);
   });
 });
+
+describe('pickups', () => {
+  const first = CHAPTERS[0].world.pickups[0];
+
+  test('walking over a ground item adds it once and remembers it', () => {
+    const state = atChapter(freshRun());
+    const picked = questReducer(state, { type: 'pickup', id: first.id });
+    expect(picked.run.items[first.item]).toBe(freshRun().items[first.item] + 1);
+    expect(picked.run.picked).toEqual([first.id]);
+    expect(questReducer(picked, { type: 'pickup', id: first.id })).toBe(picked);
+  });
+
+  test('unknown ids and pickups from other chapters are ignored', () => {
+    const state = atChapter(freshRun());
+    expect(questReducer(state, { type: 'pickup', id: 'nope' })).toBe(state);
+    expect(questReducer(state, { type: 'pickup', id: CHAPTERS[1].world.pickups[0].id })).toBe(state);
+  });
+
+  test('picked items survive a defeat and a new chapter, but not a new game', () => {
+    const picked = questReducer(atChapter(freshRun()), { type: 'pickup', id: first.id });
+    const defeated: QuestState = { ...picked, view: { screen: 'defeat' } };
+    expect(questReducer(defeated, { type: 'retry' }).run.picked).toEqual([first.id]);
+    expect(questReducer(picked, { type: 'newGame' }).run.picked).toEqual([]);
+  });
+});

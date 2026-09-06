@@ -112,6 +112,36 @@ export type Node =
   | { kind: 'boss'; foes: FoeId[]; drops?: ItemId[] }
   | { kind: 'camp' };
 
+/** How many screen-widths wide every chapter's walkable world is */
+export const WORLD_WIDTH = 3;
+
+/**
+ * A sprite standing in the side-scrolling world.
+ *   x     centre, in screen-widths (0..WORLD_WIDTH); the camera shows one screen-width at a time
+ *   foot  bottom edge, as a fraction of the scene height (0.82 is the ground line)
+ *   r     half-width, as a fraction of the scene (screen) width
+ * Anchoring by the feet keeps things standing on the ground whatever the scene's aspect ratio.
+ */
+export type WorldDecor = {
+  sprite: SpriteName;
+  x: number;
+  foot: number;
+  r: number;
+  flip?: boolean;
+  /** Scroll factor for parallax: 1 = the ground plane, smaller = further away. Defaults to 1 */
+  depth?: number;
+};
+
+/** An item lying on the ground; walking over it picks it up, once per run */
+export type Pickup = { id: string; item: ItemId; x: number };
+
+export type World = {
+  decor: WorldDecor[];
+  /** x where each node's foes (or the camp) stand, in the same order as Chapter.nodes */
+  stops: number[];
+  pickups: Pickup[];
+};
+
 export type Chapter = {
   /** Starts at 1, contiguous */
   id: number;
@@ -120,6 +150,7 @@ export type Chapter = {
   /** Battle backdrop decor, placed in a SQUARE box (x and y are both fractions of the width) */
   decor: Placement[];
   nodes: Node[];
+  world: World;
   /** Storybook text shown once the chapter's boss is beaten */
   story: string;
 };
@@ -135,6 +166,8 @@ export type Run = {
   xp: number;
   hp: Record<HeroId, number>;
   items: Inventory;
+  /** Ids of the ground pickups already collected, across all chapters */
+  picked: string[];
   /** The whole quest has been finished at least once */
   cleared: boolean;
 };

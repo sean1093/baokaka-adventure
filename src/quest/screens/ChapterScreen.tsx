@@ -1,95 +1,353 @@
-import { Scene, placementStyle } from '../../art/Scene';
+import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties, MouseEvent, PointerEvent as ReactPointerEvent } from 'react';
+import { WorldBackdrop } from '../../art/backdrops';
 import { SPRITES } from '../../art/sprites';
 import { BigButton } from '../../components/BigButton';
 import { PartyPanel } from '../components/PartyPanel';
 import { FOES } from '../engine/foes';
-import type { Chapter, Node, Run } from '../engine/types';
+import { ITEMS } from '../engine/heroes';
+import { WORLD_WIDTH, type Chapter, type Node, type Run } from '../engine/types';
+import { WORLD_START_X } from '../engine/validate';
+
+/** Feet line for everything that walks, as a fraction of the scene height */
+const GROUND = 0.82;
+/** Walking speed in screen-widths per second */
+const SPEED = 0.85;
+/** How close Baokaka must get to a stop for it to start */
+const REACH = 0.11;
+const PICK_REACH = 0.07;
+/** The "!" moment between touching a stop and the battle or camp opening (ms) */
+const ENCOUNTER_MS = 750;
+/** Mocha Cat trails this far behind */
+const CAT_GAP = 0.15;
+const BAO_R = 0.13;
+const CAT_R = 0.1;
+
+/** Lines the small fry shout when the party gets close */
+const GREETINGS = ['嘿嘿嘿，不准過！', '來打一場啊！', '這條路是我們的！'];
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
+
+type Walk = { x: number; cat: number; camera: number; facing: 1 | -1; moving: boolean };
 
 type Props = {
   chapter: Chapter;
   run: Run;
   soundOn: boolean;
   onBegin: () => void;
+  onPickup: (id: string) => void;
   onToggleSound: () => void;
   onBackToTitle: () => void;
 };
 
-const nodeLabel = (node: Node): string => (node.kind === 'camp' ? '營地' : node.kind === 'boss' ? '頭目' : '戰鬥');
+const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
 
-const nodeSprite = (node: Node) =>
-  node.kind === 'camp'
-    ? SPRITES.pillow
-    : SPRITES[FOES[node.foes.find((foe) => FOES[foe].boss) ?? node.foes[0]].sprite];
+/**
+ * Positions a world entity inside a layer that is WORLD_WIDTH screens wide. Objects further
+ * back (depth < 1) scroll slower; their layer x is pulled towards the screen centre so that an
+ * author can still give the world x they line up with when the camera is centred on them.
+ */
+function worldStyle(x: number, foot: number, r: number, depth = 1): CSSProperties {
+  const layerX = 0.5 + (x - 0.5) * depth;
+  return {
+    left: `${(layerX / WORLD_WIDTH) * 100}%`,
+    bottom: `${(1 - foot) * 100}%`,
+    width: `${((2 * r) / WORLD_WIDTH) * 100}%`,
+  };
+}
 
-/** The between-battles screen: where the party is on the chapter's path, and how it is doing. */
-export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onToggleSound, onBackToTitle }: Props) => {
+const nodeLabel = (node: Node): string => (node.kind === 'camp' ? '營地' : node.kind === 'boss' ? '頭目' : '搗蛋鬼');
+
+/** Where Baokaka appears when the map opens: at the start, or just past the last thing he cleared. */
+const spawnX = (chapter: Chapter, run: Run): number =>
+  run.node === 0 ? WORLD_START_X : chapter.world.stops[run.node - 1] + 0.14;
+
+export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onToggleSound, onBackToTitle }: Props) => {
+  const { stops, pickups, decor } = chapter.world;
   const current = chapter.nodes[run.node];
-  const bossNode = chapter.nodes.find((node) => node.kind === 'boss');
-  const BossArt = bossNode && nodeSprite(bossNode);
+  const stopX = stops[run.node];
+  const start = spawnX(chapter, run);
+
+  const [walk, setWalk] = useState<Walk>({ x: start, cat: start - CAT_GAP, camera: clamp(start - 0.5, 0, WORLD_WIDTH - 1), facing: 1, moving: false });
+  const [encounter, setEncounter] = useState(false);
+  const [toast, setToast] = useState<{ x: number; text: string; key: number } | null>(null);
+
+  // Everything the animation loop reads lives in refs, so a re-render never restarts it
+  const state = useRef<Walk & { target: number | null; dir: number; frozen: boolean; taken: string[] }>({
+    ...walk,
+    target: null,
+    dir: 0,
+    frozen: false,
+    taken: [],
+  });
+  const callbacks = useRef({ onBegin, onPickup, picked: run.picked, stopX, pickups });
+  callbacks.current = { onBegin, onPickup, picked: run.picked, stopX, pickups };
+
+  useEffect(() => {
+    let frame = 0;
+    let encounterTimer = 0;
+    let last = performance.now();
+
+    const step = (now: number) => {
+      const s = state.current;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      let dir = s.dir;
+      if (dir === 0 && s.target !== null) {
+        const gap = s.target - s.x;
+        if (Math.abs(gap) < 0.01) s.target = null;
+        else dir = Math.sign(gap);
+      }
+      const moving = dir !== 0 && !s.frozen;
+      if (moving) {
+        s.x = clamp(s.x + dir * SPEED * dt, 0.05, WORLD_WIDTH - 0.05);
+        s.facing = dir > 0 ? 1 : -1;
+      }
+      s.cat += (s.x - s.facing * CAT_GAP - s.cat) * Math.min(1, dt * 5);
+      const cameraTarget = clamp(s.x - 0.5, 0, WORLD_WIDTH - 1);
+      s.camera += (cameraTarget - s.camera) * Math.min(1, dt * 9);
+
+      const { onBegin: begin, onPickup: pick, picked, stopX: stop, pickups: ground } = callbacks.current;
+      if (!s.frozen && Math.abs(s.x - stop) < REACH) {
+        s.frozen = true;
+        s.target = null;
+        setEncounter(true);
+        encounterTimer = window.setTimeout(begin, ENCOUNTER_MS);
+      }
+      for (const pickup of ground) {
+        if (!picked.includes(pickup.id) && !s.taken.includes(pickup.id) && Math.abs(s.x - pickup.x) < PICK_REACH) {
+          s.taken.push(pickup.id);
+          pick(pickup.id);
+          setToast({ x: pickup.x, text: `+ ${ITEMS[pickup.item].name}`, key: now });
+        }
+      }
+
+      const settling =
+        Math.abs(s.cat - (s.x - s.facing * CAT_GAP)) > 0.002 || Math.abs(cameraTarget - s.camera) > 0.001;
+      if (moving || moving !== s.moving || settling) {
+        s.moving = moving;
+        setWalk({ x: s.x, cat: s.cat, camera: s.camera, facing: s.facing, moving });
+      }
+      frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+
+    const keys = (down: boolean) => (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft' || event.key === 'a') state.current.dir = down ? -1 : state.current.dir === -1 ? 0 : state.current.dir;
+      if (event.key === 'ArrowRight' || event.key === 'd') state.current.dir = down ? 1 : state.current.dir === 1 ? 0 : state.current.dir;
+    };
+    const onKeyDown = keys(true);
+    const onKeyUp = keys(false);
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(encounterTimer);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, []);
+
+  const hold = (dir: number) => (event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    state.current.dir = dir;
+    state.current.target = null;
+  };
+  const release = () => {
+    state.current.dir = 0;
+  };
+
+  const walkTo = (event: MouseEvent<HTMLDivElement>) => {
+    if (state.current.frozen) return;
+    const box = event.currentTarget.getBoundingClientRect();
+    state.current.target = state.current.camera + (event.clientX - box.left) / box.width;
+  };
+
+  const near = Math.abs(walk.x - stopX) < 0.55;
+  const hint = encounter
+    ? '碰上了！'
+    : near
+      ? current.kind === 'camp'
+        ? '前面有營地，走過去休息一下。'
+        : current.kind === 'boss'
+          ? '頭目就在前面……小心！'
+          : '前面有搗蛋鬼擋路！'
+      : `往右走，去找${nodeLabel(current)}。`;
+
+  const layers = [...new Set(decor.map((entry) => entry.depth ?? 1))].sort((a, b) => a - b);
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4 py-4">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-3 px-4 py-4">
       <header className="flex items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-base font-bold text-ink/60">第 {chapter.id} 章</p>
-          <h1 className="text-title font-bold leading-tight">{chapter.title}</h1>
+          <h1 className="truncate text-body font-bold leading-tight">{chapter.title}</h1>
         </div>
         <BigButton tone="quiet" onClick={onToggleSound} label={soundOn ? '關閉聲音' : '打開聲音'}>
           {soundOn ? '聲音 開' : '聲音 關'}
         </BigButton>
       </header>
 
-      <Scene palette={chapter.palette} decor={chapter.decor} aspectRatio="3 / 2" className="rounded-3xl border-4 border-ink">
-        <span className="absolute block" style={placementStyle({ sprite: 'baokaka', x: 0.22, y: 0.7, r: 0.15 })}>
-          <Baokaka />
-        </span>
-        <span className="absolute block" style={placementStyle({ sprite: 'mochaCat', x: 0.42, y: 0.74, r: 0.12 })}>
-          <MochaCat />
-        </span>
-        {BossArt && (
-          <span className="absolute block" style={placementStyle({ sprite: 'star', x: 0.8, y: 0.62, r: 0.16, flip: true })}>
-            <BossArt />
-          </span>
-        )}
-      </Scene>
+      <div
+        className="relative h-[min(calc(100vw-2rem),40dvh)] overflow-hidden rounded-3xl border-4 border-ink"
+        onClick={walkTo}
+      >
+        <WorldBackdrop palette={chapter.palette} />
 
-      <ol className="relative flex items-start justify-between">
-        <span aria-hidden="true" className="absolute left-8 right-8 top-8 border-t-4 border-dashed border-ink/30" />
-        {chapter.nodes.map((node, index) => {
-          const Art = nodeSprite(node);
-          const done = index < run.node;
-          const active = index === run.node;
-          return (
-            <li key={index} className="relative flex flex-1 flex-col items-center gap-1">
-              <span
-                className={[
-                  'grid h-16 w-16 place-items-center rounded-full border-4 border-ink',
-                  done ? 'bg-leaf text-title font-bold text-white' : active ? 'bg-sun ring-4 ring-sun/50' : 'bg-white opacity-50',
-                ].join(' ')}
-              >
-                {done ? (
-                  '✓'
-                ) : (
-                  <span className="block h-11 w-11">
+        {layers.map((depth) => (
+          <div
+            key={depth}
+            className="pointer-events-none absolute inset-y-0 left-0"
+            style={{ width: `${WORLD_WIDTH * 100}%`, transform: `translateX(${(-walk.camera * depth) / WORLD_WIDTH * 100}%)` }}
+          >
+            {decor
+              .filter((entry) => (entry.depth ?? 1) === depth)
+              .map((entry, index) => {
+                const Art = SPRITES[entry.sprite];
+                return (
+                  <span key={`${entry.sprite}-${index}`} className="absolute block -translate-x-1/2" style={worldStyle(entry.x, entry.foot, entry.r, depth)}>
+                    <span className={`block aspect-square w-full ${entry.flip ? '-scale-x-100' : ''}`}>
+                      <Art />
+                    </span>
+                  </span>
+                );
+              })}
+          </div>
+        ))}
+
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0"
+          style={{ width: `${WORLD_WIDTH * 100}%`, transform: `translateX(${(-walk.camera / WORLD_WIDTH) * 100}%)` }}
+        >
+          {pickups
+            .filter((pickup) => !run.picked.includes(pickup.id))
+            .map((pickup) => {
+              const Art = SPRITES[ITEMS[pickup.item].sprite];
+              return (
+                <span key={pickup.id} className="absolute block -translate-x-1/2" style={worldStyle(pickup.x, 0.86, 0.055)}>
+                  <span className="idle block aspect-square w-full rounded-full bg-white/60 p-0.5">
                     <Art />
                   </span>
-                )}
+                </span>
+              );
+            })}
+
+          {chapter.nodes.map((node, index) => {
+            const x = stops[index];
+            const cleared = index < run.node;
+            const isCurrent = index === run.node;
+            if (node.kind === 'camp') {
+              const Pillow = SPRITES.pillow;
+              return (
+                <span key={index} className="absolute block -translate-x-1/2" style={worldStyle(x, GROUND + 0.02, 0.11)}>
+                  <span className={`block aspect-square w-full ${cleared ? 'opacity-50' : ''}`}>
+                    <Pillow />
+                  </span>
+                  <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full border-2 border-ink bg-cream px-2 text-xs font-bold leading-5">
+                    {cleared ? '休息過了' : '營地'}
+                  </span>
+                  {isCurrent && near && !encounter && <Bubble>躺一下吧～</Bubble>}
+                </span>
+              );
+            }
+            if (cleared) {
+              const Star = SPRITES.star;
+              return (
+                <span key={index} className="absolute block -translate-x-1/2 opacity-70" style={worldStyle(x, 0.88, 0.04)}>
+                  <span className="block aspect-square w-full">
+                    <Star />
+                  </span>
+                </span>
+              );
+            }
+            const spread = node.foes.length === 1 ? [0] : node.foes.length === 2 ? [-0.08, 0.08] : [-0.14, 0, 0.14];
+            return node.foes.map((foeId, slot) => {
+              const foe = FOES[foeId];
+              const Art = SPRITES[foe.sprite];
+              const r = foe.boss ? 0.17 : 0.11;
+              const speaks = isCurrent && near && !encounter && slot === 0;
+              return (
+                <span key={`${index}-${slot}`} className="absolute block -translate-x-1/2" style={worldStyle(x + spread[slot], GROUND, r)}>
+                  <span className="idle block aspect-square w-full" style={{ animationDelay: `${(index * 3 + slot) * 400}ms` }}>
+                    <Art />
+                  </span>
+                  {slot === 0 && (
+                    <span className={`absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full border-2 border-ink px-2 text-xs font-bold leading-5 ${node.kind === 'boss' ? 'bg-berry text-white' : 'bg-white'}`}>
+                      {node.kind === 'boss' ? '頭目' : `搗蛋鬼 ×${node.foes.length}`}
+                    </span>
+                  )}
+                  {speaks && <Bubble>{node.kind === 'boss' ? foe.taunt : GREETINGS[index % GREETINGS.length]}</Bubble>}
+                </span>
+              );
+            });
+          })}
+
+          <span className="absolute block -translate-x-1/2" style={worldStyle(walk.cat, GROUND, CAT_R)}>
+            <span className={`block aspect-square w-full ${walk.facing === -1 ? '-scale-x-100' : ''} ${walk.moving ? 'walk' : ''}`}>
+              <MochaCat />
+            </span>
+          </span>
+
+          <span className="absolute block -translate-x-1/2" style={worldStyle(walk.x, GROUND, BAO_R)}>
+            <span className={`block aspect-square w-full ${walk.moving ? 'walk' : ''}`}>
+              <Baokaka />
+            </span>
+            {encounter && (
+              <span className="pop absolute bottom-full left-1/2 mb-1 -translate-x-1/2 rounded-full border-2 border-ink bg-sun px-2 text-title font-bold leading-8">
+                !
               </span>
-              <span className={`text-sm font-bold ${active ? '' : 'text-ink/60'}`}>{nodeLabel(node)}</span>
-            </li>
-          );
-        })}
-      </ol>
+            )}
+          </span>
 
-      <PartyPanel run={run} />
+          {toast && (
+            <span
+              key={toast.key}
+              onAnimationEnd={() => setToast(null)}
+              className="float-up absolute whitespace-nowrap rounded-full border-2 border-ink bg-leaf px-2 text-base font-bold leading-7 text-white"
+              style={{ left: `${(toast.x / WORLD_WIDTH) * 100}%`, bottom: `${(1 - GROUND) * 100 + 18}%` }}
+            >
+              {toast.text}
+            </span>
+          )}
+        </div>
 
-      <div className="flex flex-col items-center gap-3 pt-1">
-        <BigButton onClick={onBegin}>
-          {current?.kind === 'camp' ? '在營地休息' : current?.kind === 'boss' ? '挑戰頭目' : '出發戰鬥'}
-        </BigButton>
+        <span className="absolute right-2 top-2 rounded-full border-2 border-ink bg-cream/90 px-3 text-sm font-bold leading-6">
+          第 {run.node + 1} / {chapter.nodes.length} 站
+        </span>
+      </div>
+
+      <p className="text-center text-base font-bold leading-tight">{hint}</p>
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          aria-label="往左走"
+          onPointerDown={hold(-1)}
+          onPointerUp={release}
+          onPointerCancel={release}
+          onContextMenu={(event) => event.preventDefault()}
+          className="min-h-touch flex-1 touch-none select-none rounded-3xl border-4 border-ink bg-sun text-title font-bold shadow-[0_5px_0_#3B2A20] transition-transform active:translate-y-1"
+        >
+          ◀ 往左
+        </button>
+        <button
+          type="button"
+          aria-label="往右走"
+          onPointerDown={hold(1)}
+          onPointerUp={release}
+          onPointerCancel={release}
+          onContextMenu={(event) => event.preventDefault()}
+          className="min-h-touch flex-1 touch-none select-none rounded-3xl border-4 border-ink bg-sun text-title font-bold shadow-[0_5px_0_#3B2A20] transition-transform active:translate-y-1"
+        >
+          往右 ▶
+        </button>
+      </div>
+
+      <PartyPanel run={run} compact />
+
+      <div className="flex justify-center pt-1">
         <BigButton tone="quiet" onClick={onBackToTitle}>
           回標題
         </BigButton>
@@ -97,3 +355,13 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onToggleSound, o
     </div>
   );
 };
+
+/**
+ * A speech bubble above whoever is talking; it hangs off the entity wrapper so it scrolls with
+ * it, and grows to the LEFT because the party always approaches from the left.
+ */
+const Bubble = ({ children }: { children: string | undefined }) => (
+  <span className="pop absolute bottom-full right-0 mb-8 w-max max-w-[200px] rounded-2xl border-4 border-ink bg-white px-3 py-1 text-left text-sm font-bold leading-snug">
+    {children}
+  </span>
+);

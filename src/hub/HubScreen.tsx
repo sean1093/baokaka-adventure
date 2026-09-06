@@ -87,7 +87,7 @@ export const HubScreen = ({ onOpen }: Props) => {
       <GameCard
         kicker="回合制冒險"
         title="寶咖咖勇者團"
-        blurb="搗蛋鬼搶走了安撫娃娃！和摩卡貓並肩作戰，一路打到夢境的盡頭。"
+        blurb="操控寶咖咖走過六個場景，和摩卡貓並肩打敗搗蛋鬼，把安撫娃娃搶回來。"
         status={questStatus}
         fresh
         art={
