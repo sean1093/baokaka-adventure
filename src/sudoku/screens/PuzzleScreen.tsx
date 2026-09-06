@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { SPRITES } from '../../art/sprites';
-import { BigButton } from '../../components/BigButton';
+import { Button } from '../../components/Button';
+import { AppBar, Card, Chip, Screen, SoundToggle } from '../../components/Screen';
+import { Sheet } from '../../components/Sheet';
+import { Bulb, Clock, Eraser, Pencil, Refresh, Shuffle } from '../../components/icons';
 import { playTone } from '../../shared/audio';
 import { Board } from '../components/Board';
 import { Symbol } from '../components/Symbol';
@@ -15,6 +18,9 @@ const Star = SPRITES.star;
 /** Palette columns: every symbol plus the eraser; literal strings so Tailwind can see them */
 const PALETTE_COLUMNS: Record<number, string> = { 4: 'grid-cols-5', 6: 'grid-cols-7', 9: 'grid-cols-5' };
 
+/** Palette symbol size per board, so a 9x9 tray still fits five across */
+const PALETTE_SIZE: Record<number, string> = { 4: 'text-display', 6: 'text-headline', 9: 'text-heading' };
+
 /** What Mocha says while nothing else is going on */
 const IDLE_TIPS = [
   '先點一格，再點下面的玩具。',
@@ -22,6 +28,9 @@ const IDLE_TIPS = [
   '同一橫列、直行、區裡，每種只能有一個。',
   '卡住了就按提示，我會告訴你為什麼。',
 ];
+
+/** The two irreversible choices, each asked in a sheet before it happens */
+const ASK = { restart: '這一題重新開始？', new: '放棄這一題，換新的？' } as const;
 
 type Props = {
   play: Play;
@@ -56,7 +65,7 @@ export const PuzzleScreen = ({
 }: Props) => {
   const { puzzle, entries, solved, message, hints, elapsed, notesMode, armed, selected } = play;
   const { size } = puzzle;
-  const [confirm, setConfirm] = useState<'restart' | 'new' | null>(null);
+  const [ask, setAsk] = useState<'restart' | 'new' | null>(null);
 
   const callbacks = useRef({ onTick, soundOn });
   callbacks.current = { onTick, soundOn };
@@ -82,77 +91,93 @@ export const PuzzleScreen = ({
   });
   const idleTip = IDLE_TIPS[Math.floor(elapsed / 20) % IDLE_TIPS.length];
   const canErase = selected !== null && puzzle.givens[selected] === 0 && (entries[selected] !== 0 || play.notes[selected] !== 0);
+  const eraserLabel = armed !== null && !canErase ? '放下' : '清除';
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-3 px-4 py-4">
-      <header className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-base font-bold text-ink/60">摩卡貓的收納挑戰</p>
-          <h1 className="text-body font-bold leading-tight">
-            {SIZE_LABELS[size].name} {size}×{size}
-          </h1>
-        </div>
-        <BigButton tone="quiet" onClick={onToggleSound} label={soundOn ? '關閉聲音' : '打開聲音'}>
-          {soundOn ? '聲音 開' : '聲音 關'}
-        </BigButton>
-      </header>
+    <Screen>
+      <AppBar
+        title={`${SIZE_LABELS[size].name} ${size}×${size}`}
+        kicker="摩卡貓的收納挑戰"
+        onBack={onQuit}
+        backLabel="回選單"
+        right={<SoundToggle on={soundOn} onToggle={onToggleSound} />}
+      />
 
-      <div className="flex items-center justify-between text-base font-bold text-ink/70">
-        <span>用時 {formatTime(elapsed)}</span>
-        <span>提示 {hints} 次</span>
-        <span>{notesMode ? '筆記中' : '\u00a0'}</span>
+      <div className="flex items-center gap-2">
+        <Chip>
+          <Clock size={14} />
+          {formatTime(elapsed)}
+        </Chip>
+        <Chip>
+          <Bulb size={14} />
+          提示 {hints}
+        </Chip>
+        {notesMode && <Chip tone="sky">筆記中</Chip>}
       </div>
 
-      <Board play={play} symbols={symbols} onSelect={onSelect} />
+      <div className="rounded-3xl bg-surface p-2 shadow-card">
+        <Board play={play} symbols={symbols} onSelect={onSelect} />
+      </div>
 
       <div className="flex items-center gap-3">
-        <span className="block h-14 w-14 shrink-0">
+        <span aria-hidden="true" className="block h-14 w-14 shrink-0">
           <MochaCat />
         </span>
-        <p key={message?.key ?? 0} className={`flex-1 rounded-2xl border-4 border-ink bg-white px-3 py-2 text-base font-bold leading-snug ${message ? 'pop' : 'text-ink/70'}`}>
+        <p
+          key={message?.key ?? 0}
+          className={`flex-1 rounded-2xl bg-surface px-4 py-2 text-copy font-bold shadow-card ${message ? 'pop' : 'text-muted'}`}
+        >
           {message?.text ?? idleTip}
         </p>
       </div>
 
       {solved ? (
-        <div className="flex flex-col items-center gap-3 rounded-3xl border-4 border-ink bg-sun/30 p-5 text-center">
+        <Card tone="accent" className="flex flex-col items-center gap-3 p-6 text-center">
           <div className="flex gap-1">
             {[1, 2, 3].map((star) => (
-              <span key={star} className={`block h-10 w-10 ${star <= starsFor(hints) ? 'pop' : 'opacity-25 grayscale'}`} style={{ animationDelay: `${star * 120}ms` }}>
+              <span
+                key={star}
+                aria-hidden="true"
+                className={`block h-11 w-11 ${star <= starsFor(hints) ? 'pop' : 'opacity-25 grayscale'}`}
+                style={{ animationDelay: `${star * 120}ms` }}
+              >
                 <Star />
               </span>
             ))}
           </div>
-          <p className="text-title font-bold">全部收好了！</p>
-          <p className="text-base">
+          <p className="text-display font-extrabold">全部收好了！</p>
+          <p className="text-copy">
             用時 {formatTime(elapsed)} · 提示 {hints} 次
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <BigButton onClick={onNew}>再來一題</BigButton>
-            <BigButton tone="quiet" onClick={onQuit}>
+          <div className="mt-1 flex w-full flex-col gap-2">
+            <Button full size="lg" onClick={onNew}>
+              再來一題
+            </Button>
+            <Button full variant="ghost" onClick={onQuit}>
               回選單
-            </BigButton>
+            </Button>
           </div>
-        </div>
+        </Card>
       ) : (
         <>
-          <div className={`grid gap-2 ${PALETTE_COLUMNS[size]}`}>
+          <div className={`grid gap-2 rounded-3xl bg-ink/[0.05] p-2 ${PALETTE_COLUMNS[size]}`}>
             {remaining.map((left, index) => {
               const value = index + 1;
-              const isArmed = armed === value;
               return (
                 <button
                   key={value}
                   type="button"
                   onClick={() => onPick(value)}
                   aria-label={`放${value}`}
+                  aria-pressed={armed === value}
                   className={[
-                    'relative aspect-square rounded-2xl border-4 border-ink shadow-[0_3px_0_#3B2A20] transition-transform active:translate-y-0.5',
-                    isArmed ? 'bg-sun ring-4 ring-sun/50' : left === 0 ? 'bg-white opacity-40' : 'bg-cream',
+                    'relative aspect-square rounded-2xl shadow-card transition-transform duration-150 active:scale-95',
+                    armed === value ? 'bg-sun/30 ring-2 ring-sun' : 'bg-surface',
+                    left === 0 ? 'opacity-35' : '',
                   ].join(' ')}
                 >
-                  <Symbol value={value} symbols={symbols} className={size === 9 ? 'text-title' : 'text-huge'} />
-                  <span className="absolute -right-1.5 -top-1.5 grid h-6 min-w-6 place-items-center rounded-full border-2 border-ink bg-white px-1 text-xs font-bold">
+                  <Symbol value={value} symbols={symbols} className={PALETTE_SIZE[size]} />
+                  <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-ink px-1 text-caption font-bold leading-none text-cream">
                     {left}
                   </span>
                 </button>
@@ -161,53 +186,61 @@ export const PuzzleScreen = ({
             <button
               type="button"
               onClick={onErase}
-              aria-label="清除"
-              className={`aspect-square whitespace-nowrap rounded-2xl border-4 border-ink font-bold shadow-[0_3px_0_#3B2A20] transition-transform active:translate-y-0.5 ${size === 6 ? 'text-sm' : 'text-base'} ${canErase || armed !== null ? 'bg-white' : 'bg-white opacity-40'}`}
+              aria-label={eraserLabel}
+              className={[
+                'flex aspect-square flex-col items-center justify-center gap-0.5 rounded-2xl bg-surface shadow-card',
+                'transition-transform duration-150 active:scale-95',
+                canErase || armed !== null ? '' : 'opacity-35',
+              ].join(' ')}
             >
-              {armed !== null && !canErase ? '放下' : '清除'}
+              <Eraser size={20} />
+              <span className="text-caption font-bold">{eraserLabel}</span>
             </button>
           </div>
 
+          {/* Three equal actions. `!` beats the Button variant's own colour and padding utilities. */}
           <div className="grid grid-cols-3 gap-2">
-            <BigButton onClick={onHint}>提示</BigButton>
-            <BigButton tone={notesMode ? 'primary' : 'quiet'} onClick={onToggleNotes}>
+            <Button full onClick={onHint} icon={<Bulb size={18} />} className="!px-3">
+              提示
+            </Button>
+            <Button
+              full
+              variant="tonal"
+              onClick={onToggleNotes}
+              icon={<Pencil size={18} />}
+              className={notesMode ? '!bg-ink !px-3 !text-cream' : '!px-3'}
+            >
               筆記
-            </BigButton>
-            <BigButton tone="quiet" onClick={() => setConfirm(confirm === 'restart' ? null : 'restart')}>
+            </Button>
+            <Button full variant="tonal" onClick={() => setAsk('restart')} icon={<Refresh size={18} />} className="!px-3">
               重來
-            </BigButton>
+            </Button>
           </div>
 
-          {confirm && (
-            <div className="flex items-center justify-between gap-3 rounded-2xl border-4 border-berry bg-white px-4 py-3">
-              <span className="text-base font-bold">{confirm === 'restart' ? '這一題重新開始？' : '放棄這一題，換新的？'}</span>
-              <div className="flex gap-2">
-                <BigButton
-                  onClick={() => {
-                    setConfirm(null);
-                    if (confirm === 'restart') onRestart();
-                    else onNew();
-                  }}
-                >
-                  確定
-                </BigButton>
-                <BigButton tone="quiet" onClick={() => setConfirm(null)}>
-                  取消
-                </BigButton>
-              </div>
+          <Button full variant="ghost" onClick={() => setAsk('new')} icon={<Shuffle size={18} />}>
+            換一題
+          </Button>
+
+          <Sheet open={ask !== null} onClose={() => setAsk(null)} title={ask ? ASK[ask] : undefined}>
+            <div className="flex flex-col gap-2">
+              <Button
+                full
+                size="lg"
+                onClick={() => {
+                  setAsk(null);
+                  if (ask === 'restart') onRestart();
+                  else onNew();
+                }}
+              >
+                確定
+              </Button>
+              <Button full size="lg" variant="tonal" onClick={() => setAsk(null)}>
+                取消
+              </Button>
             </div>
-          )}
-
-          <div className="flex justify-center gap-3">
-            <BigButton tone="quiet" onClick={() => setConfirm(confirm === 'new' ? null : 'new')}>
-              換一題
-            </BigButton>
-            <BigButton tone="quiet" onClick={onQuit}>
-              回選單
-            </BigButton>
-          </div>
+          </Sheet>
         </>
       )}
-    </div>
+    </Screen>
   );
 };

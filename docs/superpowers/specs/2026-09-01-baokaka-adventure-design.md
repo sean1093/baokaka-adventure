@@ -74,7 +74,7 @@ ending --再玩一次-->        map
 baokaka-adventure/
   index.html
   vite.config.ts
-  tailwind.config.js               # 長輩 UI 規則（字級、觸控尺寸、色票）集中在這裡
+  tailwind.config.js               # 全站設計 token（字級、色票、圓角、陰影）；長輩規則用其中較大的階
   assets/og.svg                    # OG 圖原始檔，用 qlmanage 轉 PNG
   public/
     manifest.webmanifest
@@ -102,7 +102,7 @@ baokaka-adventure/
       TitleScreen.tsx  MapScreen.tsx  SceneScreen.tsx
       StoryScreen.tsx  EndingScreen.tsx
     components/
-      BigButton.tsx                # 統一 ≥64px 觸控目標
+      Button.tsx  Screen.tsx  Sheet.tsx  icons.tsx   # 全站共用的 UI 套件（見 2026-09-06 design-system）
       FoundTray.tsx                # 底部「找到 3 樣」格子
       OrientationGuard.tsx         # 橫向時的提示
   .github/workflows/deploy.yml
@@ -185,7 +185,7 @@ transform: translate(-50%, -50%);
 - 文字對比 ≥ 4.5:1；禁止淺灰字配淺色底
 - **只有單擊**：不使用滑動、拖曳、長按、雙擊、pinch
 - 直向鎖定：`OrientationGuard` 在橫向時蓋一層「請把手機豎起來」的提示
-- 音效預設開啟，但遊戲**不依賴聲音**（全靜音也能完整通關）。開關放右上角，用文字「聲音 開／關」而不是喇叭圖示，尺寸同樣 ≥64px
+- 音效預設開啟，但遊戲**不依賴聲音**（全靜音也能完整通關）。開關放右上角的 `SoundToggle`（喇叭圖示，帶「關閉聲音／打開聲音」的無障礙名稱），2026-09-06 全站改版時由文字按鈕換成圖示，因為長輩版與其他兩個遊戲共用同一套頂欄
 - 不設計 hover 狀態
 - 按鈕文字用動詞短句（「開始冒險」、「繼續」），不用圖示代替文字
 

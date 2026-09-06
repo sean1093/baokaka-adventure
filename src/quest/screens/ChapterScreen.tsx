@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import { WorldBackdrop } from '../../art/backdrops';
 import { SPRITES } from '../../art/sprites';
-import { BigButton } from '../../components/BigButton';
+import { AppBar, Chip, Screen, SoundToggle } from '../../components/Screen';
+import { ArrowLeft, ArrowRight } from '../../components/icons';
 import { PartyPanel } from '../components/PartyPanel';
 import { FOES } from '../engine/foes';
 import { ITEMS } from '../engine/heroes';
@@ -14,7 +15,7 @@ const GROUND = 0.82;
 /** Walking speed in screen-widths per second */
 const SPEED = 0.85;
 /** How close Baokaka must get to a stop for it to start */
-const REACH = 0.11;
+const REACH = 0.14;
 const PICK_REACH = 0.07;
 /** The "!" moment between touching a stop and the battle or camp opening (ms) */
 const ENCOUNTER_MS = 750;
@@ -179,19 +180,17 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onTogg
   const layers = [...new Set(decor.map((entry) => entry.depth ?? 1))].sort((a, b) => a - b);
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-3 px-4 py-4">
-      <header className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-base font-bold text-ink/60">第 {chapter.id} 章</p>
-          <h1 className="truncate text-body font-bold leading-tight">{chapter.title}</h1>
-        </div>
-        <BigButton tone="quiet" onClick={onToggleSound} label={soundOn ? '關閉聲音' : '打開聲音'}>
-          {soundOn ? '聲音 開' : '聲音 關'}
-        </BigButton>
-      </header>
+    <Screen className="gap-3">
+      <AppBar
+        kicker={`第 ${chapter.id} 章`}
+        title={chapter.title}
+        onBack={onBackToTitle}
+        backLabel="回標題"
+        right={<SoundToggle on={soundOn} onToggle={onToggleSound} />}
+      />
 
       <div
-        className="relative h-[min(calc(100vw-2rem),40dvh)] overflow-hidden rounded-3xl border-4 border-ink"
+        className="relative h-[min(calc(100vw-2rem),40dvh)] overflow-hidden rounded-3xl shadow-card"
         onClick={walkTo}
       >
         <WorldBackdrop palette={chapter.palette} />
@@ -245,7 +244,7 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onTogg
                   <span className={`block aspect-square w-full ${cleared ? 'opacity-50' : ''}`}>
                     <Pillow />
                   </span>
-                  <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full border-2 border-ink bg-cream px-2 text-xs font-bold leading-5">
+                  <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface/90 px-2 text-caption font-bold leading-5 shadow-card">
                     {cleared ? '休息過了' : '營地'}
                   </span>
                   {isCurrent && near && !encounter && <Bubble>躺一下吧～</Bubble>}
@@ -274,7 +273,7 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onTogg
                     <Art />
                   </span>
                   {slot === 0 && (
-                    <span className={`absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full border-2 border-ink px-2 text-xs font-bold leading-5 ${node.kind === 'boss' ? 'bg-berry text-white' : 'bg-white'}`}>
+                    <span className={`absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded-full px-2 text-caption font-bold leading-5 shadow-card ${node.kind === 'boss' ? 'bg-berry text-white' : 'bg-surface/90'}`}>
                       {node.kind === 'boss' ? '頭目' : `搗蛋鬼 ×${node.foes.length}`}
                     </span>
                   )}
@@ -295,7 +294,7 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onTogg
               <Baokaka />
             </span>
             {encounter && (
-              <span className="pop absolute bottom-full left-1/2 mb-1 -translate-x-1/2 rounded-full border-2 border-ink bg-sun px-2 text-title font-bold leading-8">
+              <span className="pop absolute bottom-full left-1/2 mb-1 -translate-x-1/2 rounded-full bg-sun px-2.5 text-headline font-extrabold leading-9 shadow-card">
                 !
               </span>
             )}
@@ -305,7 +304,7 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onTogg
             <span
               key={toast.key}
               onAnimationEnd={() => setToast(null)}
-              className="float-up absolute whitespace-nowrap rounded-full border-2 border-ink bg-leaf px-2 text-base font-bold leading-7 text-white"
+              className="float-up absolute whitespace-nowrap rounded-full bg-leaf px-2.5 text-label font-bold leading-7 text-white shadow-card"
               style={{ left: `${(toast.x / WORLD_WIDTH) * 100}%`, bottom: `${(1 - GROUND) * 100 + 18}%` }}
             >
               {toast.text}
@@ -313,12 +312,14 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onTogg
           )}
         </div>
 
-        <span className="absolute right-2 top-2 rounded-full border-2 border-ink bg-cream/90 px-3 text-sm font-bold leading-6">
-          第 {run.node + 1} / {chapter.nodes.length} 站
+        <span className="absolute right-3 top-3">
+          <Chip tone="ink">
+            第 {run.node + 1} / {chapter.nodes.length} 站
+          </Chip>
         </span>
       </div>
 
-      <p className="text-center text-base font-bold leading-tight">{hint}</p>
+      <p className="text-center text-label font-bold text-muted">{hint}</p>
 
       <div className="flex gap-3">
         <button
@@ -328,9 +329,10 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onTogg
           onPointerUp={release}
           onPointerCancel={release}
           onContextMenu={(event) => event.preventDefault()}
-          className="min-h-touch flex-1 touch-none select-none rounded-3xl border-4 border-ink bg-sun text-title font-bold shadow-[0_5px_0_#3B2A20] transition-transform active:translate-y-1"
+          className="flex h-16 flex-1 touch-none select-none items-center justify-center gap-2 rounded-full bg-surface text-heading font-extrabold shadow-card transition-transform duration-150 active:scale-[0.96] active:bg-sun/40"
         >
-          ◀ 往左
+          <ArrowLeft />
+          往左
         </button>
         <button
           type="button"
@@ -339,20 +341,15 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onTogg
           onPointerUp={release}
           onPointerCancel={release}
           onContextMenu={(event) => event.preventDefault()}
-          className="min-h-touch flex-1 touch-none select-none rounded-3xl border-4 border-ink bg-sun text-title font-bold shadow-[0_5px_0_#3B2A20] transition-transform active:translate-y-1"
+          className="flex h-16 flex-1 touch-none select-none items-center justify-center gap-2 rounded-full bg-gradient-to-b from-sun to-sunDeep text-heading font-extrabold shadow-glow transition-transform duration-150 active:scale-[0.96]"
         >
-          往右 ▶
+          往右
+          <ArrowRight />
         </button>
       </div>
 
       <PartyPanel run={run} compact />
-
-      <div className="flex justify-center pt-1">
-        <BigButton tone="quiet" onClick={onBackToTitle}>
-          回標題
-        </BigButton>
-      </div>
-    </div>
+    </Screen>
   );
 };
 
@@ -361,7 +358,7 @@ export const ChapterScreen = ({ chapter, run, soundOn, onBegin, onPickup, onTogg
  * it, and grows to the LEFT because the party always approaches from the left.
  */
 const Bubble = ({ children }: { children: string | undefined }) => (
-  <span className="pop absolute bottom-full right-0 mb-8 w-max max-w-[200px] rounded-2xl border-4 border-ink bg-white px-3 py-1 text-left text-sm font-bold leading-snug">
+  <span className="pop absolute bottom-full right-0 mb-8 w-max max-w-[200px] rounded-2xl bg-surface px-3 py-1.5 text-left text-label font-bold leading-snug shadow-float">
     {children}
   </span>
 );

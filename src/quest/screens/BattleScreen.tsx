@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Scene } from '../../art/Scene';
 import { SPRITES } from '../../art/sprites';
-import { BigButton } from '../../components/BigButton';
+import { Button } from '../../components/Button';
+import { Chip, Screen, SoundToggle } from '../../components/Screen';
 import { playTone } from '../../shared/audio';
 import { Bar } from '../components/Bar';
 import { aliveFoeSlots, canUseSkill, foeIntent } from '../engine/battle';
@@ -27,7 +28,7 @@ const LOST_DELAY_MS = 1400;
 
 /** Column centres for 1..3 foes, fractions of the box width */
 const FOE_COLUMNS: Record<number, number[]> = { 1: [0.5], 2: [0.29, 0.71], 3: [0.18, 0.5, 0.82] };
-const FOE_Y = 0.34;
+const FOE_Y = 0.31;
 const HERO_X: Record<HeroId, number> = { baokaka: 0.26, mocha: 0.74 };
 const HERO_Y = 0.79;
 
@@ -97,8 +98,8 @@ function floater(event: BattleEvent): { text: string; tone: string } | null {
     case 'hit':
       if (event.who.side === 'hero') return { text: `-${event.amount}`, tone: 'bg-berry text-white' };
       return event.crit
-        ? { text: `暴擊 -${event.amount}`, tone: 'bg-sun text-ink text-body' }
-        : { text: `-${event.amount}`, tone: 'bg-white text-ink' };
+        ? { text: `暴擊 -${event.amount}`, tone: 'bg-sun text-ink text-heading' }
+        : { text: `-${event.amount}`, tone: 'bg-surface text-ink' };
     case 'heal':
       return { text: `+${event.amount}`, tone: 'bg-leaf text-white' };
     case 'guard':
@@ -217,28 +218,29 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
                 ? '用哪一樣道具？'
                 : `${HEROES[phase.hero].name}，要做什麼？`;
 
+  const foeWidth = battle.foes.length === 1 ? 0.36 : battle.foes.length === 2 ? 0.32 : 0.27;
+  const itemCount = ITEM_ORDER.map((item) => battle.items[item]).reduce((sum, count) => sum + count, 0);
+
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-md flex-col gap-2 py-2">
-      <header className="flex items-center justify-between gap-3 px-3">
+    <Screen fixed className="gap-2">
+      <header className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-base font-bold leading-tight">
+          <p className="truncate text-caption font-bold text-muted">
             第 {chapter.id} 章 {chapter.title}
           </p>
-          <p className="text-sm font-bold text-ink/60">
+          <p className="text-heading font-extrabold leading-tight">
             {battle.boss ? '頭目戰 · ' : ''}第 {battle.round} 回合
           </p>
         </div>
-        <BigButton tone="quiet" onClick={onToggleSound} label={soundOn ? '關閉聲音' : '打開聲音'}>
-          {soundOn ? '聲音 開' : '聲音 關'}
-        </BigButton>
+        <SoundToggle on={soundOn} onToggle={onToggleSound} />
       </header>
 
-      <div className="flex justify-center px-3">
+      <div className="flex justify-center">
         <Scene
           palette={chapter.palette}
           decor={chapter.decor}
           aspectRatio="1 / 1"
-          className="h-[min(calc(100vw-1.5rem),38dvh)] w-auto rounded-3xl border-4 border-ink"
+          className="h-[min(calc(100vw-2rem),38dvh)] w-auto rounded-3xl shadow-card"
         >
           {battle.foes.map((state, slot) => {
             const foe = FOES[state.foe];
@@ -246,7 +248,8 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
             const dead = state.hp <= 0;
             const targetable = pendingNeedsFoe && !dead;
             const intent = foeIntent(state, battle.heroes);
-            const width = battle.foes.length === 1 ? (foe.boss ? 0.44 : 0.36) : battle.foes.length === 2 ? 0.32 : 0.27;
+            const width = battle.foes.length === 1 && foe.boss ? 0.44 : foeWidth;
+            const fx = motion({ side: 'foe', slot });
             return (
               <button
                 key={slot}
@@ -260,7 +263,7 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
                 {!dead && (
                   <span
                     className={[
-                      'whitespace-nowrap rounded-2xl border-2 border-ink px-2 py-0.5 text-center text-xs font-bold leading-4',
+                      'whitespace-nowrap rounded-2xl px-2 py-0.5 text-center text-caption font-bold leading-4 shadow-card',
                       intent.kind === 'charge'
                         ? 'breathe bg-sun'
                         : intent.kind === 'stunned'
@@ -269,14 +272,14 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
                             ? 'bg-sky'
                             : intent.kind === 'heal'
                               ? 'bg-leaf text-white'
-                              : 'bg-white',
+                              : 'bg-surface',
                     ].join(' ')}
                   >
                     {intent.kind === 'attack' ? (
                       <>
                         {intent.name} {intent.amount}
                         <br />
-                        <span className={intent.aim === 'all' ? 'text-berry' : 'text-ink/70'}>
+                        <span className={intent.aim === 'all' ? 'text-berry' : 'text-muted'}>
                           → {intent.aim === 'all' ? '全體' : HEROES[intent.aim].name}
                         </span>
                       </>
@@ -289,17 +292,15 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
                     )}
                   </span>
                 )}
-                <span key={motion({ side: 'foe', slot }).key} className={`relative block aspect-square w-full ${motion({ side: 'foe', slot }).className}`}>
+                <span key={fx.key} className={`relative block aspect-square w-full ${fx.className}`}>
                   <Art />
                   {state.guard && !dead && (
-                    <span className="absolute -right-1 top-0 rounded-full border-2 border-ink bg-sky px-1.5 text-xs font-bold">防</span>
+                    <span className="absolute -right-1 top-0 rounded-full bg-sky px-1.5 text-caption font-bold shadow-card">防</span>
                   )}
-                  {targetable && (
-                    <span className="breathe pointer-events-none absolute -inset-2 rounded-3xl border-4 border-dashed border-sun" />
-                  )}
+                  {targetable && <span className="breathe pointer-events-none absolute -inset-2 rounded-3xl ring-4 ring-sun" />}
                 </span>
-                <Bar value={state.hp} max={foe.maxHp} className="h-2.5" />
-                <span className="rounded-full bg-cream/80 px-2 text-xs font-bold leading-4">{foe.name}</span>
+                <Bar value={state.hp} max={foe.maxHp} className="h-2" />
+                <span className="rounded-full bg-surface/80 px-2 text-caption font-bold leading-4">{foe.name}</span>
               </button>
             );
           })}
@@ -311,6 +312,7 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
             const ko = state.hp <= 0;
             const active = activeHero === hero;
             const targetable = pendingNeedsHero;
+            const fx = motion({ side: 'hero', hero });
             return (
               <button
                 key={hero}
@@ -321,18 +323,16 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
                 className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
                 style={{ left: `${HERO_X[hero] * 100}%`, top: `${HERO_Y * 100}%`, width: '27%' }}
               >
-                <span key={motion({ side: 'hero', hero }).key} className={`relative block aspect-square w-full ${motion({ side: 'hero', hero }).className} ${ko ? 'opacity-40 grayscale' : ''}`}>
+                <span key={fx.key} className={`relative block aspect-square w-full ${fx.className} ${ko ? 'opacity-40 grayscale' : ''}`}>
                   <Art />
-                  {active && <span className="breathe pointer-events-none absolute -inset-1 rounded-full border-4 border-sun" />}
-                  {targetable && (
-                    <span className="breathe pointer-events-none absolute -inset-2 rounded-3xl border-4 border-dashed border-leaf" />
-                  )}
+                  {active && <span className="breathe pointer-events-none absolute -inset-1 rounded-full ring-4 ring-sun" />}
+                  {targetable && <span className="breathe pointer-events-none absolute -inset-2 rounded-3xl ring-4 ring-leaf" />}
                   {state.guard && (
-                    <span className="absolute -right-1 top-0 rounded-full border-2 border-ink bg-sky px-1.5 text-xs font-bold">防</span>
+                    <span className="absolute -right-1 top-0 rounded-full bg-sky px-1.5 text-caption font-bold shadow-card">防</span>
                   )}
                 </span>
-                <Bar value={state.hp} max={maxHp} className="h-2.5" />
-                <span className="whitespace-nowrap rounded-full bg-cream/80 px-2 text-xs font-bold leading-4">
+                <Bar value={state.hp} max={maxHp} className="h-2" />
+                <span className="whitespace-nowrap rounded-full bg-surface/80 px-2 text-caption font-bold leading-4">
                   {HEROES[hero].name} {state.hp}/{maxHp}
                 </span>
               </button>
@@ -348,7 +348,7 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
             return (
               <span
                 key={`${battle.step}-${index}`}
-                className={`float-up pointer-events-none absolute whitespace-nowrap rounded-full border-2 border-ink px-2 text-base font-bold leading-7 ${label.tone}`}
+                className={`float-up pointer-events-none absolute whitespace-nowrap rounded-full px-2.5 text-copy font-extrabold leading-7 shadow-card ${label.tone}`}
                 style={{
                   left: `${x * 100}%`,
                   top: `calc(${y * 100}% - ${(index % 3) * 22}px)`,
@@ -362,30 +362,41 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
         </Scene>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 px-3">
-        <span className="mr-1 text-base font-bold">元氣</span>
+      <div className="flex items-center justify-center gap-1.5">
+        <span className="mr-1 text-label font-bold text-muted">元氣</span>
         {Array.from({ length: MAX_ENERGY }, (_, index) => (
           <span
             key={index}
-            className={`block h-5 w-5 rounded-full border-2 border-ink transition-colors ${index < battle.energy ? 'bg-sun' : 'bg-white'}`}
+            className={`block h-3.5 w-7 rounded-full transition-colors ${index < battle.energy ? 'bg-gradient-to-b from-sun to-sunDeep shadow-glow' : 'bg-ink/10'}`}
           />
         ))}
-        <span className="ml-1 text-sm font-bold text-ink/70">
+        <span className="ml-1 text-caption font-bold text-muted">
           {battle.energy}/{MAX_ENERGY}
         </span>
       </div>
 
-      <div className="mx-3 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-3xl border-4 border-ink bg-white p-3">
-        <p className="text-base font-bold leading-tight">{headline}</p>
-
-        {activeHero && pending && (
-          <BigButton tone="quiet" onClick={() => setPending(null)}>
-            取消
-          </BigButton>
-        )}
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto rounded-3xl bg-surface p-3 shadow-card">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-copy font-extrabold leading-tight">{headline}</p>
+          {activeHero && !pending && menu === 'skills' && (
+            <Button variant="tonal" size="sm" onClick={() => setMenu('items')}>
+              道具 {itemCount}
+            </Button>
+          )}
+          {activeHero && !pending && menu === 'items' && (
+            <Button variant="tonal" size="sm" onClick={() => setMenu('skills')}>
+              返回
+            </Button>
+          )}
+          {activeHero && pending && (
+            <Button variant="tonal" size="sm" onClick={() => setPending(null)}>
+              取消
+            </Button>
+          )}
+        </div>
 
         {activeHero && !pending && menu === 'items' && (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {ITEM_ORDER.map((item) => {
               const Art = SPRITES[ITEMS[item].sprite];
               const count = battle.items[item];
@@ -395,27 +406,18 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
                   type="button"
                   disabled={count <= 0}
                   onClick={() => pickItem(item)}
-                  className="flex min-h-[60px] items-center gap-2 rounded-2xl border-4 border-ink bg-cream px-2 py-1 text-left shadow-[0_3px_0_#3B2A20] transition-transform active:translate-y-0.5 disabled:opacity-40"
+                  className="flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-2xl bg-ink/[0.05] px-2 py-2 transition-transform duration-150 active:scale-[0.96] disabled:opacity-35"
                 >
-                  <span className="block h-10 w-10 shrink-0">
+                  <span className="block h-9 w-9">
                     <Art />
                   </span>
-                  <span className="flex min-w-0 flex-col">
-                    <span className="text-base font-bold leading-tight">
-                      {ITEMS[item].name} ×{count}
-                    </span>
-                    <span className="text-xs leading-tight text-ink/70 [@media(max-height:700px)]:hidden">{ITEMS[item].blurb}</span>
+                  <span className="text-label font-bold leading-tight">
+                    {ITEMS[item].name} ×{count}
                   </span>
+                  <span className="text-caption leading-tight text-muted [@media(max-height:700px)]:hidden">{ITEMS[item].blurb}</span>
                 </button>
               );
             })}
-            <button
-              type="button"
-              onClick={() => setMenu('skills')}
-              className="min-h-[60px] rounded-2xl border-4 border-ink bg-white px-2 text-base font-bold shadow-[0_3px_0_#3B2A20] transition-transform active:translate-y-0.5"
-            >
-              返回
-            </button>
           </div>
         )}
 
@@ -429,40 +431,35 @@ export const BattleScreen = ({ chapter, battle, soundOn, onAction, onWon, onLost
                   type="button"
                   disabled={!usable}
                   onClick={() => pickSkill(skill.id)}
-                  className="flex min-h-[60px] flex-col gap-0.5 rounded-2xl border-4 border-ink bg-cream px-2 py-1.5 text-left shadow-[0_3px_0_#3B2A20] transition-transform active:translate-y-0.5 disabled:opacity-40"
+                  className={`flex min-h-[64px] flex-col gap-0.5 rounded-2xl px-2.5 py-2 text-left transition-transform duration-150 active:scale-[0.96] disabled:opacity-35 ${skill.cost > 0 ? 'bg-sun/20' : 'bg-ink/[0.05]'}`}
                 >
-                  <span className="whitespace-nowrap text-base font-bold leading-tight">{skill.name}</span>
-                  <span className="flex h-4 items-center gap-1 text-xs font-bold">
+                  <span className="whitespace-nowrap text-label font-extrabold leading-tight">{skill.name}</span>
+                  <span className="flex h-3.5 items-center gap-1 text-caption font-bold">
                     {skill.cost > 0 ? (
-                      <>
-                        <span className="text-ink/60">用</span>
-                        {Array.from({ length: skill.cost }, (_, index) => (
-                          <span key={index} className="block h-3 w-3 rounded-full border-2 border-ink bg-sun" />
-                        ))}
-                      </>
+                      Array.from({ length: skill.cost }, (_, index) => (
+                        <span key={index} className="block h-2.5 w-2.5 rounded-full bg-gradient-to-b from-sun to-sunDeep" />
+                      ))
                     ) : (
-                      <span className="text-leaf">元氣 +{skill.gain}</span>
+                      <span className="text-leafDeep">元氣 +{skill.gain}</span>
                     )}
                   </span>
-                  <span className="text-xs leading-tight text-ink/70 [@media(max-height:700px)]:hidden">{skill.blurb}</span>
+                  <span className="text-caption leading-tight text-muted [@media(max-height:700px)]:hidden">{skill.blurb}</span>
                 </button>
               );
             })}
-            <button
-              type="button"
-              onClick={() => setMenu('items')}
-              className="flex min-h-[60px] flex-col justify-between rounded-2xl border-4 border-ink bg-white px-2 py-1.5 text-left shadow-[0_3px_0_#3B2A20] transition-transform active:translate-y-0.5"
-            >
-              <span className="text-base font-bold leading-tight">道具</span>
-              <span className="text-xs leading-tight text-ink/70">
-                {ITEM_ORDER.map((item) => battle.items[item]).reduce((sum, count) => sum + count, 0)} 樣
-              </span>
-            </button>
+          </div>
+        )}
+
+        {(!activeHero || pending) && (
+          <div className="flex flex-1 items-center justify-center py-2">
+            {pendingNeedsFoe && <Chip tone="sun">點場上的敵人</Chip>}
+            {pendingNeedsHero && <Chip tone="leaf">點寶咖咖或摩卡貓</Chip>}
+            {!pending && phase.kind === 'foe' && <Chip>搗蛋鬼行動中</Chip>}
           </div>
         )}
       </div>
 
-      <p className="mx-3 h-11 overflow-hidden text-sm font-bold leading-snug text-ink/80">{logLine(battle)}</p>
-    </div>
+      <p className="h-10 overflow-hidden text-label font-bold leading-snug text-muted">{logLine(battle)}</p>
+    </Screen>
   );
 };

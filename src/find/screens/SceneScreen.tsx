@@ -3,7 +3,8 @@ import type { MouseEvent } from 'react';
 import type { Level } from '../game/types';
 import { Scene, placementStyle } from '../../art/Scene';
 import { SPRITES } from '../../art/sprites';
-import { BigButton } from '../../components/BigButton';
+import { AppBar, Screen, SoundToggle } from '../../components/Screen';
+import { Check } from '../../components/icons';
 import { FoundTray } from '../components/FoundTray';
 import { playTone } from '../../shared/audio';
 
@@ -76,23 +77,14 @@ export const SceneScreen = ({
   };
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-md flex-col gap-2 py-2">
-      <header className="flex items-center justify-between gap-3 px-3">
-        <h1 className="text-body font-bold leading-tight">{level.title}</h1>
-        <BigButton
-          tone="quiet"
-          onClick={onToggleSound}
-          label={soundOn ? '關閉聲音' : '打開聲音'}
-        >
-          {soundOn ? '聲音 開' : '聲音 關'}
-        </BigButton>
-      </header>
+    <Screen fixed>
+      <AppBar title={level.title} right={<SoundToggle on={soundOn} onToggle={onToggleSound} />} />
 
-      <div className="flex min-h-0 flex-1 items-center justify-center px-3">
+      <div className="flex min-h-0 flex-1 items-center justify-center">
         <Scene
           palette={level.palette}
           decor={level.decor}
-          className="mx-auto h-full max-h-[calc((100vw-1.5rem)*4/3)] w-auto rounded-3xl border-4 border-ink"
+          className="mx-auto h-full max-h-[calc((100vw-2rem)*4/3)] w-auto rounded-3xl shadow-card"
         >
           {/* Tapping empty space: a ripple and nothing else, never negative feedback (spec §7).
               This layer sits below the target buttons, so hitting a target never reaches it. */}
@@ -136,8 +128,8 @@ export const SceneScreen = ({
                   />
                 )}
                 {got && (
-                  <span className="pointer-events-none absolute -right-2 -top-2 grid h-9 w-9 place-items-center rounded-full border-4 border-ink bg-leaf text-base font-bold text-white">
-                    ✓
+                  <span className="pointer-events-none absolute -right-2 -top-2 grid h-9 w-9 place-items-center rounded-full bg-leaf text-white shadow-card ring-2 ring-white">
+                    <Check size={18} />
                   </span>
                 )}
               </button>
@@ -146,10 +138,10 @@ export const SceneScreen = ({
         </Scene>
       </div>
 
-      <p className="px-3 text-center text-base font-bold">
+      <p className="text-center text-heading font-bold">
         {cleared ? '三樣都找到了！' : '找出下面這三樣東西'}
       </p>
       <FoundTray targets={level.targets} found={found} />
-    </div>
+    </Screen>
   );
 };

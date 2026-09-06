@@ -8,18 +8,129 @@
   }
 
   body {
-    @apply bg-cream text-ink;
+    @apply bg-bg text-ink;
     font-family: ui-rounded, 'Hiragino Maru Gothic ProN', 'Noto Sans TC', 'PingFang TC', system-ui, sans-serif;
-    /* Elderly UI: single tap only. Kill the tap highlight, double-tap zoom delay,
-       long-press selection and rubber-band scrolling */
+    /* Single tap only: kill the tap highlight, double-tap zoom delay, long-press selection
+       and rubber-band scrolling */
     -webkit-tap-highlight-color: transparent;
     -webkit-user-select: none;
     user-select: none;
     overscroll-behavior: none;
+    min-height: 100dvh;
+  }
+
+  /* Soft light falling from the top left and a warm glow at the bottom: depth without pictures */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 60% at 15% -10%, rgba(255, 255, 255, 0.9), transparent 60%),
+      radial-gradient(80% 50% at 110% 110%, rgba(242, 169, 59, 0.28), transparent 60%),
+      radial-gradient(60% 40% at -10% 80%, rgba(127, 182, 217, 0.22), transparent 60%);
   }
 
   button {
     touch-action: manipulation;
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(127, 182, 217, 0.55);
+  }
+}
+
+@layer utilities {
+  /* Every screen slides up as it mounts. `backwards` leaves no transform behind, so fixed
+     children (sheets) keep positioning against the viewport */
+  .screen-in {
+    animation: screen-in 260ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  .sheet-in {
+    animation: sheet-in 300ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  .fade-in {
+    animation: fade-in 200ms ease-out backwards;
+  }
+
+  .pop {
+    animation: pop 420ms ease-out;
+  }
+
+  .breathe {
+    animation: breathe 2.4s ease-in-out infinite;
+  }
+
+  .ripple {
+    animation: ripple 600ms ease-out forwards;
+  }
+
+  .float-up {
+    animation: float-up 1000ms ease-out forwards;
+  }
+
+  .shake {
+    animation: shake 420ms ease-in-out;
+  }
+
+  .walk {
+    animation: walk 360ms ease-in-out infinite;
+    transform-origin: 50% 100%;
+  }
+
+  .idle {
+    animation: idle 2.4s ease-in-out infinite;
+  }
+
+  .lunge-up {
+    animation: lunge-up 420ms ease-out;
+  }
+
+  .lunge-down {
+    animation: lunge-down 420ms ease-out;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -35,10 +146,6 @@
   }
 }
 
-.ripple {
-  animation: ripple 600ms ease-out forwards;
-}
-
 /* Hint halo: a slow breath, never harsh */
 @keyframes breathe {
   0%,
@@ -52,11 +159,7 @@
   }
 }
 
-.breathe {
-  animation: breathe 2.4s ease-in-out infinite;
-}
-
-/* Pop when something is found */
+/* Pop when something is found or completed */
 @keyframes pop {
   0% {
     transform: scale(1);
@@ -67,10 +170,6 @@
   100% {
     transform: scale(1);
   }
-}
-
-.pop {
-  animation: pop 420ms ease-out;
 }
 
 /* Battle: a damage or heal number drifting up and fading */
@@ -87,10 +186,6 @@
     transform: translate(-50%, -44px) scale(1);
     opacity: 0;
   }
-}
-
-.float-up {
-  animation: float-up 1000ms ease-out forwards;
 }
 
 /* Battle: whoever just got hit jolts sideways */
@@ -113,10 +208,6 @@
   }
 }
 
-.shake {
-  animation: shake 420ms ease-in-out;
-}
-
 /* Chapter map: a little hop while walking */
 @keyframes walk {
   0%,
@@ -131,11 +222,6 @@
   }
 }
 
-.walk {
-  animation: walk 360ms ease-in-out infinite;
-  transform-origin: 50% 100%;
-}
-
 /* Chapter map: foes and pickups sway while they wait */
 @keyframes idle {
   0%,
@@ -145,10 +231,6 @@
   50% {
     transform: translateY(-5%);
   }
-}
-
-.idle {
-  animation: idle 2.4s ease-in-out infinite;
 }
 
 /* Battle: the actor steps forward as it acts */
@@ -172,10 +254,13 @@
   }
 }
 
-.lunge-up {
-  animation: lunge-up 420ms ease-out;
-}
-
-.lunge-down {
-  animation: lunge-down 420ms ease-out;
+@media (prefers-reduced-motion: reduce) {
+  .screen-in,
+  .sheet-in,
+  .fade-in,
+  .walk,
+  .idle,
+  .breathe {
+    animation: none;
+  }
 }

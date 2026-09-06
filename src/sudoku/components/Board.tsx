@@ -6,7 +6,11 @@ import type { Play, Symbols } from '../engine/types';
 import { Symbol } from './Symbol';
 
 /** Digit size per board so a 9x9 cell still reads on a 375px phone */
-const DIGIT_SIZE: Record<number, string> = { 4: 'text-huge', 6: 'text-title', 9: 'text-[22px]' };
+const DIGIT_SIZE: Record<number, string> = { 4: 'text-hero', 6: 'text-display', 9: 'text-heading' };
+
+/** Hairlines split cells; the heavier line marks a box edge */
+const CELL_LINE = 'rgba(59,42,32,0.12)';
+const BOX_LINE = 'rgba(59,42,32,0.55)';
 
 type Props = { play: Play; symbols: Symbols; onSelect: (cell: number) => void };
 
@@ -27,7 +31,7 @@ export const Board = ({ play, symbols, onSelect }: Props) => {
     <div
       role="grid"
       aria-label="收納櫃"
-      className="grid w-full overflow-hidden rounded-2xl border-4 border-ink bg-white"
+      className="grid w-full overflow-hidden rounded-2xl bg-surface ring-1 ring-ink/10"
       style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`, aspectRatio: '1' }}
     >
       {board.map((value, cell) => {
@@ -37,21 +41,24 @@ export const Board = ({ play, symbols, onSelect }: Props) => {
         const isSelected = selected === cell;
         const sameValue = focusValue !== 0 && value === focusValue;
         const flashing = flash?.cells.includes(cell) ?? false;
+        const boxRight = (col + 1) % geometry.boxCols === 0;
+        const boxBottom = (row + 1) % geometry.boxRows === 0;
         const tint = isSelected
-          ? 'bg-sun/70'
+          ? 'bg-sun/60'
           : clash[cell]
-            ? 'bg-berry/25'
+            ? 'bg-berry/20'
             : sameValue
-              ? 'bg-sky/40'
+              ? 'bg-sky/30'
               : peers.includes(cell)
-                ? 'bg-sun/15'
+                ? 'bg-sun/10'
                 : given
                   ? 'bg-cream'
-                  : 'bg-white';
+                  : 'bg-surface';
         const border: CSSProperties = {
-          borderRightWidth: col === size - 1 ? 0 : (col + 1) % geometry.boxCols === 0 ? 3 : 1,
-          borderBottomWidth: row === size - 1 ? 0 : (row + 1) % geometry.boxRows === 0 ? 3 : 1,
-          borderColor: '#3B2A20',
+          borderRightWidth: col === size - 1 ? 0 : boxRight ? 2 : 1,
+          borderBottomWidth: row === size - 1 ? 0 : boxBottom ? 2 : 1,
+          borderRightColor: boxRight ? BOX_LINE : CELL_LINE,
+          borderBottomColor: boxBottom ? BOX_LINE : CELL_LINE,
         };
         const label = `第 ${row + 1} 列第 ${col + 1} 行${value ? `，${symbolName(symbols, value)}` : '，空的'}`;
         return (
@@ -66,7 +73,7 @@ export const Board = ({ play, symbols, onSelect }: Props) => {
           >
             {value !== 0 ? (
               <span key={flashing ? flash?.key : -1} className={`absolute inset-0 ${flashing ? 'pop' : ''} ${clash[cell] ? 'text-berry' : given ? 'text-ink' : 'text-skyDeep'}`}>
-                <Symbol value={value} symbols={symbols} className={DIGIT_SIZE[size]} />
+                <Symbol value={value} symbols={symbols} className={`${DIGIT_SIZE[size]} font-extrabold`} />
               </span>
             ) : (
               notes[cell] !== 0 && (
