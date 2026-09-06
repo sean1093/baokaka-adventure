@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { aliveFoeSlots, battleStep, battleXp, canUseSkill, foeIntent, roll, startBattle } from './battle';
+import { aliveFoeSlots, battleStep, battleXp, canUseSkill, foeIntent, startBattle } from './battle';
+import { roll } from '../../shared/random';
 import { FOES } from './foes';
 import { MAX_ENERGY, SKILLS, START_ENERGY, heroStats } from './heroes';
 import { freshRun } from './quest';

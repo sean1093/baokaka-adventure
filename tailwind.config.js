@@ -22,6 +22,7 @@ export default {
         sun: '#F2A93B',
         leaf: '#5C9E63',
         sky: '#7FB6D9',
+        skyDeep: '#4E8FBA',
         berry: '#D9564F',
         mocha: '#A8703E',
         plum: '#8E6E9E',

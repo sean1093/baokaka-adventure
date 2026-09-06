@@ -6,11 +6,16 @@ import { CHAPTERS } from '../quest/engine/chapters';
 import { runStarted } from '../quest/engine/quest';
 import { loadQuest } from '../quest/engine/save';
 import type { Route } from '../shared/route';
+import { loadSudoku } from '../sudoku/engine/save';
+import { SIZES } from '../sudoku/engine/types';
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
 const Bottle = SPRITES.bottle;
 const BlockGolem = SPRITES.blockGolem;
+const Ball = SPRITES.ball;
+const Cookie = SPRITES.cookie;
+const ToyBoat = SPRITES.toyBoat;
 
 type Props = { onOpen: (route: Exclude<Route, 'hub'>) => void };
 
@@ -55,6 +60,15 @@ const GameCard = ({
 export const HubScreen = ({ onOpen }: Props) => {
   const find = loadProgress();
   const quest = loadQuest().run;
+  const sudoku = loadSudoku();
+  const tidied = SIZES.reduce((sum, size) => sum + sudoku.stats[size].solved, 0);
+  const stars = SIZES.reduce((sum, size) => sum + sudoku.stats[size].stars, 0);
+
+  const sudokuStatus = sudoku.play
+    ? `有一題收到一半（${sudoku.play.puzzle.size}×${sudoku.play.puzzle.size}）`
+    : tidied === 0
+      ? '還沒開始'
+      : `收好 ${tidied} 題 · ★ ${stars}`;
 
   const findStatus =
     find.completed.length === 0
@@ -89,7 +103,6 @@ export const HubScreen = ({ onOpen }: Props) => {
         title="寶咖咖勇者團"
         blurb="操控寶咖咖走過六個場景，和摩卡貓並肩打敗搗蛋鬼，把安撫娃娃搶回來。"
         status={questStatus}
-        fresh
         art={
           <>
             <span className="absolute left-0 top-4 block h-20 w-20">
@@ -121,8 +134,33 @@ export const HubScreen = ({ onOpen }: Props) => {
         onClick={() => onOpen('find')}
       />
 
+      <GameCard
+        kicker="圖案數獨"
+        title="摩卡貓的收納挑戰"
+        blurb="玩具櫃被弄亂了！每一排、每一行、每一區都要剛好一個，4×4 到 9×9，看圖案或數字都行。"
+        status={sudokuStatus}
+        fresh
+        art={
+          <>
+            <span className="absolute left-0 top-0 block h-16 w-16">
+              <MochaCat />
+            </span>
+            <span className="absolute right-0 top-1 grid grid-cols-2 gap-0.5 rounded-xl border-4 border-ink bg-white p-0.5">
+              <span className="block h-6 w-6"><Ball /></span>
+              <span className="block h-6 w-6"><Bottle /></span>
+              <span className="block h-6 w-6"><Cookie /></span>
+              <span className="block h-6 w-6"><ToyBoat /></span>
+            </span>
+            <span className="absolute bottom-0 left-4 block h-14 w-14">
+              <Baokaka />
+            </span>
+          </>
+        }
+        onClick={() => onOpen('sudoku')}
+      />
+
       <p className="mt-auto text-center text-base text-ink/60">
-        共 {CHAPTERS.length} 章冒險與 {LEVELS.length} 個尋物場景。進度會自動記在這支手機裡。
+        {CHAPTERS.length} 章冒險、{LEVELS.length} 個尋物場景，還有出不完的數獨。進度會自動記在這支手機裡。
       </p>
     </div>
   );

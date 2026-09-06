@@ -1,7 +1,7 @@
 {
   "name": "寶咖咖與摩卡貓",
   "short_name": "寶咖咖",
-  "description": "寶咖咖與摩卡貓的兩個小遊戲：找找看尋物冒險，還有回合制的寶咖咖勇者團。",
+  "description": "寶咖咖與摩卡貓的三個小遊戲：找找看尋物冒險、回合制的寶咖咖勇者團、摩卡貓的圖案數獨。",
   "start_url": "/baokaka-adventure/",
   "scope": "/baokaka-adventure/",
   "display": "standalone",
