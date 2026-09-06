@@ -1,5 +1,5 @@
 import type { Target } from '../game/types';
-import { SPRITES } from '../art/sprites';
+import { SPRITES } from '../../art/sprites';
 
 type Props = { targets: Target[]; found: string[] };
 

@@ -1,7 +1,13 @@
-import type { SpriteName } from '../../game/types';
+import type { SpriteName } from '../types';
 import type { Sprite } from '../sprite';
 import * as beach from './beach';
 import * as characters from './characters';
+import * as foesBeach from './foesBeach';
+import * as foesLiving from './foesLiving';
+import * as foesMarket from './foesMarket';
+import * as foesNight from './foesNight';
+import * as foesPark from './foesPark';
+import * as foesYard from './foesYard';
 import * as living from './living';
 import * as market from './market';
 import * as night from './night';
@@ -75,4 +81,28 @@ export const SPRITES: Record<SpriteName, Sprite> = {
   beachUmbrella: beach.BeachUmbrella,
   starfish: beach.Starfish,
   seagull: beach.Seagull,
+
+  dustBunny: foesLiving.DustBunny,
+  sockMonster: foesLiving.SockMonster,
+  blockGolem: foesLiving.BlockGolem,
+
+  mosquito: foesYard.Mosquito,
+  snail: foesYard.Snail,
+  moleKing: foesYard.MoleKing,
+
+  pigeon: foesPark.Pigeon,
+  kiteGhost: foesPark.KiteGhost,
+  crowBoss: foesPark.CrowBoss,
+
+  crab: foesMarket.Crab,
+  rollingApple: foesMarket.RollingApple,
+  bigFish: foesMarket.BigFish,
+
+  greedyGull: foesBeach.GreedyGull,
+  jellyfish: foesBeach.Jellyfish,
+  octopus: foesBeach.Octopus,
+
+  sleepySprite: foesNight.SleepySprite,
+  nightmareCloud: foesNight.NightmareCloud,
+  snoreKing: foesNight.SnoreKing,
 };

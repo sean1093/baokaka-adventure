@@ -20,7 +20,7 @@ export const BigButton = ({ children, onClick, tone = 'primary', disabled, label
     disabled={disabled}
     aria-label={label}
     className={[
-      'min-h-touch min-w-touch rounded-3xl border-4 border-ink px-8 py-4',
+      'min-h-touch min-w-touch whitespace-nowrap rounded-3xl border-4 border-ink px-8 py-4',
       'text-body font-bold leading-none',
       'transition-transform active:translate-y-1 disabled:opacity-40',
       tone === 'primary' ? 'bg-sun shadow-[0_6px_0_#3B2A20]' : 'bg-cream shadow-[0_4px_0_#3B2A20]',

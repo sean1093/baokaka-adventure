@@ -72,3 +72,47 @@
 .pop {
   animation: pop 420ms ease-out;
 }
+
+/* Battle: a damage or heal number drifting up and fading */
+@keyframes float-up {
+  0% {
+    transform: translate(-50%, 0) scale(0.8);
+    opacity: 0;
+  }
+  15% {
+    transform: translate(-50%, -6px) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -44px) scale(1);
+    opacity: 0;
+  }
+}
+
+.float-up {
+  animation: float-up 1000ms ease-out forwards;
+}
+
+/* Battle: whoever just got hit jolts sideways */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px) rotate(-3deg);
+  }
+  40% {
+    transform: translateX(6px) rotate(3deg);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.shake {
+  animation: shake 420ms ease-in-out;
+}

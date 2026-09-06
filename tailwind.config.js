@@ -15,13 +15,17 @@ export default {
         touch: '64px',
       },
       colors: {
+        // Mirrors src/art/palette.ts; the UI never invents a colour the sprites do not use
         ink: '#3B2A20',
         cream: '#FFF7E8',
+        paper: '#F3E3C3',
         sun: '#F2A93B',
         leaf: '#5C9E63',
         sky: '#7FB6D9',
         berry: '#D9564F',
         mocha: '#A8703E',
+        plum: '#8E6E9E',
+        grey: '#B9AFA4',
       },
     },
   },

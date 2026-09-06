@@ -1,5 +1,6 @@
 import type { Level, Progress } from '../game/types';
-import { SPRITES } from '../art/sprites';
+import { SPRITES } from '../../art/sprites';
+import { BigButton } from '../../components/BigButton';
 
 const MochaCat = SPRITES.mochaCat;
 
@@ -7,11 +8,17 @@ type Props = {
   levels: Level[];
   progress: Progress;
   onOpenLevel: (levelId: number) => void;
+  onExit: () => void;
 };
 
-export const MapScreen = ({ levels, progress, onOpenLevel }: Props) => (
+export const MapScreen = ({ levels, progress, onOpenLevel, onExit }: Props) => (
   <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4 py-6">
-    <h1 className="text-title font-bold">選一個地方去冒險</h1>
+    <header className="flex items-center justify-between gap-3">
+      <h1 className="text-title font-bold">選一個地方去冒險</h1>
+      <BigButton tone="quiet" onClick={onExit} label="回遊戲選單">
+        選單
+      </BigButton>
+    </header>
 
     {levels.map((level) => {
       const done = progress.completed.includes(level.id);

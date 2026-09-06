@@ -1,11 +1,11 @@
 /**
  * Sound is synthesised with WebAudio; no mp3 is ever loaded.
- * All three cues are short note runs, so synthesising them takes a few lines, ships no
- * binary assets, waits on no download, and still works on a flaky mobile connection.
- * The game never depends on sound: it is fully completable muted (spec §8).
+ * Every cue is a short note run, so synthesising takes a few lines, ships no binary assets,
+ * waits on no download, and still works on a flaky mobile connection.
+ * No game depends on sound: both are fully completable muted.
  */
 
-type Tone = 'tap' | 'found' | 'complete';
+export type Tone = 'tap' | 'found' | 'complete' | 'hit' | 'heal' | 'levelUp' | 'defeat';
 
 type ToneSpec = {
   /** Pitches played in order (Hz) */
@@ -19,11 +19,11 @@ type ToneSpec = {
 };
 
 const TONES: Record<Tone, ToneSpec> = {
-  // Empty tap: one low, quiet blip. Tactile feedback only, it must never sound like an error
+  // Empty tap / menu select: one low, quiet blip. Tactile feedback only, it must never sound like an error
   tap: { notes: [196], step: 0, duration: 0.07, peak: 0.05, wave: 'sine' },
-  // Found one thing: two notes going up
+  // Found one thing / landed a hit on a foe: two notes going up
   found: { notes: [523.25, 659.25], step: 0.1, duration: 0.2, peak: 0.16, wave: 'triangle' },
-  // All three found: four notes going up
+  // All found / battle won: four notes going up
   complete: {
     notes: [523.25, 659.25, 783.99, 1046.5],
     step: 0.13,
@@ -31,11 +31,25 @@ const TONES: Record<Tone, ToneSpec> = {
     peak: 0.18,
     wave: 'triangle',
   },
+  // A hero got hit: a short low thud
+  hit: { notes: [146.83, 110], step: 0.04, duration: 0.12, peak: 0.09, wave: 'square' },
+  // Healing: three soft notes going up
+  heal: { notes: [659.25, 783.99, 987.77], step: 0.09, duration: 0.22, peak: 0.12, wave: 'triangle' },
+  // Level up: a five-note fanfare
+  levelUp: {
+    notes: [523.25, 659.25, 783.99, 1046.5, 1318.5],
+    step: 0.11,
+    duration: 0.3,
+    peak: 0.16,
+    wave: 'triangle',
+  },
+  // Battle lost: three notes going down, slow and gentle, never a buzzer
+  defeat: { notes: [392, 329.63, 261.63], step: 0.22, duration: 0.4, peak: 0.1, wave: 'sine' },
 };
 
 let context: AudioContext | null = null;
 
-/** iOS Safari only lets an AudioContext be created or resumed inside a user gesture (spec §8). */
+/** iOS Safari only lets an AudioContext be created or resumed inside a user gesture. */
 export function unlockAudio(): void {
   try {
     context ??= new AudioContext();

@@ -1,23 +1,9 @@
 import type { Progress } from './types';
+import { browserStorage, loadJson, saveJson, type StorageLike } from '../../shared/storage';
 
 export const PROGRESS_KEY = 'baokaka.progress';
 
 export const DEFAULT_PROGRESS: Progress = { unlockedLevel: 1, completed: [], sound: true };
-
-/** Only these two methods are used, so a fake storage makes this testable without jsdom. */
-export type StorageLike = {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-};
-
-/** In private browsing, merely touching `window.localStorage` can throw SecurityError. */
-function browserStorage(): StorageLike | null {
-  try {
-    return typeof window === 'undefined' ? null : window.localStorage;
-  } catch {
-    return null;
-  }
-}
 
 const fresh = (): Progress => ({ ...DEFAULT_PROGRESS, completed: [] });
 
@@ -34,23 +20,13 @@ function isProgress(value: unknown): value is Progress {
 }
 
 export function loadProgress(storage: StorageLike | null = browserStorage()): Progress {
-  try {
-    const raw = storage?.getItem(PROGRESS_KEY);
-    if (!raw) return fresh();
-    const parsed: unknown = JSON.parse(raw);
-    if (!isProgress(parsed)) return fresh();
-    return { ...parsed, completed: [...parsed.completed].sort((a, b) => a - b) };
-  } catch {
-    return fresh();
-  }
+  const saved = loadJson(PROGRESS_KEY, isProgress, storage);
+  if (!saved) return fresh();
+  return { ...saved, completed: [...saved.completed].sort((a, b) => a - b) };
 }
 
 export function saveProgress(progress: Progress, storage: StorageLike | null = browserStorage()): void {
-  try {
-    storage?.setItem(PROGRESS_KEY, JSON.stringify(progress));
-  } catch {
-    // Private browsing or a full quota: progress lives in memory only and the game stays playable (spec §9)
-  }
+  saveJson(PROGRESS_KEY, progress, storage);
 }
 
 /** spec §9: unlockedLevel = max(previous, min(n + 1, last level)), so replaying an old level never rewinds. */

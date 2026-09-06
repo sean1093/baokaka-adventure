@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { PaletteName } from '../game/types';
+import type { PaletteName } from './types';
 import { C } from './palette';
 
 /** The scene box is always 3:4, so a 300x400 viewBox maps straight onto the layout. */
@@ -11,8 +11,14 @@ const Bands = ({ sky, ground, split }: { sky: string; ground: string; split: num
   </>
 );
 
+/** Crops rather than letterboxes when a screen uses a box that is not 3:4 (the quest battle box is square). */
 const Frame = ({ children }: { children: ReactElement }) => (
-  <svg viewBox="0 0 300 400" className="absolute inset-0 h-full w-full" aria-hidden="true">
+  <svg
+    viewBox="0 0 300 400"
+    preserveAspectRatio="xMidYMid slice"
+    className="absolute inset-0 h-full w-full"
+    aria-hidden="true"
+  >
     {children}
   </svg>
 );

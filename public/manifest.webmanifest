@@ -1,7 +1,7 @@
 {
-  "name": "寶咖咖與摩卡貓的冒險",
-  "short_name": "寶咖咖冒險",
-  "description": "陪寶咖咖和摩卡貓去冒險，找出摩卡貓藏起來的東西。慢慢玩，沒有時間限制。",
+  "name": "寶咖咖與摩卡貓",
+  "short_name": "寶咖咖",
+  "description": "寶咖咖與摩卡貓的兩個小遊戲：找找看尋物冒險，還有回合制的寶咖咖勇者團。",
   "start_url": "/baokaka-adventure/",
   "scope": "/baokaka-adventure/",
   "display": "standalone",

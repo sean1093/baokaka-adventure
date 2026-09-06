@@ -1,12 +1,12 @@
-import { SPRITES } from '../art/sprites';
-import { BigButton } from '../components/BigButton';
+import { SPRITES } from '../../art/sprites';
+import { BigButton } from '../../components/BigButton';
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
 
-type Props = { onStart: () => void };
+type Props = { onStart: () => void; onExit: () => void };
 
-export const TitleScreen = ({ onStart }: Props) => (
+export const TitleScreen = ({ onStart, onExit }: Props) => (
   <div className="flex h-dvh flex-col items-center justify-center gap-6 px-6 text-center">
     <h1 className="text-huge font-bold leading-tight">
       寶咖咖
@@ -34,5 +34,9 @@ export const TitleScreen = ({ onStart }: Props) => (
     <BigButton onClick={onStart}>開始冒險</BigButton>
 
     <p className="text-base text-ink/70">慢慢玩，沒有時間限制</p>
+
+    <BigButton tone="quiet" onClick={onExit}>
+      回遊戲選單
+    </BigButton>
   </div>
 );

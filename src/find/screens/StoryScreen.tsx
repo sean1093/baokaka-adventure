@@ -1,6 +1,6 @@
 import type { Level } from '../game/types';
-import { SPRITES } from '../art/sprites';
-import { BigButton } from '../components/BigButton';
+import { SPRITES } from '../../art/sprites';
+import { BigButton } from '../../components/BigButton';
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;

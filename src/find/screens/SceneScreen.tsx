@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 import type { Level } from '../game/types';
-import { BACKDROPS } from '../art/backdrops';
-import { SPRITES } from '../art/sprites';
-import { BigButton } from '../components/BigButton';
+import { Scene, placementStyle } from '../../art/Scene';
+import { SPRITES } from '../../art/sprites';
+import { BigButton } from '../../components/BigButton';
 import { FoundTray } from '../components/FoundTray';
-import { playTone } from '../game/audio';
+import { playTone } from '../../shared/audio';
 
 /** Idle seconds before the hint halo appears, then before it gets stronger (spec §7). */
 const HINT_AFTER = 15;
@@ -30,7 +30,6 @@ export const SceneScreen = ({
   onCleared,
   onToggleSound,
 }: Props) => {
-  const Backdrop = BACKDROPS[level.palette];
   const cleared = found.length === level.targets.length;
 
   const [idleSeconds, setIdleSeconds] = useState(0);
@@ -90,12 +89,11 @@ export const SceneScreen = ({
       </header>
 
       <div className="flex min-h-0 flex-1 items-center justify-center px-3">
-        <div
-          className="relative mx-auto h-full max-h-[calc((100vw-1.5rem)*4/3)] w-auto overflow-hidden rounded-3xl border-4 border-ink"
-          style={{ aspectRatio: '3 / 4' }}
+        <Scene
+          palette={level.palette}
+          decor={level.decor}
+          className="mx-auto h-full max-h-[calc((100vw-1.5rem)*4/3)] w-auto rounded-3xl border-4 border-ink"
         >
-          <Backdrop />
-
           {/* Tapping empty space: a ripple and nothing else, never negative feedback (spec §7).
               This layer sits below the target buttons, so hitting a target never reaches it. */}
           <div className="absolute inset-0" onClick={handleMiss}>
@@ -108,26 +106,6 @@ export const SceneScreen = ({
               />
             )}
           </div>
-
-          {level.decor.map((placement, index) => {
-            const Art = SPRITES[placement.sprite];
-            return (
-              <span
-                key={`${placement.sprite}-${index}`}
-                aria-hidden="true"
-                className="pointer-events-none absolute block -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: `${placement.x * 100}%`,
-                  top: `${placement.y * 100}%`,
-                  width: `${placement.r * 200}%`,
-                  aspectRatio: '1',
-                  transform: `translate(-50%, -50%)${placement.flip ? ' scaleX(-1)' : ''}`,
-                }}
-              >
-                <Art />
-              </span>
-            );
-          })}
 
           {level.targets.map((target) => {
             const got = found.includes(target.id);
@@ -144,13 +122,7 @@ export const SceneScreen = ({
                   onFound(target.id);
                 }}
                 className="absolute block disabled:opacity-100"
-                style={{
-                  left: `${target.x * 100}%`,
-                  top: `${target.y * 100}%`,
-                  width: `${target.r * 200}%`,
-                  aspectRatio: '1',
-                  transform: `translate(-50%, -50%)${target.flip ? ' scaleX(-1)' : ''}`,
-                }}
+                style={placementStyle(target)}
               >
                 <span className={`block h-full w-full ${got ? 'pop' : ''}`}>
                   <Art />
@@ -171,7 +143,7 @@ export const SceneScreen = ({
               </button>
             );
           })}
-        </div>
+        </Scene>
       </div>
 
       <p className="px-3 text-center text-base font-bold">
