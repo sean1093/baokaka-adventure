@@ -1,250 +1,299 @@
 import { describe, expect, test } from 'vitest';
-import { startBattle } from './battle';
-import { CHAPTERS } from './chapters';
-import { FOES } from './foes';
-import { MAX_ITEM_COUNT, MAX_LEVEL, XP_TABLE, heroStats } from './heroes';
-import {
-  CAMP_PACK_ITEMS,
-  CAMP_TRAIN_XP,
-  applyCamp,
-  applyVictory,
-  freshRun,
-  gainXp,
-  initialState,
-  questReducer,
-  runStarted,
-  type QuestAction,
-  type QuestState,
-} from './quest';
-import type { Battle, Run } from './types';
+import { EVENTS } from './events';
+import { ITEMS, heroStats } from './heroes';
+import { MAPS } from './maps';
+import { findPath } from './path';
+import { freshRun, initialState, questReducer, runStarted, type QuestState } from './quest';
+import type { HeroId, Tile } from './types';
 
-const start = initialState(freshRun(), true);
+const start = (): QuestState => initialState(freshRun(99), true);
 
-const play = (state: QuestState, ...actions: QuestAction[]): QuestState =>
-  actions.reduce((current, action) => questReducer(current, action), state);
-
-/** A battle already in the won phase, with the heroes' HP as given. */
-function wonBattle(run: Run, hp: Partial<Battle['heroes']> = {}): Battle {
-  const node = CHAPTERS[run.chapter - 1].nodes[run.node];
-  const foes = node.kind === 'camp' ? ['dustBunny' as const] : node.foes;
-  const battle = startBattle(run, foes, 1, node.kind === 'boss');
-  return {
-    ...battle,
-    heroes: { ...battle.heroes, ...hp },
-    foes: battle.foes.map((foe) => ({ ...foe, hp: 0 })),
-    phase: { kind: 'won' },
-  };
+/** Taps through dialogue until the script stops asking. */
+function readAll(state: QuestState, limit = 60): QuestState {
+  let current = state;
+  for (let step = 0; step < limit; step += 1) {
+    if (!current.line && !current.card) return current;
+    current = questReducer(current, { type: 'advance' });
+  }
+  throw new Error('dialogue never ended');
 }
 
-/** Puts the reducer on the chapter screen at a given run. */
-const atChapter = (run: Run): QuestState => ({ view: { screen: 'chapter' }, run, sound: true });
+/** Walks the party tile by tile, feeding the reducer one `step` per tile like the UI does. */
+function walk(state: QuestState, to: Tile): QuestState {
+  const path = findPath(MAPS[state.run.map], state.run.flags, state.run.pos, to);
+  if (!path) throw new Error(`no path to ${to.c},${to.r}`);
+  let current = state;
+  for (const tile of path) {
+    const facing = tile.c > current.run.pos.c || tile.r < current.run.pos.r ? 'right' : 'left';
+    current = questReducer(current, { type: 'step', tile, facing });
+    if (current.line || current.card || current.view.screen !== 'world') return current;
+  }
+  return current;
+}
 
-describe('gainXp', () => {
-  test('levels up across several thresholds at once and heals fully', () => {
-    const tired = { ...freshRun(), hp: { baokaka: 3, mocha: 3 } };
-    const { run, leveled, unlocked } = gainXp(tired, XP_TABLE[2]);
-    expect(run.level).toBe(3);
-    expect(leveled).toBe(true);
-    expect(unlocked).toEqual(['purr', 'hug']);
-    expect(run.hp).toEqual({ baokaka: heroStats('baokaka', 3).maxHp, mocha: heroStats('mocha', 3).maxHp });
+describe('starting a game', () => {
+  test('a fresh run has not started', () => {
+    expect(runStarted(freshRun(1))).toBe(false);
   });
 
-  test('does not heal when no level was gained', () => {
-    const tired = { ...freshRun(), hp: { baokaka: 3, mocha: 3 } };
-    const { run, leveled } = gainXp(tired, 1);
-    expect(leveled).toBe(false);
-    expect(run.hp).toEqual({ baokaka: 3, mocha: 3 });
-    expect(run.xp).toBe(1);
-  });
+  test('新遊戲 opens on the chapter card, then the prologue', () => {
+    const state = questReducer(start(), { type: 'newGame', seed: 4 });
+    expect(state.view).toEqual({ screen: 'world' });
+    expect(state.card).toEqual({ n: 1, title: '娃娃不見了' });
 
-  test('stops at the max level', () => {
-    const { run } = gainXp({ ...freshRun(), level: MAX_LEVEL, xp: 1000 }, 1000);
-    expect(run.level).toBe(MAX_LEVEL);
-  });
-});
+    const first = questReducer(state, { type: 'advance' });
+    expect(first.card).toBeNull();
+    expect(first.line?.text).toContain('天亮了');
 
-describe('applyVictory', () => {
-  test('carries HP and items out of the battle, adds XP and drops, and advances the node', () => {
-    const run = freshRun();
-    const battle = wonBattle(run, { baokaka: { hp: 20, guard: false } });
-    const { run: next, summary } = applyVictory(run, { ...battle, items: { ...battle.items, bottle: 0 } }, ['cookie']);
-    expect(next.hp.baokaka).toBe(20);
-    expect(next.items.bottle).toBe(0);
-    expect(next.items.cookie).toBe(run.items.cookie + 1);
-    expect(next.xp).toBe(FOES.dustBunny.xp);
-    expect(next.node).toBe(1);
-    expect(summary).toEqual({ xp: FOES.dustBunny.xp, drops: ['cookie'], fromLevel: 1, toLevel: 1, unlocked: [] });
-  });
-
-  test('a hero knocked out during a won battle gets back up with a quarter of max HP', () => {
-    const run = freshRun();
-    const { run: next } = applyVictory(run, wonBattle(run, { mocha: { hp: 0, guard: false } }), []);
-    expect(next.hp.mocha).toBe(Math.round(heroStats('mocha', 1).maxHp * 0.25));
-  });
-
-  test('drops never push an item past the cap', () => {
-    const run = { ...freshRun(), items: { bottle: MAX_ITEM_COUNT, cookie: 0, driedFish: 0 } };
-    const { run: next } = applyVictory(run, wonBattle(run), ['bottle', 'bottle']);
-    expect(next.items.bottle).toBe(MAX_ITEM_COUNT);
+    const done = readAll(first);
+    expect(done.scene).toBeNull();
+    expect(done.run.chapter).toBe(1);
+    expect(runStarted(done.run)).toBe(true);
   });
 });
 
-describe('applyCamp', () => {
-  const tired = { ...freshRun(), node: 2, hp: { baokaka: 5, mocha: 5 } };
+describe('walking the map', () => {
+  const opened = () => readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
 
-  test('nap heals both heroes fully', () => {
-    const { run } = applyCamp(tired, 'nap');
-    expect(run.hp).toEqual({ baokaka: heroStats('baokaka', 1).maxHp, mocha: heroStats('mocha', 1).maxHp });
-    expect(run.node).toBe(3);
+  test('a step moves the party and counts toward an encounter', () => {
+    const state = opened();
+    const moved = questReducer(state, { type: 'step', tile: { c: 7, r: 5 }, facing: 'right' });
+    expect(moved.run.pos).toEqual({ c: 7, r: 5 });
+    expect(moved.run.steps).toBe(state.run.steps + 1);
   });
 
-  test('pack adds the fixed items', () => {
-    const { run } = applyCamp(tired, 'pack');
-    for (const item of CAMP_PACK_ITEMS) expect(run.items[item]).toBe(tired.items[item] + 1);
-    expect(run.hp).toEqual(tired.hp);
+  test('a locked door plays its blocked line and does not move the party', () => {
+    const state = walk(opened(), { c: 0, r: 6 });
+    expect(state.line?.text).toContain('推不開');
+    expect(state.run.map).toBe('home');
   });
 
-  test('train grants XP and reports a level-up', () => {
-    const { run, result } = applyCamp({ ...tired, xp: XP_TABLE[1] - 1 }, 'train');
-    expect(run.xp).toBe(XP_TABLE[1] - 1 + CAMP_TRAIN_XP);
-    expect(run.level).toBe(2);
-    expect(result).toEqual({ choice: 'train', leveled: true, unlocked: ['purr'] });
+  test('walking onto an exit changes map and fires that map intro once', () => {
+    const cleared = opened();
+    // 灰塵球 stands in the doorway until it is beaten, so the fight is the gate
+    let state = { ...cleared, run: { ...cleared.run, flags: [...cleared.run.flags, 'dustDone'] } };
+    state = walk(state, { c: 6, r: 10 });
+    expect(state.run.map).toBe('yard');
+    expect(state.run.pos).toEqual({ c: 8, r: 1 });
+    expect(state.card).toEqual({ n: 2, title: '院子大冒險' });
+
+    state = readAll(state);
+    // Standing on the same tile again must not replay the intro
+    const again = questReducer(state, { type: 'step', tile: { c: 8, r: 1 }, facing: 'right' });
+    expect(again.card).toBeNull();
+    expect(again.line).toBeNull();
+  });
+
+  test('the doorway is closed while 灰塵球 stands in it', () => {
+    const state = opened();
+    expect(findPath(MAPS.home, state.run.flags, state.run.pos, { c: 6, r: 10 })).toBeNull();
+    expect(findPath(MAPS.home, [...state.run.flags, 'dustDone'], state.run.pos, { c: 6, r: 10 })).not.toBeNull();
+  });
+
+  test('no stepping while a line is up', () => {
+    const state = walk(opened(), { c: 0, r: 6 });
+    expect(questReducer(state, { type: 'step', tile: { c: 5, r: 6 }, facing: 'left' })).toBe(state);
   });
 });
 
-describe('screen flow', () => {
-  test('a new game opens on the prologue with a fresh run, then the chapter screen', () => {
-    const dirty = { ...start, run: { ...freshRun(), chapter: 3, xp: 99, cleared: true } };
-    const prologue = questReducer(dirty, { type: 'newGame' });
-    expect(prologue.view).toEqual({ screen: 'story', chapter: 1, kind: 'prologue' });
-    expect(prologue.run).toEqual(freshRun(true));
-    expect(questReducer(prologue, { type: 'storyContinue' }).view).toEqual({ screen: 'chapter' });
+describe('talking', () => {
+  const opened = () => readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+
+  test('摩卡貓 joins the party and sets its flag', () => {
+    const after = readAll(questReducer(opened(), { type: 'interact', id: 'mochaNpc' }));
+    expect(after.run.party).toEqual(['baokaka', 'mocha']);
+    expect(after.run.flags).toContain('mochaJoined');
+    expect(after.run.hp.mocha).toBe(heroStats('mocha', after.run.level).hp);
   });
 
-  test('continue skips straight to the chapter screen', () => {
-    expect(questReducer(start, { type: 'continue' }).view).toEqual({ screen: 'chapter' });
+  test('a joined hero cannot join twice', () => {
+    let state = readAll(questReducer(opened(), { type: 'interact', id: 'mochaNpc' }));
+    state = readAll(questReducer(state, { type: 'interact', id: 'mochaNpc' }));
+    expect(state.run.party).toEqual(['baokaka', 'mocha']);
   });
 
-  test('beginning a battle node starts a battle against that node’s foes', () => {
-    const state = questReducer(atChapter(freshRun()), { type: 'beginNode', seed: 5 });
+  test('rules pick the first match, so 媽媽 changes what she says', () => {
+    const before = readAll(questReducer(opened(), { type: 'interact', id: 'mom' }));
+    expect(before.run.hp.baokaka).toBe(heroStats('baokaka', 1).hp);
+
+    let joined = readAll(questReducer(opened(), { type: 'interact', id: 'mochaNpc' }));
+    joined = { ...joined, run: { ...joined.run, hp: { ...joined.run.hp, baokaka: 5 } } };
+    const hugged = readAll(questReducer(joined, { type: 'interact', id: 'mom' }));
+    expect(hugged.run.hp.baokaka).toBe(heroStats('baokaka', 1).hp);
+  });
+
+  test('阿嬤 hands over her parcel exactly once', () => {
+    const first = readAll(questReducer(opened(), { type: 'interact', id: 'grandma' }));
+    expect(first.run.items.cookie).toBe(4);
+    expect(first.run.stickers).toBe(20);
+
+    const second = readAll(questReducer(first, { type: 'interact', id: 'grandma' }));
+    expect(second.run.items.cookie).toBe(4);
+    expect(second.run.stickers).toBe(20);
+  });
+
+  test('a scripted battle interrupts the script and resumes after the win', () => {
+    let state = readAll(questReducer(opened(), { type: 'interact', id: 'dust' }));
     expect(state.view.screen).toBe('battle');
-    if (state.view.screen !== 'battle') return;
-    expect(state.view.battle.foes.map((foe) => foe.foe)).toEqual(['dustBunny']);
-    expect(state.view.battle).toEqual(startBattle(freshRun(), ['dustBunny'], 5, false));
-    expect(state.view.battle.boss).toBe(false);
-  });
+    expect(state.scene).not.toBeNull();
 
-  test('beginning a camp node opens the camp, and a choice can only be made once', () => {
-    const camp = questReducer(atChapter({ ...freshRun(), node: 2 }), { type: 'beginNode', seed: 5 });
-    expect(camp.view).toEqual({ screen: 'camp' });
-    const chosen = questReducer(camp, { type: 'camp', choice: 'nap' });
-    expect(chosen.view).toEqual({ screen: 'camp', result: { choice: 'nap', leveled: false, unlocked: [] } });
-    expect(chosen.run.node).toBe(3);
-    expect(questReducer(chosen, { type: 'camp', choice: 'pack' })).toBe(chosen);
-    expect(questReducer(chosen, { type: 'campContinue' }).view).toEqual({ screen: 'chapter' });
-  });
+    if (state.view.screen !== 'battle') throw new Error('no battle');
+    const won = { ...state, view: { screen: 'battle' as const, battle: { ...state.view.battle, phase: { kind: 'won' as const } } } };
+    state = questReducer(won, { type: 'battleEnd' });
+    expect(state.view.screen).toBe('victory');
 
-  test('battle actions are forwarded and ignored when they change nothing', () => {
-    const battle = questReducer(atChapter(freshRun()), { type: 'beginNode', seed: 5 });
-    const acted = questReducer(battle, { type: 'battle', action: { type: 'skill', skill: 'throwBlock' } });
-    expect(acted).not.toBe(battle);
-    expect(questReducer(battle, { type: 'battle', action: { type: 'tick' } })).toBe(battle);
-  });
-
-  test('battleWon only fires from a won battle and shows the victory summary', () => {
-    const fighting = questReducer(atChapter(freshRun()), { type: 'beginNode', seed: 5 });
-    expect(questReducer(fighting, { type: 'battleWon' })).toBe(fighting);
-    const run = { ...freshRun(), node: 1 };
-    const won: QuestState = { ...atChapter(run), view: { screen: 'battle', battle: wonBattle(run) } };
-    const victory = questReducer(won, { type: 'battleWon' });
-    expect(victory.view.screen).toBe('victory');
-    expect(victory.run.node).toBe(2);
-    expect(victory.run.items.cookie).toBe(run.items.cookie + 1); // node 1 drops a cookie
-    expect(questReducer(victory, { type: 'victoryContinue' }).view).toEqual({ screen: 'chapter' });
-  });
-
-  test('winning the boss leads to the chapter story, then the next chapter with full HP', () => {
-    const run = { ...freshRun(), node: 3, hp: { baokaka: 9, mocha: 9 } };
-    const won: QuestState = { ...atChapter(run), view: { screen: 'battle', battle: wonBattle(run) } };
-    const story = play(won, { type: 'battleWon' }, { type: 'victoryContinue' });
-    expect(story.view).toEqual({ screen: 'story', chapter: 1, kind: 'clear' });
-    const next = questReducer(story, { type: 'storyContinue' });
-    expect(next.view).toEqual({ screen: 'chapter' });
-    expect(next.run.chapter).toBe(2);
-    expect(next.run.node).toBe(0);
-    expect(next.run.hp).toEqual({
-      baokaka: heroStats('baokaka', next.run.level).maxHp,
-      mocha: heroStats('mocha', next.run.level).maxHp,
-    });
-  });
-
-  test('finishing the last chapter shows the ending and resets the run as cleared', () => {
-    const last = CHAPTERS.length;
-    const run = { ...freshRun(), chapter: last, node: CHAPTERS[last - 1].nodes.length - 1, level: MAX_LEVEL, xp: 999 };
-    const won: QuestState = { ...atChapter(run), view: { screen: 'battle', battle: wonBattle(run) } };
-    const ending = play(won, { type: 'battleWon' }, { type: 'victoryContinue' }, { type: 'storyContinue' });
-    expect(ending.view).toEqual({ screen: 'ending' });
-    expect(ending.run).toEqual(freshRun(true));
-    expect(runStarted(ending.run)).toBe(false);
-    expect(questReducer(ending, { type: 'endingContinue' }).view).toEqual({ screen: 'title' });
-  });
-
-  test('losing sends the party back to the start of the chapter with full HP, keeping XP and items', () => {
-    const run = { ...freshRun(), chapter: 2, node: 3, xp: 50, level: 2, hp: { baokaka: 0, mocha: 0 } };
-    const battle = { ...startBattle(run, ['moleKing'], 1, true), phase: { kind: 'lost' as const } };
-    const lost: QuestState = { ...atChapter(run), view: { screen: 'battle', battle } };
-    const defeat = questReducer(lost, { type: 'battleLost' });
-    expect(defeat.view).toEqual({ screen: 'defeat' });
-    const retry = questReducer(defeat, { type: 'retry' });
-    expect(retry.view).toEqual({ screen: 'chapter' });
-    expect(retry.run.chapter).toBe(2);
-    expect(retry.run.node).toBe(0);
-    expect(retry.run.xp).toBe(50);
-    expect(retry.run.hp).toEqual({ baokaka: heroStats('baokaka', 2).maxHp, mocha: heroStats('mocha', 2).maxHp });
-  });
-
-  test('battleLost is ignored unless the battle is actually lost', () => {
-    const fighting = questReducer(atChapter(freshRun()), { type: 'beginNode', seed: 5 });
-    expect(questReducer(fighting, { type: 'battleLost' })).toBe(fighting);
-  });
-
-  test('sound toggles and the title is reachable from the chapter screen', () => {
-    const state = atChapter(freshRun());
-    expect(questReducer(state, { type: 'toggleSound' }).sound).toBe(false);
-    expect(questReducer(state, { type: 'backToTitle' }).view).toEqual({ screen: 'title' });
+    state = readAll(questReducer(state, { type: 'victoryContinue' }));
+    expect(state.run.flags).toContain('dustDone');
+    expect(state.view).toEqual({ screen: 'world' });
   });
 });
 
-describe('runStarted', () => {
-  test('a fresh run is not started; any progress is', () => {
-    expect(runStarted(freshRun())).toBe(false);
-    expect(runStarted({ ...freshRun(), node: 1 })).toBe(true);
-    expect(runStarted({ ...freshRun(), xp: 3 })).toBe(true);
-    expect(runStarted({ ...freshRun(), chapter: 2 })).toBe(true);
+describe('chests', () => {
+  const opened = () => readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+
+  test('open once and remember it', () => {
+    const first = readAll(questReducer(opened(), { type: 'interact', id: 'home-book' }));
+    expect(first.run.items.clothBook).toBe(1);
+    expect(first.run.flags).toContain('chest:home-book');
+
+    const second = questReducer(first, { type: 'interact', id: 'home-book' });
+    expect(second.run.items.clothBook).toBe(1);
   });
 });
 
-describe('pickups', () => {
-  const first = CHAPTERS[0].world.pickups[0];
+describe('the shop', () => {
+  const shopping = (): QuestState => {
+    const state = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+    const rich = { ...state, run: { ...state.run, stickers: 100, map: 'park' as const, pos: MAPS.park.entry } };
+    return questReducer(rich, { type: 'interact', id: 'uncle' });
+  };
 
-  test('walking over a ground item adds it once and remembers it', () => {
-    const state = atChapter(freshRun());
-    const picked = questReducer(state, { type: 'pickup', id: first.id });
-    expect(picked.run.items[first.item]).toBe(freshRun().items[first.item] + 1);
-    expect(picked.run.picked).toEqual([first.id]);
-    expect(questReducer(picked, { type: 'pickup', id: first.id })).toBe(picked);
+  test('opens with stock and charges stickers', () => {
+    let state = readAll(shopping());
+    expect(state.view.screen).toBe('shop');
+    const before = state.run.stickers;
+    state = questReducer(state, { type: 'buy', item: 'cookie' });
+    expect(state.run.stickers).toBe(before - ITEMS.cookie.price);
+    expect(state.run.items.cookie).toBe(3);
   });
 
-  test('unknown ids and pickups from other chapters are ignored', () => {
-    const state = atChapter(freshRun());
-    expect(questReducer(state, { type: 'pickup', id: 'nope' })).toBe(state);
-    expect(questReducer(state, { type: 'pickup', id: CHAPTERS[1].world.pickups[0].id })).toBe(state);
+  test('refuses when the stickers run out', () => {
+    let state = readAll(shopping());
+    state = { ...state, run: { ...state.run, stickers: 1 } };
+    expect(questReducer(state, { type: 'buy', item: 'bottle' })).toBe(state);
   });
 
-  test('picked items survive a defeat and a new chapter, but not a new game', () => {
-    const picked = questReducer(atChapter(freshRun()), { type: 'pickup', id: first.id });
-    const defeated: QuestState = { ...picked, view: { screen: 'defeat' } };
-    expect(questReducer(defeated, { type: 'retry' }).run.picked).toEqual([first.id]);
-    expect(questReducer(picked, { type: 'newGame' }).run.picked).toEqual([]);
+  test('closing returns to the map', () => {
+    const closed = readAll(questReducer(readAll(shopping()), { type: 'closeShop' }));
+    expect(closed.view).toEqual({ screen: 'world' });
+  });
+});
+
+describe('the inn', () => {
+  const resting = (yes: boolean): QuestState => {
+    const state = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+    const hurt = {
+      ...state,
+      run: { ...state.run, stickers: 30, hp: { ...state.run.hp, baokaka: 3 }, map: 'market' as const, pos: MAPS.market.entry },
+    };
+    const asked = readAll(questReducer(hurt, { type: 'interact', id: 'uncle' }));
+    expect(asked.inn).toBe(10);
+    return questReducer(asked, { type: 'innAnswer', yes });
+  };
+
+  test('yes charges and heals', () => {
+    const rested = resting(true);
+    expect(rested.run.stickers).toBe(20);
+    expect(rested.run.hp.baokaka).toBe(heroStats('baokaka', 1).hp);
+  });
+
+  test('no changes nothing', () => {
+    const declined = resting(false);
+    expect(declined.run.stickers).toBe(30);
+    expect(declined.run.hp.baokaka).toBe(3);
+  });
+});
+
+describe('items and equipment', () => {
+  const ready = (): QuestState => {
+    const state = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+    return { ...state, run: { ...state.run, items: { cookie: 1, shell: 1, sunHat: 1 }, hp: { ...state.run.hp, baokaka: 2 } } };
+  };
+
+  test('a cookie heals and is spent', () => {
+    const used = questReducer(ready(), { type: 'useItem', item: 'cookie', hero: 'baokaka' });
+    expect(used.run.hp.baokaka).toBe(27);
+    expect(used.run.items.cookie).toBeUndefined();
+  });
+
+  test('a revive only works on someone who is down', () => {
+    const state = ready();
+    expect(questReducer(state, { type: 'useItem', item: 'shell', hero: 'baokaka' })).toBe(state);
+
+    const down = { ...state, run: { ...state.run, hp: { ...state.run.hp, baokaka: 0 } } };
+    const back = questReducer(down, { type: 'useItem', item: 'shell', hero: 'baokaka' });
+    expect(back.run.hp.baokaka).toBeGreaterThan(0);
+  });
+
+  test('equipping moves the item out of the bag and raises the stat', () => {
+    const worn = questReducer(ready(), { type: 'equip', item: 'sunHat', hero: 'baokaka' });
+    expect(worn.run.equip.baokaka).toBe('sunHat');
+    expect(worn.run.items.sunHat).toBeUndefined();
+    expect(heroStats('baokaka', worn.run.level, 'sunHat').def).toBe(heroStats('baokaka', worn.run.level).def + 4);
+
+    const off = questReducer(worn, { type: 'equip', item: null, hero: 'baokaka' });
+    expect(off.run.equip.baokaka).toBeNull();
+    expect(off.run.items.sunHat).toBe(1);
+  });
+
+  test('unequipping an HP bonus never leaves a hero above their maximum', () => {
+    let state = ready();
+    state = { ...state, run: { ...state.run, items: { blanket: 1 } } };
+    state = questReducer(state, { type: 'equip', item: 'blanket', hero: 'baokaka' });
+    state = { ...state, run: { ...state.run, hp: { ...state.run.hp, baokaka: heroStats('baokaka', state.run.level, 'blanket').hp } } };
+    state = questReducer(state, { type: 'equip', item: null, hero: 'baokaka' });
+    expect(state.run.hp.baokaka).toBe(heroStats('baokaka', state.run.level).hp);
+  });
+
+  test('a consumable cannot be worn', () => {
+    const state = ready();
+    expect(questReducer(state, { type: 'equip', item: 'cookie', hero: 'baokaka' })).toBe(state);
+  });
+});
+
+describe('losing', () => {
+  test('the party wakes at the entrance with some HP and keeps everything', () => {
+    let state = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+    const party: HeroId[] = ['baokaka'];
+    state = {
+      ...state,
+      view: { screen: 'defeat' },
+      run: { ...state.run, party, hp: { ...state.run.hp, baokaka: 0 }, items: { cookie: 3 }, stickers: 15, pos: { c: 10, r: 8 } },
+    };
+    const back = questReducer(state, { type: 'retry' });
+    expect(back.view).toEqual({ screen: 'world' });
+    expect(back.run.pos).toEqual(MAPS.home.entry);
+    expect(back.run.hp.baokaka).toBeGreaterThan(0);
+    expect(back.run.items.cookie).toBe(3);
+    expect(back.run.stickers).toBe(15);
+  });
+});
+
+describe('the ending', () => {
+  test('marks the run cleared and returns to the title', () => {
+    let state = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+    state = questReducer({ ...state, scene: { steps: EVENTS['night.boss'], at: 0 } }, { type: 'endingContinue' });
+    expect(state.run.cleared).toBe(true);
+    expect(state.view).toEqual({ screen: 'title' });
+    expect(state.scene).toBeNull();
+  });
+});
+
+describe('sound', () => {
+  test('toggles and nothing else changes', () => {
+    const state = start();
+    const muted = questReducer(state, { type: 'toggleSound' });
+    expect(muted.sound).toBe(false);
+    expect(muted.run).toBe(state.run);
   });
 });

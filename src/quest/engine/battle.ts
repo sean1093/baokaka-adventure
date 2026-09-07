@@ -1,315 +1,307 @@
 import { roll } from '../../shared/random';
 import { FOES } from './foes';
-import { ITEMS, MAX_ENERGY, SKILLS, START_ENERGY, heroStats } from './heroes';
+import { ITEMS, SPELLS, partyStats, removeItem } from './heroes';
 import {
   HERO_ORDER,
   type Battle,
   type BattleAction,
+  type BattleEvent,
   type FoeId,
-  type FoeState,
   type HeroId,
-  type Item,
+  type Phase,
   type Run,
-  type Skill,
+  type Spell,
   type Who,
 } from './types';
 
-/** Critical hits multiply damage by this */
+/** Every hit lands somewhere in [0.9, 1.1] of its base */
+const VARIANCE = 0.1;
 const CRIT_MULTIPLIER = 1.5;
-/** Every hit lands somewhere in atk * power * [0.9, 1.1) */
-const VARIANCE = 0.2;
+/** 防禦 halves damage until the guard's next turn and gives back a little 真氣 */
+const GUARD_MP = 4;
+const FLEE_BASE = 0.55;
 
-const heroWho = (hero: HeroId): Who => ({ side: 'hero', hero });
-const foeWho = (slot: number): Who => ({ side: 'foe', slot });
+export const heroWho = (hero: HeroId): Who => ({ side: 'hero', hero });
+export const foeWho = (slot: number): Who => ({ side: 'foe', slot });
 
-export const aliveHeroes = (battle: Battle): HeroId[] => HERO_ORDER.filter((hero) => battle.heroes[hero].hp > 0);
+export const sameWho = (a: Who, b: Who): boolean =>
+  a.side === 'hero' ? b.side === 'hero' && a.hero === b.hero : b.side === 'foe' && a.slot === b.slot;
+
 export const aliveFoeSlots = (battle: Battle): number[] =>
   battle.foes.flatMap((foe, slot) => (foe.hp > 0 ? [slot] : []));
 
+export const aliveHeroes = (battle: Battle): HeroId[] => battle.party.filter((hero) => battle.heroes[hero].hp > 0);
+
+const clamp = (value: number, low: number, high: number): number => Math.min(high, Math.max(low, value));
+
+/** Fastest first; heroes win ties so the player always gets to react to an equal foe. */
+function computeOrder(battle: Battle): Who[] {
+  const heroes = aliveHeroes(battle).map((hero) => ({ who: heroWho(hero), spd: battle.stats[hero].spd, tie: 0 }));
+  const foes = aliveFoeSlots(battle).map((slot) => ({ who: foeWho(slot), spd: FOES[battle.foes[slot].foe].stats.spd, tie: 1 }));
+  return [...heroes, ...foes].sort((a, b) => b.spd - a.spd || a.tie - b.tie).map((entry) => entry.who);
+}
+
 export function startBattle(run: Run, foes: FoeId[], seed: number, boss: boolean): Battle {
-  const heroes = {
-    baokaka: { hp: run.hp.baokaka, guard: false },
-    mocha: { hp: run.hp.mocha, guard: false },
-  };
-  const alive = HERO_ORDER.filter((hero) => heroes[hero].hp > 0);
-  let cursor = seed;
-  return {
-    level: run.level,
-    heroes,
-    foes: foes.map((foe) => {
-      const rolled = roll(cursor);
-      cursor = rolled.seed;
-      return {
-        foe,
-        hp: FOES[foe].maxHp,
-        guard: false,
-        stunned: false,
-        move: 0,
-        aim: alive[Math.floor(rolled.value * alive.length)] ?? 'baokaka',
-      };
-    }),
-    items: { ...run.items },
-    energy: START_ENERGY,
-    round: 1,
-    phase: { kind: 'hero', hero: alive[0] ?? 'baokaka' },
+  const heroes = {} as Battle['heroes'];
+  for (const hero of HERO_ORDER) heroes[hero] = { hp: run.hp[hero], mp: run.mp[hero], guard: false, shield: false };
+
+  const battle: Battle = {
+    seed,
     boss,
-    seed: cursor,
+    level: run.level,
+    party: run.party,
+    heroes,
+    stats: partyStats(run),
+    foes: foes.map((foe) => ({ foe, hp: FOES[foe].stats.hp, guard: false, move: 0 })),
+    items: run.items,
+    round: 1,
+    order: [],
+    turn: 0,
+    phase: { kind: 'lost' },
     step: 0,
     events: [],
   };
+  battle.order = computeOrder(battle);
+  battle.phase = phaseFor(battle, battle.order[0]);
+  return battle;
 }
 
-/** The hero a single-target foe attack lands on: the aimed one, or whoever is still standing. */
-const resolveAim = (state: FoeState, heroes: Battle['heroes']): HeroId =>
-  heroes[state.aim].hp > 0 ? state.aim : (HERO_ORDER.find((hero) => heroes[hero].hp > 0) ?? state.aim);
-
-/** True when the acting hero may use this skill right now (owner, unlock level, energy). */
-export function canUseSkill(battle: Battle, hero: HeroId, skill: Skill): boolean {
-  return (
-    (skill.hero === hero || skill.hero === 'both') &&
-    skill.unlockLevel <= battle.level &&
-    skill.cost <= battle.energy
-  );
+function phaseFor(battle: Battle, who: Who): Phase {
+  if (who.side === 'hero') {
+    battle.heroes[who.hero] = { ...battle.heroes[who.hero], guard: false };
+    return { kind: 'hero', hero: who.hero };
+  }
+  battle.foes[who.slot] = { ...battle.foes[who.slot], guard: false };
+  return { kind: 'foe', slot: who.slot };
 }
+
+/** True when the hero knows the spell and can pay for it right now. */
+export function canCast(battle: Battle, hero: HeroId, spell: Spell): boolean {
+  return spell.hero === hero && spell.level <= battle.level && battle.heroes[hero].mp >= spell.cost;
+}
+
+/** What the acting foe will do next; the UI shows it so 防禦 is an informed choice. */
+export function foeIntent(battle: Battle, slot: number): string {
+  const foe = FOES[battle.foes[slot].foe];
+  return foe.moves[battle.foes[slot].move % foe.moves.length].name;
+}
+
+export const battleXp = (battle: Battle): number => battle.foes.reduce((sum, foe) => sum + FOES[foe.foe].xp, 0);
+export const battleStickers = (battle: Battle): number => battle.foes.reduce((sum, foe) => sum + FOES[foe.foe].stickers, 0);
 
 /**
- * One step of the battle state machine. Pure: returns a new Battle and never touches the input.
- * Illegal actions (wrong phase, dead target, unaffordable skill) return the input unchanged.
+ * One action by whoever's turn it is. Pure: returns the next battle with fresh `events`.
+ * Heroes act on their phase; on a foe phase only `tick` is accepted.
  */
 export function battleStep(battle: Battle, action: BattleAction): Battle {
-  if (battle.phase.kind === 'won' || battle.phase.kind === 'lost') return battle;
+  const { phase } = battle;
+  if (phase.kind === 'won' || phase.kind === 'lost' || phase.kind === 'fled') return battle;
+  if (phase.kind === 'foe' ? action.type !== 'tick' : action.type === 'tick') return battle;
 
   const draft: Battle = {
     ...battle,
-    heroes: {
-      baokaka: { ...battle.heroes.baokaka },
-      mocha: { ...battle.heroes.mocha },
-    },
+    heroes: { ...battle.heroes },
     foes: battle.foes.map((foe) => ({ ...foe })),
-    items: { ...battle.items },
     events: [],
     step: battle.step + 1,
   };
+  const events: BattleEvent[] = draft.events;
 
-  switch (action.type) {
-    case 'skill': {
-      if (draft.phase.kind !== 'hero') return battle;
-      const hero = draft.phase.hero;
-      const skill = SKILLS[action.skill];
-      if (!canUseSkill(draft, hero, skill)) return battle;
-      if (
-        skill.effect.kind === 'attack' &&
-        skill.effect.target === 'one' &&
-        typeof action.target === 'number' &&
-        !(draft.foes[action.target]?.hp > 0)
-      ) {
+  let seed = draft.seed;
+  const draw = (): number => {
+    const result = roll(seed);
+    seed = result.seed;
+    return result.value;
+  };
+  const vary = (base: number): number => Math.max(1, Math.round(base * (1 - VARIANCE + draw() * 2 * VARIANCE)));
+
+  const hitFoe = (slot: number, amount: number, crit: boolean) => {
+    const target = draft.foes[slot];
+    const dealt = Math.max(1, Math.round(target.guard ? amount / 2 : amount));
+    target.hp = Math.max(0, target.hp - dealt);
+    events.push({ kind: 'hit', who: foeWho(slot), amount: dealt, crit });
+    if (target.hp === 0) events.push({ kind: 'ko', who: foeWho(slot) });
+  };
+
+  const hitHero = (hero: HeroId, amount: number) => {
+    const target = draft.heroes[hero];
+    let dealt = amount;
+    if (target.guard) dealt /= 2;
+    if (target.shield) dealt /= 2;
+    dealt = Math.max(1, Math.round(dealt));
+    draft.heroes[hero] = { ...target, hp: Math.max(0, target.hp - dealt) };
+    events.push({ kind: 'hit', who: heroWho(hero), amount: dealt, crit: false });
+    if (draft.heroes[hero].hp === 0) events.push({ kind: 'ko', who: heroWho(hero) });
+  };
+
+  const healHero = (hero: HeroId, amount: number, revive = false) => {
+    const target = draft.heroes[hero];
+    if (target.hp === 0 && !revive) return;
+    const max = draft.stats[hero].hp;
+    const gained = Math.min(max - target.hp, Math.max(0, Math.round(amount)));
+    if (target.hp === 0) events.push({ kind: 'revive', who: heroWho(hero) });
+    draft.heroes[hero] = { ...target, hp: target.hp + gained };
+    events.push({ kind: 'heal', who: heroWho(hero), amount: gained });
+  };
+
+  const restoreMp = (hero: HeroId, amount: number) => {
+    const target = draft.heroes[hero];
+    const gained = Math.min(draft.stats[hero].mp - target.mp, amount);
+    draft.heroes[hero] = { ...target, mp: target.mp + gained };
+    events.push({ kind: 'mp', who: heroWho(hero), amount: gained });
+  };
+
+  const firstAliveFoe = (preferred: number | undefined): number | null => {
+    const alive = aliveFoeSlots(draft);
+    if (alive.length === 0) return null;
+    return preferred !== undefined && alive.includes(preferred) ? preferred : alive[0];
+  };
+
+  if (phase.kind === 'hero') {
+    const hero = phase.hero;
+    const stats = draft.stats[hero];
+    const crit = () => draw() < 0.05 + stats.luck / 100;
+
+    switch (action.type) {
+      case 'attack': {
+        const slot = firstAliveFoe(action.target);
+        if (slot === null) return battle;
+        events.push({ kind: 'act', who: heroWho(hero), name: '攻擊' });
+        const isCrit = crit();
+        const base = Math.max(1, stats.atk - FOES[draft.foes[slot].foe].stats.def * 0.5);
+        hitFoe(slot, vary(base) * (isCrit ? CRIT_MULTIPLIER : 1), isCrit);
+        break;
+      }
+
+      case 'spell': {
+        const spell = SPELLS[action.spell];
+        if (!canCast(draft, hero, spell)) return battle;
+        draft.heroes[hero] = { ...draft.heroes[hero], mp: draft.heroes[hero].mp - spell.cost };
+        events.push({ kind: 'act', who: heroWho(hero), name: spell.name });
+        const strength = stats.atk * 0.7 + draft.level * 2;
+
+        if (spell.effect.kind === 'damage') {
+          const slots =
+            spell.effect.target === 'all'
+              ? aliveFoeSlots(draft)
+              : [firstAliveFoe(typeof action.target === 'number' ? action.target : undefined)].filter((slot): slot is number => slot !== null);
+          for (const slot of slots) {
+            const isCrit = crit();
+            const base = Math.max(1, strength * spell.effect.power - FOES[draft.foes[slot].foe].stats.def * 0.3);
+            hitFoe(slot, vary(base) * (isCrit ? CRIT_MULTIPLIER : 1), isCrit);
+          }
+        } else if (spell.effect.kind === 'heal') {
+          const { ratio, target, revive } = spell.effect;
+          const targets = target === 'party' ? draft.party : [typeof action.target === 'string' ? action.target : hero];
+          for (const ally of targets) healHero(ally, draft.stats[ally].hp * ratio, revive);
+        } else {
+          for (const ally of aliveHeroes(draft)) draft.heroes[ally] = { ...draft.heroes[ally], shield: true };
+          events.push({ kind: 'shield' });
+        }
+        break;
+      }
+
+      case 'item': {
+        const count = draft.items[action.item] ?? 0;
+        const item = ITEMS[action.item];
+        const target = draft.heroes[action.target];
+        if (count === 0 || item.use.kind === 'equip' || !draft.party.includes(action.target)) return battle;
+        if (item.use.kind === 'revive' ? target.hp > 0 : target.hp === 0) return battle;
+        draft.items = removeItem(draft.items, action.item);
+        events.push({ kind: 'act', who: heroWho(hero), name: item.name });
+        switch (item.use.kind) {
+          case 'hp':
+            healHero(action.target, item.use.amount);
+            break;
+          case 'hpAll':
+            for (const ally of aliveHeroes(draft)) healHero(ally, item.use.amount);
+            break;
+          case 'mp':
+            restoreMp(action.target, item.use.amount);
+            break;
+          case 'full':
+            healHero(action.target, draft.stats[action.target].hp);
+            restoreMp(action.target, draft.stats[action.target].mp);
+            break;
+          case 'revive':
+            healHero(action.target, draft.stats[action.target].hp * item.use.ratio, true);
+            break;
+        }
+        break;
+      }
+
+      case 'guard':
+        draft.heroes[hero] = { ...draft.heroes[hero], guard: true };
+        events.push({ kind: 'guard', who: heroWho(hero) });
+        restoreMp(hero, GUARD_MP);
+        break;
+
+      case 'flee': {
+        if (draft.boss) return battle;
+        events.push({ kind: 'act', who: heroWho(hero), name: '逃跑' });
+        const partySpd = aliveHeroes(draft).reduce((sum, ally) => sum + draft.stats[ally].spd, 0) / aliveHeroes(draft).length;
+        const foeSpd = Math.max(...aliveFoeSlots(draft).map((slot) => FOES[draft.foes[slot].foe].stats.spd));
+        const chance = clamp(FLEE_BASE + (partySpd - foeSpd) * 0.03, 0.25, 0.9);
+        const ok = draw() < chance;
+        events.push({ kind: 'flee', ok });
+        if (ok) {
+          draft.seed = seed;
+          draft.phase = { kind: 'fled' };
+          return draft;
+        }
+        break;
+      }
+
+      case 'tick':
         return battle;
-      }
-      useSkill(draft, hero, skill, action.target);
-      afterHeroAction(draft, hero);
-      return draft;
     }
-    case 'item': {
-      if (draft.phase.kind !== 'hero') return battle;
-      const hero = draft.phase.hero;
-      if (draft.items[action.item] <= 0) return battle;
-      useItem(draft, hero, ITEMS[action.item], action.target);
-      afterHeroAction(draft, hero);
-      return draft;
-    }
-    case 'tick': {
-      if (draft.phase.kind !== 'foe') return battle;
-      foeTurn(draft, draft.phase.index);
-      return draft;
-    }
-  }
-}
-
-function rand(draft: Battle): number {
-  const result = roll(draft.seed);
-  draft.seed = result.seed;
-  return result.value;
-}
-
-function damageRoll(draft: Battle, atk: number, power: number, critChance: number): { amount: number; crit: boolean } {
-  const variance = 1 - VARIANCE / 2 + rand(draft) * VARIANCE;
-  const crit = critChance > 0 && rand(draft) < critChance;
-  const amount = Math.max(1, Math.round(atk * power * variance * (crit ? CRIT_MULTIPLIER : 1)));
-  return { amount, crit };
-}
-
-function strikeFoe(draft: Battle, slot: number, atk: number, power: number, critChance: number, stunChance: number): void {
-  const foe = draft.foes[slot];
-  const hit = damageRoll(draft, atk, power, critChance);
-  const amount = foe.guard ? Math.max(1, Math.round(hit.amount / 2)) : hit.amount;
-  foe.hp = Math.max(0, foe.hp - amount);
-  draft.events.push({ kind: 'hit', who: foeWho(slot), amount, crit: hit.crit });
-  if (foe.hp === 0) {
-    draft.events.push({ kind: 'ko', who: foeWho(slot) });
-  } else if (stunChance > 0 && !foe.stunned && rand(draft) < stunChance) {
-    foe.stunned = true;
-    draft.events.push({ kind: 'stun', who: foeWho(slot) });
-  }
-}
-
-function healHero(draft: Battle, hero: HeroId, ratio: number): void {
-  const { maxHp } = heroStats(hero, draft.level);
-  const state = draft.heroes[hero];
-  const amount = Math.min(maxHp - state.hp, Math.round(maxHp * ratio));
-  state.hp += amount;
-  draft.events.push({ kind: 'heal', who: heroWho(hero), amount });
-}
-
-function changeEnergy(draft: Battle, delta: number): void {
-  const before = draft.energy;
-  draft.energy = Math.max(0, Math.min(MAX_ENERGY, before + delta));
-  if (draft.energy !== before) draft.events.push({ kind: 'energy', delta: draft.energy - before });
-}
-
-function useSkill(draft: Battle, hero: HeroId, skill: Skill, target: number | HeroId | undefined): void {
-  const { atk } = heroStats(hero, draft.level);
-  const { effect } = skill;
-  draft.events.push({ kind: 'act', who: heroWho(hero), name: skill.name });
-  changeEnergy(draft, -skill.cost);
-
-  switch (effect.kind) {
-    case 'attack': {
-      const alive = aliveFoeSlots(draft);
-      if (effect.target === 'one') {
-        const slot = typeof target === 'number' ? target : alive[0];
-        for (let hit = 0; hit < effect.hits && draft.foes[slot].hp > 0; hit += 1) {
-          strikeFoe(draft, slot, atk, effect.power, effect.crit, effect.stun);
-        }
-      } else if (effect.target === 'all') {
-        for (const slot of alive) strikeFoe(draft, slot, atk, effect.power, effect.crit, effect.stun);
-      } else {
-        for (let hit = 0; hit < effect.hits; hit += 1) {
-          const targets = aliveFoeSlots(draft);
-          if (targets.length === 0) break;
-          const slot = targets[Math.floor(rand(draft) * targets.length)];
-          strikeFoe(draft, slot, atk, effect.power, effect.crit, effect.stun);
-        }
-      }
-      break;
-    }
-    case 'heal':
-      if (effect.target === 'party') {
-        for (const ally of HERO_ORDER) healHero(draft, ally, effect.ratio);
-      } else {
-        healHero(draft, typeof target === 'string' ? target : hero, effect.ratio);
-      }
-      break;
-    case 'guard':
-      draft.heroes[hero].guard = true;
-      draft.events.push({ kind: 'guard', who: heroWho(hero) });
-      break;
-  }
-
-  changeEnergy(draft, skill.gain);
-}
-
-function useItem(draft: Battle, hero: HeroId, item: Item, target: HeroId | undefined): void {
-  draft.items[item.id] -= 1;
-  draft.events.push({ kind: 'act', who: heroWho(hero), name: item.name });
-  if (item.effect.kind === 'energy') {
-    changeEnergy(draft, MAX_ENERGY);
-  } else if (item.effect.target === 'party') {
-    for (const ally of HERO_ORDER) healHero(draft, ally, item.effect.ratio);
   } else {
-    healHero(draft, target ?? hero, item.effect.ratio);
-  }
-}
-
-function afterHeroAction(draft: Battle, hero: HeroId): void {
-  if (aliveFoeSlots(draft).length === 0) {
-    draft.phase = { kind: 'won' };
-    return;
-  }
-  const next = HERO_ORDER.slice(HERO_ORDER.indexOf(hero) + 1).find((ally) => draft.heroes[ally].hp > 0);
-  draft.phase = next ? { kind: 'hero', hero: next } : { kind: 'foe', index: aliveFoeSlots(draft)[0] };
-}
-
-function foeTurn(draft: Battle, index: number): void {
-  const state = draft.foes[index];
-  const foe = FOES[state.foe];
-  // A foe's guard covers the heroes' turns in between and drops as soon as it acts again
-  state.guard = false;
-
-  if (state.stunned) {
-    state.stunned = false;
-    draft.events.push({ kind: 'skip', who: foeWho(index) });
-  } else {
+    const slot = phase.slot;
+    const state = draft.foes[slot];
+    const foe = FOES[state.foe];
     const move = foe.moves[state.move % foe.moves.length];
     state.move += 1;
-    draft.events.push({ kind: 'act', who: foeWho(index), name: move.name });
+    events.push({ kind: 'act', who: foeWho(slot), name: move.name });
 
-    switch (move.kind) {
-      case 'attack': {
-        const targets = move.target === 'all' ? aliveHeroes(draft) : [resolveAim(state, draft.heroes)];
-        for (const hero of targets) {
-          const hit = damageRoll(draft, foe.atk, move.power, 0);
-          const heroState = draft.heroes[hero];
-          const amount = heroState.guard ? Math.max(1, Math.round(hit.amount / 2)) : hit.amount;
-          heroState.hp = Math.max(0, heroState.hp - amount);
-          draft.events.push({ kind: 'hit', who: heroWho(hero), amount, crit: false });
-          if (heroState.hp === 0) draft.events.push({ kind: 'ko', who: heroWho(hero) });
-        }
-        break;
+    if (move.kind === 'attack') {
+      const alive = aliveHeroes(draft);
+      const targets = move.target === 'all' ? alive : [alive[Math.floor(draw() * alive.length)]];
+      for (const hero of targets) {
+        const base = Math.max(1, foe.stats.atk * move.power - draft.stats[hero].def * 0.5);
+        hitHero(hero, vary(base));
       }
-      case 'guard':
-        state.guard = true;
-        draft.events.push({ kind: 'guard', who: foeWho(index) });
-        break;
-      case 'charge':
-        draft.events.push({ kind: 'charge', who: foeWho(index) });
-        break;
-      case 'heal': {
-        const amount = Math.min(foe.maxHp - state.hp, Math.round(foe.maxHp * move.ratio));
-        state.hp += amount;
-        draft.events.push({ kind: 'heal', who: foeWho(index), amount });
-        break;
-      }
+    } else if (move.kind === 'guard') {
+      state.guard = true;
+      events.push({ kind: 'guard', who: foeWho(slot) });
+    } else {
+      const gained = Math.min(foe.stats.hp - state.hp, Math.round(foe.stats.hp * move.ratio));
+      state.hp += gained;
+      events.push({ kind: 'heal', who: foeWho(slot), amount: gained });
     }
-    // Aim the next move now, so the intent bubble can name the hero before it happens
-    const alive = aliveHeroes(draft);
-    state.aim = alive[Math.floor(rand(draft) * alive.length)] ?? state.aim;
   }
 
-  if (aliveHeroes(draft).length === 0) {
-    draft.phase = { kind: 'lost' };
-    return;
-  }
-
-  const next = aliveFoeSlots(draft).find((slot) => slot > index);
-  if (next !== undefined) {
-    draft.phase = { kind: 'foe', index: next };
-    return;
-  }
-  // New round: hero guards were for this foe phase only
-  draft.round += 1;
-  for (const hero of HERO_ORDER) draft.heroes[hero].guard = false;
-  draft.phase = { kind: 'hero', hero: aliveHeroes(draft)[0] };
+  draft.seed = seed;
+  return advance(draft);
 }
 
-export type Intent =
-  | { kind: 'stunned' }
-  | { kind: 'attack'; name: string; amount: number; aim: HeroId | 'all' }
-  | { kind: 'guard' | 'charge' | 'heal'; name: string };
+/** Ends the acting side's turn: settles a win or loss, otherwise hands the phase to the next actor. */
+function advance(draft: Battle): Battle {
+  if (aliveFoeSlots(draft).length === 0) return { ...draft, phase: { kind: 'won' } };
+  if (aliveHeroes(draft).length === 0) return { ...draft, phase: { kind: 'lost' } };
 
-/** What this foe will do on its next turn, shown to the player so guarding is a real decision. */
-export function foeIntent(state: FoeState, heroes: Battle['heroes']): Intent {
-  if (state.stunned) return { kind: 'stunned' };
-  const foe = FOES[state.foe];
-  const move = foe.moves[state.move % foe.moves.length];
-  if (move.kind === 'attack') {
-    return {
-      kind: 'attack',
-      name: move.name,
-      amount: Math.round(foe.atk * move.power),
-      aim: move.target === 'all' ? 'all' : resolveAim(state, heroes),
-    };
+  let turn = draft.turn + 1;
+  let order = draft.order;
+  let round = draft.round;
+  const isAlive = (who: Who) => (who.side === 'hero' ? draft.heroes[who.hero].hp > 0 : draft.foes[who.slot].hp > 0);
+  while (turn < order.length && !isAlive(order[turn])) turn += 1;
+  if (turn >= order.length) {
+    // A new round: 泡泡護盾 lasted exactly one
+    round += 1;
+    order = computeOrder(draft);
+    turn = 0;
+    for (const hero of draft.party) draft.heroes[hero] = { ...draft.heroes[hero], shield: false };
   }
-  return { kind: move.kind, name: move.name };
+  const next = { ...draft, order, turn, round };
+  next.phase = phaseFor(next, order[turn]);
+  return next;
 }
-
-export const battleXp = (foes: FoeId[]): number => foes.reduce((sum, foe) => sum + FOES[foe].xp, 0);

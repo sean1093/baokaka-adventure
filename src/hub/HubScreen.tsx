@@ -17,6 +17,7 @@ const Ball = SPRITES.ball;
 const Cookie = SPRITES.cookie;
 const ToyBoat = SPRITES.toyBoat;
 const BlockGolem = SPRITES.blockGolem;
+const Duck = SPRITES.duck;
 
 type Props = { onOpen: (route: Exclude<Route, 'hub'>) => void };
 
@@ -82,10 +83,10 @@ export const HubScreen = ({ onOpen }: Props) => {
         ? '六個地方都完成了'
         : `完成 ${find.completed.length} / ${LEVELS.length} 個地方`;
 
-  const questStatus = runStarted(quest)
-    ? `第 ${quest.chapter} 章 · 等級 ${quest.level}`
-    : quest.cleared
-      ? '已通關，再來一次？'
+  const questStatus = quest.cleared
+    ? `已通關 · 等級 ${quest.level}`
+    : runStarted(quest)
+      ? `第 ${quest.chapter} 章 · 等級 ${quest.level}`
       : '還沒開始';
 
   const sudokuStatus = sudoku.play
@@ -115,12 +116,34 @@ export const HubScreen = ({ onOpen }: Props) => {
       </section>
 
       <GameTile
+        kicker="武俠 RPG"
+        title="寶咖咖奇俠傳"
+        blurb="七張地圖走透透，跟路人講話、開玩具箱、打搗蛋鬼。回合制指令戰鬥，三個人的隊伍。"
+        status={questStatus}
+        gradient="from-plum/45 via-cream to-sky/40"
+        fresh
+        art={
+          <>
+            <span className="absolute left-0 top-0 block h-[4.5rem] w-[4.5rem]">
+              <Baokaka />
+            </span>
+            <span className="absolute right-0 top-6 block h-14 w-14">
+              <Duck />
+            </span>
+            <span className="absolute -right-1 bottom-0 block h-16 w-16 -scale-x-100">
+              <BlockGolem />
+            </span>
+          </>
+        }
+        onClick={() => onOpen('quest')}
+      />
+
+      <GameTile
         kicker="圖案數獨"
         title="摩卡貓的收納挑戰"
         blurb="每一橫列、直行、區都要剛好一個玩具。4×4 到 9×9，看圖案或數字都行。"
         status={sudokuStatus}
         gradient="from-sky/50 via-cream to-sand/70"
-        fresh
         art={
           <>
             <span className="absolute right-0 top-0 grid grid-cols-2 gap-1 rounded-2xl bg-surface p-1.5 shadow-card">
@@ -143,25 +166,6 @@ export const HubScreen = ({ onOpen }: Props) => {
           </>
         }
         onClick={() => onOpen('sudoku')}
-      />
-
-      <GameTile
-        kicker="回合制冒險"
-        title="寶咖咖勇者團"
-        blurb="操控寶咖咖走過六個場景，和摩卡貓並肩打敗搗蛋鬼，把安撫娃娃搶回來。"
-        status={questStatus}
-        gradient="from-plum/45 via-cream to-sky/40"
-        art={
-          <>
-            <span className="absolute left-0 top-0 block h-20 w-20">
-              <Baokaka />
-            </span>
-            <span className="absolute -right-1 bottom-0 block h-16 w-16 -scale-x-100">
-              <BlockGolem />
-            </span>
-          </>
-        }
-        onClick={() => onOpen('quest')}
       />
 
       <GameTile

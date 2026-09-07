@@ -8,6 +8,8 @@ import * as foesMarket from './foesMarket';
 import * as foesNight from './foesNight';
 import * as foesPark from './foesPark';
 import * as foesYard from './foesYard';
+import * as folk from './folk';
+import * as town from './town';
 import * as living from './living';
 import * as market from './market';
 import * as night from './night';
@@ -105,4 +107,19 @@ export const SPRITES: Record<SpriteName, Sprite> = {
   sleepySprite: foesNight.SleepySprite,
   nightmareCloud: foesNight.NightmareCloud,
   snoreKing: foesNight.SnoreKing,
+
+  duck: folk.Duck,
+  mom: folk.Mom,
+  dad: folk.Dad,
+  grandma: folk.Grandma,
+  kid: folk.Kid,
+  dog: folk.Dog,
+
+  vendor: town.Vendor,
+  uncle: town.Uncle,
+  toyBox: town.ToyBox,
+  toyBoxOpen: town.ToyBoxOpen,
+  signpost: town.Signpost,
+  napMat: town.NapMat,
+  bathtub: town.Bathtub,
 };

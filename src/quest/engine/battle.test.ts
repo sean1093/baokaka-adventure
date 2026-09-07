@@ -1,318 +1,221 @@
 import { describe, expect, test } from 'vitest';
-import { aliveFoeSlots, battleStep, battleXp, canUseSkill, foeIntent, startBattle } from './battle';
-import { roll } from '../../shared/random';
+import { aliveFoeSlots, aliveHeroes, battleStep, battleStickers, battleXp, canCast, foeIntent, startBattle } from './battle';
 import { FOES } from './foes';
-import { MAX_ENERGY, SKILLS, START_ENERGY, heroStats } from './heroes';
+import { SPELLS, heroStats } from './heroes';
 import { freshRun } from './quest';
-import type { Battle, BattleAction, HeroId, Run } from './types';
+import type { Battle, FoeId, HeroId, Run } from './types';
 
-const runAt = (level: number, hp: Partial<Record<HeroId, number>> = {}): Run => ({
-  ...freshRun(),
-  level,
-  hp: { baokaka: heroStats('baokaka', level).maxHp, mocha: heroStats('mocha', level).maxHp, ...hp },
-});
-
-const play = (battle: Battle, ...actions: BattleAction[]): Battle =>
-  actions.reduce((state, action) => battleStep(state, action), battle);
-
-/** Sends ticks until the foe phase is over (or the battle ends). */
-function foePhase(battle: Battle): Battle {
-  let state = battle;
-  for (let guard = 0; guard < 10 && state.phase.kind === 'foe'; guard += 1) {
-    state = battleStep(state, { type: 'tick' });
+const runAt = (level: number, party: HeroId[] = ['baokaka', 'mocha', 'duck']): Run => {
+  const base = freshRun(7);
+  const run: Run = { ...base, level, party };
+  const hp = { ...run.hp };
+  const mp = { ...run.mp };
+  for (const hero of party) {
+    hp[hero] = heroStats(hero, level).hp;
+    mp[hero] = heroStats(hero, level).mp;
   }
-  return state;
+  return { ...run, hp, mp };
+};
+
+const fight = (level: number, foes: FoeId[], boss = false, party?: HeroId[]): Battle =>
+  startBattle(runAt(level, party), foes, 12345, boss);
+
+/** Drives the battle until it is a given hero's turn, ticking through any foes on the way. */
+function untilHero(battle: Battle, hero: HeroId): Battle {
+  let current = battle;
+  for (let guard = 0; guard < 40; guard += 1) {
+    if (current.phase.kind === 'hero' && current.phase.hero === hero) return current;
+    if (current.phase.kind === 'foe') current = battleStep(current, { type: 'tick' });
+    else if (current.phase.kind === 'hero') current = battleStep(current, { type: 'guard' });
+    else return current;
+  }
+  throw new Error(`never reached ${hero}'s turn`);
 }
 
-describe('roll', () => {
-  test('is deterministic and advances the seed', () => {
-    const a = roll(42);
-    const b = roll(42);
-    expect(a).toEqual(b);
-    expect(a.seed).not.toBe(42);
-    expect(roll(a.seed).value).not.toBe(a.value);
-    expect(a.value).toBeGreaterThanOrEqual(0);
-    expect(a.value).toBeLessThan(1);
-  });
-});
-
-describe('startBattle', () => {
-  test('opens on the first hero with fresh foes and the starting energy', () => {
-    const battle = startBattle(runAt(1), ['dustBunny', 'sockMonster'], 7, false);
-    expect(battle.phase).toEqual({ kind: 'hero', hero: 'baokaka' });
-    expect(battle.energy).toBe(START_ENERGY);
-    expect(battle.round).toBe(1);
-    expect(battle.foes.map((foe) => foe.hp)).toEqual([FOES.dustBunny.maxHp, FOES.sockMonster.maxHp]);
-    expect(battle.heroes.baokaka.hp).toBe(heroStats('baokaka', 1).maxHp);
-  });
-
-  test('skips a hero who starts the fight knocked out', () => {
-    const battle = startBattle(runAt(1, { baokaka: 0 }), ['dustBunny'], 7, false);
+describe('turn order', () => {
+  test('is fastest first and heroes win ties', () => {
+    const battle = fight(3, ['snail']);
+    const speeds = battle.order.map((who) => (who.side === 'hero' ? battle.stats[who.hero].spd : FOES[battle.foes[who.slot].foe].stats.spd));
+    expect(speeds).toEqual([...speeds].sort((a, b) => b - a));
+    // Mocha is the fastest hero, so she opens the round
     expect(battle.phase).toEqual({ kind: 'hero', hero: 'mocha' });
   });
-});
 
-describe('hero skills', () => {
-  test('a basic attack damages the foe within atk * power * variance and gains energy', () => {
-    const battle = startBattle(runAt(1), ['blockGolem'], 1, true);
-    const next = battleStep(battle, { type: 'skill', skill: 'throwBlock' });
-    const dealt = FOES.blockGolem.maxHp - next.foes[0].hp;
-    const { atk } = heroStats('baokaka', 1);
-    expect(dealt).toBeGreaterThanOrEqual(Math.floor(atk * 0.9));
-    expect(dealt).toBeLessThanOrEqual(Math.ceil(atk * 1.1 * 1.5));
-    expect(next.energy).toBe(START_ENERGY + 1);
-    expect(next.phase).toEqual({ kind: 'hero', hero: 'mocha' });
-    expect(next.step).toBe(1);
-    expect(next.events[0]).toEqual({ kind: 'act', who: { side: 'hero', hero: 'baokaka' }, name: '丟積木' });
-  });
-
-  test('never mutates the previous state', () => {
-    const battle = startBattle(runAt(1), ['dustBunny'], 1, false);
-    const snapshot = JSON.stringify(battle);
-    battleStep(battle, { type: 'skill', skill: 'throwBlock' });
-    expect(JSON.stringify(battle)).toBe(snapshot);
-  });
-
-  test('an unaffordable skill is ignored', () => {
-    const battle = { ...startBattle(runAt(1), ['dustBunny'], 1, false), energy: 0 };
-    expect(battleStep(battle, { type: 'skill', skill: 'bigCry' })).toBe(battle);
-  });
-
-  test("another hero's skill or a locked skill is ignored", () => {
-    const battle = startBattle(runAt(1), ['dustBunny'], 1, false);
-    expect(battleStep(battle, { type: 'skill', skill: 'scratch' })).toBe(battle);
-    expect(canUseSkill(battle, 'baokaka', SKILLS.hug)).toBe(false);
-    expect(battleStep(battle, { type: 'skill', skill: 'hug' })).toBe(battle);
-  });
-
-  test('energy never exceeds the cap', () => {
-    const battle = { ...startBattle(runAt(1), ['blockGolem'], 1, true), energy: MAX_ENERGY };
-    const next = battleStep(battle, { type: 'skill', skill: 'throwBlock' });
-    expect(next.energy).toBe(MAX_ENERGY);
-    expect(next.events.some((event) => event.kind === 'energy')).toBe(false);
-  });
-
-  test('attacking a dead foe is ignored, and omitting the target picks the first living foe', () => {
-    const base = startBattle(runAt(6), ['dustBunny', 'sockMonster'], 3, false);
-    const battle = { ...base, foes: base.foes.map((foe, slot) => (slot === 0 ? { ...foe, hp: 0 } : foe)) };
-    expect(battleStep(battle, { type: 'skill', skill: 'throwBlock', target: 0 })).toBe(battle);
-    const next = battleStep(battle, { type: 'skill', skill: 'throwBlock' });
-    expect(next.foes[1].hp).toBeLessThan(FOES.sockMonster.maxHp);
-  });
-
-  test('an all-target attack hits every living foe', () => {
-    const battle = startBattle(runAt(1), ['dustBunny', 'dustBunny', 'sockMonster'], 5, false);
-    const next = battleStep(battle, { type: 'skill', skill: 'bigCry' });
-    expect(next.foes.every((foe) => foe.hp < FOES[foe.foe].maxHp)).toBe(true);
-    expect(next.energy).toBe(START_ENERGY - SKILLS.bigCry.cost);
-  });
-
-  test('a guaranteed stun makes the foe skip its next action and then wears off', () => {
-    const battle = play(startBattle(runAt(5), ['blockGolem'], 11, true), { type: 'skill', skill: 'throwBlock' });
-    // mocha's turn: pass it with a guard so baokaka can scream next round
-    let state = play(battle, { type: 'skill', skill: 'guard' });
-    state = foePhase(state);
-    expect(state.round).toBe(2);
-    state = { ...state, energy: MAX_ENERGY };
-    state = battleStep(state, { type: 'skill', skill: 'superScream' });
-    expect(state.foes[0].stunned).toBe(true);
-    expect(foeIntent(state.foes[0], state.heroes)).toEqual({ kind: 'stunned' });
-    state = battleStep(state, { type: 'skill', skill: 'guard' });
-    const hpBefore = { ...state.heroes };
-    state = battleStep(state, { type: 'tick' });
-    expect(state.events.some((event) => event.kind === 'skip')).toBe(true);
-    expect(state.heroes.baokaka.hp).toBe(hpBefore.baokaka.hp);
-    expect(state.heroes.mocha.hp).toBe(hpBefore.mocha.hp);
-    expect(state.foes[0].stunned).toBe(false);
-    expect(state.foes[0].move).toBe(1); // the skipped turn did not advance the move cycle
-  });
-
-  test('a guard halves the next foe hit and is cleared at the new round', () => {
-    // Only mocha stands, so the dust bunny's single-target attack must hit her
-    const base = startBattle(runAt(1, { baokaka: 0 }), ['dustBunny'], 99, false);
-    const guarded = foePhase(battleStep(base, { type: 'skill', skill: 'guard' }));
-    const exposed = foePhase(battleStep(base, { type: 'skill', skill: 'scratch' }));
-    const maxHp = heroStats('mocha', 1).maxHp;
-    const guardedDamage = maxHp - guarded.heroes.mocha.hp;
-    const exposedDamage = maxHp - exposed.heroes.mocha.hp;
-    expect(exposedDamage).toBeGreaterThan(0);
-    expect(guardedDamage).toBe(Math.max(1, Math.round(exposedDamage / 2)));
-    expect(guarded.heroes.mocha.guard).toBe(false);
-    expect(guarded.round).toBe(2);
-  });
-
-  test('healing an ally restores up to max HP and revives a knocked-out hero', () => {
-    const battle = startBattle(runAt(3, { mocha: 0 }), ['dustBunny'], 2, false);
-    const next = battleStep(battle, { type: 'skill', skill: 'hug', target: 'mocha' });
-    const maxHp = heroStats('mocha', 3).maxHp;
-    expect(next.heroes.mocha.hp).toBe(Math.round(maxHp * 0.4));
-    // The revived hero gets her turn this very round
-    expect(next.phase).toEqual({ kind: 'hero', hero: 'mocha' });
-    const capped = battleStep(startBattle(runAt(3), ['dustBunny'], 2, false), { type: 'skill', skill: 'hug', target: 'baokaka' });
-    expect(capped.heroes.baokaka.hp).toBe(heroStats('baokaka', 3).maxHp);
-    expect(capped.events).toContainEqual({ kind: 'heal', who: { side: 'hero', hero: 'baokaka' }, amount: 0 });
-  });
-
-  test('purr trades the turn for energy and a small party heal', () => {
-    const battle = play(startBattle(runAt(2, { baokaka: 10, mocha: 10 }), ['blockGolem'], 4, true), { type: 'skill', skill: 'guard' });
-    const next = battleStep(battle, { type: 'skill', skill: 'purr' });
-    expect(next.energy).toBe(START_ENERGY + 1 + 2);
-    expect(next.heroes.baokaka.hp).toBe(10 + Math.round(heroStats('baokaka', 2).maxHp * 0.12));
-    expect(next.heroes.mocha.hp).toBe(10 + Math.round(heroStats('mocha', 2).maxHp * 0.12));
-    expect(next.foes[0].hp).toBe(FOES.blockGolem.maxHp);
-    expect(next.phase.kind).toBe('foe');
-  });
-
-  test('frenzy lands four hits spread over living foes', () => {
-    const battle = play(
-      { ...startBattle(runAt(4), ['snail', 'snail', 'snail'], 8, false), energy: MAX_ENERGY },
-      { type: 'skill', skill: 'guard' },
-    );
-    const next = battleStep(battle, { type: 'skill', skill: 'frenzy' });
-    expect(next.events.filter((event) => event.kind === 'hit')).toHaveLength(4);
+  test('skips the fallen and rebuilds every round', () => {
+    let battle = fight(3, ['dustBunny']);
+    const rounds = new Set<number>();
+    for (let step = 0; step < 12 && battle.phase.kind !== 'won' && battle.phase.kind !== 'lost'; step += 1) {
+      rounds.add(battle.round);
+      battle = battle.phase.kind === 'foe' ? battleStep(battle, { type: 'tick' }) : battleStep(battle, { type: 'guard' });
+    }
+    expect(rounds.size).toBeGreaterThan(1);
   });
 });
 
-describe('items', () => {
-  test('a bottle heals the chosen hero and is used up', () => {
-    const battle = startBattle(runAt(1, { baokaka: 10 }), ['dustBunny'], 1, false);
-    const next = battleStep(battle, { type: 'item', item: 'bottle', target: 'baokaka' });
-    expect(next.heroes.baokaka.hp).toBe(10 + Math.round(heroStats('baokaka', 1).maxHp * 0.5));
-    expect(next.items.bottle).toBe(battle.items.bottle - 1);
-    expect(next.phase).toEqual({ kind: 'hero', hero: 'mocha' });
+describe('attacking', () => {
+  test('deals damage and knocks a foe out', () => {
+    let battle = fight(6, ['dustBunny']);
+    battle = untilHero(battle, 'mocha');
+    const after = battleStep(battle, { type: 'attack', target: 0 });
+    expect(after.foes[0].hp).toBeLessThan(FOES.dustBunny.stats.hp);
+    expect(after.events.some((event) => event.kind === 'hit')).toBe(true);
   });
 
-  test('dried fish fills the energy bar', () => {
-    const next = battleStep(startBattle(runAt(1), ['dustBunny'], 1, false), { type: 'item', item: 'driedFish' });
-    expect(next.energy).toBe(MAX_ENERGY);
-  });
+  test('a guarding foe takes half damage', () => {
+    // 蝸牛 opens with 縮進殼裡
+    let battle = fight(4, ['snail']);
+    expect(foeIntent(battle, 0)).toBe('縮進殼裡');
+    battle = untilHero(battle, 'mocha');
+    const open = battleStep(battle, { type: 'attack', target: 0 });
+    const openDamage = FOES.snail.stats.hp - open.foes[0].hp;
 
-  test('an item with none left is ignored', () => {
-    const battle = startBattle({ ...runAt(1), items: { bottle: 0, cookie: 0, driedFish: 0 } }, ['dustBunny'], 1, false);
-    expect(battleStep(battle, { type: 'item', item: 'cookie' })).toBe(battle);
-  });
-});
-
-describe('turn flow', () => {
-  test('after both heroes act, every living foe acts once, then round two begins', () => {
-    let battle = startBattle(runAt(6), ['snail', 'snail'], 12, false);
-    battle = play(battle, { type: 'skill', skill: 'guard' }, { type: 'skill', skill: 'guard' });
-    expect(battle.phase).toEqual({ kind: 'foe', index: 0 });
-    battle = battleStep(battle, { type: 'tick' });
-    expect(battle.phase).toEqual({ kind: 'foe', index: 1 });
-    battle = battleStep(battle, { type: 'tick' });
-    expect(battle.phase).toEqual({ kind: 'hero', hero: 'baokaka' });
-    expect(battle.round).toBe(2);
-    expect(battle.foes.every((foe) => foe.move === 1)).toBe(true);
-  });
-
-  test('dead foes are skipped in the foe phase', () => {
-    let battle = startBattle(runAt(6), ['dustBunny', 'dustBunny', 'dustBunny'], 12, false);
-    battle = { ...battle, foes: battle.foes.map((foe, slot) => (slot === 1 ? { ...foe, hp: 0 } : foe)) };
-    battle = play(battle, { type: 'skill', skill: 'guard' }, { type: 'skill', skill: 'guard' });
-    expect(battle.phase).toEqual({ kind: 'foe', index: 0 });
-    battle = battleStep(battle, { type: 'tick' });
-    expect(battle.phase).toEqual({ kind: 'foe', index: 2 });
-  });
-
-  test('ticks are ignored outside the foe phase and skills outside the hero phase', () => {
-    const battle = startBattle(runAt(1), ['dustBunny'], 1, false);
-    expect(battleStep(battle, { type: 'tick' })).toBe(battle);
-    const foeTurn = play(battle, { type: 'skill', skill: 'guard' }, { type: 'skill', skill: 'guard' });
-    expect(battleStep(foeTurn, { type: 'skill', skill: 'throwBlock' })).toBe(foeTurn);
-  });
-
-  test('a knocked-out hero loses their turn', () => {
-    const battle = startBattle(runAt(1, { mocha: 0 }), ['dustBunny'], 1, false);
-    const next = battleStep(battle, { type: 'skill', skill: 'throwBlock' });
-    expect(next.phase.kind === 'foe' || next.phase.kind === 'won').toBe(true);
-  });
-
-  test('defeating the last foe wins immediately and freezes the battle', () => {
-    const fresh = startBattle(runAt(6), ['dustBunny'], 1, false);
-    const battle = { ...fresh, foes: [{ ...fresh.foes[0], hp: 1 }] };
-    const won = battleStep(battle, { type: 'skill', skill: 'throwBlock' });
-    expect(won.foes[0].hp).toBe(0);
-    expect(won.phase).toEqual({ kind: 'won' });
-    expect(battleStep(won, { type: 'skill', skill: 'scratch' })).toBe(won);
-    expect(aliveFoeSlots(won)).toEqual([]);
-  });
-
-  test('losing both heroes ends the battle as lost', () => {
-    // 大打呼 hits everyone; two heroes on 1 HP cannot survive it
-    let battle = startBattle(runAt(1, { baokaka: 1, mocha: 1 }), ['snoreKing'], 1, true);
-    battle = { ...battle, foes: [{ ...battle.foes[0], move: 1 }] };
-    battle = play(battle, { type: 'skill', skill: 'throwBlock' }, { type: 'skill', skill: 'scratch' });
-    battle = foePhase(battle);
-    expect(battle.phase).toEqual({ kind: 'lost' });
-    expect(battle.events.filter((event) => event.kind === 'ko')).toHaveLength(2);
-  });
-});
-
-describe('foe moves', () => {
-  test('a guarding foe takes half damage until it acts again', () => {
-    // Snail opens with 縮進殼裡
-    const battle = play(startBattle(runAt(6), ['snail'], 21, false), { type: 'skill', skill: 'guard' }, { type: 'skill', skill: 'guard' });
-    const guarded = battleStep(battle, { type: 'tick' });
+    let guarded = battleStep(fight(4, ['snail']), { type: 'guard' });
+    while (guarded.phase.kind !== 'foe') guarded = battleStep(guarded, { type: 'guard' });
+    guarded = battleStep(guarded, { type: 'tick' });
     expect(guarded.foes[0].guard).toBe(true);
-    const hitGuarded = battleStep(guarded, { type: 'skill', skill: 'throwBlock' });
-    const hitOpen = battleStep({ ...guarded, foes: [{ ...guarded.foes[0], guard: false }] }, { type: 'skill', skill: 'throwBlock' });
-    const guardedDamage = FOES.snail.maxHp - hitGuarded.foes[0].hp;
-    const openDamage = FOES.snail.maxHp - hitOpen.foes[0].hp;
-    expect(guardedDamage).toBe(Math.max(1, Math.round(openDamage / 2)));
-    const acted = foePhase(play(hitGuarded, { type: 'skill', skill: 'guard' }));
-    expect(acted.foes[0].guard).toBe(false);
+    guarded = untilHero(guarded, 'mocha');
+    const hit = battleStep(guarded, { type: 'attack', target: 0 });
+    expect(FOES.snail.stats.hp - hit.foes[0].hp).toBeLessThan(openDamage);
   });
 
-  test('a charging foe does no damage and telegraphs the big hit, naming its target', () => {
-    // kiteGhost: 尾巴掃, 飛高高 (charge), 俯衝
-    let battle = startBattle(runAt(6), ['kiteGhost'], 5, false);
-    battle = { ...battle, foes: [{ ...battle.foes[0], move: 1 }] };
-    expect(foeIntent(battle.foes[0], battle.heroes)).toEqual({ kind: 'charge', name: '飛高高' });
-    battle = foePhase(play(battle, { type: 'skill', skill: 'guard' }, { type: 'skill', skill: 'guard' }));
-    expect(battle.heroes.baokaka.hp).toBe(heroStats('baokaka', 6).maxHp);
-    expect(battle.heroes.mocha.hp).toBe(heroStats('mocha', 6).maxHp);
-    const intent = foeIntent(battle.foes[0], battle.heroes);
-    expect(intent).toMatchObject({ kind: 'attack', name: '俯衝', amount: 22 });
-    expect(intent.kind === 'attack' && intent.aim).toBe(battle.foes[0].aim);
+  test('attacking a dead foe falls back to a living one', () => {
+    let battle = fight(9, ['dustBunny', 'dustBunny']);
+    battle = untilHero(battle, 'mocha');
+    battle = battleStep(battle, { type: 'attack', target: 0 });
+    while (battle.foes[0].hp > 0) battle = battleStep(untilHero(battle, 'mocha'), { type: 'attack', target: 0 });
+    const next = battleStep(untilHero(battle, 'mocha'), { type: 'attack', target: 0 });
+    expect(next.foes[1].hp).toBeLessThan(FOES.dustBunny.stats.hp);
   });
 
-  test('a single-target attack lands on the aimed hero, or the other one if the aim is down', () => {
-    const base = startBattle(runAt(6), ['dustBunny'], 9, false);
-    const aimed = base.foes[0].aim;
-    const other: HeroId = aimed === 'baokaka' ? 'mocha' : 'baokaka';
-    const hit = foePhase(play(base, { type: 'skill', skill: 'guard' }, { type: 'skill', skill: 'guard' }));
-    expect(hit.heroes[aimed].hp).toBeLessThan(heroStats(aimed, 6).maxHp);
-    expect(hit.heroes[other].hp).toBe(heroStats(other, 6).maxHp);
-
-    const downed = {
-      ...base,
-      heroes: { ...base.heroes, [aimed]: { hp: 0, guard: false } },
-      phase: { kind: 'hero' as const, hero: other },
-    };
-    expect(foeIntent(downed.foes[0], downed.heroes)).toMatchObject({ kind: 'attack', aim: other });
-    const fallback = foePhase(play(downed, { type: 'skill', skill: 'guard' }));
-    expect(fallback.heroes[other].hp).toBeLessThan(heroStats(other, 6).maxHp);
-  });
-
-  test('a healing foe recovers a share of its max HP, capped', () => {
-    // mosquito: 叮一口, 叮一口, 吸飽飽 (heal 0.3)
-    let battle = startBattle(runAt(6), ['mosquito'], 5, false);
-    battle = { ...battle, foes: [{ ...battle.foes[0], move: 2, hp: 5 }] };
-    battle = foePhase(play(battle, { type: 'skill', skill: 'guard' }, { type: 'skill', skill: 'guard' }));
-    expect(battle.foes[0].hp).toBe(5 + Math.round(FOES.mosquito.maxHp * 0.3));
-  });
-
-  test('an all-target foe attack hits both heroes', () => {
-    // sockMonster's second move is 臭臭攻擊 on everyone
-    let battle = startBattle(runAt(6), ['sockMonster'], 5, false);
-    battle = { ...battle, foes: [{ ...battle.foes[0], move: 1 }] };
-    battle = foePhase(play(battle, { type: 'skill', skill: 'throwBlock' }, { type: 'skill', skill: 'purr' }));
-    expect(battle.heroes.baokaka.hp).toBeLessThan(heroStats('baokaka', 6).maxHp);
-    expect(battle.heroes.mocha.hp).toBeLessThan(heroStats('mocha', 6).maxHp);
+  test('clearing every foe wins and freezes the battle', () => {
+    let battle = fight(12, ['dustBunny']);
+    battle = untilHero(battle, 'mocha');
+    while (battle.phase.kind !== 'won' && battle.foes[0].hp > 0) {
+      battle = battle.phase.kind === 'foe' ? battleStep(battle, { type: 'tick' }) : battleStep(battle, { type: 'attack', target: 0 });
+    }
+    expect(battle.phase).toEqual({ kind: 'won' });
+    expect(battleStep(battle, { type: 'attack', target: 0 })).toBe(battle);
   });
 });
 
-test('battleXp sums the foes', () => {
-  expect(battleXp(['dustBunny', 'sockMonster'])).toBe(FOES.dustBunny.xp + FOES.sockMonster.xp);
+describe('spells', () => {
+  test('cost 真氣 and refuse when there is not enough', () => {
+    let battle = untilHero(fight(3, ['dustBunny']), 'baokaka');
+    const before = battle.heroes.baokaka.mp;
+    battle = battleStep(battle, { type: 'spell', spell: 'throwBlock', target: 0 });
+    expect(battle.heroes.baokaka.mp).toBe(before - SPELLS.throwBlock.cost);
+
+    const broke = untilHero(fight(3, ['dustBunny']), 'baokaka');
+    const empty: Battle = { ...broke, heroes: { ...broke.heroes, baokaka: { ...broke.heroes.baokaka, mp: 0 } } };
+    expect(canCast(empty, 'baokaka', SPELLS.throwBlock)).toBe(false);
+    expect(battleStep(empty, { type: 'spell', spell: 'throwBlock', target: 0 })).toBe(empty);
+  });
+
+  test('an unlearned spell cannot be cast', () => {
+    const battle = untilHero(fight(1, ['dustBunny']), 'baokaka');
+    expect(canCast(battle, 'baokaka', SPELLS.crawlDash)).toBe(false);
+  });
+
+  test('a party spell hits every living foe', () => {
+    const battle = untilHero(fight(8, ['dustBunny', 'dustBunny', 'sockMonster']), 'duck');
+    const after = battleStep(battle, { type: 'spell', spell: 'splash' });
+    expect(after.foes.every((foe, slot) => foe.hp < FOES[battle.foes[slot].foe].stats.hp)).toBe(true);
+  });
+
+  test('healing tops up an ally without passing their maximum', () => {
+    const start = untilHero(fight(6, ['dustBunny']), 'mocha');
+    const hurt: Battle = { ...start, heroes: { ...start.heroes, baokaka: { ...start.heroes.baokaka, hp: 5 } } };
+    const healed = battleStep(hurt, { type: 'spell', spell: 'purr', target: 'baokaka' });
+    expect(healed.heroes.baokaka.hp).toBeGreaterThan(5);
+
+    const topped = battleStep(untilHero(healed, 'mocha'), { type: 'spell', spell: 'purr', target: 'mocha' });
+    expect(topped.heroes.mocha.hp).toBe(topped.stats.mocha.hp);
+  });
+
+  test('九命回春 brings a fallen hero back', () => {
+    const start = untilHero(fight(9, ['dustBunny']), 'mocha');
+    const down: Battle = { ...start, heroes: { ...start.heroes, baokaka: { ...start.heroes.baokaka, hp: 0 } } };
+    const revived = battleStep(down, { type: 'spell', spell: 'nineLives' });
+    expect(revived.heroes.baokaka.hp).toBeGreaterThan(0);
+    expect(revived.events.some((event) => event.kind === 'revive')).toBe(true);
+  });
+
+  test('泡泡護盾 halves what the party takes for the round', () => {
+    const shielded = battleStep(untilHero(fight(7, ['sockMonster']), 'duck'), { type: 'spell', spell: 'bubbleShield' });
+    expect(shielded.events.some((event) => event.kind === 'shield')).toBe(true);
+    expect(shielded.party.every((hero) => shielded.heroes[hero].shield)).toBe(true);
+  });
+});
+
+describe('items and guarding', () => {
+  test('an item is spent and heals its target', () => {
+    const start = untilHero(fight(4, ['dustBunny']), 'mocha');
+    const hurt: Battle = { ...start, items: { cookie: 2 }, heroes: { ...start.heroes, baokaka: { ...start.heroes.baokaka, hp: 10 } } };
+    const used = battleStep(hurt, { type: 'item', item: 'cookie', target: 'baokaka' });
+    expect(used.items.cookie).toBe(1);
+    expect(used.heroes.baokaka.hp).toBe(35);
+  });
+
+  test('an item the party does not carry does nothing', () => {
+    const battle = untilHero(fight(4, ['dustBunny']), 'mocha');
+    const empty: Battle = { ...battle, items: {} };
+    expect(battleStep(empty, { type: 'item', item: 'bottle', target: 'mocha' })).toBe(empty);
+  });
+
+  test('guarding halves the next hit and gives back a little 真氣', () => {
+    let battle = fight(3, ['pigeon'], false, ['baokaka']);
+    battle = { ...battle, heroes: { ...battle.heroes, baokaka: { ...battle.heroes.baokaka, mp: 0 } } };
+    const guarded = battleStep(battle, { type: 'guard' });
+    expect(guarded.heroes.baokaka.guard).toBe(true);
+    expect(guarded.heroes.baokaka.mp).toBeGreaterThan(0);
+  });
+});
+
+describe('fleeing', () => {
+  test('is refused in a boss fight', () => {
+    const battle = fight(5, ['blockGolem'], true);
+    expect(battleStep(battle, { type: 'flee' })).toBe(battle);
+  });
+
+  test('either escapes or costs the turn', () => {
+    const battle = untilHero(fight(5, ['dustBunny']), 'mocha');
+    const after = battleStep(battle, { type: 'flee' });
+    const event = after.events.find((entry) => entry.kind === 'flee');
+    expect(event).toBeDefined();
+    if (event && event.kind === 'flee' && event.ok) expect(after.phase).toEqual({ kind: 'fled' });
+    else expect(after.phase.kind).not.toBe('fled');
+  });
+});
+
+describe('losing', () => {
+  test('the party falling ends the battle', () => {
+    let battle = fight(1, ['snoreKing'], true, ['baokaka']);
+    for (let step = 0; step < 40 && battle.phase.kind !== 'lost'; step += 1) {
+      battle = battle.phase.kind === 'foe' ? battleStep(battle, { type: 'tick' }) : battleStep(battle, { type: 'guard' });
+    }
+    expect(battle.phase).toEqual({ kind: 'lost' });
+    expect(aliveHeroes(battle)).toEqual([]);
+  });
+});
+
+describe('rewards', () => {
+  test('sum over the foes present', () => {
+    const battle = fight(4, ['dustBunny', 'sockMonster']);
+    expect(battleXp(battle)).toBe(FOES.dustBunny.xp + FOES.sockMonster.xp);
+    expect(battleStickers(battle)).toBe(FOES.dustBunny.stickers + FOES.sockMonster.stickers);
+    expect(aliveFoeSlots(battle)).toEqual([0, 1]);
+  });
+});
+
+describe('determinism', () => {
+  test('the same seed and actions replay identically', () => {
+    const play = () => {
+      let battle = fight(5, ['pigeon', 'pigeon']);
+      for (let step = 0; step < 10 && battle.phase.kind !== 'won' && battle.phase.kind !== 'lost'; step += 1) {
+        battle = battle.phase.kind === 'foe' ? battleStep(battle, { type: 'tick' }) : battleStep(battle, { type: 'attack', target: 0 });
+      }
+      return battle;
+    };
+    expect(play()).toEqual(play());
+  });
 });

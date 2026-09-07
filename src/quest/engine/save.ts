@@ -1,52 +1,82 @@
 import { browserStorage, loadJson, saveJson, type StorageLike } from '../../shared/storage';
-import { CHAPTERS } from './chapters';
-import { ITEM_ORDER, MAX_LEVEL } from './heroes';
+import { ITEMS, MAX_ITEM_COUNT, MAX_LEVEL, isEquip } from './heroes';
+import { MAPS } from './maps';
 import { freshRun } from './quest';
-import { HERO_ORDER, type Run } from './types';
+import { HERO_ORDER, type HeroId, type ItemId, type Run } from './types';
 
 export const QUEST_KEY = 'baokaka.quest';
 
 export type QuestSave = { run: Run; sound: boolean };
 
 const isCount = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
+const isItem = (value: unknown): value is ItemId => typeof value === 'string' && value in ITEMS;
 
-/** The run as it may sit in storage: `picked` was added after the first release, so it may be missing. */
-type StoredRun = Omit<Run, 'picked'> & { picked?: string[] };
+function isNumberMap(value: unknown): value is Record<HeroId, number> {
+  return typeof value === 'object' && value !== null && HERO_ORDER.every((hero) => isCount((value as Record<string, unknown>)[hero]));
+}
 
-function isStoredRun(value: unknown): value is StoredRun {
+function isRun(value: unknown): value is Run {
   if (typeof value !== 'object' || value === null) return false;
-  const run = value as Partial<StoredRun>;
-  const chapter = CHAPTERS[(run.chapter ?? 0) - 1];
+  const run = value as Partial<Run>;
+  const map = run.map && MAPS[run.map];
+  if (!map) return false;
+
+  const inBounds =
+    typeof run.pos === 'object' &&
+    run.pos !== null &&
+    isCount(run.pos.r) &&
+    isCount(run.pos.c) &&
+    run.pos.r < map.grid.length &&
+    run.pos.c < map.grid[0].length;
+
+  const equipOk =
+    typeof run.equip === 'object' &&
+    run.equip !== null &&
+    HERO_ORDER.every((hero) => {
+      const worn = (run.equip as Record<string, unknown>)[hero];
+      return worn === null || (isItem(worn) && isEquip(worn));
+    });
+
+  const itemsOk =
+    typeof run.items === 'object' &&
+    run.items !== null &&
+    Object.entries(run.items).every(([item, count]) => isItem(item) && isCount(count) && (count as number) <= MAX_ITEM_COUNT);
+
   return (
-    chapter !== undefined &&
-    isCount(run.node) &&
-    run.node < chapter.nodes.length &&
+    inBounds &&
+    equipOk &&
+    itemsOk &&
+    (run.facing === 'left' || run.facing === 'right') &&
+    Array.isArray(run.party) &&
+    run.party.length > 0 &&
+    run.party.every((hero) => HERO_ORDER.includes(hero)) &&
     Number.isInteger(run.level) &&
     (run.level as number) >= 1 &&
     (run.level as number) <= MAX_LEVEL &&
     isCount(run.xp) &&
-    typeof run.hp === 'object' &&
-    run.hp !== null &&
-    HERO_ORDER.every((hero) => isCount(run.hp?.[hero])) &&
-    typeof run.items === 'object' &&
-    run.items !== null &&
-    ITEM_ORDER.every((item) => isCount(run.items?.[item])) &&
-    (run.picked === undefined || (Array.isArray(run.picked) && run.picked.every((id) => typeof id === 'string'))) &&
+    isNumberMap(run.hp) &&
+    isNumberMap(run.mp) &&
+    isCount(run.stickers) &&
+    Array.isArray(run.flags) &&
+    run.flags.every((flag) => typeof flag === 'string') &&
+    isCount(run.steps) &&
+    Number.isFinite(run.seed) &&
+    Number.isInteger(run.chapter) &&
+    (run.chapter as number) >= 1 &&
     typeof run.cleared === 'boolean'
   );
 }
 
-function isStoredSave(value: unknown): value is { run: StoredRun; sound: boolean } {
+function isSave(value: unknown): value is QuestSave {
   if (typeof value !== 'object' || value === null) return false;
   const save = value as Partial<QuestSave>;
-  return typeof save.sound === 'boolean' && isStoredRun(save.run);
+  return typeof save.sound === 'boolean' && isRun(save.run);
 }
 
 /** Anything unreadable comes back as a fresh run; the player is never shown an error. */
 export function loadQuest(storage: StorageLike | null = browserStorage()): QuestSave {
-  const stored = loadJson(QUEST_KEY, isStoredSave, storage);
-  if (!stored) return { run: freshRun(), sound: true };
-  return { run: { ...stored.run, picked: stored.run.picked ?? [] }, sound: stored.sound };
+  const stored = loadJson(QUEST_KEY, isSave, storage);
+  return stored ?? { run: freshRun(Date.now() | 0), sound: true };
 }
 
 export function saveQuest(save: QuestSave, storage: StorageLike | null = browserStorage()): void {

@@ -93,7 +93,21 @@ export type SpriteName =
   // Quest foes: dreamland
   | 'sleepySprite'
   | 'nightmareCloud'
-  | 'snoreKing';
+  | 'snoreKing'
+  // Quest people and places
+  | 'duck'
+  | 'mom'
+  | 'dad'
+  | 'grandma'
+  | 'kid'
+  | 'dog'
+  | 'vendor'
+  | 'uncle'
+  | 'toyBox'
+  | 'toyBoxOpen'
+  | 'signpost'
+  | 'napMat'
+  | 'bathtub';
 
 export type PaletteName = 'living' | 'yard' | 'park' | 'market' | 'beach' | 'night';
 

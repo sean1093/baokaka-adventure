@@ -94,6 +94,21 @@
     animation: lunge-down 420ms ease-out;
   }
 
+  /* The tile the party is walking to */
+  .marker {
+    animation: marker 900ms ease-in-out infinite;
+  }
+
+  /* The "there is more to read" arrow */
+  .blink {
+    animation: blink 1s step-end infinite;
+  }
+
+  /* The dot over an NPC you can talk to */
+  .pop-dot {
+    animation: pop-dot 1.6s ease-in-out infinite;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -254,12 +269,48 @@
   }
 }
 
+@keyframes marker {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.86);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pop-dot {
+  0%,
+  100% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -28%) scale(1.15);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .screen-in,
   .sheet-in,
   .fade-in,
   .walk,
   .idle,
+  .marker,
+  .blink,
+  .pop-dot,
   .breathe {
     animation: none;
   }

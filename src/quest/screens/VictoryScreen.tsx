@@ -1,92 +1,75 @@
 import { useEffect } from 'react';
 import { SPRITES } from '../../art/sprites';
 import { Button } from '../../components/Button';
-import { Chip, Screen } from '../../components/Screen';
-import { ChevronRight } from '../../components/icons';
+import { Card, Chip, Screen } from '../../components/Screen';
+import { ChevronRight, Sparkle, Star } from '../../components/icons';
 import { playTone } from '../../shared/audio';
-import { ITEMS, SKILLS } from '../engine/heroes';
+import { HEROES, ITEMS, SPELLS } from '../engine/heroes';
 import type { VictorySummary } from '../engine/quest';
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
-const Star = SPRITES.star;
 
 type Props = { summary: VictorySummary; soundOn: boolean; onContinue: () => void };
 
 export const VictoryScreen = ({ summary, soundOn, onContinue }: Props) => {
-  const leveled = summary.toLevel > summary.fromLevel;
+  const levelled = summary.levels > 0;
 
   useEffect(() => {
-    if (leveled) playTone('levelUp', soundOn);
-  }, [leveled, soundOn]);
+    playTone(levelled ? 'levelUp' : 'complete', soundOn);
+  }, [levelled, soundOn]);
 
   return (
-    <Screen center>
-      <section className="overflow-hidden rounded-4xl bg-surface shadow-card">
-        <div className="relative flex flex-col items-center bg-gradient-to-b from-sun/40 to-transparent px-6 pb-2 pt-7">
-          <div className="flex gap-1">
-            {[0, 1, 2].map((index) => (
-              <span key={index} className="pop block h-9 w-9" style={{ animationDelay: `${index * 120}ms` }}>
-                <Star />
-              </span>
-            ))}
-          </div>
-          <h1 className="mt-2 text-display font-extrabold">勝利！</h1>
-          <div className="mt-2 flex items-end justify-center gap-1">
-            <span className="block h-28 w-28">
-              <Baokaka />
-            </span>
-            <span className="block h-20 w-20">
-              <MochaCat />
-            </span>
-          </div>
+    <Screen center className="gap-4">
+      <section className="pop text-center">
+        <div className="mb-2 flex items-end justify-center gap-1">
+          <span className="block h-20 w-20">
+            <Baokaka />
+          </span>
+          <span className="block h-16 w-16">
+            <MochaCat />
+          </span>
         </div>
-
-        <div className="flex flex-col gap-4 px-6 pb-6 pt-3">
-          <div className="flex items-center justify-between rounded-2xl bg-ink/[0.05] px-4 py-3">
-            <span className="text-label font-bold text-muted">經驗值</span>
-            <span className="text-heading font-extrabold">+{summary.xp}</span>
-          </div>
-
-          {leveled && (
-            <div className="rounded-2xl bg-gradient-to-br from-sun/40 to-sun/10 px-4 py-3">
-              <p className="text-heading font-extrabold">
-                升級！等級 {summary.fromLevel} → {summary.toLevel}
-              </p>
-              <p className="text-label text-muted">體力全滿，攻擊變強了</p>
-              {summary.unlocked.length > 0 && (
-                <p className="mt-2 flex flex-wrap items-center gap-1.5 text-label font-bold">
-                  學會新招式
-                  {summary.unlocked.map((skill) => (
-                    <Chip key={skill} tone="ink">
-                      {SKILLS[skill].name}
-                    </Chip>
-                  ))}
-                </p>
-              )}
-            </div>
-          )}
-
-          {summary.drops.length > 0 && (
-            <div className="flex items-center gap-3 rounded-2xl bg-ink/[0.05] px-4 py-3">
-              <span className="text-label font-bold text-muted">拿到了</span>
-              <span className="flex flex-wrap gap-2">
-                {summary.drops.map((item, index) => {
-                  const Art = SPRITES[ITEMS[item].sprite];
-                  return (
-                    <span key={index} className="inline-flex items-center gap-1 rounded-full bg-surface py-1 pl-1 pr-2.5 text-label font-bold shadow-card">
-                      <span className="block h-7 w-7">
-                        <Art />
-                      </span>
-                      {ITEMS[item].name}
-                    </span>
-                  );
-                })}
-              </span>
-            </div>
-          )}
-        </div>
+        <h1 className="text-display font-extrabold">打贏了！</h1>
       </section>
+
+      <Card className="flex flex-col gap-2 p-4">
+        <Row label="經驗" value={`+${summary.xp}`} tone="sky" />
+        <Row label="貼紙" value={`+${summary.stickers}`} tone="sun" />
+        {summary.drops.length > 0 && (
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-label font-bold text-muted">掉落</span>
+            <span className="flex flex-wrap justify-end gap-1">
+              {summary.drops.map((item, index) => (
+                <Chip key={`${item}${index}`} tone="leaf">
+                  {ITEMS[item].name}
+                </Chip>
+              ))}
+            </span>
+          </div>
+        )}
+      </Card>
+
+      {levelled && (
+        <Card tone="accent" className="p-4 text-center">
+          <p className="flex items-center justify-center gap-1.5 text-headline font-extrabold">
+            <Star size={22} />
+            等級 {summary.level}
+          </p>
+          <p className="mt-1 text-label font-bold text-mochaDeep">體力和真氣都補滿了</p>
+          {summary.learned.length > 0 && (
+            <p className="mt-2 flex flex-wrap items-center justify-center gap-1">
+              <Sparkle size={18} className="text-mochaDeep" />
+              {summary.learned.map((spell) => (
+                <span key={spell} className="rounded-full bg-surface px-2 py-0.5 text-label font-extrabold shadow-card">
+                  學會 {SPELLS[spell].name}
+                </span>
+              ))}
+            </p>
+          )}
+          {summary.learned.length === 0 && <p className="mt-1 text-caption text-mochaDeep">{HEROES.baokaka.name}他們變強了一點。</p>}
+        </Card>
+      )}
 
       <Button size="lg" full icon={<ChevronRight size={22} />} onClick={onContinue}>
         繼續
@@ -94,3 +77,10 @@ export const VictoryScreen = ({ summary, soundOn, onContinue }: Props) => {
     </Screen>
   );
 };
+
+const Row = ({ label, value, tone }: { label: string; value: string; tone: 'sky' | 'sun' }) => (
+  <div className="flex items-center justify-between gap-2">
+    <span className="text-label font-bold text-muted">{label}</span>
+    <Chip tone={tone}>{value}</Chip>
+  </div>
+);
