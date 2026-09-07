@@ -268,6 +268,17 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onMen
           }}
         />
 
+        {/* One light pool over the whole map: the party stands in the light, the edges fall
+            away. Doing this once beats shading every tile, which tiles into visible stripes. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 78% 58% at 50% 48%, rgba(255,247,232,0.16) 0%, rgba(255,247,232,0) 55%, rgba(59,42,32,0.32) 100%)',
+          }}
+        />
+
         {!frozen && doors.length > 0 && (
           <div className="pointer-events-none absolute left-2 top-2 flex flex-wrap gap-1">
             {doors.map((exit) => (

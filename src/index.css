@@ -109,6 +109,60 @@
     animation: pop-dot 1.6s ease-in-out infinite;
   }
 
+  /* Battle effects. Each runs once, forwards, and is torn down with the step that spawned it. */
+  .fx-slash {
+    animation: fx-slash 420ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+
+  .fx-burst {
+    animation: fx-burst 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .fx-ring {
+    animation: fx-ring 620ms ease-out both;
+  }
+
+  .fx-rise {
+    animation: fx-rise 620ms ease-out both;
+  }
+
+  .fx-jet {
+    animation: fx-jet 460ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  }
+
+  .fx-sweep {
+    animation: fx-sweep 620ms cubic-bezier(0.4, 0, 0.4, 1) both;
+  }
+
+  .fx-puff {
+    animation: fx-puff 560ms ease-out both;
+  }
+
+  .fx-flashglyph {
+    animation: fx-flashglyph 460ms steps(1, end) both;
+  }
+
+  /* Whoever just took a hit: a white blink plus a sideways jolt */
+  .fx-hurt {
+    animation: fx-hurt 380ms ease-out;
+  }
+
+  /* The arena itself, when something heavy lands */
+  .fx-quake {
+    animation: fx-quake 340ms ease-in-out;
+  }
+
+  /* The 法陣 that opens under a caster */
+  .fx-sigil {
+    animation: fx-sigil 700ms ease-out both;
+  }
+
+  /* A colour wash over the whole arena for anything that hits more than one target */
+  .fx-wash {
+    animation: fx-wash 520ms ease-out both;
+    mix-blend-mode: screen;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -302,6 +356,220 @@
   }
 }
 
+/* --- Battle effects ------------------------------------------------------------------- */
+
+/* A blade sweeps through: it arrives already large, then wipes away */
+@keyframes fx-slash {
+  0% {
+    transform: translate(-50%, -50%) rotate(-28deg) scale(0.35);
+    opacity: 0;
+  }
+  25% {
+    transform: translate(-50%, -50%) rotate(-6deg) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(6deg) scale(1.25);
+    opacity: 0;
+  }
+}
+
+/* Something bursts out of the target and settles */
+@keyframes fx-burst {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2) rotate(-20deg);
+    opacity: 0;
+  }
+  35% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.5) rotate(12deg);
+    opacity: 0;
+  }
+}
+
+/* A shockwave or a bubble expanding outward */
+@keyframes fx-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(0.15);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* Healing motes drifting upward */
+@keyframes fx-rise {
+  0% {
+    transform: translate(-50%, -20%) scale(0.6);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -45%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -95%) scale(1.05);
+    opacity: 0;
+  }
+}
+
+/* A jet fired in from the side */
+@keyframes fx-jet {
+  0% {
+    transform: translate(-130%, -50%) scaleX(0.5);
+    opacity: 0;
+  }
+  40% {
+    transform: translate(-50%, -50%) scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-10%, -50%) scaleX(1.1);
+    opacity: 0;
+  }
+}
+
+/* A wave crossing the whole arena */
+@keyframes fx-sweep {
+  0% {
+    transform: translateX(-105%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(105%);
+    opacity: 0;
+  }
+}
+
+/* Dust or feathers billowing and thinning */
+@keyframes fx-puff {
+  0% {
+    transform: translate(-50%, -40%) scale(0.35);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-50%, -70%) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* Lightning: on, off, on, gone. Stepped, never a smooth fade */
+@keyframes fx-flashglyph {
+  0%,
+  35% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  36%,
+  55% {
+    opacity: 0;
+  }
+  56%,
+  80% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 1;
+  }
+  81%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Taking a hit: a white blink and a jolt */
+@keyframes fx-hurt {
+  0% {
+    transform: translateX(0);
+    filter: brightness(1);
+  }
+  15% {
+    transform: translateX(-9%);
+    filter: brightness(2.6) saturate(0.2);
+  }
+  35% {
+    transform: translateX(7%);
+    filter: brightness(2.6) saturate(0.2);
+  }
+  55% {
+    transform: translateX(-4%);
+    filter: brightness(1);
+  }
+  100% {
+    transform: translateX(0);
+    filter: brightness(1);
+  }
+}
+
+/* The arena when something heavy lands */
+@keyframes fx-quake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-5px, 3px);
+  }
+  40% {
+    transform: translate(4px, -3px);
+  }
+  60% {
+    transform: translate(-3px, 2px);
+  }
+  80% {
+    transform: translate(2px, -1px);
+  }
+}
+
+/* The 法陣: it snaps open, spins, then sinks away */
+@keyframes fx-sigil {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2) rotate(-40deg);
+    opacity: 0;
+  }
+  22% {
+    transform: translate(-50%, -50%) scale(1.05) rotate(0deg);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1) rotate(40deg);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.9) rotate(70deg);
+    opacity: 0;
+  }
+}
+
+/* The elemental colour wash across the arena */
+@keyframes fx-wash {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.34;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .screen-in,
   .sheet-in,
@@ -311,7 +579,36 @@
   .marker,
   .blink,
   .pop-dot,
-  .breathe {
+  .breathe,
+  .fx-hurt,
+  .fx-sigil,
+  .fx-quake {
     animation: none;
+  }
+
+  /* Spell effects still play: they are the feedback for what a move did. They just hold
+     still and fade instead of flying, so nothing lurches across the screen. */
+  .fx-slash,
+  .fx-burst,
+  .fx-ring,
+  .fx-rise,
+  .fx-jet,
+  .fx-sweep,
+  .fx-puff,
+  .fx-flashglyph,
+  .fx-wash {
+    animation-name: fx-hold;
+  }
+}
+
+@keyframes fx-hold {
+  0%,
+  60% {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%);
+    opacity: 0;
   }
 }

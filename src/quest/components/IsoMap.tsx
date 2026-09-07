@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { SPRITES } from '../../art/sprites';
-import { TERRAIN, TILE_H, TILE_W, terrainAt, toScreen } from '../engine/iso';
+import { TERRAIN, TILE_H, TILE_W, terrainAt, toScreen, type TerrainStyle } from '../engine/iso';
 import { chestOpened, meets } from '../engine/path';
 import type { SpriteName } from '../../art/types';
 import type { GameMap, Tile } from '../engine/types';
@@ -11,8 +11,12 @@ import type { GameMap, Tile } from '../engine/types';
  * sorted back to front by c + r, which is the painter's order for a 2:1 projection.
  */
 
-/** A diamond: the top face of one tile. */
-const Diamond = ({ x, y, fill, dim }: { x: number; y: number; fill: string; dim: boolean }) => (
+/**
+ * A diamond: the top face of one tile. The fill stays flat — a gradient per tile tiles into
+ * visible corrugation across a whole floor — and depth comes from a darker inner edge on the
+ * two far sides plus the single light pool the caller lays over the whole map.
+ */
+const Diamond = ({ x, y, fill, shade }: { x: number; y: number; fill: string; shade: string }) => (
   <div
     className="absolute"
     style={{
@@ -21,14 +25,14 @@ const Diamond = ({ x, y, fill, dim }: { x: number; y: number; fill: string; dim:
       width: TILE_W,
       height: TILE_H,
       background: fill,
+      boxShadow: `inset -2px -2px 0 ${shade}`,
       clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-      opacity: dim ? 0.55 : 1,
     }}
   />
 );
 
 /** A raised block: two side faces under the diamond, so walls and fences read as solid. */
-const Block = ({ x, y, style }: { x: number; y: number; style: { top: string; left?: string; right?: string; height?: number } }) => {
+const Block = ({ x, y, style }: { x: number; y: number; style: TerrainStyle }) => {
   const height = style.height ?? 0;
   return (
     <>
@@ -54,7 +58,7 @@ const Block = ({ x, y, style }: { x: number; y: number; style: { top: string; le
           clipPath: `polygon(0% 50%, 100% 0%, 100% ${((TILE_H / 2) / (TILE_H / 2 + height)) * 100}%, 0% 100%)`,
         }}
       />
-      <Diamond x={x} y={y - height} fill={style.top} dim={false} />
+      <Diamond x={x} y={y - height} fill={style.top} shade={style.shade} />
     </>
   );
 };
@@ -152,7 +156,7 @@ export const IsoMap = ({ map, actors, camera, view, marker, focus, onTapGround }
       const style = TERRAIN[terrain];
       const { x, y } = toScreen(c, r);
       if (style.height) blocks.push(<Block key={`b${c},${r}`} x={x} y={y} style={style} />);
-      else ground.push(<Diamond key={`g${c},${r}`} x={x} y={y} fill={(c + r) % 2 === 0 ? style.top : style.alt} dim={false} />);
+      else ground.push(<Diamond key={`g${c},${r}`} x={x} y={y} fill={(c + r) % 2 === 0 ? style.top : style.alt} shade={style.shade} />);
     }
   }
 

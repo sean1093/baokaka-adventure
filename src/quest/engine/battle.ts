@@ -7,6 +7,8 @@ import {
   type BattleAction,
   type BattleEvent,
   type FoeId,
+  type FoeMove,
+  type FxKind,
   type HeroId,
   type Phase,
   type Run,
@@ -20,6 +22,10 @@ const CRIT_MULTIPLIER = 1.5;
 /** 防禦 halves damage until the guard's next turn and gives back a little 真氣 */
 const GUARD_MP = 4;
 const FLEE_BASE = 0.55;
+
+/** Every attack has a look; guarding has none and healing always sparkles green. */
+const moveFx = (move: FoeMove): FxKind | null =>
+  move.kind === 'attack' ? (move.fx ?? 'thud') : move.kind === 'heal' ? 'heal' : null;
 
 export const heroWho = (hero: HeroId): Who => ({ side: 'hero', hero });
 export const foeWho = (slot: number): Who => ({ side: 'foe', slot });
@@ -166,7 +172,7 @@ export function battleStep(battle: Battle, action: BattleAction): Battle {
       case 'attack': {
         const slot = firstAliveFoe(action.target);
         if (slot === null) return battle;
-        events.push({ kind: 'act', who: heroWho(hero), name: '攻擊' });
+        events.push({ kind: 'act', who: heroWho(hero), name: '攻擊', fx: 'slash', arcane: false });
         const isCrit = crit();
         const base = Math.max(1, stats.atk - FOES[draft.foes[slot].foe].stats.def * 0.5);
         hitFoe(slot, vary(base) * (isCrit ? CRIT_MULTIPLIER : 1), isCrit);
@@ -177,7 +183,7 @@ export function battleStep(battle: Battle, action: BattleAction): Battle {
         const spell = SPELLS[action.spell];
         if (!canCast(draft, hero, spell)) return battle;
         draft.heroes[hero] = { ...draft.heroes[hero], mp: draft.heroes[hero].mp - spell.cost };
-        events.push({ kind: 'act', who: heroWho(hero), name: spell.name });
+        events.push({ kind: 'act', who: heroWho(hero), name: spell.name, fx: spell.fx, arcane: true });
         const strength = stats.atk * 0.7 + draft.level * 2;
 
         if (spell.effect.kind === 'damage') {
@@ -208,7 +214,7 @@ export function battleStep(battle: Battle, action: BattleAction): Battle {
         if (count === 0 || item.use.kind === 'equip' || !draft.party.includes(action.target)) return battle;
         if (item.use.kind === 'revive' ? target.hp > 0 : target.hp === 0) return battle;
         draft.items = removeItem(draft.items, action.item);
-        events.push({ kind: 'act', who: heroWho(hero), name: item.name });
+        events.push({ kind: 'act', who: heroWho(hero), name: item.name, fx: 'sparkle', arcane: false });
         switch (item.use.kind) {
           case 'hp':
             healHero(action.target, item.use.amount);
@@ -238,7 +244,7 @@ export function battleStep(battle: Battle, action: BattleAction): Battle {
 
       case 'flee': {
         if (draft.boss) return battle;
-        events.push({ kind: 'act', who: heroWho(hero), name: '逃跑' });
+        events.push({ kind: 'act', who: heroWho(hero), name: '逃跑', fx: null, arcane: false });
         const partySpd = aliveHeroes(draft).reduce((sum, ally) => sum + draft.stats[ally].spd, 0) / aliveHeroes(draft).length;
         const foeSpd = Math.max(...aliveFoeSlots(draft).map((slot) => FOES[draft.foes[slot].foe].stats.spd));
         const chance = clamp(FLEE_BASE + (partySpd - foeSpd) * 0.03, 0.25, 0.9);
@@ -261,7 +267,7 @@ export function battleStep(battle: Battle, action: BattleAction): Battle {
     const foe = FOES[state.foe];
     const move = foe.moves[state.move % foe.moves.length];
     state.move += 1;
-    events.push({ kind: 'act', who: foeWho(slot), name: move.name });
+    events.push({ kind: 'act', who: foeWho(slot), name: move.name, fx: moveFx(move), arcane: false });
 
     if (move.kind === 'attack') {
       const alive = aliveHeroes(draft);

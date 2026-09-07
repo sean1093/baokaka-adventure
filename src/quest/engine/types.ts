@@ -32,6 +32,26 @@ export type SpellId =
   | 'bubbleShield'
   | 'bigWave';
 
+/**
+ * What a move looks like when it lands. Content, not layout: the drawings live in
+ * components/BattleFx.tsx, but which one a move uses is authored next to the move itself.
+ */
+export type FxKind =
+  | 'slash'
+  | 'claw'
+  | 'impact'
+  | 'blocks'
+  | 'shout'
+  | 'jet'
+  | 'splash'
+  | 'wave'
+  | 'bubble'
+  | 'heal'
+  | 'sparkle'
+  | 'thud'
+  | 'bolt'
+  | 'dust';
+
 export type SpellEffect =
   /** power multiplies the caster's spell strength */
   | { kind: 'damage'; power: number; target: 'one' | 'all' }
@@ -49,6 +69,7 @@ export type Spell = {
   /** Party level at which the hero learns it */
   level: number;
   effect: SpellEffect;
+  fx: FxKind;
   blurb: string;
 };
 
@@ -115,7 +136,7 @@ export type FoeId =
   | 'snoreKing';
 
 export type FoeMove =
-  | { kind: 'attack'; name: string; power: number; target: 'one' | 'all' }
+  | { kind: 'attack'; name: string; power: number; target: 'one' | 'all'; fx?: FxKind }
   | { kind: 'guard'; name: string }
   | { kind: 'heal'; name: string; ratio: number };
 
@@ -298,7 +319,8 @@ export type Phase =
 
 /** What happened during one step; the UI turns these into floating numbers and log lines. */
 export type BattleEvent =
-  | { kind: 'act'; who: Who; name: string }
+  /** `arcane` is a cast rather than a swing: the UI draws a 法陣 under the caster */
+  | { kind: 'act'; who: Who; name: string; fx: FxKind | null; arcane: boolean }
   | { kind: 'hit'; who: Who; amount: number; crit: boolean }
   | { kind: 'heal'; who: Who; amount: number }
   | { kind: 'mp'; who: Who; amount: number }

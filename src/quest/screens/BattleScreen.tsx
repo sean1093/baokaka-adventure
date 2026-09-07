@@ -5,6 +5,7 @@ import type { PaletteName } from '../../art/types';
 import { Button } from '../../components/Button';
 import { SoundToggle } from '../../components/Screen';
 import { playTone } from '../../shared/audio';
+import { BattleFx, type Spot } from '../components/BattleFx';
 import { HERO_SPRITE } from '../components/PartyPanel';
 import { aliveFoeSlots, canCast, foeIntent, sameWho } from '../engine/battle';
 import { FOES } from '../engine/foes';
@@ -17,6 +18,11 @@ const END_DELAY_MS = 900;
 
 /** Column centres for 1..3 foes, as fractions of the arena width */
 const COLUMNS: Record<number, number[]> = { 1: [0.5], 2: [0.3, 0.7], 3: [0.18, 0.5, 0.82] };
+/** Vertical centres of the two ranks, as fractions of the arena height */
+const FOE_Y = 0.27;
+const HERO_Y = 0.79;
+/** Horizontal centres of up to three heroes */
+const HERO_X = [0.24, 0.5, 0.76];
 
 type Menu = 'root' | 'spell' | 'item';
 type Pending = { kind: 'attack' } | { kind: 'spell'; spell: SpellId } | { kind: 'item'; item: ItemId };
@@ -134,6 +140,22 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
     else if (events.some((event) => event.kind === 'hit')) playTone('found', on);
   }, [battle.step]);
 
+  // Where each combatant stands, as fractions of the arena. Shared by the layout below and the
+  // effect layer, so a strike always lands exactly on the sprite it hit.
+  const spot = (who: Who): Spot | null => {
+    if (who.side === 'foe') {
+      const column = columns[who.slot];
+      return column === undefined ? null : { x: column, y: FOE_Y };
+    }
+    const index = battle.party.indexOf(who.hero);
+    return index < 0 ? null : { x: HERO_X[index] ?? 0.5, y: HERO_Y };
+  };
+
+  // Heavy landings shake the arena: a crit, an AoE, or anything that knocks someone down
+  const quake = battle.events.some(
+    (event) => (event.kind === 'hit' && event.crit) || event.kind === 'ko' || battle.events.filter((e) => e.kind === 'hit').length > 1,
+  );
+
   const spells = hero ? spellsFor(hero, battle.level) : [];
   const carried = ITEM_ORDER.filter((item) => (battle.items[item] ?? 0) > 0 && ITEMS[item].use.kind !== 'equip');
 
@@ -220,7 +242,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
       </header>
 
       {/* The arena: foes on the far side, the party on the near side */}
-      <div className="relative min-h-0 flex-1 overflow-hidden rounded-3xl shadow-card">
+      <div className={`relative min-h-0 flex-1 overflow-hidden rounded-3xl shadow-card ${quake ? 'fx-quake' : ''}`} key={`arena${quake ? battle.step : 0}`}>
         <Backdrop />
         <div className="absolute inset-0 bg-gradient-to-b from-ink/0 via-ink/0 to-ink/25" />
 
@@ -231,6 +253,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
           const targetable = needs === 'foe';
           const size = foe.boss ? 0.42 : battle.foes.length === 1 ? 0.34 : battle.foes.length === 2 ? 0.3 : 0.26;
           const hit = battle.events.find((event) => event.kind !== 'flee' && event.kind !== 'shield' && sameWho(event.who, { side: 'foe', slot }));
+          const struck = battle.events.some((event) => event.kind === 'hit' && sameWho(event.who, { side: 'foe', slot }));
           const acting = battle.events.some((event) => event.kind === 'act' && sameWho(event.who, { side: 'foe', slot }));
           const float = hit ? floater(hit) : null;
 
@@ -241,10 +264,10 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
               disabled={dead || !targetable}
               onClick={() => pickFoe(slot)}
               aria-label={foe.name}
-              className="absolute -translate-x-1/2 disabled:pointer-events-none"
-              style={{ left: `${columns[slot] * 100}%`, top: '6%', width: `${size * 100}%` }}
+              className="absolute disabled:pointer-events-none"
+              style={{ left: `${columns[slot] * 100}%`, top: `${FOE_Y * 100}%`, width: `${size * 100}%`, transform: 'translate(-50%, -50%)' }}
             >
-              <span className={`relative block ${dead ? 'opacity-0' : ''} ${acting ? 'lunge-down' : ''}`}>
+              <span className={`relative block ${dead ? 'opacity-0' : ''} ${acting ? 'lunge-down' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
                 <span className="block aspect-square w-full">
                   <Art />
                 </span>
@@ -282,7 +305,8 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
           const hit = battle.events.find((event) => event.kind !== 'flee' && event.kind !== 'shield' && sameWho(event.who, { side: 'hero', hero: member }));
           const float = hit ? floater(hit) : null;
           const pickable = needs === 'hero';
-          const left = [0.24, 0.5, 0.76][index] ?? 0.5;
+          const struck = battle.events.some((event) => event.kind === 'hit' && sameWho(event.who, { side: 'hero', hero: member }));
+          const left = HERO_X[index] ?? 0.5;
 
           return (
             <button
@@ -291,10 +315,10 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
               disabled={!pickable}
               onClick={() => pickHero(member)}
               aria-label={HEROES[member].name}
-              className="absolute -translate-x-1/2 disabled:pointer-events-none"
-              style={{ left: `${left * 100}%`, bottom: '4%', width: '24%' }}
+              className="absolute disabled:pointer-events-none"
+              style={{ left: `${left * 100}%`, top: `${HERO_Y * 100}%`, width: '24%', transform: 'translate(-50%, -50%)' }}
             >
-              <span className={`relative block ${dead ? 'opacity-35 grayscale' : ''} ${acting ? 'lunge-up' : ''}`}>
+              <span className={`relative block ${dead ? 'opacity-35 grayscale' : ''} ${acting ? 'lunge-up' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
                 <span className="block aspect-square w-full">
                   <Art />
                 </span>
@@ -313,6 +337,8 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
             </button>
           );
         })}
+
+        <BattleFx key={battle.step} battle={battle} spot={spot} />
 
         {/* Whose turn it is, and what the foe is about to do */}
         {phase.kind === 'foe' && (

@@ -52,6 +52,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 3,
     level: 1,
     effect: { kind: 'damage', power: 1.6, target: 'one' },
+    fx: 'blocks',
     blurb: '用力丟一塊積木。',
   },
   bigCry: {
@@ -61,6 +62,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 5,
     level: 3,
     effect: { kind: 'damage', power: 1.0, target: 'all' },
+    fx: 'shout',
     blurb: '哭聲震動整個房間，打到所有敵人。',
   },
   clapClap: {
@@ -70,6 +72,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 6,
     level: 5,
     effect: { kind: 'heal', ratio: 0.25, target: 'party' },
+    fx: 'heal',
     blurb: '拍手鼓勵大家，全隊恢復體力。',
   },
   crawlDash: {
@@ -79,6 +82,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 8,
     level: 7,
     effect: { kind: 'damage', power: 2.6, target: 'one' },
+    fx: 'impact',
     blurb: '用最快的速度爬過去撞一下。',
   },
   purr: {
@@ -88,6 +92,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 4,
     level: 1,
     effect: { kind: 'heal', ratio: 0.4, target: 'ally' },
+    fx: 'heal',
     blurb: '靠著一個人呼嚕，恢復體力。',
   },
   pounce: {
@@ -97,6 +102,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 4,
     level: 2,
     effect: { kind: 'damage', power: 1.8, target: 'one' },
+    fx: 'claw',
     blurb: '壓低身子，撲上去。',
   },
   catnipFury: {
@@ -106,6 +112,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 7,
     level: 5,
     effect: { kind: 'damage', power: 1.2, target: 'all' },
+    fx: 'claw',
     blurb: '聞了貓草之後亂抓一通，打到所有敵人。',
   },
   nineLives: {
@@ -115,6 +122,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 12,
     level: 8,
     effect: { kind: 'heal', ratio: 0.5, target: 'party', revive: true },
+    fx: 'sparkle',
     blurb: '全隊恢復一半體力，倒下的人也站起來。',
   },
   splash: {
@@ -124,6 +132,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 5,
     level: 1,
     effect: { kind: 'damage', power: 1.1, target: 'all' },
+    fx: 'splash',
     blurb: '拍打水面，水花潑到所有敵人。',
   },
   waterGun: {
@@ -133,6 +142,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 4,
     level: 3,
     effect: { kind: 'damage', power: 1.7, target: 'one' },
+    fx: 'jet',
     blurb: '對準一個敵人噴一道水柱。',
   },
   bubbleShield: {
@@ -142,6 +152,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 6,
     level: 6,
     effect: { kind: 'shield' },
+    fx: 'bubble',
     blurb: '吹出大泡泡包住全隊，這回合受到的傷害減半。',
   },
   bigWave: {
@@ -151,6 +162,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 12,
     level: 8,
     effect: { kind: 'damage', power: 2.0, target: 'all' },
+    fx: 'wave',
     blurb: '整個浴缸的水一起湧過去。',
   },
 };
