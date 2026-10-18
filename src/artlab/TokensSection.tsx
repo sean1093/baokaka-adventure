@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { MIN_CONTRAST, TEXT_PAIRS, contrastRatio } from '../art/contrast';
 import {
   EYES,
+  FX,
   LIGHTS,
   LINE,
   MATERIALS,
@@ -330,6 +331,10 @@ export const TokensSection = () => (
         {swatches('LIGHTS', LIGHTS)}
         <Swatch name="LIGHTS.lampBloom" value="core → mid → 0" fill={`radial-gradient(circle, ${LIGHTS.lampCore}, ${LIGHTS.lampMid} 45%, transparent 75%) ${UI.panelBottom}`} />
       </Grid>
+    </Group>
+
+    <Group title="Battle VFX" note="§ 7.10 · never graded">
+      <Grid>{swatches('FX', FX)}</Grid>
     </Group>
 
     <Group title="月亮線 lines">

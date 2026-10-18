@@ -8,6 +8,7 @@ import { questReducer } from '../quest/engine/quest';
 import { QuestScreens } from '../quest/QuestScreens';
 import { hashParams } from '../shared/route';
 import { ARTLAB_FIXTURES, type ArtLabFixture } from './fixtures';
+import { FxSection } from './FxSection';
 import { MapSection } from './MapSection';
 import { RigSection } from './RigSection';
 import { StageSection } from './StageSection';
@@ -20,7 +21,7 @@ import './artlab.css';
  * ugly but useful. Everything is driven by registries (SPRITES, ARTLAB_FIXTURES, the tables
  * below), so later issues add entries rather than code. URL parameters, all optional:
  *
- *   section  tokens | rig | ui | map | stage | sprites | fixtures     (default: fixtures and sprites)
+ *   section  tokens | rig | ui | map | stage | fx | sprites | fixtures     (default: fixtures and sprites)
  *   only     comma list: sprite names, or one fixture name to show that screen alone
  *   bg       comma list of BACKGROUNDS keys  (default: all)
  *   size     comma list of pixel sizes       (default: SIZES)
@@ -224,6 +225,7 @@ const ArtLab = ({ hash }: { hash: string }) => {
         <Link href="#/artlab?section=ui">ui kit</Link>
         <Link href="#/artlab?section=map">map</Link>
         <Link href="#/artlab?section=stage">stage</Link>
+        <Link href="#/artlab?section=fx">fx</Link>
         <Link href="#/artlab?section=sprites">sprites</Link>
         <Link href="#/artlab?section=fixtures">screens</Link>
         {(Object.keys(BACKGROUNDS) as Background[]).map((bg) => (
@@ -238,6 +240,7 @@ const ArtLab = ({ hash }: { hash: string }) => {
       {section === 'ui' && <UiKitSection />}
       {section === 'map' && <MapSection />}
       {section === 'stage' && <StageSection />}
+      {section === 'fx' && <FxSection />}
       {(section === null || section === 'fixtures') && <FixtureList />}
       {(section === null || section === 'sprites') && <SpritesSection params={params} />}
     </main>

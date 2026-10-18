@@ -10,6 +10,9 @@
  *   4. The battle stage (#14): the static backdrop is never touched while turns play (0 DOM
  *      mutations inside it), nothing animating in the battle carries a CSS filter, and the 布袋戲
  *      frame shows on boss fights only.
+ *   5. Battle VFX (#15): an all-target skill on three foes (`battle-fx`) keeps at most 40 FX nodes
+ *      in flight; under reduced motion nothing in the battle moves or flashes (every running
+ *      animation keeps one transform and never blinks) and the effects are only still fades.
  *
  *   node scripts/ui-check.mjs [--serve] [--url <base>]     (npm run check:ui)
  *
@@ -217,6 +220,67 @@ async function checkStage(browser, base) {
   await page.close();
 }
 
+/** 5. Battle VFX: the node budget while 哇哇大哭 lands on three foes, then the same under reduced motion. */
+const FX_BUDGET = 40;
+async function checkFx(browser, base) {
+  console.log('Battle VFX');
+  const sample = (page) =>
+    page.evaluate(() => {
+      const layer = document.querySelector('[data-fx-layer]');
+      if (!layer) return { nodes: 0, animated: 0, planned: 0 };
+      const animated = new Set(
+        document
+          .getAnimations()
+          .filter((animation) => animation.playState === 'running' && layer.contains(animation.effect?.target ?? null))
+          .map((animation) => animation.effect.target),
+      );
+      return { nodes: layer.querySelectorAll('[data-fx-node]').length, animated: animated.size, planned: Number(layer.getAttribute('data-fx-nodes')) };
+    });
+
+  const page = await browser.newPage({ viewport: VIEWPORTS[0], reducedMotion: 'no-preference' });
+  await open(page, fixtureUrl(base, 'battle-fx', false), 'battle-fx');
+  let most = { nodes: 0, animated: 0, planned: 0 };
+  for (let i = 0; i < 30; i += 1) {
+    const now = await sample(page);
+    if (now.animated > most.animated || now.nodes > most.nodes) most = { ...now, animated: Math.max(now.animated, most.animated), nodes: Math.max(now.nodes, most.nodes) };
+    await page.waitForTimeout(25);
+  }
+  const label = `all-target skill on 3 foes: ${most.nodes} FX nodes (planned ${most.planned}), at most ${most.animated} animating at once`;
+  if (most.nodes > 20 && most.nodes <= FX_BUDGET && most.animated <= FX_BUDGET && most.planned === most.nodes) pass(label);
+  else fail(`${label} (budget ${FX_BUDGET})`);
+  await page.close();
+
+  const reduced = await browser.newPage({ viewport: VIEWPORTS[0], reducedMotion: 'reduce' });
+  await open(reduced, fixtureUrl(base, 'battle-fx', false), 'battle-fx');
+  const offenders = new Set();
+  const names = new Set();
+  for (let i = 0; i < 24; i += 1) {
+    const found = await reduced.evaluate(() =>
+      document
+        .getAnimations()
+        .filter((animation) => animation.playState === 'running' && animation.effect?.target?.closest?.('[data-battle-stage]'))
+        .map((animation) => {
+          const frames = animation.effect.getKeyframes();
+          const transforms = new Set(frames.map((frame) => frame.transform ?? 'none'));
+          const blink = /blink|flash|wash/.test(animation.animationName ?? '') || frames.some((frame) => (frame.easing ?? '').startsWith('steps'));
+          const target = animation.effect.target;
+          return { name: animation.animationName, fx: Boolean(target.closest('[data-fx-layer]')), moves: transforms.size > 1, blink };
+        }),
+    );
+    for (const item of found) {
+      if (item.fx) names.add(item.name);
+      if (item.moves || item.blink) offenders.add(`${item.name}${item.moves ? ' (moves)' : ''}${item.blink ? ' (flashes)' : ''}`);
+    }
+    await reduced.waitForTimeout(40);
+  }
+  if (offenders.size === 0) pass('reduced motion: nothing in the battle moves or flashes while the skill lands');
+  else fail(`reduced motion: ${[...offenders].join(', ')}`);
+  const fxNames = [...names];
+  if (fxNames.length > 0 && fxNames.every((name) => name === 'fx-still')) pass('reduced motion: the effects are still fades of the impact shapes (fx-still)');
+  else fail(`reduced motion: effects play ${fxNames.join(', ') || 'nothing'}`);
+  await reduced.close();
+}
+
 const dev = args.serve ? await startDevServer() : null;
 const base = dev ? dev.url : args.url;
 const browser = await chromium.launch();
@@ -231,6 +295,7 @@ try {
   await checkTargets(browser, base, fixtures);
   await checkReducedMotion(browser, base, fixtures);
   await checkStage(browser, base);
+  await checkFx(browser, base);
 } finally {
   await browser.close();
   await dev?.server.close();
