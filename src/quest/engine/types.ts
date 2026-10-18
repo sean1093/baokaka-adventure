@@ -260,19 +260,49 @@ export type GameMap = {
 /** A line spoken by a hero, an NPC (by id), or nobody (system narration). */
 export type Line = { who: HeroId | string | null; text: string };
 
+/** One button of a `choice` step: what it says (≤ 12 characters) and the event it branches to. */
+export type ChoiceOption = { label: string; event: string };
+
+/**
+ * One instruction of a script (docs/story/script.md, *How to read this file*).
+ *
+ * Multi-phase bosses and their retry: consecutive `battle` steps simply play one after the
+ * other, and a defeat respawns the party at the map entry with the scene cleared but every flag
+ * kept. So for multi-phase bosses, set a phase flag after each phase and give the NPC a
+ * `when: phaseFlag` talk rule pointing at a retry event that starts at the next phase, e.g.
+ * `[boss A] [flag phase1] [heal 0.5] [boss B]` plus `{ when: 'phase1', event: 'boss.retry' }`.
+ */
 export type Step =
   | Line
-  | { do: 'chapter'; n: number; title: string }
+  /**
+   * The chapter card. `time` is the clock on the card (`HH:MM`, decision D-16); `label` replaces
+   * 「第 n 章」 for 尾聲 / 番外 (D-15), and a labelled card does not move `run.chapter`.
+   */
+  | { do: 'chapter'; n: number; title: string; time?: string; label?: string }
   | { do: 'join'; hero: HeroId }
   | { do: 'flag'; flag: string }
   | { do: 'give'; item: ItemId; count?: number }
+  /** A negative amount spends; the purse floors at 0, so an event purchase always succeeds */
   | { do: 'coins'; amount: number }
-  | { do: 'heal' }
+  /**
+   * Without a ratio: everyone back to full, the fallen too. With a ratio in (0, 1]: every hero
+   * (KO'd or not) is raised to at least `ratio` of their max HP and MP, never lowered.
+   */
+  | { do: 'heal'; ratio?: number }
   | { do: 'battle'; foes: FoeId[]; boss?: boolean }
   | { do: 'goto'; map: MapId; c: number; r: number }
   | { do: 'shop'; stock: ItemId[] }
-  /** Sleep for the night: asks first, charges, then heals */
+  /** Sleep for the night: asks first, charges, then heals. `price: 0` skips the question and just heals */
   | { do: 'inn'; price: number }
+  /** 2–3 buttons; the chosen option's event replaces the rest of the scene (a branch, not a sub-call) */
+  | { do: 'choice'; prompt?: string; options: ChoiceOption[] }
+  /** The script's `→ key`: jump to another event, dropping the rest of this one */
+  | { do: 'goEvent'; event: string }
+  /**
+   * An optional insert: when the condition holds right now, play `event` here, then carry on with
+   * the rest of this scene (a sub-call, unlike `goEvent`). Included events must stay linear.
+   */
+  | ({ do: 'include'; event: string } & Condition)
   | { do: 'ending' };
 
 // ---------------------------------------------------------------------------------------------

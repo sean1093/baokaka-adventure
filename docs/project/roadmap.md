@@ -28,7 +28,7 @@ Work the issues **in numeric order**; an issue may start only when every issue i
 | 4 | Visual QA tooling: dev art lab route and Playwright screenshots at 390×844 | chore, qa, art | #2 | done (#62) |
 | **M1** | | | | |
 | 5 | Four-hero party (寶咖咖, 摩卡貓, 阿藍, 黑糖), new skills, level cap 20 | engine | #3 | done (#63) |
-| 6 | Script steps v2: chapter clock, choice, heal ratio, free inn, spending coins, two-phase boss retry | engine | #3 | todo |
+| 6 | Script steps v2: chapter clock, choice, heal ratio, free inn, spending coins, two-phase boss retry | engine | #3 | done (#64) |
 | 7 | Derived flags, quest log data, bestiary tracking and escort followers | engine | #6 | todo |
 | 8 | Item catalogue v2 and hero-only equipment | engine | #5 | todo |
 | 9 | 月亮線 travel: travel step, STATIONS table, @rideTo exits and the 路線圖 screen | engine, ui, mrt | #6, #7 | todo |

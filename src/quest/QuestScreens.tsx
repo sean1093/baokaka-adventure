@@ -57,6 +57,7 @@ export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissN
             onInteract={(id) => dispatch({ type: 'interact', id })}
             onAdvance={() => dispatch({ type: 'advance' })}
             onInn={(yes) => dispatch({ type: 'innAnswer', yes })}
+            onChoose={(index) => dispatch({ type: 'choose', index })}
             onMenu={() => setMenuOpen(true)}
             onExit={() => dispatch({ type: 'backToTitle' })}
           />

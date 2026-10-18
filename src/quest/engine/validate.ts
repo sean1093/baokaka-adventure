@@ -10,6 +10,16 @@ import { HERO_ORDER, type GameMap, type Step, type Tile } from './types';
 /** At most three foes fit across the battle box. */
 export const MAX_FOES_PER_BATTLE = 3;
 
+/** A chapter card's clock, 00:00–23:59 (decision D-16). */
+export const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** A choice shows 2–3 buttons whose labels fit one line on a phone. */
+export const CHOICE_OPTIONS = { min: 2, max: 3 } as const;
+export const CHOICE_LABEL_MAX = 12;
+
+/** How deep `include` may nest (an include inside an included event is depth 2). */
+export const MAX_INCLUDE_DEPTH = 4;
+
 /** Checks one script's steps; exported so tests can feed it broken scripts. */
 export function validateSteps(where: string, steps: Step[], errors: string[]): void {
   for (const [index, step] of steps.entries()) {
@@ -42,8 +52,87 @@ export function validateSteps(where: string, steps: Step[], errors: string[]): v
       case 'join':
         if (!HERO_ORDER.includes(step.hero)) errors.push(`${at}: unknown hero ${step.hero}`);
         break;
+      case 'chapter':
+        if (!Number.isInteger(step.n) || step.n < 0) errors.push(`${at}: chapter number must be a whole number, got ${step.n}`);
+        if (step.title.length === 0) errors.push(`${at}: chapter without a title`);
+        if (step.time !== undefined && !CLOCK.test(step.time)) errors.push(`${at}: chapter time must be HH:MM, got "${step.time}"`);
+        if (step.label !== undefined && step.label.length === 0) errors.push(`${at}: empty chapter label`);
+        break;
+      case 'heal':
+        if (step.ratio !== undefined && !(step.ratio > 0 && step.ratio <= 1)) errors.push(`${at}: heal ratio must be in (0, 1], got ${step.ratio}`);
+        break;
+      case 'inn':
+        if (!Number.isInteger(step.price) || step.price < 0) errors.push(`${at}: inn price must be a whole number ≥ 0, got ${step.price}`);
+        break;
+      case 'choice': {
+        const count = step.options.length;
+        if (count < CHOICE_OPTIONS.min || count > CHOICE_OPTIONS.max) {
+          errors.push(`${at}: choice needs ${CHOICE_OPTIONS.min}..${CHOICE_OPTIONS.max} options, got ${count}`);
+        }
+        if (step.prompt !== undefined && step.prompt.length === 0) errors.push(`${at}: empty choice prompt`);
+        for (const [index, option] of step.options.entries()) {
+          if (option.label.length === 0) errors.push(`${at}: choice option ${index} has no label`);
+          if (option.label.length > CHOICE_LABEL_MAX) errors.push(`${at}: choice label "${option.label}" is over ${CHOICE_LABEL_MAX} characters`);
+          if (!EVENTS[option.event]) errors.push(`${at}: choice option ${index} points at missing event ${option.event}`);
+        }
+        break;
+      }
+      case 'goEvent':
+        if (!EVENTS[step.event]) errors.push(`${at}: goEvent points at missing event ${step.event}`);
+        break;
+      case 'include':
+        if (!EVENTS[step.event]) errors.push(`${at}: include points at missing event ${step.event}`);
+        break;
     }
   }
+}
+
+/** Events a script hands over to: choice options, `goEvent` and `include` targets. */
+export const referencedEvents = (steps: Step[]): string[] =>
+  steps.flatMap((step) => {
+    if ('text' in step) return [];
+    if (step.do === 'choice') return step.options.map((option) => option.event);
+    if (step.do === 'goEvent' || step.do === 'include') return [step.event];
+    return [];
+  });
+
+/**
+ * `include` splices another event inline, so it must terminate and stay linear: no cycles, at most
+ * MAX_INCLUDE_DEPTH levels, and no `choice` / `goEvent` inside (those drop the rest of the scene,
+ * which would silently cut off the event that did the including). Takes the event table so tests
+ * can feed it broken ones.
+ */
+export function validateIncludes(events: Record<string, Step[]>, errors: string[]): void {
+  const reported = new Set<string>();
+  const report = (message: string) => {
+    if (reported.has(message)) return;
+    reported.add(message);
+    errors.push(message);
+  };
+
+  const walk = (key: string, chain: string[]) => {
+    for (const step of events[key] ?? []) {
+      if ('text' in step || step.do !== 'include' || !events[step.event]) continue;
+      const target = step.event;
+      if (chain.includes(target)) {
+        report(`event ${chain[0]}: include cycle ${[...chain, target].join(' → ')}`);
+        continue;
+      }
+      const depth = chain.length;
+      if (depth > MAX_INCLUDE_DEPTH) {
+        report(`event ${chain[0]}: includes nest deeper than ${MAX_INCLUDE_DEPTH} (${[...chain, target].join(' → ')})`);
+        continue;
+      }
+      for (const inner of events[target]) {
+        if (!('text' in inner) && (inner.do === 'choice' || inner.do === 'goEvent')) {
+          report(`event ${target}: is included (by ${key}) but has a ${inner.do}, which would drop the rest of ${key}`);
+        }
+      }
+      walk(target, [...chain, target]);
+    }
+  };
+
+  for (const key of Object.keys(events)) walk(key, [key]);
 }
 
 const inGrid = (map: GameMap, tile: Tile): boolean =>
@@ -150,6 +239,7 @@ export function validateQuestContent(): string[] {
     if (steps.length === 0) errors.push(`event ${key} is empty`);
     validateSteps(`event ${key}`, steps, errors);
   }
+  validateIncludes(EVENTS, errors);
 
   for (const id of MAP_ORDER) validateMap(MAPS[id], errors);
   for (const id of Object.keys(MAPS)) if (!MAP_ORDER.includes(id as never)) errors.push(`map ${id} is missing from MAP_ORDER`);
@@ -186,6 +276,8 @@ export function validateQuestContent(): string[] {
     for (const trigger of map.triggers) used.add(trigger.event);
     for (const exit of map.exits) if (exit.blocked) used.add(exit.blocked);
   }
+  // Events reached only through another script (a choice branch, `→ key`, an optional insert) count too
+  for (const steps of Object.values(EVENTS)) for (const key of referencedEvents(steps)) used.add(key);
   for (const key of Object.keys(EVENTS)) if (!used.has(key)) errors.push(`event ${key} is never used`);
 
   // Sanity on the decor helper, so a refactor cannot silently break footprints

@@ -37,6 +37,8 @@ export const UI = {
   innShort: (missing: number) => `銅板不夠，還差 ${missing} 個。`,
   innRested: '呼……睡了一覺，體力和元氣都滿了。',
   innDeclined: '「那下次再來喔。」',
+  /** A free inn (`inn 0`): benches, slides and floors heal without asking */
+  innFree: '休息了一下，大家的體力和元氣都滿了。',
 
   /** The one-time title notice after an old-story save was discarded (decisions.md D-12) */
   legacyReset: ['冒險重新開始囉！', '舊的存檔是上一個故事的，已經收進回憶裡了。'] as const,

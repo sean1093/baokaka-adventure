@@ -118,7 +118,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
 Run `npm run dev` and open `http://localhost:5173/baokaka-adventure/#/artlab`. In a production build the hash shows the game, and the art lab code is not in the bundle at all (`src/App.tsx` drops the lazy import when `import.meta.env.DEV` is false).
 
 - **Sprites:** every `SpriteName` at 48, 64, 124 and 300 px on light, night and brick backgrounds, plus a black silhouette row.
-- **Screens:** named fixtures (`ARTLAB_FIXTURES` in `src/artlab/fixtures.ts`): title, world, dialogue, chapter card, battle (three heroes), battle-4-heroes, victory, shop, menu, defeat, ending. Each renders the real `QuestScreens` over a live reducer, so you can also play on from it. Add a fixture when you add a screen; the visual check picks it up automatically.
+- **Screens:** named fixtures (`ARTLAB_FIXTURES` in `src/artlab/fixtures.ts`): title, world, dialogue, dialogue-choice, chapter-card (with its clock), battle (three heroes), battle-4-heroes, victory, shop, menu, defeat, ending. Each renders the real `QuestScreens` over a live reducer, so you can also play on from it. Add a fixture when you add a screen; the visual check picks it up automatically.
 - **URL parameters:** `section=sprites|fixtures`, `only=<sprite names, comma separated>` or `only=<one fixture>`, `bg=light,night,brick,silhouette`, `size=48,124`, `still=1` (freezes animations). Example: `#/artlab?section=sprites&bg=night&size=124&only=baokaka`, `#/artlab?section=fixtures&only=battle&still=1`.
 
 ### Screenshots and baseline diffs: `npm run visual`

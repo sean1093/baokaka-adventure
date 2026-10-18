@@ -5,7 +5,7 @@ import type { PaletteName } from '../../art/types';
 import { Home, Sparkle } from '../../components/icons';
 import { playTone } from '../../shared/audio';
 import { IsoMap, mapActors, type Actor } from '../components/IsoMap';
-import { ChapterCard, Dialogue, InnPrompt } from '../components/Dialogue';
+import { ChapterCard, ChoicePrompt, Dialogue, InnPrompt } from '../components/Dialogue';
 import { HERO_SPRITE, PartyPanel } from '../components/PartyPanel';
 import { CHAPTER_TITLES, MAPS } from '../engine/maps';
 import { adjacentTile, findPath, isBlocked, meets } from '../engine/path';
@@ -51,6 +51,7 @@ type Props = {
   onInteract: (id: string) => void;
   onAdvance: () => void;
   onInn: (yes: boolean) => void;
+  onChoose: (index: number) => void;
   onMenu: () => void;
   onExit: () => void;
 };
@@ -61,8 +62,8 @@ type Props = {
  * The walk itself is animated here and reported to the reducer one tile at a time, so encounters,
  * triggers and exits all stay in the engine.
  */
-export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onMenu, onExit }: Props) => {
-  const { run, line, card, inn, sound } = state;
+export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onChoose, onMenu, onExit }: Props) => {
+  const { run, line, card, choice, inn, sound } = state;
   const map = MAPS[run.map];
 
   const [box, setBox] = useState({ w: 360, h: 420 });
@@ -101,7 +102,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onMen
   callbacks.current = { onStep, onInteract };
 
   // A scene, a card or a screen change stops the party where it stands
-  const frozen = Boolean(line || card || inn !== null);
+  const frozen = Boolean(line || card || choice || inn !== null);
   useEffect(() => {
     if (frozen) {
       motion.current.path = [];
@@ -289,9 +290,10 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onMen
           </div>
         )}
 
-        {card && <ChapterCard n={card.n} title={card.title} onDismiss={onAdvance} />}
+        {card && <ChapterCard n={card.n} title={card.title} time={card.time} label={card.label} onDismiss={onAdvance} />}
         {!card && line && <Dialogue line={line} onAdvance={onAdvance} />}
         {!card && !line && inn !== null && <InnPrompt price={inn} coins={run.coins} onAnswer={onInn} />}
+        {!card && !line && choice && <ChoicePrompt prompt={choice.prompt} options={choice.options} onChoose={onChoose} />}
       </div>
 
       <PartyPanel run={run} compact />
