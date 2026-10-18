@@ -171,20 +171,20 @@ function join(run: Run, hero: HeroId): Run {
   };
 }
 
-/** Spends the stickers on healing, the way a player stocking up before a boss would. */
+/** Spends the coins on healing, the way a player stocking up before a boss would. */
 function buy(run: Run): Run {
-  let stickers = run.stickers;
+  let coins = run.coins;
   const items = { ...run.items };
   const stock = (item: ItemId, cap: number) => {
-    while (stickers >= ITEMS[item].price && (items[item] ?? 0) < cap) {
-      stickers -= ITEMS[item].price;
+    while (coins >= ITEMS[item].price && (items[item] ?? 0) < cap) {
+      coins -= ITEMS[item].price;
       items[item] = (items[item] ?? 0) + 1;
     }
   };
   stock('bottle', 5);
   stock('driedFish', 3);
   stock('cookie', 5);
-  return { ...run, stickers, items };
+  return { ...run, coins, items };
 }
 
 export type Report = {

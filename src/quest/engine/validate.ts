@@ -10,7 +10,8 @@ import { HERO_ORDER, type GameMap, type Step, type Tile } from './types';
 /** At most three foes fit across the battle box. */
 export const MAX_FOES_PER_BATTLE = 3;
 
-function validateSteps(where: string, steps: Step[], errors: string[]): void {
+/** Checks one script's steps; exported so tests can feed it broken scripts. */
+export function validateSteps(where: string, steps: Step[], errors: string[]): void {
   for (const [index, step] of steps.entries()) {
     const at = `${where}[${index}]`;
     if ('text' in step) {
@@ -34,6 +35,9 @@ function validateSteps(where: string, steps: Step[], errors: string[]): void {
         break;
       case 'goto':
         if (!MAPS[step.map]) errors.push(`${at}: unknown map ${step.map}`);
+        break;
+      case 'coins':
+        if (!Number.isInteger(step.amount)) errors.push(`${at}: coins amount must be an integer, got ${step.amount}`);
         break;
       case 'join':
         if (!HERO_ORDER.includes(step.hero)) errors.push(`${at}: unknown hero ${step.hero}`);
@@ -159,6 +163,7 @@ export function validateQuestContent(): string[] {
   for (const foe of Object.values(FOES)) {
     if (!SPRITES[foe.sprite]) errors.push(`foe ${foe.id} has unknown sprite ${foe.sprite}`);
     if (foe.stats.hp <= 0 || foe.stats.atk <= 0 || foe.xp <= 0) errors.push(`foe ${foe.id}: hp, atk and xp must be positive`);
+    if (!Number.isInteger(foe.coins) || foe.coins < 0) errors.push(`foe ${foe.id}: coins must be a whole number, got ${foe.coins}`);
     if (foe.moves.length === 0) errors.push(`foe ${foe.id} has no moves`);
     if (foe.boss && !foe.taunt) errors.push(`boss ${foe.id} needs a taunt`);
     if (foe.drop && !ITEMS[foe.drop.item]) errors.push(`foe ${foe.id} drops unknown item ${foe.drop.item}`);

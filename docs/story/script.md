@@ -14,7 +14,7 @@ Each `### key` is one entry in `EVENTS` (events.ts). Lines map 1:1 to `Step`s:
 | `[join magpie]` | `{ do: 'join', hero: 'magpie' }` |
 | `[flag x]` | `{ do: 'flag', flag: 'x' }` |
 | `[give item]` / `[give item ×2]` | `{ do: 'give', item, count }` |
-| `[coins 50]` | `{ do: 'stickers', amount: 50 }` (rename to `coins` when the currency is renamed) |
+| `[coins 50]` | `{ do: 'coins', amount: 50 }` |
 | `[heal]` | `{ do: 'heal' }` |
 | `[battle a, b]` | `{ do: 'battle', foes: ['a','b'] }` |
 | `[boss x]` | `{ do: 'battle', foes: ['x'], boss: true }` |

@@ -6,15 +6,23 @@ import { Play, Sparkle } from '../../components/icons';
 import { Sheet } from '../../components/Sheet';
 import { CHAPTER_TITLES, MAPS } from '../engine/maps';
 import { runStarted } from '../engine/quest';
+import { UI } from '../engine/strings';
 import type { Run } from '../engine/types';
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
 const Duck = SPRITES.duck;
 
-type Props = { run: Run; onNew: () => void; onContinue: () => void };
+type Props = {
+  run: Run;
+  /** An old-story save was just discarded: explain the fresh start (decisions.md D-12) */
+  legacyNotice: boolean;
+  onDismissNotice: () => void;
+  onNew: () => void;
+  onContinue: () => void;
+};
 
-export const QuestTitleScreen = ({ run, onNew, onContinue }: Props) => {
+export const QuestTitleScreen = ({ run, legacyNotice, onDismissNotice, onNew, onContinue }: Props) => {
   const [confirming, setConfirming] = useState(false);
   const started = runStarted(run);
 
@@ -55,7 +63,7 @@ export const QuestTitleScreen = ({ run, onNew, onContinue }: Props) => {
               </span>
               <span className="block truncate text-heading font-extrabold leading-tight">{MAPS[run.map].title}</span>
               <span className="block text-caption font-bold text-muted">
-                隊伍 {run.party.length} 人 · 貼紙 {run.stickers}
+                隊伍 {run.party.length} 人 · {UI.coins} {run.coins}
               </span>
             </span>
           </Card>
@@ -73,6 +81,20 @@ export const QuestTitleScreen = ({ run, onNew, onContinue }: Props) => {
       )}
 
       {run.cleared && <p className="text-center text-caption font-bold text-leafDeep">★ 已經通關過一次了</p>}
+
+      <Sheet open={legacyNotice} onClose={onDismissNotice} title={UI.legacyReset[0]}>
+        <p className="mb-4 text-center text-copy leading-relaxed text-ink/75">
+          {/* Wrap only between phrases, never mid-phrase */}
+          {UI.legacyReset[1].split(/(?<=，)/).map((phrase) => (
+            <span key={phrase} className="inline-block">
+              {phrase}
+            </span>
+          ))}
+        </p>
+        <Button size="lg" full onClick={onDismissNotice}>
+          {UI.ok}
+        </Button>
+      </Sheet>
 
       <Sheet open={confirming} onClose={() => setConfirming(false)} title="重新開始？">
         <p className="mb-4 text-center text-copy leading-relaxed text-ink/75">現在的進度會全部消失喔。</p>

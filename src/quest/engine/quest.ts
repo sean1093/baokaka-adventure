@@ -1,11 +1,11 @@
 import { roll } from '../../shared/random';
-import { battleStep, battleStickers, battleXp, startBattle } from './battle';
+import { battleStep, battleCoins, battleXp, startBattle } from './battle';
 import { EVENTS } from './events';
 import { FOES } from './foes';
 import { ITEMS, STARTING_ITEMS, addItem, heroStats, isEquip, removeItem } from './heroes';
 import { MAPS } from './maps';
 import { chestOpened, meets } from './path';
-import { fullHp, fullMp, gainXp, healParty, runScene, type Scene, type Stop } from './scene';
+import { fullHp, fullMp, gainXp, innLines, runScene, type Scene, type Stop } from './scene';
 import {
   HERO_ORDER,
   type Battle,
@@ -23,7 +23,16 @@ import {
 /** After a defeat the party wakes at the map entrance with this much HP; nothing else is lost. */
 const REVIVE_RATIO = 0.4;
 
-export type VictorySummary = { xp: number; stickers: number; drops: ItemId[]; levels: number; learned: SpellId[]; level: number };
+export type VictorySummary = {
+  xp: number;
+  coins: number;
+  drops: ItemId[];
+  levels: number;
+  learned: SpellId[];
+  level: number;
+  /** The boss who calmed down, for 「〈boss名〉不暈了！」; null after an ordinary fight */
+  boss: FoeId | null;
+};
 
 export type QuestView =
   | { screen: 'title' }
@@ -90,7 +99,7 @@ export function freshRun(seed = 1, cleared = false): Run {
     mp,
     equip: { baokaka: null, mocha: null, duck: null },
     items: { ...STARTING_ITEMS },
-    stickers: 0,
+    coins: 0,
     flags: [],
     steps: 0,
     seed,
@@ -191,7 +200,7 @@ function encounter(run: Run): { run: Run; foes: FoeId[] } | null {
   return { run: { ...run, seed: second.seed, steps: 0 }, foes: groups[Math.floor(second.value * groups.length)] };
 }
 
-/** Folds a won battle back into the run: HP, MP, items as they ended, plus XP, stickers and drops. */
+/** Folds a won battle back into the run: HP, MP, items as they ended, plus XP, coins and drops. */
 export function applyVictory(run: Run, battle: Battle): { run: Run; summary: VictorySummary } {
   const hp = { ...run.hp };
   const mp = { ...run.mp };
@@ -214,11 +223,12 @@ export function applyVictory(run: Run, battle: Battle): { run: Run; summary: Vic
     }
   }
 
-  const stickers = battleStickers(battle);
-  const banked: Run = { ...run, hp, mp, items, seed, stickers: run.stickers + stickers };
+  const coins = battleCoins(battle);
+  const banked: Run = { ...run, hp, mp, items, seed, coins: run.coins + coins };
   const xp = battleXp(battle);
   const { run: levelled, levels, learned } = gainXp(banked, xp);
-  return { run: levelled, summary: { xp, stickers, drops, levels, learned, level: levelled.level } };
+  const boss = battle.boss ? (battle.foes.find((foe) => FOES[foe.foe].boss)?.foe ?? battle.foes[0].foe) : null;
+  return { run: levelled, summary: { xp, coins, drops, levels, learned, level: levelled.level, boss } };
 }
 
 export function questReducer(state: QuestState, action: QuestAction): QuestState {
@@ -285,11 +295,8 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
       if (state.inn === null) return state;
       const price = state.inn;
       if (!action.yes) return resume({ ...state, inn: null });
-      if (run.stickers < price) {
-        return { ...state, inn: null, line: { who: null, text: `貼紙不夠，還差 ${price - run.stickers} 張。` } };
-      }
-      const rested = healParty({ ...run, stickers: run.stickers - price });
-      return { ...state, inn: null, run: rested, line: { who: null, text: '呼……睡了一覺，體力和真氣都滿了。' } };
+      const answered = innLines(run, price, true);
+      return { ...state, inn: null, run: answered.run, line: answered.lines[0] };
     }
 
     case 'battle': {
@@ -340,8 +347,8 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
     case 'buy': {
       if (view.screen !== 'shop' || !view.stock.includes(action.item)) return state;
       const price = ITEMS[action.item].price;
-      if (run.stickers < price) return state;
-      return { ...state, run: { ...run, stickers: run.stickers - price, items: addItem(run.items, action.item) } };
+      if (run.coins < price) return state;
+      return { ...state, run: { ...run, coins: run.coins - price, items: addItem(run.items, action.item) } };
     }
 
     case 'closeShop':

@@ -43,7 +43,7 @@ export const EVENTS: Record<string, Step[]> = {
     { do: 'join', hero: 'mocha' },
     { do: 'flag', flag: 'mochaJoined' },
     { who: null, text: '摩卡貓加入了隊伍！' },
-    { who: 'mocha', text: '「戰鬥的時候點『仙術』，我會呼嚕嚕幫大家補血。」' },
+    { who: 'mocha', text: '「戰鬥的時候點『才藝』，我會呼嚕嚕幫大家補血。」' },
   ],
   'home.mom.first': [
     { who: 'mom', text: '「早安。今天想吃什麼呀？」' },
@@ -52,7 +52,7 @@ export const EVENTS: Record<string, Step[]> = {
   'home.mom.hug': [
     { who: 'mom', text: '「來，媽媽抱一下。」' },
     { do: 'heal' },
-    { who: null, text: '被抱了一下，全隊體力和真氣都滿了。' },
+    { who: null, text: '被抱了一下，全隊體力和元氣都滿了。' },
     { who: 'mom', text: '「累了就回來抱抱，隨時都可以。」' },
   ],
   'home.mom.night': [
@@ -69,10 +69,10 @@ export const EVENTS: Record<string, Step[]> = {
     { who: 'grandma', text: '「帶著這個，肚子餓就吃。」' },
     { do: 'give', item: 'cookie', count: 2 },
     { do: 'give', item: 'bottle' },
-    { do: 'stickers', amount: 20 },
+    { do: 'coins', amount: 20 },
     { do: 'flag', flag: 'grandmaGave' },
-    { who: null, text: '拿到 小餅乾 ×2、奶瓶 ×1，還有 20 張貼紙。' },
-    { who: 'grandma', text: '「貼紙可以跟市場的老闆娘換東西。」' },
+    { who: null, text: '拿到 小餅乾 ×2、奶瓶 ×1，還有 20 個銅板。' },
+    { who: 'grandma', text: '「銅板可以跟市場的老闆娘換東西。」' },
   ],
   'home.grandma.again': [
     { who: 'grandma', text: '「累了就回來，阿嬤在家。」' },
@@ -130,7 +130,7 @@ export const EVENTS: Record<string, Step[]> = {
   'park.mom': [
     { who: 'mom', text: '「媽媽在這邊曬太陽，你們去玩。」' },
     { do: 'heal' },
-    { who: null, text: '媽媽拍拍你們，體力和真氣都回來了。' },
+    { who: null, text: '媽媽拍拍你們，體力和元氣都回來了。' },
   ],
   'park.uncle': [
     { who: 'uncle', text: '「冰的、涼的，要不要來一個？」' },
@@ -156,8 +156,8 @@ export const EVENTS: Record<string, Step[]> = {
     { who: 'crow', text: '「嘎……還你就是了……」' },
     { who: null, text: '烏鴉老大放下一條紅緞帶，飛走了。' },
     { do: 'give', item: 'coinPurse' },
-    { do: 'stickers', amount: 30 },
-    { who: null, text: '撿到 小錢包 和 30 張貼紙。往右邊就是市場。' },
+    { do: 'coins', amount: 30 },
+    { who: null, text: '撿到 小錢包 和 30 個銅板。往右邊就是市場。' },
   ],
 
   // ---------------------------------------------------------------- 第四章 市場
@@ -167,7 +167,7 @@ export const EVENTS: Record<string, Step[]> = {
     { who: 'mocha', text: '「魚攤那邊……有一股很大的魚味。」' },
   ],
   'market.vendor': [
-    { who: 'vendor', text: '「來喔！用貼紙換，什麼都有！」' },
+    { who: 'vendor', text: '「來喔！用銅板換，什麼都有！」' },
     { do: 'shop', stock: ['cookie', 'bottle', 'banana', 'driedFish', 'blanket', 'toyBoat'] },
   ],
   'market.uncle': [
@@ -186,7 +186,7 @@ export const EVENTS: Record<string, Step[]> = {
     { who: 'fish', text: '「噗嚕……我只是想回水裡……」' },
     { who: null, text: '大魚翻了個身，滑進水桶，不見了。' },
     { do: 'give', item: 'apple' },
-    { do: 'stickers', amount: 40 },
+    { do: 'coins', amount: 40 },
     { who: 'mocha', text: '「牠說家裡的浴室通到水的世界。回家看看浴室吧。」' },
   ],
 
@@ -201,7 +201,7 @@ export const EVENTS: Record<string, Step[]> = {
     { do: 'join', hero: 'duck' },
     { do: 'flag', flag: 'duckJoined' },
     { who: null, text: '小鴨鴨加入了隊伍！' },
-    { who: 'duck', text: '「我的真氣很多，水花四濺可以打到全部的敵人。」' },
+    { who: 'duck', text: '「我的元氣很多，水花四濺可以打到全部的敵人。」' },
     { who: 'duck', text: '「浴缸後面那條路，通到海邊。走吧！」' },
   ],
   'bath.notYet': [
@@ -225,7 +225,7 @@ export const EVENTS: Record<string, Step[]> = {
     { do: 'flag', flag: 'octopusDone' },
     { who: 'octo', text: '「……好吧，我認輸。」' },
     { who: 'octo', text: '「你們要找的東西，在棉被山的最上面。那個打呼嚕的傢伙抱著它睡。」' },
-    { do: 'stickers', amount: 60 },
+    { do: 'coins', amount: 60 },
     { who: 'mocha', text: '「回家吧。房間的門，應該可以開了。」' },
   ],
 

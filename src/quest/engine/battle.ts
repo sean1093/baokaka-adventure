@@ -1,6 +1,7 @@
 import { roll } from '../../shared/random';
 import { FOES } from './foes';
 import { ITEMS, SPELLS, partyStats, removeItem } from './heroes';
+import { UI } from './strings';
 import {
   HERO_ORDER,
   type Battle,
@@ -19,7 +20,7 @@ import {
 /** Every hit lands somewhere in [0.9, 1.1] of its base */
 const VARIANCE = 0.1;
 const CRIT_MULTIPLIER = 1.5;
-/** 防禦 halves damage until the guard's next turn and gives back a little 真氣 */
+/** 防禦 halves damage until the guard's next turn and gives back a little 元氣 */
 const GUARD_MP = 4;
 const FLEE_BASE = 0.55;
 
@@ -93,7 +94,7 @@ export function foeIntent(battle: Battle, slot: number): string {
 }
 
 export const battleXp = (battle: Battle): number => battle.foes.reduce((sum, foe) => sum + FOES[foe.foe].xp, 0);
-export const battleStickers = (battle: Battle): number => battle.foes.reduce((sum, foe) => sum + FOES[foe.foe].stickers, 0);
+export const battleCoins = (battle: Battle): number => battle.foes.reduce((sum, foe) => sum + FOES[foe.foe].coins, 0);
 
 /**
  * One action by whoever's turn it is. Pure: returns the next battle with fresh `events`.
@@ -172,7 +173,7 @@ export function battleStep(battle: Battle, action: BattleAction): Battle {
       case 'attack': {
         const slot = firstAliveFoe(action.target);
         if (slot === null) return battle;
-        events.push({ kind: 'act', who: heroWho(hero), name: '攻擊', fx: 'slash', arcane: false });
+        events.push({ kind: 'act', who: heroWho(hero), name: UI.commands.attack, fx: 'slash', arcane: false });
         const isCrit = crit();
         const base = Math.max(1, stats.atk - FOES[draft.foes[slot].foe].stats.def * 0.5);
         hitFoe(slot, vary(base) * (isCrit ? CRIT_MULTIPLIER : 1), isCrit);
@@ -244,7 +245,7 @@ export function battleStep(battle: Battle, action: BattleAction): Battle {
 
       case 'flee': {
         if (draft.boss) return battle;
-        events.push({ kind: 'act', who: heroWho(hero), name: '逃跑', fx: null, arcane: false });
+        events.push({ kind: 'act', who: heroWho(hero), name: UI.commands.flee, fx: null, arcane: false });
         const partySpd = aliveHeroes(draft).reduce((sum, ally) => sum + draft.stats[ally].spd, 0) / aliveHeroes(draft).length;
         const foeSpd = Math.max(...aliveFoeSlots(draft).map((slot) => FOES[draft.foes[slot].foe].stats.spd));
         const chance = clamp(FLEE_BASE + (partySpd - foeSpd) * 0.03, 0.25, 0.9);

@@ -4,6 +4,7 @@ import { Button } from '../../components/Button';
 import { Card, Screen } from '../../components/Screen';
 import { Refresh } from '../../components/icons';
 import { playTone } from '../../shared/audio';
+import { UI } from '../engine/strings';
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
@@ -27,18 +28,20 @@ export const DefeatScreen = ({ soundOn, onRetry }: Props) => {
             <MochaCat />
           </span>
         </div>
-        <h1 className="text-display font-extrabold">大家累倒了</h1>
+        <h1 className="text-display font-extrabold">{UI.defeat[0]}</h1>
       </section>
 
       <Card className="p-4 text-center">
         <p className="text-copy leading-relaxed text-ink/80">
-          睡一下就好了。
+          {UI.defeat[1]}
           <br />
-          從這一張地圖的入口重新來，
-          <br />
-          道具、貼紙和經驗都還在。
+          道具、{UI.coins}和經驗都還在。
         </p>
-        <p className="mt-3 text-label font-bold text-muted">小提示：血少的時候先「防禦」，或用道具補一下。</p>
+        <p className="mt-3 text-label font-bold text-muted">
+          小提示：體力少的時候先「防禦」，
+          <br />
+          或用道具補一下。
+        </p>
       </Card>
 
       <Button size="lg" full icon={<Refresh size={22} />} onClick={onRetry}>

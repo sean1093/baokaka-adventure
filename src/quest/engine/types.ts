@@ -1,6 +1,6 @@
 /**
  * Data contract for 寶咖咖奇俠傳, the 仙劍-style RPG: isometric maps to explore, NPCs to talk to,
- * a party that grows, and turn-based command battles (攻擊 / 仙術 / 道具 / 防禦 / 逃跑).
+ * a party that grows, and turn-based command battles (攻擊 / 才藝 / 道具 / 防禦 / 逃跑).
  * Everything here is plain data. The engines (battle.ts, scene.ts, quest.ts) are pure functions
  * over these types; the UI never mutates them.
  */
@@ -15,7 +15,7 @@ export type HeroId = 'baokaka' | 'mocha' | 'duck';
 /** Every hero, in the order they join and the order they stand in battle. */
 export const HERO_ORDER: readonly HeroId[] = ['baokaka', 'mocha', 'duck'];
 
-/** 體力 / 真氣 / 武術 / 防禦 / 身法 / 幸運: the classic six. */
+/** 體力 / 元氣 / 武力 / 防禦 / 身手 / 幸運: the classic six. */
 export type Stats = { hp: number; mp: number; atk: number; def: number; spd: number; luck: number };
 
 export type SpellId =
@@ -64,7 +64,7 @@ export type Spell = {
   id: SpellId;
   name: string;
   hero: HeroId;
-  /** 真氣 spent */
+  /** 元氣 spent */
   cost: number;
   /** Party level at which the hero learns it */
   level: number;
@@ -105,7 +105,7 @@ export type Item = {
   name: string;
   sprite: SpriteName;
   blurb: string;
-  /** Price in 貼紙 when a shop stocks it */
+  /** Price in 銅板 when a shop stocks it */
   price: number;
   use: ItemUse;
 };
@@ -146,8 +146,8 @@ export type Foe = {
   sprite: SpriteName;
   stats: Stats;
   xp: number;
-  /** 貼紙 dropped */
-  stickers: number;
+  /** 銅板 dropped */
+  coins: number;
   /** Chance of dropping the item, 0..1 */
   drop?: { item: ItemId; chance: number };
   /** Bosses cannot be fled from and shout their taunt on round 1 */
@@ -261,7 +261,7 @@ export type Step =
   | { do: 'join'; hero: HeroId }
   | { do: 'flag'; flag: string }
   | { do: 'give'; item: ItemId; count?: number }
-  | { do: 'stickers'; amount: number }
+  | { do: 'coins'; amount: number }
   | { do: 'heal' }
   | { do: 'battle'; foes: FoeId[]; boss?: boolean }
   | { do: 'goto'; map: MapId; c: number; r: number }
@@ -284,7 +284,7 @@ export type Run = {
   mp: Record<HeroId, number>;
   equip: Record<HeroId, ItemId | null>;
   items: Inventory;
-  stickers: number;
+  coins: number;
   flags: string[];
   /** Steps walked since the last random encounter */
   steps: number;
