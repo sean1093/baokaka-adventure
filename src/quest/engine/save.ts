@@ -4,9 +4,30 @@ import { MAPS } from './maps';
 import { freshRun } from './quest';
 import { HERO_ORDER, type HeroId, type ItemId, type Run } from './types';
 
-export const QUEST_KEY = 'baokaka.quest';
+/**
+ * The save format. Bump the version and the key for any incompatible Run change; never migrate
+ * across stories (decisions.md D-12): an older record is discarded and the title says so once.
+ */
+export const SAVE_VERSION = 2;
+export const QUEST_KEY = 'baokaka.quest.v2';
+/** The 寶咖咖奇俠傳 save from before the 抓周 redesign. Any content under it means "reset". */
+export const LEGACY_QUEST_KEY = 'baokaka.quest';
 
-export type QuestSave = { run: Run; sound: boolean };
+/** Player preferences that live beside the run. */
+export type QuestSettings = {
+  /** Skip the MRT ride cutscenes (issue #9) */
+  skipRides: boolean;
+};
+
+export const DEFAULT_SETTINGS: QuestSettings = { skipRides: false };
+
+export type QuestSave = { run: Run; sound: boolean; settings: QuestSettings };
+
+/** What the title screen needs from a load: the save, and whether an old-story save was just discarded. */
+export type LoadedQuest = { save: QuestSave; legacyReset: boolean };
+
+/** The record as stored: the save plus its version stamp. */
+type StoredSave = QuestSave & { version: typeof SAVE_VERSION };
 
 const isCount = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
 const isItem = (value: unknown): value is ItemId => typeof value === 'string' && value in ITEMS;
@@ -56,7 +77,7 @@ function isRun(value: unknown): value is Run {
     isCount(run.xp) &&
     isNumberMap(run.hp) &&
     isNumberMap(run.mp) &&
-    isCount(run.stickers) &&
+    isCount(run.coins) &&
     Array.isArray(run.flags) &&
     run.flags.every((flag) => typeof flag === 'string') &&
     isCount(run.steps) &&
@@ -67,18 +88,53 @@ function isRun(value: unknown): value is Run {
   );
 }
 
-function isSave(value: unknown): value is QuestSave {
+function isSettings(value: unknown): value is QuestSettings {
   if (typeof value !== 'object' || value === null) return false;
-  const save = value as Partial<QuestSave>;
-  return typeof save.sound === 'boolean' && isRun(save.run);
+  return typeof (value as Partial<QuestSettings>).skipRides === 'boolean';
 }
 
-/** Anything unreadable comes back as a fresh run; the player is never shown an error. */
-export function loadQuest(storage: StorageLike | null = browserStorage()): QuestSave {
-  const stored = loadJson(QUEST_KEY, isSave, storage);
-  return stored ?? { run: freshRun(Date.now() | 0), sound: true };
+function isStoredSave(value: unknown): value is StoredSave {
+  if (typeof value !== 'object' || value === null) return false;
+  const save = value as Partial<StoredSave>;
+  return save.version === SAVE_VERSION && typeof save.sound === 'boolean' && isSettings(save.settings) && isRun(save.run);
+}
+
+/** True when the pre-redesign key is present with any content at all. Never throws. */
+function hasLegacy(storage: StorageLike | null): boolean {
+  try {
+    return storage?.getItem(LEGACY_QUEST_KEY) != null;
+  } catch {
+    return false;
+  }
+}
+
+const freshSave = (): QuestSave => ({ run: freshRun(Date.now() | 0), sound: true, settings: { ...DEFAULT_SETTINGS } });
+
+/**
+ * A valid v2 save is loaded as is. Otherwise, if an old-story save is present, the result is a
+ * fresh run with `legacyReset` so the title can explain the fresh start once; the caller then
+ * deletes it with `discardLegacyQuest`. Anything else unreadable (a corrupt v2 record, no storage,
+ * a throwing storage) quietly becomes a fresh run: the player never sees an error.
+ *
+ * Reading never writes: React may call a state initializer twice (StrictMode), and a load that
+ * deleted the old key would answer the second call with `legacyReset: false`.
+ */
+export function loadQuest(storage: StorageLike | null = browserStorage()): LoadedQuest {
+  const stored = loadJson(QUEST_KEY, isStoredSave, storage);
+  if (stored) return { save: { run: stored.run, sound: stored.sound, settings: stored.settings }, legacyReset: false };
+  return { save: freshSave(), legacyReset: hasLegacy(storage) };
+}
+
+/** Deletes the old-story save. Never throws; if storage refuses, the v2 save written next still wins. */
+export function discardLegacyQuest(storage: StorageLike | null = browserStorage()): void {
+  try {
+    storage?.removeItem(LEGACY_QUEST_KEY);
+  } catch {
+    // The key stays behind; once a v2 save exists it is never read again
+  }
 }
 
 export function saveQuest(save: QuestSave, storage: StorageLike | null = browserStorage()): void {
-  saveJson(QUEST_KEY, save, storage);
+  const record: StoredSave = { version: SAVE_VERSION, run: save.run, sound: save.sound, settings: save.settings };
+  saveJson(QUEST_KEY, record, storage);
 }
