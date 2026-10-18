@@ -364,3 +364,56 @@ describe('joining', () => {
     expect(spellsFor('magpie', run.level).map((spell) => spell.id)).toEqual(['featherRain']);
   });
 });
+
+describe('progress: the 圖鑑 and derived flags in the reducer', () => {
+  const STAMPS = ['daan', 'ntu', 'station', 'ximen', 'longshan', 'dadaocheng', 'shilin', 'airport', 'maokong', 'bitan', 'beitou', 'yangming', 'tamsui', 'tower'].map(
+    (map) => `stamp_${map}`,
+  );
+
+  /** A fight on the home map, with the run carrying `run` overrides, ended in `phase`. */
+  const fought = (foes: FoeId[], phase: 'won' | 'lost' | 'fled', run: Partial<Run> = {}): QuestState => {
+    const base = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+    const withRun = { ...base, run: { ...base.run, ...run } };
+    const battle = startBattle(withRun.run, foes, withRun.run.seed, false);
+    return questReducer({ ...withRun, view: { screen: 'battle', battle: { ...battle, phase: { kind: phase } } } }, { type: 'battleEnd' });
+  };
+
+  test('a victory records every foe of the fight once, in order, and keeps earlier ones', () => {
+    const state = fought(['sockMonster', 'dustBunny', 'sockMonster'], 'won', { seenFoes: ['dustBunny'] });
+    expect(state.view.screen).toBe('victory');
+    expect(state.run.seenFoes).toEqual(['dustBunny', 'sockMonster']);
+  });
+
+  test('fleeing or losing records nothing', () => {
+    expect(fought(['sockMonster'], 'fled').run.seenFoes).toEqual([]);
+    expect(fought(['sockMonster'], 'lost').run.seenFoes).toEqual([]);
+  });
+
+  test('beating the last missing foe sets bestiaryAll', () => {
+    const all = Object.keys(FOES) as FoeId[];
+    const almost = all.filter((foe) => foe !== 'snoreKing');
+    expect(fought(['dustBunny'], 'won', { seenFoes: almost }).run.flags).not.toContain('bestiaryAll');
+    expect(fought(['snoreKing'], 'won', { seenFoes: almost }).run.flags).toContain('bestiaryAll');
+  });
+
+  test('a victory settles derived flags', () => {
+    expect(fought(['dustBunny'], 'won', { flags: STAMPS }).run.flags).toContain('allStamps');
+  });
+
+  test('opening a chest settles derived flags', () => {
+    const base = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+    const state = readAll(questReducer({ ...base, run: { ...base.run, flags: [...base.run.flags, ...STAMPS] } }, { type: 'interact', id: 'home-book' }));
+    expect(state.run.flags).toContain('chest:home-book');
+    expect(state.run.flags).toContain('allStamps');
+  });
+
+  test('a flag step settles derived flags, and the clerk points count up', () => {
+    const clerks = ['daan', 'ntu', 'station', 'ximen'].map((map) => ({ do: 'flag' as const, flag: `clerk_${map}` }));
+    const four = runScene(freshRun(1), { steps: clerks, at: 0 }).run;
+    expect(four.flags).toContain('clerkAny');
+    expect(four.flags).not.toContain('clerk5');
+    const five = runScene(four, { steps: [{ do: 'flag', flag: 'clerk_longshan' }], at: 0 }).run;
+    expect(five.flags).toContain('clerk5');
+    expect(five.flags).not.toContain('clerk10');
+  });
+});

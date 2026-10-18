@@ -1,6 +1,7 @@
 import { useState, type Dispatch } from 'react';
 import { unlockAudio } from '../shared/audio';
 import { MAPS } from './engine/maps';
+import type { Follower } from './engine/progress';
 import type { QuestAction, QuestState } from './engine/quest';
 import { BattleScreen } from './screens/BattleScreen';
 import { DefeatScreen } from './screens/DefeatScreen';
@@ -19,6 +20,8 @@ type Props = {
   onDismissNotice?: () => void;
   /** Open the party sheet on mount (the art lab's menu fixture) */
   menuOpen?: boolean;
+  /** Escort table override (the art lab's follower fixture); defaults to the content's FOLLOWERS */
+  followers?: readonly Follower[];
 };
 
 /**
@@ -26,7 +29,7 @@ type Props = {
  * those, and the art lab renders this same component over fixture states, so its screenshots
  * always show the real wiring.
  */
-export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissNotice = () => {}, menuOpen: openOnMount = false }: Props) => {
+export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissNotice = () => {}, menuOpen: openOnMount = false, followers }: Props) => {
   const [menuOpen, setMenuOpen] = useState(openOnMount);
   const { view, run, sound } = state;
 
@@ -60,6 +63,7 @@ export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissN
             onChoose={(index) => dispatch({ type: 'choose', index })}
             onMenu={() => setMenuOpen(true)}
             onExit={() => dispatch({ type: 'backToTitle' })}
+            followers={followers}
           />
           <PartySheet
             open={menuOpen}

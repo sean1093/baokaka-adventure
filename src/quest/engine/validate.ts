@@ -5,6 +5,20 @@ import { ITEMS, MAX_LEVEL, SPELLS, XP_TABLE } from './heroes';
 import { TERRAIN, covers, terrainAt } from './iso';
 import { MAPS, MAP_ORDER } from './maps';
 import { findPath, isSolid } from './path';
+import {
+  BESTIARY_FLAG,
+  BESTIARY_FOES,
+  COLLECTIONS,
+  COLLECTION_LINE_MAX,
+  DERIVED,
+  FOLLOWERS,
+  QUESTS,
+  QUEST_HINT_MAX,
+  TRAY,
+  type Derived,
+  type Follower,
+  type SideQuest,
+} from './progress';
 import { HERO_ORDER, type GameMap, type Step, type Tile } from './types';
 
 /** At most three foes fit across the battle box. */
@@ -231,6 +245,140 @@ function validateMap(map: GameMap, errors: string[]): void {
   }
 }
 
+/** A 圖鑑 blurb is one dialogue line; a home is a short place name. */
+export const FOE_CALMED_MAX = 40;
+export const FOE_HOME_MAX = 12;
+
+/** The 抓周盤 ring always has nine treasures (story bible § 6.3). */
+export const TRAY_RING_SLOTS = 9;
+
+/**
+ * DERIVED: well-formed entries, one entry per flag, and no flag that (through other derived flags)
+ * waits on itself, which could never be set. Takes the table so tests can feed broken ones.
+ */
+export function validateDerived(table: readonly Derived[], errors: string[]): void {
+  const byFlag = new Map<string, Derived>();
+  for (const entry of table) {
+    const where = `derived ${entry.flag}`;
+    if (entry.flag.length === 0) errors.push('derived flag with an empty name');
+    if (entry.flag === BESTIARY_FLAG) errors.push(`${where}: is computed from seenFoes and cannot have a DERIVED entry`);
+    if (byFlag.has(entry.flag)) errors.push(`${where}: defined twice`);
+    byFlag.set(entry.flag, entry);
+    if (entry.of.length === 0) errors.push(`${where}: depends on no flags`);
+    if (new Set(entry.of).size !== entry.of.length) errors.push(`${where}: lists a flag twice`);
+    const atLeast = entry.atLeast ?? entry.of.length;
+    if (!Number.isInteger(atLeast) || atLeast < 1 || atLeast > entry.of.length) {
+      errors.push(`${where}: atLeast must be a whole number in 1..${entry.of.length}, got ${entry.atLeast}`);
+    }
+  }
+
+  // Depth-first search over "derived flag → the derived flags it waits on"
+  const state = new Map<string, 'open' | 'done'>();
+  const visit = (flag: string, chain: string[]) => {
+    if (state.get(flag) === 'done') return;
+    if (state.get(flag) === 'open') {
+      errors.push(`derived ${flag}: cycle ${[...chain.slice(chain.indexOf(flag)), flag].join(' → ')}`);
+      return;
+    }
+    state.set(flag, 'open');
+    for (const source of byFlag.get(flag)?.of ?? []) if (byFlag.has(source)) visit(source, [...chain, flag]);
+    state.set(flag, 'done');
+  };
+  for (const flag of byFlag.keys()) visit(flag, []);
+}
+
+/** QUESTS: unique ids, a title, at least one step, no repeated step flag, hints that fit one line. */
+export function validateQuests(quests: readonly SideQuest[], errors: string[]): void {
+  const ids = new Set<string>();
+  for (const quest of quests) {
+    const where = `quest ${quest.id}`;
+    if (ids.has(quest.id)) errors.push(`${where}: defined twice`);
+    ids.add(quest.id);
+    if (quest.title.length === 0) errors.push(`${where}: has no title`);
+    if (quest.steps.length === 0) errors.push(`${where}: has no steps`);
+    const flags = quest.steps.map((step) => step.flag);
+    if (new Set(flags).size !== flags.length) errors.push(`${where}: repeats a step flag`);
+    for (const step of quest.steps) {
+      if (step.hint.length === 0) errors.push(`${where}: step ${step.flag} has no hint`);
+      if (step.hint.length > QUEST_HINT_MAX) errors.push(`${where}: hint "${step.hint}" is over ${QUEST_HINT_MAX} characters`);
+    }
+  }
+}
+
+/** FOLLOWERS: a real sprite, a name, and an `until` that differs from the flag that starts it. */
+export function validateFollowers(followers: readonly Follower[], errors: string[]): void {
+  for (const follower of followers) {
+    const where = `follower ${follower.flag}`;
+    if (!SPRITES[follower.sprite]) errors.push(`${where}: unknown sprite ${follower.sprite}`);
+    if (follower.name.length === 0) errors.push(`${where}: has no name`);
+    if (follower.flag === follower.until) errors.push(`${where}: ends on the flag that starts it`);
+  }
+}
+
+/** The progress tables in progress.ts and the 圖鑑 fields on foes. */
+function validateProgress(errors: string[]): void {
+  validateDerived(DERIVED, errors);
+  validateQuests(QUESTS, errors);
+  validateFollowers(FOLLOWERS, errors);
+
+  const trayFlags = TRAY.map((slot) => slot.flag);
+  if (new Set(trayFlags).size !== trayFlags.length) errors.push('tray: a flag is used twice');
+  const ring = TRAY.filter((slot) => slot.slot === 'ring').length;
+  if (ring !== TRAY_RING_SLOTS) errors.push(`tray: the ring needs ${TRAY_RING_SLOTS} treasures, got ${ring}`);
+  for (const slot of TRAY) if (slot.name.length === 0 || slot.meaning.length === 0) errors.push(`tray ${slot.flag}: needs a name and a meaning`);
+
+  const collected = new Set<string>();
+  for (const collection of COLLECTIONS) {
+    if (collection.entries.length === 0) errors.push(`collection ${collection.id}: is empty`);
+    for (const entry of collection.entries) {
+      const where = `collection ${collection.id} ${entry.flag}`;
+      if (collected.has(entry.flag)) errors.push(`${where}: flag is used twice`);
+      collected.add(entry.flag);
+      if (entry.title.length === 0) errors.push(`${where}: has no title`);
+      if (entry.lines.length === 0) errors.push(`${where}: has no line`);
+      for (const line of entry.lines) {
+        if (line.length === 0 || line.length > COLLECTION_LINE_MAX) errors.push(`${where}: line "${line}" must be 1..${COLLECTION_LINE_MAX} characters`);
+      }
+    }
+  }
+
+  if (BESTIARY_FOES.length === 0) errors.push('bestiary: no foes to collect');
+  for (const foe of Object.values(FOES)) {
+    if (foe.calmed !== undefined && (foe.calmed.length === 0 || foe.calmed.length > FOE_CALMED_MAX)) {
+      errors.push(`foe ${foe.id}: calmed blurb must be 1..${FOE_CALMED_MAX} characters`);
+    }
+    if (foe.home !== undefined && (foe.home.length === 0 || foe.home.length > FOE_HOME_MAX)) {
+      errors.push(`foe ${foe.id}: home must be 1..${FOE_HOME_MAX} characters`);
+    }
+  }
+}
+
+/** Every flag some script, derived entry or the 圖鑑 can set. */
+export function settableFlags(): Set<string> {
+  const flags = new Set<string>([BESTIARY_FLAG]);
+  for (const steps of Object.values(EVENTS)) for (const step of steps) if ('do' in step && step.do === 'flag') flags.add(step.flag);
+  for (const entry of DERIVED) flags.add(entry.flag);
+  return flags;
+}
+
+/**
+ * Flags the progress tables read that no content sets yet. Warnings, not errors, while chapters
+ * land one by one (each chapter issue sets its own); the final QA issue (#58) makes them errors.
+ */
+export function progressWarnings(): string[] {
+  const settable = settableFlags();
+  const read = new Set<string>();
+  for (const entry of DERIVED) for (const flag of entry.of) read.add(flag);
+  for (const quest of QUESTS) for (const step of quest.steps) read.add(step.flag);
+  for (const slot of TRAY) read.add(slot.flag);
+  for (const collection of COLLECTIONS) for (const entry of collection.entries) read.add(entry.flag);
+  for (const follower of FOLLOWERS) {
+    read.add(follower.flag);
+    read.add(follower.until);
+  }
+  return [...read].filter((flag) => !settable.has(flag)).map((flag) => `progress flag ${flag} is never set by any event`);
+}
+
 /** Pure content checks; run at dev start-up and in content.test.ts so mistakes never ship. */
 export function validateQuestContent(): string[] {
   const errors: string[] = [];
@@ -242,6 +390,7 @@ export function validateQuestContent(): string[] {
   validateIncludes(EVENTS, errors);
 
   for (const id of MAP_ORDER) validateMap(MAPS[id], errors);
+  validateProgress(errors);
   for (const id of Object.keys(MAPS)) if (!MAP_ORDER.includes(id as never)) errors.push(`map ${id} is missing from MAP_ORDER`);
 
   for (const spell of Object.values(SPELLS)) {

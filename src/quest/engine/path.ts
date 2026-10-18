@@ -84,4 +84,32 @@ export function adjacentTile(map: GameMap, flags: readonly string[], from: Tile,
   return best?.tile ?? null;
 }
 
+/**
+ * Where an escort waits beside the party. Screen-right and screen-left first: those tiles sit at the
+ * leader's own depth, so the escort hides nobody and nobody hides it (idle heroes fan out behind,
+ * and a tile in front would cover the leader's feet). Then the front tiles, then the rest.
+ */
+const BESIDE: readonly Tile[] = [
+  { c: 1, r: -1 },
+  { c: -1, r: 1 },
+  { c: 0, r: 1 },
+  { c: 1, r: 0 },
+  { c: 1, r: 1 },
+  { c: 0, r: -1 },
+  { c: -1, r: 0 },
+  { c: -1, r: -1 },
+];
+
+/**
+ * The free tile next to `pos` where an escort follower stands after a map change (it has no walked
+ * tiles to trail yet). Falls back to `pos` itself on a map with no room around the entrance.
+ */
+export function restingSpot(map: GameMap, flags: readonly string[], pos: Tile): Tile {
+  for (const step of BESIDE) {
+    const tile = { c: pos.c + step.c, r: pos.r + step.r };
+    if (tile.r >= 0 && tile.r < map.grid.length && tile.c >= 0 && tile.c < map.grid[0].length && !isBlocked(map, flags, tile.c, tile.r)) return tile;
+  }
+  return pos;
+}
+
 export const isAdjacent = (a: Tile, b: Tile): boolean => Math.abs(a.c - b.c) + Math.abs(a.r - b.r) === 1;
