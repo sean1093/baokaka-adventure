@@ -9,3 +9,9 @@
   transition: none !important;
   caret-color: transparent !important;
 }
+
+/* A fixture in a phone-sized box (`phone` in fixtures.ts): the screen fills the box, not the viewport */
+.artlab-phone main {
+  height: 100% !important;
+  min-height: 0 !important;
+}

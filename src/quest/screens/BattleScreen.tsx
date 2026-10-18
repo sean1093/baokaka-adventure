@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { BACKDROPS } from '../../art/backdrops';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
+import { BossFrame } from '../../art/backdrops/BossFrame';
+import { STAGE_H, STAGE_W, Stage, stageScale, useBackdrop } from '../../art/backdrops';
+import { FRAME, RIM, STAGE_LIGHT, UI as UI_TOKENS, withAlpha } from '../../art/palette';
+import { SceneClock, sceneRim } from '../../art/scene';
 import { SPRITES } from '../../art/sprites';
-import type { PaletteName } from '../../art/types';
 import { CommandButton } from '../../components/Button';
 import { GlassChip, Num } from '../../components/Chip';
 import { CommandGrid, CommandPanel, PartyCard } from '../../components/CommandPanel';
@@ -10,38 +12,76 @@ import { SoundToggle } from '../../components/Screen';
 import { playTone } from '../../shared/audio';
 import { BattleFx, type Spot } from '../components/BattleFx';
 import { HERO_SPRITE, HeroHead } from '../components/PartyPanel';
-import { aliveFoeSlots, battleBoss, canCast, foeIntent, sameWho } from '../engine/battle';
+import { aliveFoeSlots, battleBoss, battleFrame, canCast, foeIntent, sameWho, type StageFrame } from '../engine/battle';
 import { FOES } from '../engine/foes';
 import { HEROES, ITEMS, ITEM_ORDER, SPELLS, spellsFor } from '../engine/heroes';
 import { UI } from '../engine/strings';
 import type { Battle, BattleAction, BattleEvent, HeroId, ItemId, SpellId, Who } from '../engine/types';
+import './battle.css';
 
 /** Pause between foe actions so each one can be read (ms) */
 const FOE_TICK_MS = 800;
+/** A finished fight waits a beat so the last number can be read; a won one lets the foe calm and the gold wash in */
 const END_DELAY_MS = 900;
+const WON_DELAY_MS = 1300;
+/** Below this screen height the party strip drops to small heads and one number row (375×667 and similar) */
+const SHORT_SCREEN = 740;
 
-/** Column centres for 1..3 foes, as fractions of the arena width */
-const COLUMNS: Record<number, number[]> = { 1: [0.5], 2: [0.3, 0.7], 3: [0.18, 0.5, 0.82] };
-/** Vertical centre of the foe rank, as a fraction of the arena height */
-const FOE_Y = 0.27;
-/**
- * Where 1..4 heroes stand (centres, as fractions of the arena) and how wide each is drawn. Up to
- * three share one rank; four stand in two staggered rows, so no sprite covers another's face.
- */
-const HERO_SPOTS: Record<number, { spots: Spot[]; width: number }> = {
-  1: { spots: [{ x: 0.5, y: 0.79 }], width: 0.24 },
-  2: { spots: [{ x: 0.33, y: 0.79 }, { x: 0.67, y: 0.79 }], width: 0.24 },
-  3: { spots: [{ x: 0.24, y: 0.79 }, { x: 0.5, y: 0.79 }, { x: 0.76, y: 0.79 }], width: 0.24 },
-  4: {
-    spots: [
-      { x: 0.16, y: 0.83 },
-      { x: 0.38, y: 0.7 },
-      { x: 0.62, y: 0.83 },
-      { x: 0.84, y: 0.7 },
-    ],
-    width: 0.21,
-  },
+// ---------------------------------------------------------------------------------------------
+// Layout (art direction § 7.4), in stage units: the 390×500 frame of Stage.tsx. `y` is where the
+// feet touch the floor, `s` the sprite box's size. Heroes stand lower left facing right on two
+// staggered diagonal rows (黑糖 at the back); foes stand upper right, up to three.
+
+type Place = { x: number; y: number; s: number };
+
+const HERO_PLACES: Record<number, Place[]> = {
+  1: [{ x: 110, y: 462, s: 130 }],
+  2: [
+    { x: 80, y: 460, s: 120 },
+    { x: 196, y: 470, s: 108 },
+  ],
+  3: [
+    { x: 66, y: 462, s: 114 },
+    { x: 180, y: 474, s: 102 },
+    { x: 130, y: 382, s: 96 },
+  ],
+  // HERO_ORDER: 寶咖咖 and 摩卡 in front; 阿藍 and 黑糖 behind, each between and above the front pair
+  4: [
+    { x: 64, y: 464, s: 112 },
+    { x: 176, y: 476, s: 100 },
+    { x: 228, y: 394, s: 90 },
+    { x: 118, y: 378, s: 120 },
+  ],
 };
+
+/** Regular foes: 90–110px (§ 6.1). */
+const FOE_PLACES: Record<number, Place[]> = {
+  1: [{ x: 282, y: 312, s: 112 }],
+  2: [
+    { x: 240, y: 296, s: 104 },
+    { x: 334, y: 318, s: 104 },
+  ],
+  3: [
+    { x: 240, y: 270, s: 94 },
+    { x: 342, y: 286, s: 96 },
+    { x: 304, y: 346, s: 100 },
+  ],
+};
+/** A boss (170–220px) and whoever came with it; a final foe is drawn 320px+. */
+const BOSS_PLACE: Place = { x: 276, y: 318, s: 204 };
+const FINAL_PLACE: Place = { x: 262, y: 336, s: 330 };
+const ESCORT_PLACES: Place[] = [
+  { x: 190, y: 340, s: 86 },
+  { x: 356, y: 362, s: 86 },
+];
+
+/** Where each foe stands: bosses take the centre of the stage and escorts flank them. */
+function foePlaces(battle: Battle, frame: StageFrame): Place[] {
+  const bossSlot = battle.foes.findIndex((foe) => FOES[foe.foe].boss);
+  if (bossSlot < 0) return FOE_PLACES[battle.foes.length] ?? FOE_PLACES[3];
+  let escort = 0;
+  return battle.foes.map((_, slot) => (slot === bossSlot ? (frame === 'final' ? FINAL_PLACE : BOSS_PLACE) : (ESCORT_PLACES[escort++] ?? ESCORT_PLACES[1])));
+}
 
 type Menu = 'root' | 'spell' | 'item';
 type Pending = { kind: 'attack' } | { kind: 'spell'; spell: SpellId } | { kind: 'item'; item: ItemId };
@@ -92,49 +132,145 @@ function logLine(battle: Battle): string {
   return parts.reduce((log, part) => (log === '' ? part : /[！…。]$/.test(log) ? `${log}${part}` : `${log}，${part}`), '') || '……';
 }
 
-/** Damage numbers (§ 7.4): Fredoka italic, white with a deep-pink stroke; heals in green, MP in blue. */
-const NUMBER = 'font-num italic font-bold leading-none [paint-order:stroke_fill]';
-/** Words (防禦, 累倒了): a small glass tag. */
-const WORD = 'kit-glass rounded px-2 py-0.5 font-serif text-label not-italic';
+// ---------------------------------------------------------------------------------------------
+// Damage numbers (§ 7.4): Fredoka 44 italic, white with a deep-pink stroke and a pink glow, a
+// serif sub-line under it; heals green, 元氣 blue; words (防禦, 累倒了) in a small glass tag.
 
-/** A number that floats up off whoever it happened to. */
-const floater = (event: BattleEvent): { text: string; tone: string } | null => {
+type Floater = { text: string; sub?: string; tone: 'damage' | 'crit' | 'heal' | 'mp' | 'word' };
+
+const floater = (event: BattleEvent): Floater | null => {
   switch (event.kind) {
     case 'hit':
-      return event.crit
-        ? { text: `暴擊 ${event.amount}`, tone: `${NUMBER} text-[30px] text-gold-light [-webkit-text-stroke:5px_theme(colors.damage.stroke)]` }
-        : { text: `${event.amount}`, tone: `${NUMBER} text-[34px] text-damage [-webkit-text-stroke:5px_theme(colors.damage.stroke)]` };
+      return event.crit ? { text: `${event.amount}`, sub: '效果絕佳！', tone: 'crit' } : { text: `${event.amount}`, sub: '好痛！', tone: 'damage' };
     case 'heal':
-      return event.amount > 0 ? { text: `+${event.amount}`, tone: `${NUMBER} text-[30px] text-hp-to [-webkit-text-stroke:5px_theme(colors.panel.deep)]` } : null;
+      return event.amount > 0 ? { text: `+${event.amount}`, sub: '好多了', tone: 'heal' } : null;
     case 'mp':
-      return event.amount > 0 ? { text: `${UI.mp} +${event.amount}`, tone: `${NUMBER} text-[22px] text-mp-to [-webkit-text-stroke:4px_theme(colors.panel.deep)]` } : null;
+      return event.amount > 0 ? { text: `${UI.mp} +${event.amount}`, tone: 'mp' } : null;
     case 'guard':
-      return { text: '防禦', tone: WORD };
+      return { text: '防禦', tone: 'word' };
     case 'ko':
-      return { text: event.who.side === 'hero' ? '累倒了' : '頭暈暈', tone: WORD };
+      return event.who.side === 'hero' ? { text: '累倒了', tone: 'word' } : null;
     default:
       return null;
   }
 };
 
+const NUMBER_STYLE: Record<Exclude<Floater['tone'], 'word'>, CSSProperties> = {
+  damage: {
+    color: UI_TOKENS.damage,
+    WebkitTextStroke: `5px ${UI_TOKENS.damageStroke}`,
+    textShadow: `0 0 14px ${withAlpha(UI_TOKENS.hpCritFrom, 0.8)}, 0 3px 0 ${FRAME.shadow}`,
+    fontSize: 44,
+  },
+  crit: {
+    color: UI_TOKENS.goldLight,
+    WebkitTextStroke: `5px ${UI_TOKENS.damageStroke}`,
+    textShadow: `0 0 18px ${withAlpha(UI_TOKENS.gold, 0.9)}, 0 3px 0 ${FRAME.shadow}`,
+    fontSize: 50,
+  },
+  heal: {
+    color: UI_TOKENS.hpTo,
+    WebkitTextStroke: `5px ${UI_TOKENS.panelBottom}`,
+    textShadow: `0 0 14px ${withAlpha(UI_TOKENS.hpFrom, 0.7)}`,
+    fontSize: 38,
+  },
+  mp: {
+    color: UI_TOKENS.mpTo,
+    WebkitTextStroke: `4px ${UI_TOKENS.panelBottom}`,
+    textShadow: `0 0 12px ${withAlpha(UI_TOKENS.mpFrom, 0.7)}`,
+    fontSize: 24,
+  },
+};
+const SUB_STYLE: CSSProperties = { WebkitTextStroke: `3px ${FRAME.shadow}` };
+
+const FloatingNumber = ({ float, step }: { float: Floater; step: number }) =>
+  float.tone === 'word' ? (
+    <span key={step} className="dmg-rise kit-glass pointer-events-none absolute left-1/2 top-0 z-20 whitespace-nowrap rounded px-2 py-0.5 font-serif text-label">
+      {float.text}
+    </span>
+  ) : (
+    <span key={step} className="dmg-rise pointer-events-none absolute left-1/2 top-0 z-20 flex flex-col items-center whitespace-nowrap" aria-hidden="true">
+      <span className="font-num font-bold italic leading-none [paint-order:stroke_fill]" style={NUMBER_STYLE[float.tone]}>
+        {float.text}
+      </span>
+      {float.sub && (
+        <span className="-mt-1 font-serif text-[15px] font-black not-italic text-gold-light [paint-order:stroke_fill]" style={SUB_STYLE}>
+          {float.sub}
+        </span>
+      )}
+    </span>
+  );
+
+/** A four-point star, for the calmed state's dizzy ring and sparkle. */
+const StarMark = ({ className = '', style }: { className?: string; style?: CSSProperties }) => (
+  <svg viewBox="-10 -10 20 20" className={className} style={style} aria-hidden="true">
+    <path d="M0,-10Q1.6,-1.6 10,0Q1.6,1.6 0,10Q-1.6,1.6 -10,0Q-1.6,-1.6 0,-10Z" fill="currentColor" />
+  </svg>
+);
+
+/** The calmed state over a foe (§ 6.1): a ring of dizzy stars, then a sparkle as it smiles and hops off. */
+const Calmed = () => (
+  <>
+    <span className="calm-stars pointer-events-none absolute left-1/2 top-[8%] block h-[34%] w-[70%] text-gold-light">
+      {[0, 72, 144, 216, 288].map((angle) => (
+        <StarMark
+          key={angle}
+          className="absolute left-1/2 top-1/2 h-[26%] w-[16%]"
+          style={{ transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-140%) rotate(${-angle}deg)` }}
+        />
+      ))}
+    </span>
+    <span className="calm-spark pointer-events-none absolute left-1/2 top-[38%] block h-[56%] w-[56%] text-gold-diamond">
+      <StarMark className="h-full w-full" />
+    </span>
+  </>
+);
+
+/** The stage box in pixels, measured before paint and on resize. */
+function useBox(ref: RefObject<HTMLElement>, fallback: { w: number; h: number }) {
+  const [box, setBox] = useState(fallback);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!element) return undefined;
+    const measure = () => setBox((old) => (old.w === element.clientWidth && old.h === element.clientHeight ? old : { w: element.clientWidth, h: element.clientHeight }));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref]);
+  return box;
+}
+
 type Props = {
   battle: Battle;
-  palette: PaletteName;
+  /** The battle backdrop key (`backdropFor(map)`) and whether the map is indoors (the generic fallback) */
+  backdrop: string;
+  interior?: boolean;
+  /** The map's clock: the stage's sky and the heroes' rim, unless the backdrop has its own time */
+  time: string;
   /** Where and when: the map's name and clock for the stage's glass chip */
   place?: { title: string; time: string };
+  /** Overrides the frame (the art lab's final fight, until 咻咻's forms exist) */
+  frame?: StageFrame;
   soundOn: boolean;
   onAction: (action: BattleAction) => void;
   onEnd: () => void;
   onToggleSound: () => void;
 };
 
-export const BattleScreen = ({ battle, palette, place, soundOn, onAction, onEnd, onToggleSound }: Props) => {
+export const BattleScreen = ({ battle, backdrop, interior = false, time, place, frame: frameOverride, soundOn, onAction, onEnd, onToggleSound }: Props) => {
   const { phase } = battle;
   const hero = phase.kind === 'hero' ? phase.hero : null;
   const alive = aliveFoeSlots(battle);
-  const columns = COLUMNS[battle.foes.length] ?? COLUMNS[3];
-  const rank = HERO_SPOTS[battle.party.length] ?? HERO_SPOTS[4];
-  const Backdrop = BACKDROPS[palette];
+  const stage = useBackdrop(backdrop, interior);
+  const clock = stage.time ?? time;
+  const frame = frameOverride ?? battleFrame(battle);
+
+  const mainRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const screen = useBox(mainRef, { w: 390, h: 844 });
+  const box = useBox(stageRef, { w: 390, h: 498 });
+  const short = screen.h < SHORT_SCREEN;
 
   const [menu, setMenu] = useState<Menu>('root');
   const [pending, setPending] = useState<Pending | null>(null);
@@ -149,7 +285,7 @@ export const BattleScreen = ({ battle, palette, place, soundOn, onAction, onEnd,
       return () => window.clearTimeout(timer);
     }
     if (phase.kind === 'won' || phase.kind === 'lost' || phase.kind === 'fled') {
-      const timer = window.setTimeout(() => callbacks.current.onEnd(), END_DELAY_MS);
+      const timer = window.setTimeout(() => callbacks.current.onEnd(), phase.kind === 'won' ? WON_DELAY_MS : END_DELAY_MS);
       return () => window.clearTimeout(timer);
     }
     return undefined;
@@ -170,15 +306,28 @@ export const BattleScreen = ({ battle, palette, place, soundOn, onAction, onEnd,
     else if (events.some((event) => event.kind === 'hit')) playTone('found', on);
   }, [battle.step]);
 
-  // Where each combatant stands, as fractions of the arena. Shared by the layout below and the
-  // effect layer, so a strike always lands exactly on the sprite it hit.
+  // ---- Stage geometry: stage units → pixels in the measured box (see stageScale in Stage.tsx)
+  const k = stageScale(box.w, box.h);
+  const kx = box.w / STAGE_W;
+  const offsetY = (box.h - STAGE_H * k) / 2;
+  // The full proscenium's pillars take the edges, so everyone steps in a little
+  const inset = frame === 'final' ? 22 : 0;
+  const px = (x: number) => box.w / 2 + (inset + (x * (STAGE_W - inset * 2)) / STAGE_W - STAGE_W / 2) * kx;
+  const py = (y: number) => offsetY + y * k;
+  const half = box.w / 2 / k;
+  // The HUD sits under the 布袋戲 valance when there is one (its lobes end ~40 units down, 50 with the cornice)
+  const hudTop = frame === 'none' ? 10 : Math.round((frame === 'final' ? 52 : 42) * k);
+  const edges = { left: STAGE_W / 2 - half, right: STAGE_W / 2 + half };
+
+  const heroPlaces = HERO_PLACES[battle.party.length] ?? HERO_PLACES[4];
+  const enemyPlaces = foePlaces(battle, frame);
+  const heroPlace = (member: HeroId) => heroPlaces[battle.party.indexOf(member)] ?? heroPlaces[0];
+
+  // Where each combatant stands, as fractions of the stage box (the effect layer's units), at its middle
   const spot = (who: Who): Spot | null => {
-    if (who.side === 'foe') {
-      const column = columns[who.slot];
-      return column === undefined ? null : { x: column, y: FOE_Y };
-    }
-    const index = battle.party.indexOf(who.hero);
-    return index < 0 ? null : (rank.spots[index] ?? null);
+    const place = who.side === 'foe' ? enemyPlaces[who.slot] : battle.party.includes(who.hero) ? heroPlace(who.hero) : null;
+    if (!place) return null;
+    return { x: px(place.x) / box.w, y: (py(place.y) - place.s * k * 0.5) / box.h };
   };
 
   // Heavy landings shake the arena: a crit, an AoE, or anything that knocks someone down
@@ -277,14 +426,180 @@ export const BattleScreen = ({ battle, palette, place, soundOn, onAction, onEnd,
         ? { label: battle.boss ? '逃不掉' : UI.commands.flee, onClick: () => send({ type: 'flee' }), disabled: battle.boss }
         : null;
 
-  return (
-    <main className="kit-fade-in mx-auto flex h-dvh w-full max-w-md flex-col">
-      {/* The stage: foes on the far side, the party on the near side (restyled in #14) */}
-      <div className={`relative min-h-0 flex-1 overflow-hidden ${quake ? 'fx-quake' : ''}`} key={`arena${quake ? battle.step : 0}`}>
-        <Backdrop />
-        <div className="absolute inset-0 bg-gradient-to-b from-scrim/30 via-transparent to-scrim/50" />
+  // The foe plate: one name and ×count, or the mix of names
+  const groups: { name: string; count: number }[] = [];
+  // Calmed foes leave the count (all of them, once the fight is won, so the plate never empties)
+  const standing = battle.foes.filter((state) => state.hp > 0);
+  for (const state of standing.length > 0 ? standing : battle.foes) {
+    const name = FOES[state.foe].name;
+    const group = groups.find((entry) => entry.name === name);
+    if (group) group.count += 1;
+    else groups.push({ name, count: 1 });
+  }
 
-        <header className="absolute inset-x-0 top-0 z-10 flex items-center gap-2 px-3 pt-[max(env(safe-area-inset-top),10px)]">
+  // Everyone on the stage, drawn far to near so nearer sprites overlap
+  const actors = [
+    ...battle.foes.map((_, slot) => ({ who: { side: 'foe', slot } as Who, place: enemyPlaces[slot] })),
+    ...battle.party.map((member) => ({ who: { side: 'hero', hero: member } as Who, place: heroPlace(member) })),
+  ].sort((a, b) => a.place.y - b.place.y);
+
+  const eventFor = (who: Who) => battle.events.find((event) => event.kind !== 'flee' && event.kind !== 'shield' && sameWho(event.who, who));
+  const struck = (who: Who) => battle.events.some((event) => event.kind === 'hit' && sameWho(event.who, who));
+  const acting = (who: Who) => battle.events.some((event) => event.kind === 'act' && sameWho(event.who, who));
+  const knocked = (who: Who) => battle.events.some((event) => event.kind === 'ko' && sameWho(event.who, who));
+
+  return (
+    <main ref={mainRef} className="kit-fade-in mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden" data-battle-frame={frame}>
+      {/* The stage (§ 7.4): the backdrop, the fighters, the boss frame, then the HUD */}
+      <div
+        ref={stageRef}
+        data-battle-stage=""
+        className="relative min-h-0 flex-1 overflow-hidden"
+        style={{ '--rim': sceneRim(clock) } as CSSProperties}
+      >
+        <Stage config={stage} time={clock} />
+
+        {/* The fighters and effects shake when something heavy lands; the backdrop under them never re-renders */}
+        <div className={`absolute inset-0 ${quake ? 'fx-quake' : ''}`} key={`quake${quake ? battle.step : 0}`}>
+        <SceneClock.Provider value={clock}>
+          {actors.map(({ who, place }) => {
+            const size = place.s * k;
+            const left = px(place.x);
+            const feet = py(place.y);
+            const event = eventFor(who);
+            const float = event ? floater(event) : null;
+            const hit = struck(who);
+            const act = acting(who);
+
+            if (who.side === 'foe') {
+              const state = battle.foes[who.slot];
+              const foe = FOES[state.foe];
+              const Art = SPRITES[foe.sprite];
+              const calming = state.hp === 0 && knocked(who);
+              const gone = state.hp === 0 && !calming;
+              const targetable = needs === 'foe' && !gone && state.hp > 0;
+              const intent = phase.kind === 'foe' && phase.slot === who.slot;
+              return (
+                <button
+                  key={`foe${who.slot}`}
+                  type="button"
+                  disabled={!targetable}
+                  onClick={() => pickFoe(who.slot)}
+                  aria-label={foe.name}
+                  data-foe={who.slot}
+                  className="absolute disabled:pointer-events-none"
+                  style={{ left: left - size / 2, top: feet - size * 0.94, width: size, height: size, zIndex: Math.round(place.y), '--rim': RIM.foe } as CSSProperties}
+                >
+                  {/* The foe's aura (§ 6.1: faint violet; bosses add a gold bloom): a gradient, never a blur */}
+                  {!gone && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-[-12%] block rounded-full"
+                      style={{
+                        background: foe.boss
+                          ? `radial-gradient(closest-side, ${withAlpha(STAGE_LIGHT.auraBoss, 0.32)}, ${withAlpha(STAGE_LIGHT.aura, 0.18)} 55%, transparent)`
+                          : `radial-gradient(closest-side, ${withAlpha(STAGE_LIGHT.aura, 0.26)}, transparent)`,
+                      }}
+                    />
+                  )}
+                  {/* Contact shadow and, when picking a target, a gold ring on the floor */}
+                  <span aria-hidden="true" className={`absolute left-[14%] top-[89%] block h-[10%] w-[72%] rounded-[50%] bg-scrim/50 ${gone ? 'opacity-0' : ''}`} />
+                  {targetable && <span aria-hidden="true" className="absolute left-[8%] top-[86%] block h-[16%] w-[84%] rounded-[50%] border-2 border-gold-light bg-gold/15 shadow-[0_0_16px_theme(colors.gold.DEFAULT/70%)]" />}
+                  <span className={`relative block h-full w-full ${gone ? 'opacity-0' : ''} ${calming ? 'foe-calm' : act ? 'foe-lunge' : ''}`} key={`s${battle.step}`}>
+                    <span className={`block h-full w-full ${hit && !calming ? 'fx-hurt' : ''}`}>
+                      <Art lod="battle" state={calming ? 'ko' : hit ? 'hurt' : 'idle'} facing="left" />
+                    </span>
+                    {state.guard && <span className="absolute right-[6%] top-[8%] rounded-sm bg-mp-from px-1.5 font-serif text-caption text-inkOnDark shadow-gold">防</span>}
+                  </span>
+                  {calming && <Calmed key={`c${battle.step}`} />}
+                  {/* Mini HP bar under the sprite */}
+                  {!gone && (
+                    <span aria-hidden="true" className="absolute left-1/2 top-full block -translate-x-1/2" style={{ width: Math.min(84, size * 0.72), marginTop: 2 }}>
+                      <span className="block h-[5px] overflow-hidden rounded-[1px] bg-black/55 shadow-[0_0_0_1px_theme(colors.gold.DEFAULT/40%)]">
+                        <span className="block h-full bg-gradient-to-r from-hp-critFrom to-hp-critTo transition-[width] duration-300" style={{ width: `${(state.hp / foe.stats.hp) * 100}%` }} />
+                      </span>
+                    </span>
+                  )}
+                  {/* While picking a target: the name and what it will do next (the engine's intent preview) */}
+                  {targetable && (
+                    <span className="kit-glass pointer-events-none absolute left-1/2 top-full mt-3 block -translate-x-1/2 whitespace-nowrap rounded px-2 py-0.5 text-center leading-tight">
+                      <span className="block font-serif text-[13px] tracking-[0.04em]">{foe.name}</span>
+                      <span className="block text-[11px] text-mutedOnDark">下一招 {foeIntent(battle, who.slot)}</span>
+                    </span>
+                  )}
+                  {intent && (
+                    <span className="kit-glass pop pointer-events-none absolute bottom-full left-1/2 mb-1 block -translate-x-1/2 whitespace-nowrap rounded px-3 py-1 font-serif text-label tracking-[0.06em]">
+                      {foeIntent(battle, who.slot)}
+                    </span>
+                  )}
+                  {float && <FloatingNumber float={float} step={battle.step} />}
+                </button>
+              );
+            }
+
+            const member = who.hero;
+            const Art = SPRITES[HERO_SPRITE[member]];
+            const state = battle.heroes[member];
+            const down = state.hp === 0;
+            const pickable = needs === 'hero';
+            const turn = hero === member;
+            return (
+              <button
+                key={member}
+                type="button"
+                disabled={!pickable}
+                onClick={() => pickHero(member)}
+                aria-label={HEROES[member].name}
+                data-hero={member}
+                className="absolute disabled:pointer-events-none"
+                style={{ left: left - size / 2, top: feet - size * 0.94, width: size, height: size, zIndex: Math.round(place.y) }}
+              >
+                <span aria-hidden="true" className="absolute left-[16%] top-[89%] block h-[10%] w-[68%] rounded-[50%] bg-scrim/55" />
+                {/* The active hero's gold light ring (a gradient, not a blur) */}
+                {turn && (
+                  <span
+                    aria-hidden="true"
+                    className="turn-ring absolute left-[2%] top-[83%] block h-[22%] w-[96%] rounded-[50%] border-[1.5px] border-gold-light/90 bg-[radial-gradient(closest-side,theme(colors.gold.light/55%),theme(colors.gold.DEFAULT/25%)_60%,transparent)]"
+                  />
+                )}
+                {pickable && <span aria-hidden="true" className="absolute left-[6%] top-[84%] block h-[18%] w-[88%] rounded-[50%] border-2 border-gold-light bg-gold/15 shadow-[0_0_16px_theme(colors.gold.DEFAULT/70%)]" />}
+                <span className={`relative block h-full w-full ${down ? 'hero-down' : act ? 'hero-lunge' : ''}`} key={`s${battle.step}`}>
+                  <span className={`block h-full w-full ${hit ? 'fx-hurt' : ''}`}>
+                    <Art lod="battle" state={down ? 'ko' : hit ? 'hurt' : act ? 'attack' : 'idle'} facing="right" />
+                  </span>
+                  {state.shield && <span className="absolute inset-[6%] rounded-full shadow-[0_0_0_3px_theme(colors.mp.to/60%),inset_0_0_16px_theme(colors.mp.to/35%)]" />}
+                  {state.guard && <span className="absolute right-[4%] top-[10%] rounded-sm bg-mp-from px-1.5 font-serif text-caption text-inkOnDark shadow-gold">防</span>}
+                </span>
+                {turn && (
+                  <span className="pointer-events-none absolute bottom-[96%] left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-sm bg-gradient-to-b from-gold-diamond to-gold px-2.5 py-0.5 font-serif text-[13px] font-black tracking-[0.12em] text-primary-text shadow-[0_0_12px_theme(colors.gold.light/80%)]">
+                    輪到你
+                    <span aria-hidden="true" className="absolute left-1/2 top-full block h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[6px] border-x-transparent border-t-gold" />
+                  </span>
+                )}
+                {float && <FloatingNumber float={float} step={battle.step} />}
+              </button>
+            );
+          })}
+        </SceneClock.Provider>
+
+        <div className="pointer-events-none absolute inset-0 z-[550]">
+          <BattleFx key={battle.step} battle={battle} spot={spot} />
+        </div>
+        </div>
+
+        {/* Battle → victory: the gold radial wash once the last foe has calmed */}
+        {phase.kind === 'won' && (
+          <span aria-hidden="true" className="victory-wash pointer-events-none absolute inset-0 z-[600] block bg-[radial-gradient(70%_55%_at_60%_45%,theme(colors.gold.light/45%),theme(colors.gold.DEFAULT/12%)_55%,transparent_80%)]" />
+        )}
+
+        {/* The 布袋戲 frame (boss: valance; final: full proscenium) drops in over 400ms */}
+        {frame !== 'none' && (
+          <div className="stage-frame-drop pointer-events-none absolute inset-0 z-[700]">
+            <BossFrame variant={frame} left={edges.left} right={edges.right} />
+          </div>
+        )}
+
+        <header className="absolute inset-x-0 top-0 z-[800] flex items-center gap-2 px-3" style={{ paddingTop: `max(env(safe-area-inset-top), ${hudTop}px)` }}>
           <GlassChip className="min-w-0">
             <span className="truncate">{place ? place.title : battle.boss ? '頭目戰' : '遭遇戰'}</span>
             {place && <Num className="text-[14px]">{place.time}</Num>}
@@ -296,124 +611,42 @@ export const BattleScreen = ({ battle, palette, place, soundOn, onAction, onEnd,
           <SoundToggle on={soundOn} onToggle={onToggleSound} />
         </header>
 
-
-        {battle.foes.map((state, slot) => {
-          const foe = FOES[state.foe];
-          const Art = SPRITES[foe.sprite];
-          const dead = state.hp === 0;
-          const targetable = needs === 'foe';
-          const size = foe.boss ? 0.42 : battle.foes.length === 1 ? 0.34 : battle.foes.length === 2 ? 0.3 : 0.26;
-          const hit = battle.events.find((event) => event.kind !== 'flee' && event.kind !== 'shield' && sameWho(event.who, { side: 'foe', slot }));
-          const struck = battle.events.some((event) => event.kind === 'hit' && sameWho(event.who, { side: 'foe', slot }));
-          const acting = battle.events.some((event) => event.kind === 'act' && sameWho(event.who, { side: 'foe', slot }));
-          const float = hit ? floater(hit) : null;
-
-          return (
-            <button
-              key={slot}
-              type="button"
-              disabled={dead || !targetable}
-              onClick={() => pickFoe(slot)}
-              aria-label={foe.name}
-              className="absolute min-h-[44px] min-w-[44px] disabled:pointer-events-none"
-              style={{ left: `${columns[slot] * 100}%`, top: `${FOE_Y * 100}%`, width: `${size * 100}%`, transform: 'translate(-50%, -50%)' }}
-            >
-              <span className={`relative block ${dead ? 'opacity-0' : ''} ${acting ? 'lunge-down' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
-                <span className="block aspect-square w-full">
-                  <Art lod="battle" />
+        {/* The foe plate (§ 7.4): a slanted ribbon with gold rules, the kicker, the serif name, ×count */}
+        <div
+          className="foe-plate-in pointer-events-none absolute right-0 z-[800] w-[62%] max-w-[250px]"
+          data-foe-plate=""
+          style={{ top: hudTop + 52, clipPath: 'polygon(9% 0, 100% 0, 100% 100%, 0 100%)' }}
+        >
+          <div className="border-y border-gold bg-[linear-gradient(90deg,transparent,theme(colors.panel.top/92%)_16%,theme(colors.panel.bottom/95%))] py-1.5 pl-[16%] pr-4">
+            <p className={`font-num text-[11px] font-semibold tracking-[0.32em] ${battle.boss ? 'text-gold-light' : 'text-hp-critTo'}`}>{battle.boss ? '頭目' : 'ENEMY'}</p>
+            <p className="flex items-baseline gap-x-2 overflow-hidden whitespace-nowrap font-serif font-black tracking-[0.08em]">
+              {groups.map((group) => (
+                <span key={group.name} className={`inline-flex items-baseline ${groups.length > 1 ? 'text-[16px]' : 'text-[19px]'}`}>
+                  {group.name}
+                  {group.count > 1 && <span className="ml-1 font-num text-[13px] font-semibold tracking-normal text-gold-light">×{group.count}</span>}
                 </span>
-                {state.guard && <span className="absolute -right-1 top-0 rounded-sm bg-mp-from px-1.5 font-serif text-caption text-inkOnDark shadow-gold">防</span>}
-                {targetable && !dead && <span className="absolute inset-0 rounded-panel shadow-[0_0_0_2px_theme(colors.gold.light),0_0_18px_theme(colors.gold.DEFAULT/60%)]" />}
-                {float && (
-                  <span key={battle.step} className={`float-up pointer-events-none absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap ${float.tone}`}>
-                    {float.text}
-                  </span>
-                )}
-              </span>
-              <span className="mt-1 block">
-                <span className="mx-auto block h-[5px] w-full max-w-[72px] overflow-hidden rounded-[1px] bg-black/50 shadow-[0_0_0_1px_theme(colors.gold.DEFAULT/35%)]">
-                  <span
-                    className="block h-full bg-gradient-to-r from-hp-critFrom to-hp-critTo transition-[width] duration-300"
-                    style={{ width: `${(state.hp / foe.stats.hp) * 100}%` }}
-                  />
-                </span>
-                <span className="kit-glass mx-auto mt-1 block w-fit max-w-full truncate rounded px-2 font-serif text-[13px] leading-snug tracking-[0.04em]">{foe.name}</span>
-              </span>
-            </button>
-          );
-        })}
-
-        {/* The party lines up along the near edge; the far row is drawn first so the near row overlaps it */}
-        {battle.party
-          .map((member, index) => ({ member, at: rank.spots[index] ?? rank.spots[0] }))
-          .sort((a, b) => a.at.y - b.at.y)
-          .map(({ member, at }) => {
-            const Art = SPRITES[HERO_SPRITE[member]];
-            const state = battle.heroes[member];
-            const dead = state.hp === 0;
-            const acting = battle.events.some((event) => event.kind === 'act' && sameWho(event.who, { side: 'hero', hero: member }));
-            const hit = battle.events.find((event) => event.kind !== 'flee' && event.kind !== 'shield' && sameWho(event.who, { side: 'hero', hero: member }));
-            const float = hit ? floater(hit) : null;
-            const pickable = needs === 'hero';
-            const struck = battle.events.some((event) => event.kind === 'hit' && sameWho(event.who, { side: 'hero', hero: member }));
-
-            return (
-              <button
-                key={member}
-                type="button"
-                disabled={!pickable}
-                onClick={() => pickHero(member)}
-                aria-label={HEROES[member].name}
-                className="absolute disabled:pointer-events-none"
-                style={{ left: `${at.x * 100}%`, top: `${at.y * 100}%`, width: `${rank.width * 100}%`, transform: 'translate(-50%, -50%)' }}
-              >
-                {hero === member && (
-                  <span className="absolute -top-7 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-sm bg-gradient-to-b from-gold-diamond to-gold px-2 py-px font-serif text-[12px] tracking-[0.12em] text-primary-text shadow-gold">
-                    輪到你
-                  </span>
-                )}
-                <span className={`relative block ${dead ? 'opacity-35 grayscale' : ''} ${acting ? 'lunge-up' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
-                  <span className="block aspect-square w-full">
-                    <Art lod="battle" />
-                  </span>
-                  {state.shield && <span className="absolute inset-0 rounded-full shadow-[0_0_0_3px_theme(colors.mp.to/60%),inset_0_0_16px_theme(colors.mp.to/35%)]" />}
-                  {state.guard && <span className="absolute -right-1 top-1 rounded-sm bg-mp-from px-1.5 font-serif text-caption text-inkOnDark shadow-gold">防</span>}
-                  {pickable && <span className="absolute inset-0 rounded-panel shadow-[0_0_0_2px_theme(colors.gold.light),0_0_18px_theme(colors.gold.DEFAULT/60%)]" />}
-                  {float && (
-                    <span key={battle.step} className={`float-up pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 whitespace-nowrap ${float.tone}`}>
-                      {float.text}
-                    </span>
-                  )}
-                </span>
-              </button>
-            );
-          })}
-
-        <BattleFx key={battle.step} battle={battle} spot={spot} />
-
-        {/* What the foe is about to do */}
-        {phase.kind === 'foe' && (
-          <p className="kit-glass pop absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded px-4 py-1.5 font-serif text-body tracking-[0.06em]">
-            {foeIntent(battle, phase.slot)}
-          </p>
-        )}
+              ))}
+            </p>
+          </div>
+        </div>
 
         {/* The battle log (what just happened, in words) and who moves next: the reason 身手 is a stat worth reading */}
-        <div className="kit-glass absolute inset-x-3 bottom-2.5 flex items-center gap-3 rounded px-3 py-1 text-caption">
-          <p className="min-w-0 flex-1 truncate text-inkOnDark" aria-live="polite">
+        <div className="absolute inset-x-0 bottom-0 z-[800] flex items-center gap-3 bg-gradient-to-t from-scrim/85 via-scrim/50 to-transparent px-4 pb-1.5 pt-4 text-caption">
+          <p className="min-w-0 flex-1 truncate text-inkOnDark [text-shadow:0_1px_2px_theme(colors.scrim)]" aria-live="polite">
             {logLine(battle)}
           </p>
-          <p className="shrink-0 text-mutedOnDark">
+          <p className="shrink-0 text-mutedOnDark [text-shadow:0_1px_2px_theme(colors.scrim)]">
             接下來 <span className="font-serif text-gold-light">{nextUp}</span>
           </p>
         </div>
       </div>
 
       <CommandPanel
+        tight
         prompt={headline}
         link={link}
         party={
-          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${battle.party.length <= 2 ? 2 : battle.party.length}, minmax(0, 1fr))` }}>
+          <div className="grid grid-cols-2 gap-1.5">
             {battle.party.map((member) => {
               const state = battle.heroes[member];
               const stats = battle.stats[member];
@@ -428,8 +661,8 @@ export const BattleScreen = ({ battle, palette, place, soundOn, onAction, onEnd,
                   mpMax={stats.mp}
                   active={hero === member && !pending}
                   onPick={needs === 'hero' ? () => pickHero(member) : undefined}
-                  layout={battle.party.length <= 2 ? 'wide' : 'narrow'}
-                  head={battle.party.length <= 3}
+                  layout="strip"
+                  headSize={short ? 34 : 48}
                 />
               );
             })}
@@ -465,7 +698,7 @@ export const BattleScreen = ({ battle, palette, place, soundOn, onAction, onEnd,
         )}
 
         {hero && !pending && menu === 'spell' && (
-          <div className="grid max-h-[150px] grid-cols-2 gap-2 overflow-y-auto">
+          <div className="grid h-[150px] grid-cols-2 content-start gap-2 overflow-y-auto">
             {spells.map((spell) => {
               const usable = canCast(battle, hero, spell);
               return (
@@ -487,7 +720,7 @@ export const BattleScreen = ({ battle, palette, place, soundOn, onAction, onEnd,
         )}
 
         {hero && !pending && menu === 'item' && (
-          <div className="grid max-h-[150px] grid-cols-2 gap-2 overflow-y-auto">
+          <div className="grid h-[150px] grid-cols-2 content-start gap-2 overflow-y-auto">
             {carried.map((item) => (
               <button
                 key={item}

@@ -402,27 +402,30 @@
   }
 }
 
-/* Taking a hit: a white blink and a jolt */
+/* Taking a hit: a two-frame blink and a jolt (opacity, not a filter: nothing that moves carries one, § 8.4) */
 @keyframes fx-hurt {
   0% {
     transform: translateX(0);
-    filter: brightness(1);
+    opacity: 1;
   }
   15% {
     transform: translateX(-9%);
-    filter: brightness(2.6) saturate(0.2);
+    opacity: 0.35;
   }
   35% {
     transform: translateX(7%);
-    filter: brightness(2.6) saturate(0.2);
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.45;
   }
   55% {
     transform: translateX(-4%);
-    filter: brightness(1);
+    opacity: 1;
   }
   100% {
     transform: translateX(0);
-    filter: brightness(1);
+    opacity: 1;
   }
 }
 

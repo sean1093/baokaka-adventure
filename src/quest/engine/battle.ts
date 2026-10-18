@@ -98,6 +98,18 @@ export const battleXp = (battle: Battle): number => battle.foes.reduce((sum, foe
 export const battleBoss = (battle: Battle): FoeId | null =>
   battle.boss ? (battle.foes.find((foe) => FOES[foe.foe].boss)?.foe ?? battle.foes[0]?.foe ?? null) : null;
 
+/**
+ * The frame around the battle stage (art direction § 7.4, § 6.3; decision D-31): random fights
+ * have none, boss fights drop in the 布袋戲 valance, and final fights (a foe flagged `final`) get
+ * the full proscenium.
+ */
+export type StageFrame = 'none' | 'boss' | 'final';
+
+export function battleFrame(battle: Pick<Battle, 'boss' | 'foes'>, foes: Readonly<Record<string, { final?: boolean }>> = FOES): StageFrame {
+  if (!battle.boss) return 'none';
+  return battle.foes.some((foe) => foes[foe.foe]?.final) ? 'final' : 'boss';
+}
+
 export const battleCoins = (battle: Battle): number => battle.foes.reduce((sum, foe) => sum + FOES[foe.foe].coins, 0);
 
 /**

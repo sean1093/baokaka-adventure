@@ -45,7 +45,8 @@ export const VictoryScreen = ({ summary, soundOn, onContinue }: Props) => {
           </h1>
         </section>
 
-        <Panel diamonds className="kit-sheet-in flex flex-col gap-1 px-5 py-4">
+        {/* The result card slides up over 600ms (§ 7.9 Battle → victory; a 200ms fade under reduced motion) */}
+        <Panel diamonds className="kit-sheet-in kit-scene flex flex-col gap-1 px-5 py-4">
           <Row label="經驗">
             <Num className="text-[20px]">+{summary.xp}</Num>
           </Row>

@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { backdropFor, preloadBackdrop } from '../../art/backdrops';
 import { LIGHTS, UI as UI_TOKENS, withAlpha } from '../../art/palette';
 import { SkyLayer } from '../../art/sky/SkyLayer';
 import { IconButton } from '../../components/Button';
@@ -137,6 +138,11 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
 
   const callbacks = useRef({ onStep, onInteract });
   callbacks.current = { onStep, onInteract };
+
+  // Load this map's battle backdrop chunk now, so a fight here opens on its stage, not the generic one
+  useEffect(() => {
+    void preloadBackdrop(backdropFor(map));
+  }, [map]);
 
   // A new map opens with an iris on the party (who stands at the centre of the view)
   const [iris, setIris] = useState(0);

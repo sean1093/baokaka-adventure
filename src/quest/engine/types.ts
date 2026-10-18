@@ -186,6 +186,11 @@ export type Foe = {
   drop?: { item: ItemId; chance: number };
   /** Bosses cannot be fled from and shout their taunt on round 1 */
   boss?: boolean;
+  /**
+   * A final fight (咻咻's forms, the post-game rush): the full 布袋戲 proscenium frames the stage
+   * and the foe is drawn 320px+ (art direction § 6.1, § 6.3, § 7.4; decision D-31). Needs `boss`.
+   */
+  final?: boolean;
   taunt?: string;
   /** Used in order, looping */
   moves: FoeMove[];
@@ -358,6 +363,12 @@ export type GameMap = {
   ambient?: AmbientKind[];
   /** Indoors: the sky shows only through windows, so the map floats over a dark room instead. */
   interior?: boolean;
+  /**
+   * The battle backdrop (art direction § 4.1 item 5, § 8.4): a key in `BACKDROP_CHAPTER`
+   * (art/backdrops/keys.ts). Leave it out and battles here use the generic stage (open sky, or
+   * the room version on `interior` maps) at the map's clock.
+   */
+  backdrop?: string;
 };
 
 export type LightKind = 'lamp' | 'window' | 'lantern' | 'neon' | 'screen' | 'moon';
