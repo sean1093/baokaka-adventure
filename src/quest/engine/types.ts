@@ -250,16 +250,36 @@ export type Npc = Condition & {
 
 export type Chest = { id: string; c: number; r: number; item: ItemId; count?: number };
 
+/**
+ * The dynamic exit target of a 月亮線 ride car's door (story bible § 3.1): resolved from
+ * `run.rideTo` when walked, arriving at that map's `mrtArrival` tile.
+ */
+export const RIDE_TO = '@rideTo';
+
 export type Exit = Condition & {
   c: number;
   r: number;
-  to: MapId;
-  at: Tile;
   /** Event to run instead when the condition fails (the closed-door line) */
   blocked?: string;
-};
+} & (
+    | { to: MapId; at: Tile }
+    /** A ride car's door: the destination comes from `run.rideTo`, so there is no fixed landing tile */
+    | { to: typeof RIDE_TO }
+  );
 
-export type Trigger = Condition & { id: string; c: number; r: number; event: string; once?: boolean };
+export type Trigger = Condition & {
+  id: string;
+  c: number;
+  r: number;
+  event: string;
+  once?: boolean;
+  /**
+   * Fires only when the party arrives on this tile (through an exit or a 月亮線 ride), never when
+   * walking onto it: a ride car's announcement plays once per ride, not each time the party
+   * crosses the doorway tile.
+   */
+  arrival?: boolean;
+};
 
 export type Encounters = {
   /** Groups of foes; one is picked per fight */
@@ -287,6 +307,11 @@ export type GameMap = {
   exits: Exit[];
   triggers: Trigger[];
   encounters?: Encounters;
+  /**
+   * Where the party steps out after a 月亮線 ride: the walkable tile beside the map's `mrtGate`.
+   * Every map with a station in `STATIONS` (mrt.ts) must have one.
+   */
+  mrtArrival?: Tile;
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -338,6 +363,8 @@ export type Step =
    * the rest of this scene (a sub-call, unlike `goEvent`). Included events must stay linear.
    */
   | ({ do: 'include'; event: string } & Condition)
+  /** Open the 路線圖 (月亮線 travel screen); the scene waits there until the player rides or cancels */
+  | { do: 'travel' }
   | { do: 'ending' };
 
 // ---------------------------------------------------------------------------------------------
@@ -365,6 +392,16 @@ export type Run = {
   /** Highest chapter reached */
   chapter: number;
   cleared: boolean;
+  /** The map a 月亮線 ride is heading to while the party is in a ride car; null otherwise */
+  rideTo: MapId | null;
+  /** Station keys (mrt.ts) the 路線圖 has already shown lit, so a new one plays its 「叮！」 once */
+  seenStations: string[];
+};
+
+/** Player preferences that live beside the run (saved with it, kept across new games). */
+export type QuestSettings = {
+  /** 直接到站: a 月亮線 ride skips the car and arrives at the destination at once */
+  skipRides: boolean;
 };
 
 // ---------------------------------------------------------------------------------------------

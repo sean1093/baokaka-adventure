@@ -16,6 +16,9 @@ import {
   type Step,
 } from './types';
 
+/** Set by the `ending` step beside `run.cleared`, for flag conditions (bible § 3.1: 象山 unlocks on `cleared`). */
+export const CLEARED_FLAG = 'cleared';
+
 /** Where a script is: the steps it plays and how far it has got. */
 export type Scene = { steps: Step[]; at: number };
 
@@ -27,6 +30,7 @@ export type Stop =
   | { kind: 'battle'; foes: FoeId[]; boss: boolean }
   | { kind: 'shop'; stock: ItemId[] }
   | { kind: 'inn'; price: number }
+  | { kind: 'travel' }
   | { kind: 'ending' }
   | { kind: 'done' };
 
@@ -148,8 +152,12 @@ export function runScene(run: Run, scene: Scene): SceneResult {
         if (step.price === 0) return { run: healParty(draft), scene: next, stop: { kind: 'line', line: { who: null, text: UI.innFree } } };
         return { run: draft, scene: next, stop: { kind: 'inn', price: step.price } };
 
+      case 'travel':
+        return { run: draft, scene: next, stop: { kind: 'travel' } };
+
       case 'ending':
-        return { run: { ...draft, cleared: true }, scene: next, stop: { kind: 'ending' } };
+        // The `cleared` flag lets talk rules and the 象山 station (unlock `cleared`) see the clear
+        return { run: { ...addFlags(draft, CLEARED_FLAG), cleared: true }, scene: next, stop: { kind: 'ending' } };
 
       case 'join':
         if (!draft.party.includes(step.hero)) {

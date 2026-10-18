@@ -19,11 +19,10 @@ if (import.meta.env.DEV) {
 export const QuestGame = () => {
   // Read storage once: the reducer, the settings and the old-save notice all start from this load
   const [loaded] = useState(() => loadQuest());
-  const [state, dispatch] = useReducer(questReducer, undefined, () => initialState(loaded.save.run, loaded.save.sound));
-  const [settings] = useState(loaded.save.settings);
+  const [state, dispatch] = useReducer(questReducer, undefined, () => initialState(loaded.save.run, loaded.save.sound, loaded.save.settings));
   // The old key is deleted right after mount, so the notice lives in memory only and shows once
   const [legacyNotice, setLegacyNotice] = useState(loaded.legacyReset);
-  const { view, run, sound } = state;
+  const { view, run, sound, settings } = state;
 
   useEffect(() => {
     if (loaded.legacyReset) discardLegacyQuest();
@@ -40,7 +39,7 @@ export const QuestGame = () => {
       return;
     }
     if (view.screen === 'battle') playMusic(view.battle.boss ? 'boss' : 'battle');
-    else if (view.screen === 'world' || view.screen === 'shop') playMusic(MAPS[run.map].palette === 'night' ? 'night' : 'field');
+    else if (view.screen === 'world' || view.screen === 'shop' || view.screen === 'travel') playMusic(MAPS[run.map].palette === 'night' ? 'night' : 'field');
     else if (view.screen === 'ending') playMusic('ending');
     else stopMusic();
   }, [view.screen, view.screen === 'battle' ? view.battle.boss : false, run.map, sound]);

@@ -327,7 +327,7 @@ Every car has:
 - a **博愛座** NPC (`moonline.priority` / `.bear`);
 - a **路線圖 display** decor-NPC `lineMap` (the hint talk list in `script.md`; its lit dots match the travel screen);
 - a **door** exit with `to: '@rideTo'` (new: resolved from `run.rideTo` at walk time; arrive at that map's MRT-gate tile);
-- an **entry trigger** (not once) playing the ambient `ride.<line>` announcement;
+- an **entry trigger** (not once, `arrival: true` so it plays on arriving and not when the party walks back over the doorway; decision D-26) playing the ambient `ride.<line>` announcement;
 - a **once-trigger** one tile in, playing `ride.<line>.first` (scene).
 
 There are no random encounters in cars. The optional fight NPC in a car stays until it's beaten once (`carFight<Line>` flag).

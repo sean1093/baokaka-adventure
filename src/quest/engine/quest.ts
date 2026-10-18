@@ -4,11 +4,14 @@ import { EVENTS } from './events';
 import { FOES } from './foes';
 import { ITEMS, STARTING_ITEMS, addItem, canWear, heroStats, removeItem } from './heroes';
 import { MAPS } from './maps';
+import { freshStations, mapById, rideMaps, stationByKey, stationUnlocked } from './mrt';
 import { chestOpened, meets } from './path';
 import { addFlags, recordFoes } from './progress';
 import { fullHp, fullMp, gainXp, innLines, runScene, type Scene, type Stop } from './scene';
+import { UI } from './strings';
 import {
   HERO_ORDER,
+  RIDE_TO,
   type Battle,
   type BattleAction,
   type ChoiceOption,
@@ -16,6 +19,8 @@ import {
   type HeroId,
   type ItemId,
   type Line,
+  type MapId,
+  type QuestSettings,
   type Run,
   type SpellId,
   type Step,
@@ -43,6 +48,11 @@ export type QuestView =
   | { screen: 'victory'; summary: VictorySummary }
   | { screen: 'defeat' }
   | { screen: 'shop'; stock: ItemId[] }
+  /**
+   * The 路線圖. `fresh` lists the stations lit for the first time this opening (their 「叮！」);
+   * `note` is a narration line shown over the map (mrt.newStation, mrt.locked) until tapped.
+   */
+  | { screen: 'travel'; fresh: string[]; note: Line | null }
   | { screen: 'ending' };
 
 export type QuestState = {
@@ -59,7 +69,10 @@ export type QuestState = {
   /** The inn question, waiting for an answer */
   inn: number | null;
   sound: boolean;
+  settings: QuestSettings;
 };
+
+export const DEFAULT_SETTINGS: QuestSettings = { skipRides: false };
 
 export type QuestAction =
   | { type: 'newGame'; seed: number }
@@ -83,6 +96,12 @@ export type QuestAction =
   | { type: 'useItem'; item: ItemId; hero: HeroId }
   | { type: 'equip'; item: ItemId | null; hero: HeroId }
   | { type: 'toggleSound' }
+  /** On the 路線圖: ride to the station with this key (a locked one only shows mrt.locked) */
+  | { type: 'ride'; station: string }
+  /** Leave the 路線圖 without riding; the party stays at the gate */
+  | { type: 'closeTravel' }
+  /** The 路線圖's 直接到站 switch */
+  | { type: 'setSkipRides'; on: boolean }
   | { type: 'endingContinue' };
 
 export function freshRun(seed = 1, cleared = false): Run {
@@ -114,13 +133,15 @@ export function freshRun(seed = 1, cleared = false): Run {
     seed,
     chapter: 1,
     cleared,
+    rideTo: null,
+    seenStations: [],
   };
 }
 
 /** A run worth offering 繼續冒險 for: anything past the opening cutscene. */
 export const runStarted = (run: Run): boolean => run.flags.length > 0 || run.xp > 0 || run.map !== 'home';
 
-export const initialState = (run: Run, sound: boolean): QuestState => ({
+export const initialState = (run: Run, sound: boolean, settings: QuestSettings = DEFAULT_SETTINGS): QuestState => ({
   view: { screen: 'title' },
   run,
   scene: null,
@@ -129,6 +150,7 @@ export const initialState = (run: Run, sound: boolean): QuestState => ({
   choice: null,
   inn: null,
   sound,
+  settings,
 });
 
 const idle = (state: QuestState): QuestState => ({ ...state, scene: null, line: null, card: null, choice: null, inn: null });
@@ -153,11 +175,38 @@ function settle(state: QuestState, run: Run, scene: Scene, stop: Stop): QuestSta
       return { ...base, view: { screen: 'shop', stock: stop.stock } };
     case 'inn':
       return { ...base, inn: stop.price };
+    case 'travel':
+      return openTravel(base);
     case 'ending':
       return { ...base, scene: null, view: { screen: 'ending' } };
     case 'done':
       return { ...base, scene: null, view: { screen: 'world' } };
   }
+}
+
+/**
+ * Opens the 路線圖 over a paused scene. Stations lit since the last opening are marked fresh and
+ * recorded in `seenStations` right away, so the 「叮！」 and mrt.newStation play exactly once.
+ */
+function openTravel(state: QuestState): QuestState {
+  const fresh = freshStations(state.run);
+  const run = fresh.length > 0 ? { ...state.run, seenStations: [...state.run.seenStations, ...fresh] } : state.run;
+  const note: Line | null = fresh.length > 0 ? { who: null, text: UI.mrtNewStation } : null;
+  return { ...state, run, view: { screen: 'travel', fresh, note } };
+}
+
+/**
+ * Puts the party on `tile` of `map` and finds the trigger standing there, if any: the arrival
+ * (or a ride car's announcement). A `once` trigger plays the first time only; others every time.
+ */
+function arrive(run: Run, map: MapId, tile: Tile): { steps: Step[]; run: Run } {
+  const moved: Run = { ...run, map, pos: tile, steps: 0 };
+  const trigger = MAPS[map].triggers.find((entry) => entry.c === tile.c && entry.r === tile.r && meets(moved.flags, entry));
+  if (!trigger) return { run: moved, steps: [] };
+  const key = `trigger:${trigger.id}`;
+  if (!trigger.once) return { run: moved, steps: EVENTS[trigger.event] };
+  if (moved.flags.includes(key)) return { run: moved, steps: [] };
+  return { run: addFlags(moved, key), steps: EVENTS[trigger.event] };
 }
 
 /** Starts a script and plays it up to its first pause. Exported for tests that drive a hand-written script. */
@@ -181,19 +230,18 @@ function tileEvent(run: Run): { steps: Step[]; run: Run } | null {
   for (const exit of map.exits) {
     if (exit.c !== c || exit.r !== r) continue;
     if (meets(run.flags, exit)) {
-      const target = MAPS[exit.to];
-      const moved: Run = { ...run, map: exit.to, pos: exit.at, steps: 0 };
-      const intro = target.triggers.find((trigger) => trigger.c === exit.at.c && trigger.r === exit.at.r);
-      if (intro && meets(moved.flags, intro) && !moved.flags.includes(`trigger:${intro.id}`)) {
-        return { run: addFlags(moved, `trigger:${intro.id}`), steps: EVENTS[intro.event] };
-      }
-      return { run: moved, steps: [] };
+      if (exit.to !== RIDE_TO) return arrive(run, exit.to, exit.at);
+      // A ride car's door: step out at the destination's MRT gate, and the ride is over
+      const destination = run.rideTo === null ? undefined : mapById(run.rideTo);
+      // No ride on record (should not happen): the 路線圖 opens instead, so the party is never stuck in a car
+      if (!destination?.mrtArrival) return { run, steps: [{ do: 'travel' }] };
+      return arrive({ ...run, rideTo: null }, destination.id, destination.mrtArrival);
     }
     if (exit.blocked) return { run, steps: EVENTS[exit.blocked] };
   }
 
   for (const trigger of map.triggers) {
-    if (trigger.c !== c || trigger.r !== r || !meets(run.flags, trigger)) continue;
+    if (trigger.arrival || trigger.c !== c || trigger.r !== r || !meets(run.flags, trigger)) continue;
     const key = `trigger:${trigger.id}`;
     if (trigger.once && run.flags.includes(key)) continue;
     return { run: trigger.once ? addFlags(run, key) : run, steps: EVENTS[trigger.event] };
@@ -300,6 +348,7 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
     }
 
     case 'advance': {
+      if (view.screen === 'travel') return view.note ? { ...state, view: { ...view, note: null } } : state;
       if (state.card) return state.line || state.scene ? resume({ ...state, card: null }) : { ...state, card: null };
       if (!state.line) return state;
       return resume(state);
@@ -430,6 +479,31 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
 
     case 'toggleSound':
       return { ...state, sound: !state.sound };
+
+    case 'ride': {
+      if (view.screen !== 'travel' || view.note) return state;
+      const station = stationByKey(action.station);
+      if (!station) return state;
+      if (!stationUnlocked(run, station)) return { ...state, view: { ...view, note: { who: null, text: UI.mrtLocked } } };
+      // Already here, or a station whose chapter has not landed yet: nothing to ride to
+      const ride = rideMaps(station);
+      if (!ride || station.map === run.map) return state;
+
+      // 直接到站 steps straight out at the destination; otherwise board the line's car, whose entry
+      // trigger plays the announcement, and walk out of its door (`@rideTo`) to arrive
+      const arrival = state.settings.skipRides
+        ? arrive({ ...run, rideTo: null }, ride.destination.id, ride.arrival)
+        : arrive({ ...run, rideTo: ride.destination.id }, ride.car.id, ride.car.entry);
+      const rest = state.scene ? state.scene.steps.slice(state.scene.at + 1) : [];
+      return play({ ...idle(state), view: { screen: 'world' } }, [...arrival.steps, ...rest], arrival.run);
+    }
+
+    case 'closeTravel':
+      if (view.screen !== 'travel') return state;
+      return resume({ ...state, view: { screen: 'world' } });
+
+    case 'setSkipRides':
+      return { ...state, settings: { ...state.settings, skipRides: action.on } };
 
     case 'endingContinue':
       return { ...idle(state), run: { ...run, cleared: true }, view: { screen: 'title' } };
