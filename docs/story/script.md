@@ -10,7 +10,7 @@ Each `### key` is one entry in `EVENTS` (events.ts). Lines map 1:1 to `Step`s:
 |---|---|
 | `旁白：text` | `{ who: null, text: 'text' }` |
 | `mocha：「text」` | `{ who: 'mocha', text: '「text」' }` (keep the 「」 in the string, as today) |
-| `[chapter 3｜月亮線，出發！｜02:00]` | `{ do: 'chapter', n: 3, title: '月亮線，出發！', time: '02:00' }` |
+| `[chapter 3｜月亮線，出發！｜01:45]` | `{ do: 'chapter', n: 3, title: '月亮線，出發！', time: '02:00' }` |
 | `[join magpie]` | `{ do: 'join', hero: 'magpie' }` |
 | `[flag x]` | `{ do: 'flag', flag: 'x' }` |
 | `[give item]` / `[give item ×2]` | `{ do: 'give', item, count }` |
@@ -27,9 +27,9 @@ Each `### key` is one entry in `EVENTS` (events.ts). Lines map 1:1 to `Step`s:
 
 ### Baokaka's vocabulary (do not add words)
 
-要！／不要！／抱抱／ㄋㄟㄋㄟ／喵喵／咻——／哇！／這個！／我！／餓餓／好吃！／好看！／掰掰／一起／ㄅㄚ！（＝101）
+要！／不要！／抱抱／ㄋㄟㄋㄟ／喵喵／咻——／哇！／這個！／我！／餓餓／好吃！／好看！／掰掰／一起／ㄅㄚ！（＝101）／嗶！（學自交通卡）／飛機！（Ch7 起）
 
-He says his first real word only in the ending.
+He says his first real word only in the ending. (飛機 is a toddler's favorite noise-word, not his "first word". The family never hears it.)
 
 ## Speakers
 
@@ -46,10 +46,10 @@ He says his first real word only in the ending.
 | `uncleFortune` | 算命阿伯 | #4 (round dark glasses on forehead) |
 | `uncleTea` | 茶行阿伯 | #5 (black vest, teapot) |
 | `unclePinball` | 彈珠台阿伯 | #6 (flat cap) |
-| `uncleZoo` | 管理員阿伯 | #7 (safari hat) |
-| `uncleBath` | 澡堂阿伯 | #8 (towel on head) |
-| `uncleFerry` | 渡輪阿伯 | #9 (captain hat) |
-| `uncleTower` | 清潔阿伯 | #10 (cleaner cap, mop) |
+| `uncleZoo` | 管理員阿伯 | #8 (safari hat) |
+| `uncleBath` | 澡堂阿伯 | #9 (towel on head) |
+| `uncleFerry` | 渡輪阿伯 | #10 (captain hat) |
+| `uncleTower` | 清潔阿伯 | #11 (cleaner cap, mop) |
 | `tudigong` | 土地公 | the same face, red robe, gold hat |
 | `clerk` | 店員小哥 | the same everywhere |
 | `announcer` | 廣播姊姊 | glowing conductor |
@@ -80,6 +80,19 @@ He says his first real word only in the ending.
 | `ageiGran` | 阿給阿婆 | ch9 |
 | `crabSoldier` | 招潮蟹小兵 | ch9 |
 | `souvenir` | 紀念品店姊姊 | ch10 |
+| `uncleAirport` | 推車阿伯 | 土地公 #7 (airport vest, pushes carts) |
+| `ctrlTower` | 塔台 | the control tower (lit window with a headset); speaks radio-style |
+| `jet` | 小白機 | sleepy small white plane, blue stripe, unbranded |
+| `marshal` | 地勤姊姊 | ch7, with glowing wands |
+| `windsock` | 風向袋小姐 | ch7 boss |
+| `squishedWorker` | 扁扁的上班族 | orange ride car |
+| `trashAuntie` | 追垃圾車的阿姨 | gag ch1 |
+| `sleepyTA` | 睡著的助教 | gag ch2 |
+| `commuter` | 趕車的上班族 | gag ch3 |
+| `scooterUncle` | 機車阿伯 | gag ch4 |
+| `queueLine` | 排隊的食物們 | gag ch6 |
+| `bathGrandpa` | 泡腳阿公 | gag ch8 |
+| `deliveryRider` | 外送小哥 | gag ch9 |
 | bosses: `squirrel` `goose` `gate` `karaoke` `dragon` `cutlet` `teapot` `egg` `crab` `damper` | 松鼠大王／鵝霸／嗶嗶／卡拉OK大王／舞布龍／超級大雞排／茶壺爺／溫泉蛋爺爺／招潮蟹將軍／阿穩 | the boss sprites |
 
 ---
@@ -131,6 +144,7 @@ cloud：「哇，亮晶晶的！看看——」
 旁白：抓周盤上的寶物，全部飛出窗外！
 cloud：「啊……！對、對不起——！」
 旁白：小雲纏著金鎖片，一溜煙飛走了。
+旁白：金鎖片的紅繩，啪一聲斷了，飄出窗外。
 旁白：嬰兒床裡，有一雙眼睛，全部都看到了。
 baokaka：「……哇。」
 旁白：（點地板就會爬過去。先去找摩卡貓。）
@@ -757,27 +771,224 @@ mocha：「月亮票沒蓋章，進不去。」
 
 ---
 
-## 月亮線 — 車廂 (hub)
+## 月亮線 — 搭捷運 (MRT system)
 
-### moonline.intro
-(Entry trigger, once.)
+See `story-bible.md` § 3.1 for how this works. In short:
+1. **Entrances.** Every landmark map has an MRT entrance NPC (`mrtGate`).
+2. **Travel screen.** Its `[travel]` step opens the 路線圖 (line-map) screen.
+3. **Ride.** Picking a lit station puts the party in a **ride car** themed after that station's line. The ambient trigger plays; the party can walk around the car, talk to passengers, and sit on the 博愛座.
+4. **Arrive.** Walking out the door arrives at `{station}`.
+
+`{station}` / `{stationTw}` / `{stationEn}` are substituted from the `STATIONS` table. Every expanded line must stay ≤ 40 chars; English names get their own line.
+
+### mrt.closed
+talk: `mrtGate` when not `moonPass` (daan, ntu, station)
 ```
-旁白：月亮線的車廂。窗外，有星星流過去。
-旁白：每一扇門上面，都寫著站名。
-announcer：「本列車，行駛月亮線。」
-announcer：「請在車門上方，確認您的目的地。」
-mocha：「還沒開的站，門打不開。」
+旁白：捷運站的鐵門拉下來了。
+旁白：末班車，早就開走了。
 ```
 
-### moonline.locked
-(The `blocked` event for every locked door.)
+### mrt.enter
+talk: `mrtGate` when `moonPass`
 ```
-旁白：門上的燈是暗的。這一站還沒開。
+旁白：嗶——！
+旁白：月亮票一嗶，閘門就開了。
+[travel]
 ```
 
-### moonline.announcer.*
-talk: `announcer`, in this order:
-`[{when:'cleared',event:'moonline.announcer.post'}, {when:'metShushu',event:'moonline.announcer.to101'}, {when:'eggDone',event:'moonline.announcer.toTamsui'}, {when:'teapotDone',event:'moonline.announcer.toBeitou'}, {when:'cutletDone',event:'moonline.announcer.toZoo'}, {when:'dragonDone',event:'moonline.announcer.toShilin'}, {when:'karaokeDone',event:'moonline.announcer.toDadaocheng'}, {event:'moonline.announcer.toXimen'}]`
+### mrt.newStation
+(Shown by the travel screen once, the first time it opens after a new station unlocks. One line plus the dot animation.)
+```
+旁白：叮！路線圖上，又有一站亮起來了。
+```
+
+### mrt.locked
+(Tapping a grey station on the travel screen.)
+```
+旁白：這一站的燈，還沒亮。
+```
+
+### Ambient ride announcements
+(The car's entry trigger, every ride. Door chime SFX first: 叮咚叮咚.)
+
+**ride.red** (淡水信義線 car)
+```
+旁白：叮咚叮咚——門關上了。
+announcer：「下一站，{station}。」
+announcer：「下一站，{stationTw}。」
+announcer：「Next station, {stationEn}.」
+announcer：「請緊握扶手，站穩。」
+```
+
+**ride.blue** (板南線 car)
+```
+旁白：叮咚叮咚——門關上了。
+announcer：「下一站，{station}。」
+announcer：「Next station, {stationEn}.」
+announcer：「車門即將關閉，請勿強行上下車。」
+```
+
+**ride.brown** (文湖線 car, driverless, with the front window)
+```
+旁白：叮咚叮咚——小小的車廂，輕輕動了。
+announcer：「下一站，{station}。」
+announcer：「Next station, {stationEn}.」
+旁白：前面的大窗戶外，軌道像一條銀色的路。
+```
+
+**ride.green** (松山新店線 car)
+```
+旁白：叮咚叮咚——門關上了。
+announcer：「下一站，{station}。」
+announcer：「Next station, {stationEn}.」
+announcer：「請讓座給需要的旅客，謝謝。」
+```
+
+**ride.orange** (中和新蘆線 car)
+```
+旁白：叮咚叮咚——門關上了。
+announcer：「下一站，{station}。」
+announcer：「Next station, {stationEn}.」
+announcer：「車廂內很擁擠，請往車廂中間移動。」
+mocha：「……車廂裡只有我們。」
+```
+
+### First ride on each line (once-trigger one tile into the car)
+
+**ride.blue.first** (first trip to 西門, Ch4)
+```
+旁白：藍色的車廂。板南線。
+magpie：「根據我的研究，這是台北最忙的一條線。」
+magpie：「白天，人多到腳不用碰地板。」
+mocha：「那很適合寶咖咖。他本來就不會走。」
+旁白：寶咖咖抓住了吊環。……抓不到。
+旁白：他改抓摩卡貓的尾巴。
+mocha：「……請緊握扶手，不是緊握我。」
+```
+
+**ride.orange.first** (first trip to 大橋頭, Ch5)
+```
+旁白：橘色的車廂。中和新蘆線。
+magpie：「這條線，以擠出名。」
+magpie：「上班的時候，大家都貼在一起。」
+mocha：「擠？貓最會擠了。」
+mocha：「貓是液體。哪裡都塞得進去。」
+旁白：摩卡貓，把自己塞進了座位底下。
+magpie：「……這叫……無孔不入？」
+mocha：「這次我不確定。」
+```
+
+**ride.red.first** (first trip to 劍潭, Ch6)
+```
+旁白：紅色的車廂。淡水信義線。
+旁白：列車開著開著——咻，開出了地面！
+旁白：窗外，整個台北的燈，一閃一閃。
+baokaka：「哇！」
+magpie：「紅線從地下鑽出來，變成高架。」
+magpie：「從這裡，可以一路開到淡水。」
+mocha：「……還有，一路開到101。」
+旁白：遠遠的，101的頂端，有一團雲在轉。
+```
+
+**ride.brown.first** (first trip to 松山機場, Ch7)
+```
+旁白：棕色的小車廂。文湖線。
+旁白：車廂最前面，是一整片大窗戶。
+旁白：寶咖咖爬到窗戶前面，貼好。
+mocha：「他說：『我是駕駛。』」
+magpie：「文湖線，沒有駕駛。是自動的。」
+旁白：……
+mocha：「那，是誰在開？」
+announcer：「是我。」
+mocha：「…………」
+announcer：「忠孝復興站，轉乘板南線。」
+announcer：「請下一站下車：松山機場。」
+旁白：窗外，經過了一排睡著的飛機。
+baokaka：「……飛、飛……」
+baokaka：「飛機！」
+mocha：「……！他會說飛機了。」
+magpie：「第一個學會的交通工具。」
+mocha：「不會說爸爸，先會說飛機。」
+```
+(**飛機！** joins Baokaka's vocabulary from here on.)
+
+**ride.green.first** (first trip back to 公館, optional)
+```
+旁白：綠色的車廂。松山新店線。
+旁白：座位上，一個阿公抱著釣竿在睡覺。
+mocha：「這麼晚還要去釣魚？」
+旁白：阿公說夢話：「碧潭……天鵝船……」
+magpie：「綠線的終點，可以划天鵝船。」
+mocha：「……我討厭水。」
+```
+
+### Ride-car passengers (optional, flag variants)
+
+**ride.brown.window** (talk: `frontWindow` in the brown car, after `ride.brown.first`)
+```
+旁白：寶咖咖又貼在大窗戶前面了。
+baokaka：「飛機！」
+mocha：「這裡看不到飛機。」
+baokaka：「飛機！」
+mocha：「……好啦，假裝有。」
+```
+
+**ride.orange.squished** (talk: `squishedWorker` in the orange car)
+```
+旁白：一個上班族，貼在門上，扁扁的。
+squishedWorker：「車廂……空空的……」
+squishedWorker：「可是我習慣了……貼著比較安心……」
+```
+
+Moved here from the old hub: `moonline.salaryman` (blue car), `moonline.owl` (red car, shop), `moonline.priority` / `.bear` (one 博愛座 NPC in every car), and `gag.moonline.noEating` (orange car).
+
+### Optional car fights
+(One NPC per car, once each. A stray creature that hopped on the train.)
+
+**ride.blue.fight** (talk: `strayImps`, not `carFightBlue`)
+```
+旁白：兩個指標小鬼，在車廂裡亂指。
+旁白：「下一站往這邊！不對，往那邊！」
+[battle signImp, signImp]
+[flag carFightBlue]
+旁白：指標小鬼，在下一站下車了。
+```
+
+**ride.orange.fight** (talk: `strayCard`, not `carFightOrange`)
+```
+旁白：一張迷路的交通卡，在車廂裡飛來飛去。
+旁白：「嗶！嗶！我的主人呢？嗶！」
+[battle strayCard]
+[flag carFightOrange]
+旁白：交通卡乖乖飄進了失物招領箱。
+```
+
+**ride.red.fight** (talk: `strayCards`, not `carFightRed`)
+```
+旁白：兩張交通卡，在玩你追我跑。
+[battle strayCard, strayCard]
+[flag carFightRed]
+旁白：「嗶……餘額……充足……」它們睡著了。
+```
+
+**ride.brown.fight** (talk: `lostLight`, not `carFightBrown`; appears `when: windsockDone`)
+```
+旁白：一顆跑道燈，跟著上車了。
+旁白：一閃一閃，好像在說：「降落在這裡！」
+[battle runwayLight, strayCard]
+[flag carFightBrown]
+旁白：跑道燈，自己滾回機場去了。
+```
+
+### moonline.announcer.* (路線圖 hints)
+Now the talk rules of the `lineMap` decor-NPC in every car, in this order:
+`[{when:'cleared',event:'moonline.announcer.post'}, {when:'metShushu',event:'moonline.announcer.to101'}, {when:'eggDone',event:'moonline.announcer.toTamsui'}, {when:'teapotDone',event:'moonline.announcer.toBeitou'}, {when:'windsockDone',event:'moonline.announcer.toZoo'}, {when:'cutletDone',event:'moonline.announcer.toAirport'}, {when:'dragonDone',event:'moonline.announcer.toShilin'}, {when:'karaokeDone',event:'moonline.announcer.toDadaocheng'}, {event:'moonline.announcer.toXimen'}]`
+
+**moonline.announcer.toAirport**
+```
+announcer：「推薦下車站：松山機場。文湖線。」
+announcer：「飛機們，都睡著了。」
+```
 
 **moonline.announcer.toXimen**
 ```
@@ -878,7 +1089,7 @@ owl：「奶奶織毛線，也賣一點吃的。」
 
 ### ch4.intro
 ```
-[chapter 4｜紅樓的走音天王｜02:40]
+[chapter 4｜紅樓的走音天王｜02:15]
 旁白：西門町。半夜兩點多，霓虹燈還是好亮。
 旁白：紅樓那邊，傳來一陣……歌聲？
 旁白：「我的～麥克風～閃閃～亮～～」
@@ -1045,7 +1256,7 @@ mocha：「……是它的名字嗎？」
 
 ### ch5.intro
 ```
-[chapter 5｜迪化街的布龍｜03:10]
+[chapter 5｜迪化街的布龍｜02:45]
 旁白：大稻埕・迪化街。百年的老房子，一間接一間。
 旁白：空氣裡有烏魚子、中藥、和茶葉的味道。
 旁白：天上，一條一條的花布在飛。
@@ -1202,7 +1413,7 @@ mocha：「……他說：『士林夜市。』」
 
 ### ch6.intro
 ```
-[chapter 6｜夜市大胃王｜03:40]
+[chapter 6｜夜市大胃王｜03:10]
 旁白：士林夜市。攤子早就收了，燈卻還亮著。
 旁白：仔細一看——是食物們，自己在逛夜市！
 mocha：「……雞排在排隊買雞排。」
@@ -1323,7 +1534,7 @@ cutlet：「雞腿還你。」
 [flag got_drumstick]
 旁白：拿回了「雞腿」！（有口福）
 [coins 110]
-cutlet：「那朵雲吃了好多棉花糖，往山那邊去了。」
+cutlet：「那朵雲吃了好多棉花糖，往機場去了。」
 ```
 
 ### ch6.shilin.basin
@@ -1338,7 +1549,7 @@ magpie：「四面都是山，像一個大碗。」
 magpie：「小小的風，飛不出去。」
 mocha：「……所以它一直在碗裡打轉。」
 mocha：「越急，轉得越大。」
-magpie：「它往動物園那邊去了。想爬過山。」
+magpie：「它往機場去了。……它想搭飛機，飛出去。」
 baokaka：「……咻咻。」
 旁白：寶咖咖看著天空，好小聲地說。
 ```
@@ -1347,17 +1558,219 @@ baokaka：「……咻咻。」
 
 ---
 
-## 第七章 貓空上的月亮熊 — 動物園・貓空
+## 第七章 飛機睡著的時候 — 松山機場
 
 ### ch7.intro
 ```
-[chapter 7｜貓空上的月亮熊｜04:10]
+[chapter 7｜飛機睡著的時候｜03:35]
+旁白：松山機場。跑道的燈，一顆一顆，藍藍綠綠。
+旁白：飛機們，都停在登機門旁邊，睡著了。
+magpie：「根據我的研究——」
+magpie：「晚上十一點到早上五點，這裡的飛機不飛。」
+mocha：「飛機也要睡覺。」
+baokaka：「飛機！」
+mocha：「……噓。在睡覺。」
+```
+
+### ch7.airport.ctrlTower / .after
+talk: `ctrlTower` (the lit tower cab, talked to from its base): `[{ when: 'windsockDone', event: 'ch7.airport.ctrlTower.after' }, { event: 'ch7.airport.ctrlTower' }]`
+
+**ch7.airport.ctrlTower**
+```
+ctrlTower：「塔台呼叫，地面上的小朋友。」
+ctrlTower：「收到請回答。Over。」
+baokaka：「哇！」
+ctrlTower：「收到。Over。」
+mocha：「……你都這樣講話？」
+ctrlTower：「塔台都這樣講話。Over。」
+ctrlTower：「剛剛，有一朵雲呼叫塔台。」
+ctrlTower：「它問：『咻咻可以起飛嗎？』」
+ctrlTower：「塔台回答：『晚上不能起飛。』」
+ctrlTower：「它在跑道上，轉了好久好久。Over。」
+mocha：「…………」
+ctrlTower：「跑道盡頭的風向袋，被它轉暈了。」
+ctrlTower：「請協助處理。Over。」
+```
+
+**ch7.airport.ctrlTower.after**
+```
+ctrlTower：「風向袋恢復正常。感謝協助。」
+ctrlTower：「天亮以後，跑道就會開。Over。」
+```
+
+### ch7.airport.jet / .awake
+talk: `jet` (a small white plane with a blue stripe, asleep at gate 1): `[{ when: 'windsockDone', event: 'ch7.airport.jet.awake' }, { event: 'ch7.airport.jet' }]`
+
+**ch7.airport.jet**
+```
+旁白：一架白色的小飛機，在登機門旁邊睡覺。
+旁白：引擎，發出很小很小的呼嚕聲。
+baokaka：「飛機！」
+mocha：「噓。它在睡。」
+```
+
+**ch7.airport.jet.awake**
+```
+jet：「……嗯？好吵。啊，是小朋友。」
+baokaka：「飛機！」
+jet：「嗯，我是飛機。你好。」
+jet：「那朵雲……剛剛來找過我。」
+jet：「它問我，可不可以帶它飛出去。」
+jet：「飛出這個大碗，飛過山。」
+jet：「可是我們晚上不能飛。」
+jet：「我說，天亮再來。它好像等不及了。」
+magpie：「……原來它想離開。」
+jet：「天亮以後，我是第一班。」
+jet：「我飛上去的時候，會幫忙找找看。」
+[flag jetPromise]
+```
+
+### ch7.airport.uncle.first / .again
+talk: `uncleAirport` (pushing a long line of luggage carts): `[{ when: 'airportUncleGave', event: 'ch7.airport.uncle.again' }, { event: 'ch7.airport.uncle.first' }]`
+
+**ch7.airport.uncle.first**
+```
+uncleAirport：「呵呵，囡仔，要出國喔？」
+mocha：「……你連機場都有。」
+uncleAirport：「推車子的阿伯，哪裡都有，呵呵。」
+uncleAirport：「風往哪裡吹，風向袋最知道。」
+uncleAirport：「可是今天，風向袋自己都暈了。」
+uncleAirport：「來，坐飛機要帶這個。」
+[give neckPillow]
+[flag airportUncleGave]
+旁白：得到 旅行頸枕！（裝備：體力 +30、防禦 +5）
+```
+
+**ch7.airport.uncle.again**
+```
+uncleAirport：「慢慢仔來。飛機會等，阿伯也會等。」
+```
+
+### ch7.airport.marshal
+talk: `marshal` (night ground crew with two glowing wands)
+```
+marshal：「往前、往前、往前——」
+旁白：寶咖咖跟著光棒，爬爬爬。
+marshal：「停！」
+旁白：寶咖咖停住了。停得剛剛好。
+marshal：「完美停機！你以後可以來機場上班！」
+mocha：「……他連走路都還不會。」
+```
+
+### ch7.airport.clerk
+talk: `clerk`
+```
+clerk：「叮咚～歡迎光臨！」
+clerk：「機場分店。出國前，買點吃的。」
+mocha：「我們沒有要出國。」
+clerk：「那就，買點吃的。」
+[shop pineappleCake, chickenCutlet, braisedRice, bubbleTea, railBento, redTurtleCake, helmet]
+```
+
+### ch7.airport.chairs
+talk: `waitingChairs`
+```
+旁白：候機室的椅子，一排連在一起。
+旁白：躺三格，剛剛好。
+[inn 15]
+```
+
+### stamp.airport
+```
+旁白：出境大廳旁邊，有一個紀念章台。
+旁白：蓋——！「松山機場」，一架小飛機的章。
+[flag stamp_airport]
+```
+
+### ch7.airport.carts
+talk: `luggageCarts` fixed fight on the path to the runway end (not: cartsDone)
+```
+旁白：一串行李拖車，自己在跑道邊開來開去。
+旁白：「叭叭！行李呢？行李都被吹走了！」
+mocha：「它們在找行李。」
+magpie：「我們不是行李。」
+[battle luggageTrain, luggageTrain]
+[flag cartsDone]
+旁白：拖車們停好了，排得整整齊齊。
+```
+
+### ch7.airport.boss
+talk: `windsock` at the runway-end pole (not: windsockDone; appears `when: cartsDone`)
+```
+旁白：跑道的盡頭，有一根高高的桿子。
+旁白：上面掛著一個橘白條紋的風向袋。
+旁白：它一直轉、一直轉，像一個陀螺。
+windsock：「轉轉轉！風往哪裡吹？」
+windsock：「我不知道啦！我暈了！」
+magpie：「風向袋的工作，是告訴飛機風往哪吹。」
+mocha：「它身上纏著一條紅紅的東西。」
+windsock：「不要過來！我會甩到你們！」
+magpie：「它『側風警報』打全部，先防禦！」
+[boss windsock]
+[flag windsockDone]
+windsock：「呼……停、停下來了……」
+windsock：「一朵雲，繞著我轉了一整晚。」
+windsock：「它一直問：『風可以帶我出去嗎？』」
+windsock：「我說，風都是繞著山轉的。」
+windsock：「它就哭了。」
+旁白：風向袋輕輕一抖，一條紅繩掉了下來。
+[flag got_redString]
+旁白：拿回了「紅繩」！（金鎖片的繩子）
+[coins 120]
+mocha：「是金鎖片的紅繩。」
+mocha：「……那朵雲，一定很想回家。」
+windsock：「它往南邊去了。山的方向。」
+windsock：「動物園那邊。我現在很確定。」
+magpie：「文湖線，坐到底就是動物園。」
+```
+
+### ch7.airport.planeWatch
+(Trigger on the grass at 飛機巷 by the runway-end fence, `when: windsockDone`, once. **The airport's emotional beat.**)
+```
+旁白：跑道盡頭的小巷子，有一片草地。
+旁白：大家躺下來，看著跑道。
+旁白：藍色的燈，一直排到好遠好遠。
+旁白：像一條，用星星鋪的路。
+magpie：「白天，飛機會從這裡，咻——飛上去。」
+magpie：「飛過山。飛出台北。」
+baokaka：「飛機……」
+mocha：「你想坐飛機？」
+baokaka：「一起。」
+mocha：「…………」
+mocha：「……長大以後。一起坐。」
+magpie：「我會飛。我不用坐。」
+mocha：「你可以坐窗邊，看自己飛。」
+magpie：「……那好像很好玩。」
+旁白：風輕輕吹過草地。
+mocha：「那朵雲，也是躺在這裡吧。」
+mocha：「看著飛機，想跟它們一起飛出去。」
+旁白：沒有人說話。
+旁白：寶咖咖，把手伸向天空，抓了一下。
+baokaka：「咻咻。」
+```
+
+### ch7.airport.blocked
+(The runway-end path, blocked before `cartsDone`.)
+```
+旁白：一串行李拖車，把路堵住了。
+```
+
+**Chests (airport):** `airport-pillow2` departures hall → 珍珠奶茶 ×2 · `airport-bento` → 鐵路便當 (flavor: 「機上餐？不，是便當。」) · `airport-turtle` → 紅龜粿
+**Exit:** MRT entrance `mrtGate` → `mrt.enter`.
+
+---
+
+## 第八章 貓空上的月亮熊 — 動物園・貓空
+
+### ch8.intro
+```
+[chapter 8｜貓空上的月亮熊｜04:00]
 旁白：台北市立動物園。動物們都睡了。
 旁白：只有一個籠子，是空的。
 mocha：「……那個名牌寫什麼？」
 ```
 
-### ch7.zoo.plaque
+### ch8.zoo.plaque
 talk: `plaque`
 ```
 旁白：「台灣黑熊・黑糖」
@@ -1369,10 +1782,10 @@ mocha：「那不就很少。」
 magpie：「喂！」
 ```
 
-### ch7.zoo.uncle.first / .again
-talk: `uncleZoo`: `[{ when: 'zooUncleMet', event: 'ch7.zoo.uncle.again' }, { event: 'ch7.zoo.uncle.first' }]`
+### ch8.zoo.uncle.first / .again
+talk: `uncleZoo`: `[{ when: 'zooUncleMet', event: 'ch8.zoo.uncle.again' }, { event: 'ch8.zoo.uncle.first' }]`
 
-**ch7.zoo.uncle.first**
+**ch8.zoo.uncle.first**
 ```
 uncleZoo：「呵呵，囡仔，動物園還沒開喔。」
 mocha：「…………」
@@ -1386,12 +1799,12 @@ uncleZoo：「呵呵，慢慢仔來。」
 [flag zooUncleMet]
 ```
 
-**ch7.zoo.uncle.again**
+**ch8.zoo.uncle.again**
 ```
 uncleZoo：「纜車站就在那邊。伊很乖，只是怕。」
 ```
 
-### ch7.zoo.meerkat
+### ch8.zoo.meerkat
 talk: `meerkat`
 ```
 meerkat：「站崗中！站崗中！」
@@ -1402,7 +1815,7 @@ mocha：「…………」
 magpie：「我們好像，一直把它想得太可怕了。」
 ```
 
-### ch7.zoo.bear
+### ch8.zoo.bear
 talk: `bearNpc` in the gondola (not: bearJoined)
 ```
 旁白：纜車站裡，停著一個車廂。
@@ -1432,7 +1845,7 @@ mocha：「……這只是開始。」
 [goto maokong 2,12]
 ```
 
-### ch7.zoo.gondolaBlocked
+### ch8.zoo.gondolaBlocked
 ```
 旁白：纜車車廂的門關著。
 旁白：裡面，好像有東西在發抖。
@@ -1442,7 +1855,7 @@ mocha：「……這只是開始。」
 
 ---
 
-### ch7.maokong.intro
+### ch8.maokong.intro
 (Entry trigger, once.)
 ```
 旁白：貓空。山上的茶園，一層一層往下。
@@ -1454,7 +1867,7 @@ mocha：「我喜歡。」
 magpie：「……好。」
 ```
 
-### ch7.maokong.view
+### ch8.maokong.view
 (Trigger at the view platform, once.)
 ```
 旁白：從這裡，可以看到整個台北。
@@ -1471,7 +1884,7 @@ bear：「（小聲）我好怕高……」
 [flag sawTower]
 ```
 
-### ch7.maokong.teahouse
+### ch8.maokong.teahouse
 talk: `teaLady`
 ```
 teaLady：「歡迎。泡一壺茶，看夜景。」
@@ -1479,7 +1892,7 @@ teaLady：「累了，就在這邊靠一下。」
 [inn 25]
 ```
 
-### ch7.maokong.clerk
+### ch8.maokong.clerk
 talk: `clerk` (with a pushcart)
 ```
 旁白：山路邊，有一台小小的推車。
@@ -1497,7 +1910,7 @@ bear：「黑、黑糖珍奶！」
 [flag stamp_maokong]
 ```
 
-### ch7.maokong.boss
+### ch8.maokong.boss
 talk: `teapot` on the teahouse terrace (not: teapotDone)
 ```
 旁白：茶館的露台上，有一個好大的茶壺。
@@ -1528,11 +1941,11 @@ teapot：「那裡熱。它想取暖吧。」
 
 ---
 
-## 第八章 北投的熱呼呼 — 北投溫泉
+## 第九章 北投的熱呼呼 — 北投溫泉
 
-### ch8.intro
+### ch9.intro
 ```
-[chapter 8｜北投的熱呼呼｜04:35]
+[chapter 9｜北投的熱呼呼｜04:30]
 旁白：北投。到處都在冒煙，暖暖的。
 旁白：空氣裡，有一股煮蛋的味道。
 mocha：「水。到處都是熱水。」
@@ -1540,7 +1953,7 @@ mocha：「我要回家。」
 bear：「這裡好暖。我喜歡。」
 ```
 
-### ch8.beitou.bookworm
+### ch9.beitou.bookworm
 talk: `bookworm` (at the library)
 ```
 bookworm：「噓——圖書館裡請保持安靜。」
@@ -1556,10 +1969,10 @@ bear：「…………」
 bear：「跟我一樣。躲起來哭。」
 ```
 
-### ch8.beitou.uncle.first / .again
-talk: `uncleBath`: `[{ when: 'bathGave', event: 'ch8.beitou.uncle.again' }, { event: 'ch8.beitou.uncle.first' }]`
+### ch9.beitou.uncle.first / .again
+talk: `uncleBath`: `[{ when: 'bathGave', event: 'ch9.beitou.uncle.again' }, { event: 'ch9.beitou.uncle.first' }]`
 
-**ch8.beitou.uncle.first**
+**ch9.beitou.uncle.first**
 ```
 uncleBath：「呵呵，囡仔，來泡湯喔？」
 mocha：「你這次戴毛巾。」
@@ -1572,15 +1985,15 @@ uncleBath：「來，這個帶著。」
 旁白：得到 紅龜粿！
 ```
 
-**ch8.beitou.uncle.again**
+**ch9.beitou.uncle.again**
 ```
 uncleBath：「地熱谷的煙，臭臭的，可是不壞。」
 ```
 
-### ch8.beitou.onsen / .again
-talk: `onsenGran`: `[{ when: 'mochaTalk2', event: 'ch8.beitou.onsen.again' }, { event: 'ch8.beitou.onsen' }]`
+### ch9.beitou.onsen / .again
+talk: `onsenGran`: `[{ when: 'mochaTalk2', event: 'ch9.beitou.onsen.again' }, { event: 'ch9.beitou.onsen' }]`
 
-**ch8.beitou.onsen**
+**ch9.beitou.onsen**
 (The first visit is free and plays Mocha's heart-to-heart.)
 ```
 onsenGran：「乖孫，來，阿嬤這邊有泡腳池。」
@@ -1609,13 +2022,13 @@ bear：「（小聲）差一點點。」
 [flag mochaTalk2]
 ```
 
-**ch8.beitou.onsen.again**
+**ch9.beitou.onsen.again**
 ```
 onsenGran：「泡腳，三十個銅板，泡到好。」
 [inn 30]
 ```
 
-### ch8.beitou.clerk
+### ch9.beitou.clerk
 talk: `clerk`
 ```
 clerk：「叮咚～歡迎光臨！」
@@ -1632,7 +2045,7 @@ clerk：「沒有。賣完了。」
 [flag stamp_beitou]
 ```
 
-### ch8.beitou.sulfur
+### ch9.beitou.sulfur
 talk: `sulfur` fixed fight at the 地熱谷 gate (not: sulfurDone)
 ```
 旁白：地熱谷的門口，三團黃黃的煙飄過來。
@@ -1644,7 +2057,7 @@ sulfur：「可是我們停不下來！轉轉轉！」
 sulfur：「呼……好多了，謝謝……」
 ```
 
-### ch8.beitou.boss
+### ch9.beitou.boss
 talk: `egg` at the 地熱谷 (not: eggDone)
 ```
 旁白：地熱谷的綠色池子旁，坐著一顆大蛋。
@@ -1681,33 +2094,39 @@ magpie：「淡水……河的盡頭，就是海。」
 
 ---
 
-## 第九章 河的盡頭是海 — 淡水
+## 第十章 河的盡頭是海 — 淡水
 
-### ch9.intro
+### ch10.intro
 ```
-[chapter 9｜河的盡頭是海｜05:00]
+[chapter 10｜河的盡頭是海｜04:55]
 旁白：淡水。河流到這裡，就變成了海。
-旁白：天空的顏色，從黑色慢慢變成深藍色。
-mocha：「五點了。只剩半個小時。」
+旁白：天空，從黑色慢慢變成深藍色。
+旁白：河口上，有一座好高好高的新大橋。
+旁白：只有一根柱子，拉著好多好多條線。
+magpie：「淡江大橋。根據我的研究——」
+magpie：「單塔斜張橋裡，跨距全世界最長。」
+bear：「一、一根柱子撐那麼長？好勇敢……」
+mocha：「快五點了。只剩半個多小時。」
 bear：「阿、阿嬤會不會已經起床了……」
 mocha：「阿嬤很準時。五點半，一分鐘都不差。」
 ```
 
-### ch9.tamsui.painter / .after / .again
-talk: `painter`: `[{ when: 'portrait', event: 'ch9.tamsui.painter.again' }, { when: 'crabDone', event: 'ch9.tamsui.painter.after' }, { event: 'ch9.tamsui.painter' }]`
+### ch10.tamsui.painter / .after / .again
+talk: `painter`: `[{ when: 'portrait', event: 'ch10.tamsui.painter.again' }, { when: 'crabDone', event: 'ch10.tamsui.painter.after' }, { event: 'ch10.tamsui.painter' }]`
 
-**ch9.tamsui.painter**
+**ch10.tamsui.painter**
 ```
 painter：「我的畫筆……被風吹走了。」
 painter：「我每天早上，都來這裡等夕陽。」
 mocha：「現在是早上五點。」
 painter：「藝術家，沒有時間觀念。」
 painter：「對了，我看到那朵雲了。」
-painter：「就在情人橋下面。小小的，一直在哭。」
+painter：「在漁人碼頭，繞著大橋的柱子轉。」
+painter：「小小的，一直在哭。」
 painter：「還有一隻螃蟹，拿著小畫筆在亂畫。」
 ```
 
-**ch9.tamsui.painter.after**
+**ch10.tamsui.painter.after**
 ```
 painter：「你們把螃蟹勸走了？」
 painter：「那枝小畫筆……可以借我一下嗎？」
@@ -1721,15 +2140,15 @@ painter：「畫筆還你。這張畫，送你們。」
 旁白：得到了一張畫。（結局的時候會看到。）
 ```
 
-**ch9.tamsui.painter.again**
+**ch10.tamsui.painter.again**
 ```
 painter：「天要亮了。我要開始等夕陽了。」
 ```
 
-### ch9.tamsui.uncle.first / .again
-talk: `uncleFerry`: `[{ when: 'ferryTalk', event: 'ch9.tamsui.uncle.again' }, { event: 'ch9.tamsui.uncle.first' }]`
+### ch10.tamsui.uncle.first / .again
+talk: `uncleFerry`: `[{ when: 'ferryTalk', event: 'ch10.tamsui.uncle.again' }, { event: 'ch10.tamsui.uncle.first' }]`
 
-**ch9.tamsui.uncle.first**
+**ch10.tamsui.uncle.first**
 ```
 uncleFerry：「呵呵，囡仔，坐船喔？」
 mocha：「…………」
@@ -1743,12 +2162,12 @@ uncleFerry：「呵呵，慢慢仔來。」
 [flag ferryTalk]
 ```
 
-**ch9.tamsui.uncle.again**
+**ch10.tamsui.uncle.again**
 ```
 uncleFerry：「河一直流，就會流到海。」
 ```
 
-### ch9.tamsui.agei
+### ch10.tamsui.agei
 talk: `ageiGran`
 ```
 ageiGran：「阿給～魚丸湯～鐵蛋～」
@@ -1756,7 +2175,7 @@ ageiGran：「風這麼大，雨衣也帶一件啦。」
 [shop chickenCutlet, braisedRice, mangoIce, brownSugarMilk, redTurtleCake, raincoat]
 ```
 
-### ch9.tamsui.clerk
+### ch10.tamsui.clerk
 talk: `clerk`
 ```
 clerk：「叮咚～歡迎光臨！」
@@ -1764,7 +2183,7 @@ clerk：「淡水分店。可以看海。」
 [shop pineappleCake, chickenCutlet, braisedRice, bubbleTea, brownSugarMilk, mangoIce, redTurtleCake]
 ```
 
-### ch9.tamsui.backpacker
+### ch10.tamsui.backpacker
 talk: `backpacker`
 ```
 backpacker：「Beautiful river! But… where is 101?」
@@ -1774,7 +2193,7 @@ backpacker：「Really?!」
 mocha：「真的。這次是真的。」
 ```
 
-### ch9.tamsui.bench
+### ch10.tamsui.bench
 talk: `bench`
 ```
 旁白：河邊的長椅。看著河，什麼都不想。
@@ -1788,7 +2207,7 @@ talk: `bench`
 [flag stamp_tamsui]
 ```
 
-### ch9.tamsui.soldiers
+### ch10.tamsui.soldiers
 talk: `crabSoldier` fixed fight on the bridge approach (not: soldiersDone)
 ```
 旁白：情人橋前面，三隻小螃蟹舉著大螯。
@@ -1800,7 +2219,7 @@ mocha：「我們不會橫著走。」
 crabSoldier：「報、報告將軍……我們輸了……」
 ```
 
-### ch9.tamsui.boss
+### ch10.tamsui.boss
 talk: `crab` at the foot of the bridge (not: crabDone; appears `when: soldiersDone`)
 ```
 旁白：情人橋邊，一隻大螃蟹拿著小畫筆在亂畫。
@@ -1823,13 +2242,16 @@ crab：「……謝謝。畫筆，還你們。」
 [coins 170]
 旁白：九樣寶物，全部找回來了。
 mocha：「還差一個。金鎖片。」
-mocha：「……橋下面。有聲音。」
+mocha：「……漁人碼頭那邊。大橋上面。」
 ```
 
-### ch9.tamsui.shushu
+### ch10.tamsui.shushu
 (Trigger under the bridge, `when: crabDone`, once.)
 ```
-旁白：橋下的陰影裡，有一團小小的雲。
+旁白：漁人碼頭的堤防。對面，是新大橋。
+旁白：大橋的柱子頂端，有一團小小的雲。
+旁白：它一圈一圈，繞著柱子轉。
+旁白：看到大家，它慢慢飄了下來。
 旁白：灰灰藍藍的，只有枕頭那麼大。
 旁白：雲的中間，掛著一片亮晶晶的金鎖片。
 cloud：「……不要過來。」
@@ -1842,6 +2264,8 @@ shushu：「有一個寶寶出生了，大家都在笑。」
 shushu：「咻咻也想要有人笑……」
 shushu：「咻咻也一歲了……」
 shushu：「可是咻咻，沒有生日！」
+shushu：「飛機在睡覺。柱子不夠高。」
+shushu：「咻咻……出不去……」
 旁白：雲打了一個好大的噴嚏——
 旁白：哈——啾——！
 旁白：一陣狂風！大家都被吹倒了。
@@ -1874,12 +2298,12 @@ mocha：「這次，換我們去找它。」
 
 ---
 
-## 第十章 離天空最近的地方 — 台北101
+## 第十一章 離天空最近的地方 — 台北101
 
-### ch10.intro
+### ch11.intro
 (Entry trigger on `tower`, once. Includes the bible's elevator scene.)
 ```
-[chapter 10｜離天空最近的地方｜05:15]
+[chapter 11｜離天空最近的地方｜05:15]
 announcer：「月亮線，終點站，台北101。」
 announcer：「外面風很大，請緊握扶手。」
 旁白：台北101。全台北最高的地方。
@@ -1896,10 +2320,10 @@ mocha：「吞口水。」
 mocha：「五點十五分。快沒時間了。」
 ```
 
-### ch10.tower.uncle.first / .again
-talk: `uncleTower`: `[{ when: 'towerUncleGave', event: 'ch10.tower.uncle.again' }, { event: 'ch10.tower.uncle.first' }]`
+### ch11.tower.uncle.first / .again
+talk: `uncleTower`: `[{ when: 'towerUncleGave', event: 'ch11.tower.uncle.again' }, { event: 'ch11.tower.uncle.first' }]`
 
-**ch10.tower.uncle.first**
+**ch11.tower.uncle.first**
 ```
 uncleTower：「呵呵，囡仔，這麼早來看風景？」
 mocha：「…………」
@@ -1914,13 +2338,13 @@ uncleTower：「來，這帶上去。上面風大。」
 旁白：得到 芒果冰 ×2！
 ```
 
-**ch10.tower.uncle.again**
+**ch11.tower.uncle.again**
 ```
 uncleTower：「阻尼器那顆大球，晃得頭暈了。」
 uncleTower：「先讓它站穩，樓梯才會開。」
 ```
 
-### ch10.tower.clerk
+### ch11.tower.clerk
 talk: `clerk`
 ```
 clerk：「叮咚～歡迎光臨！」
@@ -1931,7 +2355,7 @@ clerk：「很多。」
 [shop chickenCutlet, braisedRice, mangoIce, brownSugarMilk, railBento, redTurtleCake]
 ```
 
-### ch10.tower.souvenir
+### ch11.tower.souvenir
 talk: `souvenir`
 ```
 souvenir：「歡迎光臨，101紀念品店～」
@@ -1939,7 +2363,7 @@ souvenir：「風這麼大，買件雨衣吧！」
 [shop raincoat, helmet, tigerShoes, flowerVest, mangoIce]
 ```
 
-### ch10.tower.window
+### ch11.tower.window
 talk: `bigWindow`
 ```
 旁白：從大窗戶看出去，台北還在睡覺。
@@ -1954,7 +2378,7 @@ talk: `bigWindow`
 [flag stamp_tower]
 ```
 
-### ch10.tower.damper
+### ch11.tower.damper
 talk: `damper` at the damper railing (not: damperDone)
 ```
 旁白：觀景台中間，掛著一顆好大的金色球。
@@ -1978,13 +2402,13 @@ damper：「你們的工作，是讓它站穩。」
 damper：「樓梯開了。九十一樓，戶外觀景台。」
 ```
 
-### ch10.tower.stairsBlocked
+### ch11.tower.stairsBlocked
 ```
 旁白：通往樓上的樓梯在晃，現在上不去。
 mocha：「先讓那顆大球停下來。」
 ```
 
-### ch10.tower.bearBrave
+### ch11.tower.bearBrave
 (Trigger in front of the stairs, `when: damperDone`, once.)
 ```
 旁白：樓梯上面，風在呼呼叫。
@@ -2005,7 +2429,7 @@ magpie：「（小聲）他這次，沒有說歹勢。」
 
 ---
 
-### ch10.summit.intro
+### ch11.summit.intro
 (Entry trigger on `summit`, once.)
 ```
 旁白：九十一樓，戶外觀景台。
@@ -2019,7 +2443,7 @@ magpie：「（小聲）他這次，沒有說歹勢。」
 旁白：全隊都恢復了！
 ```
 
-### ch10.summit.final
+### ch11.summit.final
 talk: `shushu` (not: shushuDone)
 ```
 shushu：「……你們來了。」
@@ -2082,18 +2506,18 @@ baokaka：「要！」
 旁白：咻咻的雲，慢慢變白了。軟軟的，像棉花糖。
 ```
 
-(The second `[heal]` can be swapped for a 50% heal if the engine gains a ratio. If the party loses phase 2, respawn at the summit entry; on the retry, talk rules should start at phase 2: give `shushu` the rule `{ when: 'shushuPhase1', event: 'ch10.summit.retry' }` and add `[flag shushuPhase1]` right after the first `[boss]`.)
+(The second `[heal]` can be swapped for a 50% heal if the engine gains a ratio. If the party loses phase 2, respawn at the summit entry; on the retry, talk rules should start at phase 2: give `shushu` the rule `{ when: 'shushuPhase1', event: 'ch11.summit.retry' }` and add `[flag shushuPhase1]` right after the first `[boss]`.)
 
-### ch10.summit.retry
+### ch11.summit.retry
 ```
 shushu：「嗚……嗚哇——！」
 mocha：「它還在哭。再一次，大家！」
 [boss shushuCry]
 ```
-(Then continue with every line of `ch10.summit.final` after `[boss shushuCry]`, from 「雨，慢慢地停了。」 through `[flag shushuDone]`. Share them as a constant.)
+(Then continue with every line of `ch11.summit.final` after `[boss shushuCry]`, from 「雨，慢慢地停了。」 through `[flag shushuDone]`. Share them as a constant.)
 
-### ch10.summit.party
-(Runs immediately after `ch10.summit.final` / `.retry`.)
+### ch11.summit.party
+(Runs immediately after `ch11.summit.final` / `.retry`.)
 ```
 旁白：叮咚叮咚——
 announcer：「月亮線，特別列車，進站。」
@@ -2120,12 +2544,23 @@ karaoke：「〈生日快樂〉，預備——起！」
 旁白：這時候——
 旁白：太陽，從山的後面升起來了。
 旁白：金色的光，照在台北每一扇窗戶上。
+旁白：遠遠的，一架白色的小飛機起飛了。
+旁白：它飛過101旁邊，搖了搖翅膀。
+baokaka：「飛機！」
+ctrlTower：「塔台呼叫101。早班機，祝生日快樂。」
+ctrlTower：「Over。」
 shushu：「……好亮。」
 shushu：「原來，生日是這個樣子。」
 shushu：「這個，還給寶咖咖。」
 旁白：咻咻把金鎖片，輕輕放在寶咖咖手上。
 [flag got_lock]
 旁白：拿回了「金鎖片」！（阿嬤的祝福）
+mocha：「紅繩呢？」
+旁白：寶咖咖拿出在機場找到的紅繩。
+magpie：「我來綁。我會打蝴蝶結。」
+magpie：「根據我的研究——」
+mocha：「綁就對了。」
+旁白：紅繩穿過金鎖片，綁好了。歪歪的蝴蝶結。
 shushu：「咻咻要回家了。回海裡。」
 magpie：「跟著淡水河走，就會到海。」
 shushu：「明年……咻咻還可以來嗎？」
@@ -2135,8 +2570,8 @@ shushu：「嘻嘻。好！」
 旁白：咻——一陣涼涼的風，往淡水的方向去了。
 ```
 
-### ch10.summit.home
-(Runs immediately after `ch10.summit.party`.)
+### ch11.summit.home
+(Runs immediately after `ch11.summit.party`.)
 ```
 magpie：「今天，我學到一個新成語。」
 magpie：「『抱抱解千愁』。」
@@ -2158,7 +2593,7 @@ announcer：「請緊握扶手。」
 ## 尾聲 度晬
 
 ### ending.grandma
-(Runs immediately after `ch10.summit.home`.)
+(Runs immediately after `ch11.summit.home`.)
 ```
 [chapter 尾聲｜度晬｜05:30]
 旁白：早上五點三十分。
@@ -2238,14 +2673,14 @@ mocha：「喵。」
 Credits art suggestion: the 淡水 portrait (if `portrait`), then the 集章本 and the full 抓周盤.
 
 ### ending.tudigong.full / .partial
-(A post-credits cutscene on the Ending screen. Use `.full` if all 10 `stamp_*` flags are set.)
+(A post-credits cutscene on the Ending screen. Use `.full` if all 11 `stamp_*` flags are set.)
 
 **ending.tudigong.full**
 ```
 旁白：家門口的巷子裡，有一間小小的土地公廟。
 旁白：土地公的手指上，沾著一點點印泥。
 tudigong：「呵呵，囡仔。」
-tudigong：「台北走透透，十個章，全部蓋滿了。」
+tudigong：「台北走透透，十一個章，全部蓋滿了。」
 tudigong：「阿伯說過，蓋滿了有禮物。」
 tudigong：「來象山。阿伯在山上等你們。」
 旁白：土地公，眨了一下眼睛。
@@ -2293,7 +2728,7 @@ talk: `tudigong`: `[{ when: 'caneGiven', event: 'post.tudigong.again' }, { when:
 tudigong：「呵呵，囡仔，來了喔。」
 mocha：「……我就知道是你。」
 tudigong：「呵呵呵。阿伯一直都在。」
-tudigong：「十個章，蓋滿了。這是禮物。」
+tudigong：「十一個章，蓋滿了。這是禮物。」
 [give earthCane]
 [flag caneGiven]
 旁白：得到 土地公的拐杖！
@@ -2460,3 +2895,289 @@ shushu：「嘻嘻！明年見！」
 | 9 | 既往不咎 | ✓, and she is shocked |
 | 10 | 「我不知道。」 | The point |
 | 10 | 抱抱解千愁 (invents her own) | ✓ by decree |
+
+---
+
+## 時事梗 Topical jokes
+
+Every joke is its own event, keyed `gag.*`, so it can be swapped or deleted without touching the critical path. The registry in `story-bible.md` § 9 records where each one lives, whether it's evergreen, and when to review it. **Placement** says how to wire it:
+- **new NPC**: add an optional NPC whose only talk rule is this event.
+- **replaces X**: the NPC's talk rule points here instead of X. Keep X in the file as the fallback if the joke is pulled.
+- **variant of X**: insert `{ when: <flag>, event: <gag key> }` *above* X in that NPC's talk list.
+
+### gag.ch1.elderImage
+Placement: new NPC `grandmaPhone` (a phone glowing on 阿嬤's nightstand, home). Requires mochaJoined.
+```
+旁白：阿嬤的手機，亮了一下。
+旁白：「早安！平安喜樂！」（一朵發光的荷花）
+mocha：「她設定好了，每天五點傳給全家。」
+mocha：「……天還沒亮，就已經早安了。」
+```
+
+### gag.ch1.garbageTruck
+Placement: new NPC `trashAuntie` (holding a trash bag, daan park edge).
+```
+trashAuntie：「〈給愛麗絲〉呢？垃圾車呢？」
+trashAuntie：「我拿著垃圾，追了三條街！」
+mocha：「現在半夜。垃圾車也在睡覺。」
+trashAuntie：「……那我明天再追。」
+trashAuntie：「台北人的晚上，就是在追垃圾車。」
+```
+
+### gag.ch1.publicBike
+Placement: new NPC `bikeDock` (a row of public rental bikes, daan).
+```
+旁白：一排公共腳踏車，乖乖地停好。
+baokaka：「嗶！」
+mocha：「你沒有卡。」
+mocha：「而且你的腳，碰不到踏板。」
+```
+
+### gag.ch2.drinkOrder
+Placement: variant of `ch2.ntu.student.first` (when `metMagpie`, not `gooseDone`).
+```
+student：「讀書一定要配手搖飲。」
+student：「我平常點半糖少冰。」
+student：「考試前一晚，全糖正常冰。」
+magpie：「根據我的研究——」
+magpie：「半糖少冰，是台灣人的中庸之道。」
+mocha：「這次……好像也沒說錯。」
+```
+
+### gag.ch2.makeupDay
+Placement: new NPC `sleepyTA` (a teaching assistant asleep on the library steps, ntu).
+```
+sleepyTA：「呼……明天……要補班……」
+sleepyTA：「放了一天假，要還一天……」
+magpie：「這叫……有借有還。」
+mocha：「好像是對的，可是聽起來好累。」
+```
+
+### gag.ch3.beep
+Placement: new NPC `commuter` (a commuter spirit running for a train, station).
+```
+commuter：「借過借過！嗶——！」
+commuter：「台北人出門，就是一路嗶過去。」
+commuter：「進站嗶，出站嗶，買早餐也嗶。」
+baokaka：「嗶！」
+commuter：「哇，寶寶也會嗶！」
+mocha：「這個字，他今天剛學會。」
+```
+
+### gag.ch3.exitMaze
+Placement: variant of `ch3.station.uncle.again` (when `gateDone`).
+```
+uncleStation：「找出口喔？看英文字母。」
+uncleStation：「M、K、Y、Z……字母比字典還多。」
+uncleStation：「阿伯在這裡三十年，也是看心情走。」
+mocha：「……那我們怎麼辦？」
+uncleStation：「跟著阿伯。呵呵。」
+```
+
+### gag.moonline.noEating
+Placement: new NPC `noEatingSign` (a sign on the moonline car). The variant applies when `bearJoined`; before that, use `gag.moonline.noEating.early`.
+
+**gag.moonline.noEating.early**
+```
+旁白：車廂上貼著：「車廂內禁止飲食」。
+旁白：寶咖咖把奶嘴，從嘴巴裡拿出來看了看。
+announcer：「奶嘴，不算飲食。請安心使用。」
+```
+
+**gag.moonline.noEating**
+```
+旁白：黑糖抱著一杯黑糖珍奶。
+announcer：「旅客您好，車廂內禁止飲食。」
+bear：「我、我沒有喝！我只是抱著！」
+announcer：「……抱著，可以。」
+bear：「（小聲）下車再喝。」
+```
+
+### gag.ch4.scooterTurn
+Placement: new NPC `scooterUncle` (at the ximen scooter row).
+```
+scooterUncle：「少年仔，左轉要兩段式啦！」
+scooterUncle：「先到前面的待轉格，等綠燈！」
+mocha：「我們是用爬的。」
+scooterUncle：「用爬的，也要待轉！」
+旁白：寶咖咖乖乖爬進待轉格，坐好。
+scooterUncle：「好！這個囡仔會考到駕照！」
+```
+
+### gag.ch4.basinHeat
+Placement: variant of `ch4.ximen.dancers` (when `neonDone`, not `karaokeDone`).
+```
+dancer：「半夜兩點，還是三十度！」
+dancer：「台北是一個大電鍋啦！」
+magpie：「因為是盆地，熱氣跑不出去。」
+mocha：「……跟那朵雲一樣。」
+```
+
+### gag.ch5.invoice
+Placement: variant of `ch5.dadaocheng.dried` (when `dragonDone`). Includes the shop.
+```
+driedAunt：「來，發票收好！」
+driedAunt：「單月二十五號對獎，不要忘記！」
+driedAunt：「阿姨上次中兩百塊，高興一整個月。」
+mocha：「兩百塊。」
+driedAunt：「中了就是中了！」
+[shop pineappleCake, douhua, bubbleTea, chickenCutlet, redTurtleCake, flowerVest]
+```
+
+### gag.ch5.typhoonNews
+Placement: variant of `ch5.dadaocheng.uncle.again` (when `snakesDone`).
+```
+uncleTea：「一年前那晚啊，大家都在等十點新聞。」
+uncleTea：「等著看，明天放不放颱風假。」
+uncleTea：「新聞一說放假，整個台北都在歡呼。」
+mocha：「……所以，其實有人喜歡颱風？」
+uncleTea：「呵呵，喜歡放假啦。不一樣。」
+```
+
+### gag.ch6.queue
+Placement: new NPC `queueLine` (a line of food spirits queuing in front of a closed stall, shilin).
+```
+旁白：一排食物，在一個沒開的攤子前面排隊。
+mocha：「你們在排什麼？」
+queueLine：「不知道。」
+queueLine：「有人在排，就一定好吃。」
+queueLine：「已經排兩個小時了。」
+旁白：寶咖咖也爬過去，排在最後面。
+mocha：「……不要排。」
+```
+
+### gag.ch6.clerkPoints
+Placement: replaces `ch6.shilin.clerk`.
+```
+clerk：「叮咚～歡迎光臨！」
+clerk：「有集點嗎？」
+mocha：「沒有。」
+clerk：「要不要現在開始集？」
+mocha：「……我們只待一個晚上。」
+clerk：「集滿可以換杯子喔。」
+[shop teaEgg, pineappleCake, chickenCutlet, braisedRice, bubbleTea, helmet]
+```
+
+### gag.ch8.earthquake
+Placement: variant of `ch8.maokong.teahouse` (when `sawTower`). Includes the inn.
+```
+旁白：地板輕輕地，晃了一下。
+bear：「哇啊！在、在搖！」
+teaLady：「又在搖。」
+旁白：老闆娘繼續倒茶，一滴都沒灑出來。
+teaLady：「小小的啦。茶杯沒倒，就是小的。」
+mocha：「台灣人好冷靜。」
+teaLady：「習慣了。來，靠一下。」
+[inn 25]
+```
+
+### gag.ch8.zooCrowd
+Placement: variant of `ch8.zoo.uncle.again` (when `bearJoined`).
+```
+uncleZoo：「下次白天來，排隊看動物喔。」
+uncleZoo：「人比動物多，呵呵。」
+uncleZoo：「動物也在看人。互相看。」
+```
+
+### gag.ch9.chiaPaBe
+Placement: new NPC `bathGrandpa` (a grandpa with a towel at the footbath, beitou).
+```
+bathGrandpa：「呷飽未？」
+bear：「還、還沒……」
+bathGrandpa：「那你呢？呷飽未？」
+mocha：「吃了一點小魚乾。」
+bathGrandpa：「呷飽未？」（問一隻硫磺煙）
+mocha：「……阿公，那個是煙。」
+bathGrandpa：「煙也要呷飽啊！」
+```
+
+### gag.ch9.clerkSecond
+Placement: replaces `ch9.beitou.clerk`.
+```
+clerk：「叮咚～歡迎光臨！」
+clerk：「紅龜粿，第二件六折喔。」
+mocha：「我們只要一個。」
+clerk：「第二件六折喔。」
+mocha：「……好啦，兩個。」
+[shop pineappleCake, chickenCutlet, braisedRice, bubbleTea, brownSugarMilk, redTurtleCake, mangoIce]
+```
+
+### gag.ch10.delivery
+Placement: new NPC `deliveryRider` (a delivery rider with a big square backpack, tamsui riverbank).
+```
+deliveryRider：「您好，外送到了！」
+deliveryRider：「請問哪一位，訂了五點的鐵蛋？」
+painter：「我。藝術家需要鐵蛋。」
+deliveryRider：「送到河邊，送到山上，送到101。」
+deliveryRider：「台北沒有我送不到的地方。」
+mocha：「……你跟便利商店是一夥的嗎？」
+```
+
+### gag.ch10.backpackerTea
+Placement: replaces `ch10.tamsui.backpacker`.
+```
+backpacker：「I learned Chinese today!」
+backpacker：「『半糖、少冰』!」
+mocha：「……這是最重要的一句。」
+backpacker：「Now… where is 101?」
+baokaka：「ㄅㄚ！」
+mocha：「他說：『快了。下一站。』」
+backpacker：「Really?!」
+mocha：「真的。這次是真的。」
+```
+
+### gag.ch11.fireworks
+Placement: variant of `ch11.tower.uncle.again` (when `damperDone`).
+```
+uncleTower：「每年跨年，101都會放煙火。」
+uncleTower：「全台灣一起倒數，五、四、三……」
+uncleTower：「煙火一下子就放完了。」
+uncleTower：「阿伯，掃到天亮。呵呵。」
+mocha：「……你到底有幾份工作？」
+```
+
+### gag.ch11.clerkPoints2
+Placement: replaces `ch11.tower.clerk` (callback to `gag.ch6.clerkPoints`).
+```
+clerk：「叮咚～歡迎光臨！」
+clerk：「你們的點數……集滿了。」
+mocha：「我們根本沒集。」
+clerk：「每一間分店都有記。」
+clerk：「可以換一個杯子。」
+mocha：「我們要杯子做什麼……」
+[give brownSugarMilk]
+旁白：杯子裡，裝著一杯黑糖珍奶。
+bear：「……我、我需要這個杯子。」
+[shop chickenCutlet, braisedRice, mangoIce, brownSugarMilk, railBento, redTurtleCake]
+```
+(Once-only: set `[flag clerkCup]` after the give, and fall back to `ch11.tower.clerk` when `clerkCup` is set.)
+
+### gag.post.typhoonDay
+Placement: new NPC on `xiangshan`: `shushu` gets this as a talk rule above `post.shushu.again` (when `bonusWon`), or use a separate cloud NPC.
+```
+shushu：「咻咻聽說了。」
+shushu：「颱風來的時候，有人在歡呼。」
+mocha：「那是因為放颱風假。」
+shushu：「那……明年咻咻只在假日來？」
+magpie：「假日來，就不會放假了。」
+shushu：「……好難喔。」
+```
+
+### gag.ending.elderImage
+Placement: optional insert in `ending.party`, right before `[ending]` (a callback to `gag.ch1.elderImage`). Safe to drop.
+```
+grandma：「來，阿嬤做一張圖，傳給大家。」
+旁白：「度晬快樂！平安喜樂！」（一朵發光的荷花）
+旁白：照片裡，有一隻貓，抱著一個寶寶。
+```
+
+### gag.ch10.newBridge
+Placement: variant of `ch10.tamsui.uncle.again` (when `ferryTalk`). **Recent (verified):** 淡江大橋 opened to traffic on 2026-05-12 and links 淡水 and 八里.
+```
+uncleFerry：「以前要去八里，都坐阿伯的船。」
+uncleFerry：「現在有新的大橋了。」
+uncleFerry：「開車一下子就過去，阿伯生意變少了。」
+mocha：「……你還好嗎？」
+uncleFerry：「呵呵，沒關係。」
+uncleFerry：「坐在船上看新橋，也很好看。」
+```
