@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { EVENTS } from '../quest/engine/events';
 import { MAPS } from '../quest/engine/maps';
+import { questReducer } from '../quest/engine/quest';
+import { validateSteps } from '../quest/engine/validate';
 import { ARTLAB_FIXTURES, SAMPLE_FLAGS, sampleRun } from './fixtures';
 
 describe('art lab fixtures', () => {
@@ -14,7 +16,23 @@ describe('art lab fixtures', () => {
     const state = fixture.state();
     expect(state.sound).toBe(false);
     expect(MAPS[state.run.map]).toBeDefined();
-    if (state.line || state.card) expect(state.scene).not.toBeNull();
+    if (state.line || state.card || state.choice) expect(state.scene).not.toBeNull();
+    if (state.scene) {
+      const errors: string[] = [];
+      validateSteps(fixture.name, state.scene.steps, errors);
+      expect(errors).toEqual([]);
+    }
+  });
+
+  test('chapter-card shows the clock and dialogue-choice plays on when an option is picked', () => {
+    const card = ARTLAB_FIXTURES.find((fixture) => fixture.name === 'chapter-card')!.state();
+    expect(card.card).toEqual({ n: 1, title: '度晬前一晚', time: '00:00' });
+
+    const asked = ARTLAB_FIXTURES.find((fixture) => fixture.name === 'dialogue-choice')!.state();
+    expect(asked.choice?.options).toHaveLength(3);
+    const picked = questReducer(asked, { type: 'choose', index: 0 });
+    expect(picked.choice).toBeNull();
+    expect(picked.line).toEqual(EVENTS['home.mom.hug'][0]);
   });
 
   test.each([
