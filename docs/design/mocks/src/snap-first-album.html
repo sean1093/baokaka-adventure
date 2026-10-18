@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>咔嚓！第一本相簿 mock</title>
+<style>
+  html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#222}
+  svg{display:block;font-family:'WenQuanYi Zen Hei','Noto Sans TC',sans-serif}
+</style>
+<script src="parts.js"></script>
+</head><body>
+<svg id="s" width="390" height="844" viewBox="0 0 390 844"></svg>
+<script>
+const {babyLookUp, catSit, bubble, hand, INK} = P;
+const check=(x,y,on)=>`<rect x="${x}" y="${y}" width="18" height="18" rx="4" fill="${on?'#ffd34d':'#fff'}" stroke="${INK}" stroke-width="2"/>`+
+  (on?`<path d="M${x+4} ${y+9} L${x+8} ${y+13} L${x+15} ${y+4}" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`:'');
+
+const plane = `<g transform="translate(194 270) rotate(5) scale(1.02)" stroke="${INK}" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M60 4 L104 4 L150 56 L128 60 Z" fill="#dfe6f0"/>
+  <ellipse cx="62" cy="20" rx="10" ry="8" fill="#cfd8e4"/>
+  <path d="M112 -16 L150 -16 L170 -78 L142 -78 Z" fill="#5aa0e6"/>
+  <path d="M146 -60 L166 -60" stroke="#fff" stroke-width="5"/>
+  <path d="M128 -6 L176 -12 L176 -2 L132 4 Z" fill="#dfe6f0"/>
+  <path d="M-150 0 Q-150 -20 -120 -22 L140 -18 Q166 -14 164 0 Q160 14 140 16 L-120 22 Q-150 22 -150 0 Z" fill="#fbfdff"/>
+  <path d="M-146 6 L160 4" stroke="#5aa0e6" stroke-width="5"/>
+  <path d="M-138 -10 Q-130 -18 -118 -17 L-118 -8 L-140 -6 Z" fill="#33415c" stroke-width="2"/>
+  ${Array.from({length:14},(_,i)=>`<circle cx="${-96+i*16}" cy="-8" r="3" fill="#7fa6cf" stroke="none"/>`).join('')}
+  <path d="M-30 6 L50 6 L118 70 L92 76 Z" fill="#eef2f8"/>
+  <ellipse cx="10" cy="30" rx="30" ry="13" fill="#d7dee9"/>
+  <ellipse cx="-18" cy="30" rx="5" ry="10" fill="#4b5876" stroke-width="2"/>
+  <path d="M-108 20 L-108 44 M24 22 L24 50 M44 22 L44 50" stroke-width="4"/>
+  <circle cx="-108" cy="48" r="7" fill="#333"/><circle cx="24" cy="54" r="8" fill="#333"/><circle cx="44" cy="54" r="8" fill="#333"/>
+  <circle cx="-148" cy="2" r="3.5" fill="#fff6a8" stroke-width="1.5"/>
+</g>`;
+
+let svg = `
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc6f2"/><stop offset=".62" stop-color="#cfe9f3"/><stop offset="1" stop-color="#ffe0b0"/></linearGradient>
+  <linearGradient id="wow" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffd34d"/><stop offset="1" stop-color="#ff6f8a"/></linearGradient>
+  <pattern id="chain" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 0 L14 14 M14 0 L0 14" stroke="#7d8a92" stroke-width="1.4"/></pattern>
+</defs>
+<rect width="390" height="844" fill="url(#sky)"/>
+<!-- clouds -->
+<g fill="#fff" opacity=".9">
+  <ellipse cx="70" cy="150" rx="46" ry="16"/><ellipse cx="96" cy="140" rx="30" ry="16"/>
+  <ellipse cx="330" cy="420" rx="52" ry="14"/><ellipse cx="300" cy="412" rx="30" ry="14"/>
+</g>
+<!-- distant skyline with 101 and mountains -->
+<path d="M0 500 Q60 460 120 482 Q190 446 260 476 Q320 452 390 470 L390 540 L0 540 Z" fill="#9fc7a8" opacity=".8"/>
+<g fill="#a9b7c8" stroke="#8796ab" stroke-width="1">
+  <rect x="20" y="500" width="22" height="40"/><rect x="46" y="510" width="16" height="30"/><rect x="250" y="506" width="20" height="34"/><rect x="300" y="496" width="26" height="44"/><rect x="330" y="512" width="18" height="28"/>
+  <path d="M92 540 L92 470 L96 470 L94 452 L98 470 L102 470 L102 540 Z"/>
+  ${[0,1,2,3,4,5,6].map(i=>`<path d="M89 ${532-i*9} L105 ${532-i*9} L102 ${524-i*9} L92 ${524-i*9} Z"/>`).join('')}
+</g>
+<!-- grass & runway approach -->
+<rect x="0" y="540" width="390" height="304" fill="#8fc96b"/>
+<path d="M150 540 L240 540 L390 760 L0 760 Z" fill="#9aa1a8"/>
+<path d="M195 548 L195 560 M195 576 L195 596 M195 620 L195 650 M195 680 L195 720" stroke="#fff" stroke-width="5"/>
+${[0,1,2,3].map(i=>`<circle cx="${172-i*28}" cy="${560+i*40}" r="${3+i}" fill="#ffef8a" stroke="#c8a640"/><circle cx="${218+i*28}" cy="${560+i*40}" r="${3+i}" fill="#ffef8a" stroke="#c8a640"/>`).join('')}
+<!-- fence -->
+<rect x="0" y="560" width="390" height="92" fill="url(#chain)" opacity=".9"/>
+<path d="M0 560 L390 560 M0 652 L390 652" stroke="#5f6b73" stroke-width="3"/>
+${[30,130,230].map(x=>`<rect x="${x}" y="552" width="8" height="110" fill="#6d7880" stroke="${INK}" stroke-width="1.5"/>`).join('')}
+<rect x="314" y="544" width="34" height="118" fill="#6d7880" stroke="${INK}" stroke-width="2"/>
+<rect x="308" y="538" width="46" height="12" rx="3" fill="#89949c" stroke="${INK}" stroke-width="2"/>
+
+${plane}
+<!-- motion / roar lines -->
+<path d="M380 250 L420 246 M372 284 L412 284 M376 222 L404 214" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".9"/>
+
+${catSit({x:331,y:540,s:.72,look:'side'})}
+${bubble({x:252,y:440,w:72,h:32,text:'嘿嘿',fs:16,tail:'br'})}
+
+<!-- stroller canopy + baby (foreground) -->
+<path d="M-30 640 Q60 560 150 640 L150 860 L-30 860 Z" fill="#2f5d8c" stroke="${INK}" stroke-width="3"/>
+<path d="M-30 640 Q60 560 150 640" fill="none" stroke="#5d8bbd" stroke-width="8"/>
+${babyLookUp({x:116,y:770,s:.95,mouth:'O'})}
+${bubble({x:170,y:578,w:98,h:42,text:'飛機！',fs:22,fill:'#fff6c9',tail:'bl'})}
+
+<!-- viewfinder overlay -->
+<g stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".95">
+  <path d="M22 160 L22 132 L50 132 M340 132 L368 132 L368 160 M22 690 L22 718 L50 718 M340 718 L368 718 L368 690"/>
+</g>
+<g stroke="#fff" stroke-width="1" opacity=".35"><path d="M130 132 L130 718 M260 132 L260 718 M22 330 L368 330 M22 520 L368 520"/></g>
+<rect x="56" y="186" width="300" height="170" rx="10" fill="none" stroke="#7dff9a" stroke-width="3" stroke-dasharray="14 8"/>
+<text x="66" y="346" font-size="13" font-weight="700" fill="#7dff9a">對焦</text>
+
+<!-- wow meter -->
+<g transform="translate(0 0)">
+  <rect x="18" y="240" width="22" height="250" rx="11" fill="rgba(255,255,255,.55)" stroke="${INK}" stroke-width="2.4"/>
+  <rect x="21" y="262" width="16" height="225" rx="8" fill="url(#wow)"/>
+  <circle cx="29" cy="224" r="19" fill="#ff6f8a" stroke="${INK}" stroke-width="2.4"/>
+  <text x="29" y="231" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">哇</text>
+  <path d="M10 262 L48 262" stroke="#fff" stroke-width="2" stroke-dasharray="3 3"/>
+</g>
+
+<!-- top: ride progress + request card -->
+<rect x="0" y="0" width="390" height="40" fill="rgba(20,30,50,.55)"/>
+<text x="16" y="26" font-size="14" fill="#fff">松山機場・濱江街</text>
+<path d="M150 21 L360 21" stroke="#fff" stroke-width="3" opacity=".5"/>
+<path d="M150 21 L262 21" stroke="#ffd34d" stroke-width="3"/>
+<circle cx="262" cy="21" r="7" fill="#ffd34d" stroke="${INK}" stroke-width="2"/>
+<circle cx="360" cy="21" r="5" fill="#fff"/>
+<g transform="translate(76 48) rotate(-1.5)">
+  <rect x="0" y="0" width="246" height="76" rx="8" fill="#fffaf0" stroke="${INK}" stroke-width="2.4"/>
+  <rect x="96" y="-8" width="56" height="16" fill="#ffd9a0" opacity=".85"/>
+  <text x="14" y="28" font-size="17" font-weight="700" fill="${INK}">相簿第 3 頁：第一次看飛機</text>
+  ${check(14,42,true)}<text x="38" y="57" font-size="14" fill="${INK}">飛機</text>
+  ${check(84,42,true)}<text x="108" y="57" font-size="14" fill="${INK}">寶咖咖</text>
+  ${check(166,42,false)}<text x="190" y="57" font-size="14" font-weight="700" fill="#e2456a">「哇！」</text>
+</g>
+
+<!-- camera bar -->
+<rect x="0" y="742" width="390" height="102" fill="#1d1f26"/>
+<text x="20" y="764" font-size="13" fill="#c9cdd6">底片 8/12</text>
+${[['搖鈴','#ffd34d'],['小饅頭','#f5deb3'],['摩卡','#b9814f']].map(([t,c],i)=>`
+ <g transform="translate(${34+i*58} 798)">
+   <circle r="22" fill="${i==2?'#3a3d47':'#2c2f38'}" stroke="${i==0?'#ffd34d':'#555b68'}" stroke-width="3"/>
+   ${i==0?`<circle cx="0" cy="-5" r="9" fill="${c}" stroke="${INK}" stroke-width="2"/><path d="M0 4 L0 14" stroke="${c}" stroke-width="4"/>`:''}
+   ${i==1?`<circle cx="-6" cy="-2" r="6" fill="${c}" stroke="${INK}" stroke-width="1.6"/><circle cx="6" cy="-4" r="6" fill="${c}" stroke="${INK}" stroke-width="1.6"/><circle cx="1" cy="6" r="6" fill="${c}" stroke="${INK}" stroke-width="1.6"/>`:''}
+   ${i==2?`<path d="M-10 -2 L-9 -14 L-2 -6 L2 -6 L9 -14 L10 -2 Q10 10 0 10 Q-10 10 -10 -2 Z" fill="${c}" stroke="${INK}" stroke-width="1.8" opacity=".5"/><text x="0" y="5" text-anchor="middle" font-size="9" fill="#fff">已放出</text>`:''}
+   <text y="38" text-anchor="middle" font-size="12" fill="#c9cdd6">${t}</text>
+ </g>`).join('')}
+<g transform="translate(268 794)">
+  <circle r="38" fill="#fff" stroke="#e2456a" stroke-width="6"/>
+  <circle r="28" fill="#f2f2f2" stroke="#ccc" stroke-width="2"/>
+  <text y="8" text-anchor="middle" font-size="20" font-weight="700" fill="#e2456a">咔嚓</text>
+</g>
+${hand({x:292,y:822,s:.72,rot:-20})}
+<g transform="translate(346 772)">
+  <rect x="0" y="0" width="34" height="44" rx="4" fill="#fffaf0" stroke="#c9cdd6" stroke-width="2" transform="rotate(8)"/>
+  <rect x="3" y="4" width="28" height="26" fill="#8fc6e6" transform="rotate(8)"/>
+  <text x="14" y="64" text-anchor="middle" font-size="12" fill="#c9cdd6">相簿</text>
+</g>
+`;
+document.getElementById('s').innerHTML = svg;
+</script>
+</body></html>
