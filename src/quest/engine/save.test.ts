@@ -91,6 +91,7 @@ describe('loadQuest', () => {
     expect(loadRun(cells).level).toBe(1);
     expect(loadRun(stored({ level: 4, seenFoes: 'dustBunny' as never })).level).toBe(1);
     expect(loadRun(stored({ level: 4, seenFoes: ['dragon' as never] })).level).toBe(1);
+    expect(loadRun(stored({ level: 4, seenFoes: ['toString' as never] })).level).toBe(1);
     expect(loadRun(stored({ level: 4, seenFoes: ['dustBunny', 'dustBunny'] })).level).toBe(1);
     expect(loadRun(stored({ level: 4, seenFoes: ['dustBunny', 'snoreKing'] })).seenFoes).toEqual(['dustBunny', 'snoreKing']);
   });

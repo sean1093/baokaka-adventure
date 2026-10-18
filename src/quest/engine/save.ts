@@ -38,7 +38,7 @@ type StoredSave = QuestSave & { version: typeof SAVE_VERSION };
 
 const isCount = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
 const isItem = (value: unknown): value is ItemId => typeof value === 'string' && value in ITEMS;
-const isFoe = (value: unknown): value is FoeId => typeof value === 'string' && value in FOES;
+const isFoe = (value: unknown): value is FoeId => typeof value === 'string' && Object.prototype.hasOwnProperty.call(FOES, value);
 
 function isNumberMap(value: unknown): value is Record<HeroId, number> {
   return typeof value === 'object' && value !== null && HERO_ORDER.every((hero) => isCount((value as Record<string, unknown>)[hero]));
