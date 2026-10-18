@@ -36,10 +36,10 @@ export const QuestTitleScreen = ({ run, legacyNotice, onDismissNotice, onNew, on
         </h1>
         <div className="mt-4 flex items-end justify-center gap-1">
           <span className="block h-24 w-24">
-            <Baokaka />
+            <Baokaka lod="battle" />
           </span>
           <span className="block h-20 w-20">
-            <MochaCat />
+            <MochaCat lod="battle" />
           </span>
         </div>
         <p className="mt-3 text-copy font-bold leading-relaxed text-ink/75">

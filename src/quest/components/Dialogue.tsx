@@ -52,7 +52,7 @@ export const Dialogue = ({ line, onAdvance }: { line: Line; onAdvance: () => voi
         {who && Art && (
           <span className="absolute -top-12 left-3 flex items-end gap-2">
             <span className="block h-16 w-16 drop-shadow-[0_6px_10px_rgba(59,42,32,0.35)]">
-              <Art />
+              <Art lod="portrait" />
             </span>
           </span>
         )}

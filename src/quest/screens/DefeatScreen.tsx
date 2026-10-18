@@ -22,10 +22,10 @@ export const DefeatScreen = ({ soundOn, onRetry }: Props) => {
       <section className="text-center opacity-80">
         <div className="mb-2 flex items-end justify-center gap-1 grayscale">
           <span className="block h-20 w-20">
-            <Baokaka />
+            <Baokaka lod="battle" />
           </span>
           <span className="block h-16 w-16">
-            <MochaCat />
+            <MochaCat lod="battle" />
           </span>
         </div>
         <h1 className="text-display font-extrabold">{UI.defeat[0]}</h1>

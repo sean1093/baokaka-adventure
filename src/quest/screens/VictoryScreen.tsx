@@ -26,10 +26,10 @@ export const VictoryScreen = ({ summary, soundOn, onContinue }: Props) => {
       <section className="pop text-center">
         <div className="mb-2 flex items-end justify-center gap-1">
           <span className="block h-20 w-20">
-            <Baokaka />
+            <Baokaka lod="battle" />
           </span>
           <span className="block h-16 w-16">
-            <MochaCat />
+            <MochaCat lod="battle" />
           </span>
         </div>
         <h1 className="text-display font-extrabold leading-tight">{summary.boss ? UI.bossVictory(FOES[summary.boss].name) : UI.victory}</h1>

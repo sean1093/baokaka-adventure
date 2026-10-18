@@ -1,4 +1,5 @@
 import { lazy, Suspense, useSyncExternalStore } from 'react';
+import { ArtDefs } from './art/defs';
 import { OrientationGuard } from './components/OrientationGuard';
 import { QuestGame } from './quest/QuestGame';
 import { parseRoute } from './shared/route';
@@ -20,18 +21,22 @@ const readHash = () => window.location.hash;
 export const App = () => {
   const hash = useSyncExternalStore(subscribe, readHash);
 
-  if (ArtLab && parseRoute(hash) === 'artlab') {
-    return (
-      <Suspense fallback={null}>
-        <ArtLab hash={hash} />
-      </Suspense>
-    );
-  }
+  const artlab = ArtLab && parseRoute(hash) === 'artlab';
 
+  // <ArtDefs/> holds the shared sprite gradients (art direction § 8.2): mounted once, above every screen
   return (
     <>
-      <OrientationGuard />
-      <QuestGame />
+      <ArtDefs />
+      {artlab ? (
+        <Suspense fallback={null}>
+          <ArtLab hash={hash} />
+        </Suspense>
+      ) : (
+        <>
+          <OrientationGuard />
+          <QuestGame />
+        </>
+      )}
     </>
   );
 };

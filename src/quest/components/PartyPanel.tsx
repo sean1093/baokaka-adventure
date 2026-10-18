@@ -46,7 +46,7 @@ export const PartyPanel = ({ run, compact = false }: { run: Run; compact?: boole
             <div key={hero} className={`flex min-w-0 items-center gap-2 ${compact ? 'flex-1' : ''}`}>
               {portraits && (
                 <span className={`block h-9 w-9 shrink-0 ${hp === 0 ? 'opacity-30 grayscale' : ''}`}>
-                  <Art />
+                  <Art lod="icon" />
                 </span>
               )}
               <span className="min-w-0 flex-1">

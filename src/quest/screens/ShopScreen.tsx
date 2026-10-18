@@ -16,7 +16,7 @@ export const ShopScreen = ({ stock, run, onBuy, onClose }: Props) => (
 
     <section className="flex items-center gap-3 rounded-3xl bg-gradient-to-br from-sun/30 via-cream to-berry/15 p-4 text-ink shadow-card">
       <span className="block h-16 w-16 shrink-0">
-        <Vendor />
+        <Vendor lod="battle" />
       </span>
       <p className="text-copy font-bold leading-relaxed text-ink/80">「看看有沒有喜歡的，銅板夠就拿去。」</p>
     </section>
@@ -31,7 +31,7 @@ export const ShopScreen = ({ stock, run, onBuy, onClose }: Props) => (
         return (
           <div key={item} className="flex items-center gap-3 rounded-3xl bg-surface p-3 text-ink shadow-card">
             <span className="block h-12 w-12 shrink-0">
-              <Art />
+              <Art lod="icon" />
             </span>
             <span className="min-w-0 flex-1">
               <span className="flex items-baseline gap-1.5">

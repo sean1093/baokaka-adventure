@@ -24,7 +24,7 @@ export const QuestEndingScreen = ({ run, soundOn, onContinue }: Props) => {
       <div className="flex justify-center gap-3">
         {[0, 1, 2].map((index) => (
           <span key={index} className="block h-7 w-7 opacity-70" style={{ animation: `pop 900ms ease-out ${index * 160}ms both` }}>
-            <Star />
+            <Star lod="battle" />
           </span>
         ))}
       </div>
@@ -33,16 +33,16 @@ export const QuestEndingScreen = ({ run, soundOn, onContinue }: Props) => {
 
       <section className="flex items-end justify-center gap-1">
         <span className="block h-24 w-24">
-          <Baokaka />
+          <Baokaka lod="battle" />
         </span>
         <span className="block h-14 w-14">
-          <ComfortDoll />
+          <ComfortDoll lod="battle" />
         </span>
         <span className="block h-20 w-20">
-          <MochaCat />
+          <MochaCat lod="battle" />
         </span>
         <span className="block h-20 w-20 opacity-90">
-          <SnoreKing />
+          <SnoreKing lod="battle" />
         </span>
       </section>
 

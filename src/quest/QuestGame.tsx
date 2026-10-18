@@ -3,7 +3,7 @@ import { stopMusic, playMusic } from '../shared/audio';
 import { MAPS } from './engine/maps';
 import { initialState, questReducer } from './engine/quest';
 import { discardLegacyQuest, loadQuest, saveQuest } from './engine/save';
-import { progressWarnings, validateQuestContent } from './engine/validate';
+import { progressWarnings, spriteWarnings, validateQuestContent } from './engine/validate';
 import { QuestScreens } from './QuestScreens';
 
 // Content mistakes (unknown foe, unreachable chest, missing event) fail loudly in development
@@ -13,6 +13,9 @@ if (import.meta.env.DEV) {
   // Side quests, collections and the item catalogue run ahead of the chapters that place them; listed, not fatal yet
   const warnings = progressWarnings();
   if (warnings.length > 0) console.warn(`Quest content: ${warnings.length} flags or items are not placed by any content yet\n${warnings.join('\n')}`);
+  // Content may stand in placeholder art until the chapter's art issue lands (D-14)
+  const placeholders = spriteWarnings();
+  if (placeholders.length > 0) console.warn(`Sprites: ${placeholders.length} placeholders still in use\n${placeholders.join('\n')}`);
 }
 
 /** The RPG: the run state machine lives in engine/quest.ts, battles in engine/battle.ts. */

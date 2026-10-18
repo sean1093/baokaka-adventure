@@ -1,3 +1,4 @@
+import { spriteMeta, type SpriteComponent } from '../../art/sprite';
 import { SPRITES } from '../../art/sprites';
 import { EVENTS, SPEAKERS } from './events';
 import { FOES } from './foes';
@@ -554,6 +555,17 @@ export function progressWarnings(): string[] {
   const available = obtainableItems();
   const items = ITEM_ORDER.filter((item) => !available.has(item)).map((item) => `item ${item} cannot be obtained yet`);
   return [...flags, ...items, ...mrtWarnings()];
+}
+
+/**
+ * Placeholder sprites in the registry (decision D-14): warnings, printed in dev, until the art
+ * issue for each lands. The final QA issue (#58) requires none.
+ */
+export function spriteWarnings(sprites: Readonly<Record<string, SpriteComponent>> = SPRITES): string[] {
+  return Object.entries(sprites).flatMap(([name, sprite]) => {
+    const placeholder = spriteMeta(sprite)?.placeholder;
+    return placeholder ? [`sprite ${name} is a placeholder (${spriteMeta(sprite)?.kind} 「${placeholder.label}」)`] : [];
+  });
 }
 
 /** Pure content checks; run at dev start-up and in content.test.ts so mistakes never ship. */
