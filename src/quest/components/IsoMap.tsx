@@ -46,6 +46,8 @@ export type Actor = {
   flip?: boolean;
   /** A bobbing idle, or the walk hop */
   motion?: 'idle' | 'walk' | 'none';
+  /** Walks around the map (the party, an escort): its box gets its own compositor layer */
+  moves?: boolean;
   /** Marker floating above the sprite: an NPC's talk dot, a chest's sparkle */
   badge?: ReactNode;
   /** Accessible name; required whenever the actor is tappable */
@@ -67,7 +69,7 @@ function actorBox(actor: Actor): { left: number; top: number; width: number; hei
 /** Moved with `transform`, not `left`/`top`, so a walking actor never triggers layout. */
 const actorStyle = (actor: Actor): CSSProperties => {
   const { left, top, width, height } = actorBox(actor);
-  return { left: 0, top: 0, width, height, transform: `translate3d(${left.toFixed(1)}px, ${top.toFixed(1)}px, 0)` };
+  return { left: 0, top: 0, width, height, transform: `translate3d(${left.toFixed(1)}px, ${top.toFixed(1)}px, 0)`, ...(actor.moves ? { willChange: 'transform' } : {}) };
 };
 
 /**
@@ -174,18 +176,29 @@ const ContactShadow = ({ width, height }: { width: number; height: number }) => 
   />
 );
 
+/**
+ * One key frame of a rigged walk: the party covers a tile in 1 / SPEED s (≈ 294 ms), and a stride
+ * (both frames) per tile keeps hands and paws from sliding.
+ */
+const RIG_BEAT = { ['--beat' as string]: '147ms' } as CSSProperties;
+
 const ActorView = ({ actor, faded }: { actor: Actor; faded: boolean }) => {
   const Art = actor.sprite ? SPRITES[actor.sprite] : undefined;
+  // Option D sprites walk with their own rig cycle (寶咖咖 crawls, 摩卡 pads along, § 7.9);
+  // legacy drawings keep the whole-box hop and bob
+  const rigged = Art ? Boolean(spriteMeta(Art)) : false;
+  const walking = actor.motion === 'walk';
   // The same element every frame, so React skips the sprite's SVG while the actor walks
+  // (the walk is a class on the box, so a rigged sprite never re-renders when it starts or stops)
   const art = useMemo(() => (Art ? <Art lod="map" /> : null), [Art]);
-  const motion = actor.motion === 'walk' ? 'walk' : actor.motion === 'idle' ? 'idle' : '';
+  const motion = rigged ? (walking ? 'rig-walking' : '') : walking ? 'walk' : actor.motion === 'idle' ? 'idle' : '';
   const box = actorBox(actor);
   // The outer box never moves within itself, so its hit area is stable; the bob and the flip get
   // a span each, because both want the transform property to themselves.
   const content = (
     <>
       {Art && !spriteMeta(Art) && <ContactShadow width={box.width} height={box.height} />}
-      <span className={`block h-full w-full transition-opacity duration-200 ${motion} ${faded ? 'opacity-40' : ''}`}>
+      <span className={`block h-full w-full transition-opacity duration-200 ${motion} ${faded ? 'opacity-40' : ''}`} style={rigged ? RIG_BEAT : undefined}>
         <span className="block h-full w-full" style={actor.flip ? { transform: 'scaleX(-1)' } : undefined}>
           {art ?? actor.render}
         </span>

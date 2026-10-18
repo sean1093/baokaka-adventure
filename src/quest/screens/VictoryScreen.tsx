@@ -33,10 +33,10 @@ export const VictoryScreen = ({ summary, soundOn, onContinue }: Props) => {
           <div className="relative mx-auto mb-2 flex h-28 items-end justify-center gap-1">
             <span aria-hidden="true" className="absolute bottom-0 left-1/2 block h-6 w-48 -translate-x-1/2 rounded-[50%] bg-gold/20" />
             <span className="relative block h-28 w-28">
-              <Baokaka lod="battle" />
+              <Baokaka lod="battle" state="victory" />
             </span>
             <span className="relative block h-24 w-24">
-              <MochaCat lod="battle" />
+              <MochaCat lod="battle" state="victory" />
             </span>
           </div>
           <p className="font-num text-[12px] font-semibold tracking-[0.4em] text-gold">VICTORY</p>

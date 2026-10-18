@@ -46,6 +46,19 @@ const ARITY: Record<string, number> = { M: 2, L: 2, C: 6, Q: 4, S: 4, T: 2, H: 1
  * Only absolute M/L/C/Q/S/T/H/V/Z paths are rewritten; anything else is returned rounded only.
  */
 export function compactPath(d: string): string {
+  let out = COMPACT_CACHE.get(d);
+  if (out === undefined) {
+    out = compact(d);
+    // Sprites re-render the same paths (a hero starting and stopping a walk): keep the last few thousand
+    if (COMPACT_CACHE.size >= 4000) COMPACT_CACHE.clear();
+    COMPACT_CACHE.set(d, out);
+  }
+  return out;
+}
+
+const COMPACT_CACHE = new Map<string, string>();
+
+function compact(d: string): string {
   const tokens = d.match(/[A-Za-z]|-?\d*\.?\d+(?:e-?\d+)?/g) ?? [];
   if (tokens.some((token) => /[a-z]/.test(token) || (/[A-Z]/.test(token) && !(token in ARITY)))) {
     return d.replace(/-?\d*\.?\d+(?:e-?\d+)?/g, (n) => short(tenths(Number(n)))).replace(/ (?=[-A-Za-z])/g, '');
@@ -259,4 +272,33 @@ export function footie(heel: Vec, toe: Vec, w = 6.2, { sole = false, up = 1 }: F
 /** A four-point sparkle star centred on (x, y), `s` from centre to tip (the pajama star print). */
 export function star4(x: number, y: number, s: number): string {
   return `M${num(x)},${num(y - s)} Q${num(x + 0.5)},${num(y - 0.5)} ${num(x + s)},${num(y)} Q${num(x + 0.5)},${num(y + 0.5)} ${num(x)},${num(y + s)} Q${num(x - 0.5)},${num(y + 0.5)} ${num(x - s)},${num(y)} Q${num(x - 0.5)},${num(y - 0.5)} ${num(x)},${num(y - s)} Z`;
+}
+
+/** `points` turned `deg` degrees about `c`, then moved by `by`: re-posing authored volumes (a leap tilts the walk's body). */
+export function rotatePoints(points: readonly Vec[], c: Vec, deg: number, by: Vec = [0, 0]): Vec[] {
+  const a = (deg * Math.PI) / 180;
+  const [cos, sin] = [Math.cos(a), Math.sin(a)];
+  return points.map(([x, y]): Vec => [c[0] + (x - c[0]) * cos - (y - c[1]) * sin + by[0], c[1] + (x - c[0]) * sin + (y - c[1]) * cos + by[1]]);
+}
+
+/**
+ * Tapered bands across a tube (tail rings, leg stripes): `count` creases evenly spaced along the
+ * joint polyline `pts` (skipping the ends), each spanning the tube's width there. Path data.
+ */
+export function rings(pts: readonly Vec[], rs: readonly number[], count: number, w = 1.6): string {
+  const lengths = pts.slice(1).map((p, i) => Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]));
+  const total = lengths.reduce((a, b) => a + b, 0);
+  const out: string[] = [];
+  for (let k = 1; k <= count; k += 1) {
+    let at = (total * k) / (count + 1);
+    let i = 0;
+    while (i < lengths.length - 1 && at > lengths[i]) at -= lengths[i++];
+    const t = lengths[i] ? at / lengths[i] : 0;
+    const [a, b] = [pts[i], pts[i + 1]];
+    const p: Vec = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    const r = (rs[i] + (rs[i + 1] - rs[i]) * t) * 1.25;
+    const [ux, uy] = unit(b[0] - a[0], b[1] - a[1]);
+    out.push(crease([p[0] - uy * r + ux * 1.2, p[1] + ux * r + uy * 1.2], [p[0] + uy * r - ux * 1.2, p[1] - ux * r - uy * 1.2], w));
+  }
+  return out.join(' ');
 }

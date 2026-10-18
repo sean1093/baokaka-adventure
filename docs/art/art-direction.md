@@ -462,7 +462,8 @@ All bosses get a gold accent, an aura bloom and a name plate with a 「頭目」
 - **Character motion:** CSS transforms on rig parts (`transform-box: view-box`, origins at joints).
   - idle: breathe 2.4s, blink every 3.5–5s.
   - crawl cycle: 2 beats per tile, alternating diagonal limbs.
-  - cat walk: 4-beat diagonal gait, tail sway.
+  - cat walk: diagonal gait, tail sway.
+  - On the map both are a two-frame flipbook of static key poses (opacity steps, no animated rig groups), so walking never repaints a sprite (decision D-33).
   - attack: anticipation 120ms → strike 90ms → hit-stop 60ms → recover 220ms.
   - hurt: squash plus a 2-frame flash.
   - victory: hop loop.
@@ -524,7 +525,7 @@ The Python generators in `docs/art/options/_gen/` (`anime.py`, `anime2.py`, `iso
 |---|---|---|---|---|
 | **portrait** | 260–320px | dialogue bust, sheets | everything: iris rays, hair strands, blush hatching, fold creases | — |
 | **battle** | 150–200px | battle stage | eyes with 2 speculars, angel ring, main folds, finger splits | iris rays (optional), star print reduced to 4 stars |
-| **map** | 56–66px | iso map actors | silhouette, eyes (iris + 1 highlight), hair clumps (3 max), limb joints | iris rays, hatching, finger splits (mitten contour OK at this size), star print, creases; contour width 4u so lines survive |
+| **map** | 56–66px | iso map actors | silhouette, eyes (iris + 1 highlight), hair clumps (3 max), limb joints | iris rays, hatching, finger splits (mitten contour OK at this size), star print, creases, thin material lines, cel on parts thinner than 3u; contour width 4u so lines survive |
 | **icon** | 46–48px | party cards, menus | head-only crop from the expression heads | body |
 
 Implement as `lod` props on the same components (not separate art). The skeleton and volumes stay identical; only detail layers toggle.

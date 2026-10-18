@@ -34,13 +34,13 @@ export const QuestEndingScreen = ({ run, soundOn, onContinue }: Props) => {
 
       <section className="flex items-end justify-center gap-1">
         <span className="block h-24 w-24">
-          <Baokaka lod="battle" />
+          <Baokaka lod="battle" pose="stand" expr="laugh" />
         </span>
         <span className="block h-14 w-14">
           <ComfortDoll lod="battle" />
         </span>
         <span className="block h-20 w-20">
-          <MochaCat lod="battle" />
+          <MochaCat lod="battle" expr="happy" />
         </span>
         <span className="block h-20 w-20 opacity-90">
           <SnoreKing lod="battle" />

@@ -39,7 +39,7 @@ Work the issues **in numeric order**; an issue may start only when every issue i
 | 13 | Iso map renderer v2: single-SVG ground, materials, night lighting, sky layer, light sources | art | #11 | done (#73) |
 | 14 | Battle stage v2: backdrop system, four-hero layout, 布袋戲 boss frame | art, ui | #5, #12 | done (#74) |
 | 15 | Battle VFX refresh for the new skills and tone | art | #14 | done (#75) |
-| 16 | Heroes I: 寶咖咖 and 摩卡貓 (map, battle, portrait; expressions; poses) | art | #11 | todo |
+| 16 | Heroes I: 寶咖咖 and 摩卡貓 (map, battle, portrait; expressions; poses) | art | #11 | done (#76) |
 | 17 | Heroes II: 阿藍 and 黑糖 | art | #16 | todo |
 | 18 | Family and recurring cast: 媽媽/爸爸/阿嬤, 阿伯 ×14 + 土地公, 店員小哥, 廣播姊姊, 背包客, 咻咻 | art | #16 | todo |
 | 19 | Menu v2: 抓周盤 tray, 任務 log, party, items and equipment tabs | ui | #7, #8, #12 | todo |

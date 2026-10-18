@@ -64,6 +64,8 @@ export const MATERIALS = {
    */
   pajamaFar: { base: '#F4C458', cel: '#DE9640', deep: '#C47634', line: '#A0602A' },
   tabbyFar: { base: '#C4844E', cel: '#9C5E34', deep: '#7A4628', line: '#5E3020' },
+  /** 寶咖咖's toy block (積木, `block()` in the generator): front, side (cel), top and the lit edge */
+  toyBlock: { base: '#F0564A', cel: '#B23436', top: '#FFB2A2', shine: '#FFC4B8', star: '#FFF6E6' },
 } as const satisfies Record<string, Material>;
 
 export type MaterialName = keyof typeof MATERIALS;
@@ -104,6 +106,43 @@ export const ACCENTS = {
   /** Footie soles: the grip strip in side view, the grip dots in sole view */
   soleStrip: '#FFF2DC',
   gripDot: '#F09A3A',
+  /** Tears: the welling line along the lower lid and the drop on the cheek (淚汪汪, 哇哇大哭) */
+  tear: '#BFE8FF',
+  tearLine: '#7AB8E0',
+  /** Surprise and laugh marks beside the face */
+  markRed: '#F06A74',
+} as const;
+
+/**
+ * 摩卡貓's face and props (§ 5.2), with the reference generator's values (`_gen/anime.py`
+ * `mocha_head`/`cat_eye`, `_gen/anime2.py` `mc_sit`). His fur, bib and bandana ramps are the
+ * `tabby`, `furCream` and `bandana` materials.
+ */
+export const CAT = {
+  /** Inner ear: near ear lit, far ear in shade; the pale tufts */
+  earInner: '#F4A6A4',
+  earInnerFar: '#E58E92',
+  earTuft: '#FFF2E6',
+  /** Warm rim on the lit cheek */
+  furRim: '#F8D2A2',
+  /** Eye: sclera, iris ring, rays, slit pupil, lid shadow, the lower reflected light */
+  sclera: '#FFFDF6',
+  irisRing: '#24380E',
+  irisLight: '#F4F49A',
+  pupil: '#120A06',
+  lidShadow: '#1A2A08',
+  reflect: '#FBFFB0',
+  /** Nose leather and its line, the mouth line */
+  nose: '#F0848C',
+  noseLine: '#A84A54',
+  mouthLine: '#6E2A2A',
+  blush: '#FF8A8A',
+  whisker: '#FFFBF2',
+  /** Toe-bean splits on the white socks */
+  pawSplit: '#B8987A',
+  /** Bandana polka dots and the lit hem */
+  bandanaDot: '#FFF5E2',
+  bandanaLight: '#9CC4FF',
 } as const;
 
 /**
@@ -560,8 +599,12 @@ export const BACKLIGHT = {
   moon: '#A0BEFF',
   /** Lamp warm: family and townsfolk */
   warm: '#FFC98A',
-  /** 寶咖咖's pajama gold */
+  /** Gold: 阿嬤 and other warm elders */
   gold: '#FFE09A',
+  /** Butter: 寶咖咖's footie pajamas (#16) */
+  butter: '#FFE27A',
+  /** Tabby orange: 摩卡貓's fur (#16) */
+  tabby: '#F2A868',
   /** Jade: 摩卡貓's eyes */
   jade: '#9AF0C0',
   /** Sky blue: 阿藍 */

@@ -396,6 +396,6 @@ describe('UI kit v2 script fields (#12)', () => {
     validateSpeakers({ bad: { name: '壞', sprite: 'mom', role: 'nobody' as never, color: 'neon' as never } }, errors);
     expect(errors).toHaveLength(2);
     expect(speakerBacklight(SPEAKERS.mom)).toBe(ROLE_BACKLIGHT.family);
-    expect(speakerBacklight(SPEAKERS.mochaNpc)).toBe('jade');
+    expect(speakerBacklight(SPEAKERS.mochaNpc)).toBe('tabby');
   });
 });

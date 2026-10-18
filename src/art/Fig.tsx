@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, type CSSProperties, type ReactNode, type SVGProps } from 'react';
 import { compactPath, type Vec } from './geom';
 import { LodContext, shows, silWidth, type Tier } from './lod';
 import { DEV, LINE, MATERIALS, RIM, type Material, type MaterialName } from './palette';
@@ -79,6 +79,9 @@ export type FigGroup = Gate & {
 
 const DEFAULT_CEL: readonly [number, number] = [2.6, 2.2];
 
+/** The smallest cel offset still drawn at the map LOD (3u ≈ 1px at 60px): torsos keep theirs, limbs go flat. */
+const MAP_CEL_MIN = 3;
+
 /** A square big enough to cover any part, in its own group's units (the clip trims it). */
 const COVER = `M-${CANVAS} -${CANVAS}h${CANVAS * 3}v${CANVAS * 3}h-${CANVAS * 3}z`;
 
@@ -91,7 +94,8 @@ export const RIM_STROKE: CSSProperties = { stroke: `var(--rim, ${RIM.moon})` };
 const visible = (gate: Gate, lod: Lod) => shows(lod, gate.tier) && (!gate.only || gate.only.includes(lod));
 
 const isPart = (item: FigItem): item is FigPart => 'd' in item;
-const isSil = (item: FigItem): item is FigSil => 'sil' in item;
+// A part may carry `sil: false` (no contour), so a contour-only item is one with a `sil` path and no `d`
+const isSil = (item: FigItem): item is FigSil => !('d' in item) && 'sil' in item;
 
 /** A rig group: classed for `rig.css`, turning around its joint. */
 export const RigGroup = ({ char, part, origin, children }: { char: string; part: string; origin?: Vec; children: ReactNode }) => (
@@ -104,6 +108,7 @@ export const RigGroup = ({ char, part, origin, children }: { char: string; part:
 export const Fig = ({ char, lod, groups }: { char: string; lod: Lod; groups: readonly FigGroup[] }) => {
   const id = useSvgIds('f');
   const sil = silWidth(lod);
+  const inline = lod === 'map';
 
   const renderGroup = (group: FigGroup, key: string, inherited = 1): ReactNode => {
     if (!visible(group, lod)) return null;
@@ -112,6 +117,10 @@ export const Fig = ({ char, lod, groups }: { char: string; lod: Lod; groups: rea
     const parts = items.filter(isPart);
     const pid = (p: FigPart) => id(`${key}p${parts.indexOf(p)}`);
     const ref = (p: FigPart) => `#${pid(p)}`;
+    // At the map LOD a part's path is written out wherever it's used instead of <use>d: each <use>
+    // is a shadow tree the browser keeps in sync, and map sprites move every frame (#16 perf)
+    const use = (part: FigPart, paint: SVGProps<SVGPathElement> & SVGProps<SVGUseElement> = {}, key?: number) =>
+      inline ? <path key={key} d={compactPath(part.d)} {...paint} /> : <use key={key} href={ref(part)} {...paint} />;
 
     // Pass 1. The part paths carry no paint of their own: here they inherit the contour paint
     // from the group, and every <use> below (clip, shifted fill, line) paints them its own way.
@@ -127,22 +136,25 @@ export const Fig = ({ char, lod, groups }: { char: string; lod: Lod; groups: rea
       if (!isPart(item)) return <Fragment key={i}>{item.raw}</Fragment>;
       const ramp: Material = MATERIALS[item.mat];
       const line = ramp.line ?? ramp.cel;
-      const cel = item.cel ?? DEFAULT_CEL;
+      // At the map LOD (60px, a unit is 0.3px) the thin material line and a limb's cel band (< 3u)
+      // can't be seen: those parts become one flat fill, which keeps moving map sprites cheap (#16)
+      const celSet = item.cel ?? DEFAULT_CEL;
+      const cel = inline && celSet && celSet[0] < MAP_CEL_MIN ? false : celSet;
       const lw = item.lw === LINE_WIDTH ? undefined : item.lw;
       const layered = cel || item.deep || item.extra || item.rim;
-      if (!layered) return <use key={i} href={ref(item)} fill={ramp.base} stroke={line} strokeWidth={lw} />;
+      if (!layered) return use(item, inline ? { fill: ramp.base } : { fill: ramp.base, stroke: line, strokeWidth: lw }, i);
       // The cel recipe (§ 2.4): cel tone everywhere, base tone shifted up-left, clipped to the part
       const clip = id(`${key}c${parts.indexOf(item)}`);
       return (
         <Fragment key={i}>
           <clipPath id={clip}>
-            <use href={ref(item)} />
+            {use(item)}
           </clipPath>
           <g clipPath={`url(#${clip})`}>
             {cel ? (
               <>
                 <path d={COVER} fill={ramp.cel} />
-                <use href={ref(item)} fill={ramp.base} stroke="none" transform={`translate(${-cel[0]} ${-cel[1]})`} />
+                {use(item, { fill: ramp.base, stroke: 'none', transform: `translate(${-cel[0]} ${-cel[1]})` })}
               </>
             ) : (
               <path d={COVER} fill={ramp.base} />
@@ -151,14 +163,14 @@ export const Fig = ({ char, lod, groups }: { char: string; lod: Lod; groups: rea
             {item.extra}
             {item.rim && <path d={item.rim} fill="none" style={RIM_STROKE} strokeWidth={1.8} strokeLinecap="round" opacity={0.9} />}
           </g>
-          <use href={ref(item)} fill="none" stroke={line} strokeWidth={lw} />
+          {!inline && use(item, { fill: 'none', stroke: line, strokeWidth: lw })}
         </Fragment>
       );
     });
 
     const body = (
       <>
-        {unoutlined.length > 0 && (
+        {unoutlined.length > 0 && !inline && (
           <defs>
             {unoutlined.map((part) => (
               <path key={pid(part)} id={pid(part)} d={compactPath(part.d)} />
@@ -196,8 +208,14 @@ export type SpriteSvgProps = {
   box?: readonly [number, number, number, number];
   /** Where the figure stands: the origin for whole-body motion (hop, lunge, squash) */
   ground?: Vec;
-  /** The walk cycle `rig.css` plays in the `walk` state: a toddler's crawl or the cat's 4-beat gait */
+  /** Who walks (`rig--gait-*`): a toddler's crawl or the cat's diagonal gait; both use the two-frame flipbook */
   gait?: 'crawl' | 'cat';
+  /** The pose or action being drawn, as `rig--pose-{pose}`: `rig.css` keys action animations on it */
+  pose?: string;
+  /** The KO is drawn as its own pose (lying down), so the generic KO slump must not tip it over */
+  restPose?: boolean;
+  /** Extra root classes (e.g. a tail mood) */
+  className?: string;
   children: ReactNode;
 };
 
@@ -207,19 +225,32 @@ export type SpriteSvgProps = {
  * `rig-body` around the whole figure). Round line joins and the 1.2u line width are set once here
  * and inherited.
  */
-export const SpriteSvg = ({ char, lod, state = 'idle', faces = 'right', facing = faces, box = [0, 0, CANVAS, CANVAS], ground = [100, 186], gait = 'crawl', children }: SpriteSvgProps) => {
+export const SpriteSvg = ({ char, lod, state = 'idle', faces = 'right', facing = faces, box = [0, 0, CANVAS, CANVAS], ground = [100, 186], gait = 'crawl', pose, restPose = false, className, children }: SpriteSvgProps) => {
   const mirror = facing !== faces;
   const [x, y, w, h] = box;
   const viewX = mirror ? CANVAS - x - w : x;
+  const classes = `h-full w-full rig rig--${state} rig--gait-${gait}${pose ? ` rig--pose-${pose}` : ''}${restPose ? ' rig--rest' : ''}${className ? ` ${className}` : ''}`;
+  const frame = (k: number | null) => (
+    <svg key={k ?? 0} viewBox={`${viewX} ${y} ${w} ${h}`} strokeLinejoin="round" strokeWidth={LINE_WIDTH} className={k === null ? classes : `${classes} rig--frame-${k}`} data-char={char} data-lod={lod} aria-hidden="true">
+      <g transform={mirror ? `translate(${CANVAS} 0) scale(-1 1)` : undefined}>
+        <g className="rig-body" style={{ transformOrigin: `${ground[0]}px ${ground[1]}px` }}>
+          {children}
+        </g>
+      </g>
+    </svg>
+  );
+  // The map LOD is a flipbook of two static key frames (rig.css "walk"): starting or stopping a
+  // walk never re-renders the sprite. Other LODs walk only in the art lab, the same way.
+  const frames = lod === 'map' || state === 'walk' ? 2 : 0;
   return (
     <LodContext.Provider value={lod}>
-      <svg viewBox={`${viewX} ${y} ${w} ${h}`} strokeLinejoin="round" strokeWidth={LINE_WIDTH} className={`h-full w-full rig rig--${state} rig--gait-${gait}`} data-char={char} data-lod={lod} aria-hidden="true">
-        <g transform={mirror ? `translate(${CANVAS} 0) scale(-1 1)` : undefined}>
-          <g className="rig-body" style={{ transformOrigin: `${ground[0]}px ${ground[1]}px` }}>
-            {children}
-          </g>
-        </g>
-      </svg>
+      {frames ? (
+        <span className={`rig-flip${state === 'walk' ? ' rig-flip--on' : ''}`} data-char={char}>
+          {Array.from({ length: frames }, (_, k) => frame(k))}
+        </span>
+      ) : (
+        frame(null)
+      )}
     </LodContext.Provider>
   );
 };

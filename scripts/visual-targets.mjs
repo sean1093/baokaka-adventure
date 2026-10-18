@@ -39,6 +39,14 @@ export const TARGETS = [
     artlab: true,
   },
   {
+    name: 'artlab-heroes',
+    // 寶咖咖 and 摩卡貓 (#16): four LODs on three floors with skeletons, silhouettes, poses, expressions, tails, states, budgets
+    hash: '#/artlab?section=heroes&skeleton=1&still=1',
+    waitFor: '[data-artlab-heroes] [data-budget="mocha-loaf"]',
+    fullPage: true,
+    artlab: true,
+  },
+  {
     name: 'artlab-ui',
     // Every UI kit component in each state (#12): panels, buttons, bars, the dialogue box, the clock
     hash: '#/artlab?section=ui&still=1',

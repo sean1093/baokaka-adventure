@@ -4,7 +4,10 @@
  * opacity only, § 8.5).
  *
  *   .rig.rig--{idle|attack|hurt|ko|victory|walk}   the sprite root (SpriteSvg), one state at a time
- *   .rig--gait-crawl / .rig--gait-cat              which walk cycle (crawl: 2 beats, cat: 4 beats)
+ *   .rig--gait-crawl / .rig--gait-cat              which figure walks (both use the two-frame flipbook)
+ *   .rig-flip > .rig--frame-{n}                    the map LOD's walk key frames, stacked (see "walk")
+ *   .rig-walking (an ancestor)                     plays the map sprite's walk without re-rendering it
+ *   .rig--pose-{pose}, .rig--rest, .rig--tail-*    the pose or action drawn, a KO drawn as a pose, 摩卡's tail mood
  *   .rig-body                                      the whole figure, origin on the ground point
  *   .part-{part}                                   rig groups (Fig), origin on their joint
  *
@@ -13,7 +16,7 @@
  *
  * Variables a screen or sprite may set on an ancestor:
  *   --blink   time between blinks, 3.5–5s (default 4.2s; vary it per character so they don't blink together)
- *   --beat    one beat of the walk cycle (default 260ms; a tile takes 2 beats crawling, 4 for the cat)
+ *   --beat    one key frame of the walk (default 260ms; the map sets 147ms: a crawl stride per tile)
  */
 
 .rig-body,
@@ -152,69 +155,234 @@
   }
 }
 
-/* ---- walk: crawl (2 beats, diagonal pairs) and the cat's 4-beat gait ------------------------- */
+/* ---- walk: a flipbook of two key poses, diagonal pairs (the crawl, the cat's trot) --------------
+   Animating SVG rig groups repaints the whole sprite every frame, and mounting extra frames when a
+   walk starts costs a re-render; both measured well over the perf budget while the party walked
+   (#16). So at the map LOD a sprite is always drawn as two stacked static key frames (SpriteSvg,
+   .rig-flip > .rig--frame-{0,1}); standing, the first one shows in its neutral pose. Walking (the
+   sprite's own `walk` state, .rig-flip--on, or an ancestor's .rig-walking, which the map toggles
+   without re-rendering the sprite) poses both frames and steps their opacity: near arm with far
+   leg forward, then the other pair, the body rising between strides. --beat is one frame. */
 
-.rig--walk {
-  --cycle: calc(var(--beat, 260ms) * 2);
+.rig-flip {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
-.rig--walk.rig--gait-cat {
-  --cycle: calc(var(--beat, 260ms) * 4);
+.rig-flip > svg {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
 }
-.rig--walk .rig-body {
-  animation: rig-bob var(--beat, 260ms) ease-in-out infinite;
+.rig-flip > svg:first-child {
+  opacity: 1;
 }
-/* Crawl: near arm with far leg, then far arm with near leg */
-.rig--walk .part-arm-near,
-.rig--walk .part-leg-far,
-.rig--walk .part-arm-far,
-.rig--walk .part-leg-near {
-  animation: rig-swing var(--cycle) ease-in-out infinite;
+:is(.rig-flip--on, .rig-walking .rig-flip) > svg {
+  animation: rig-flip calc(var(--beat, 260ms) * 2) steps(1, end) infinite;
 }
-.rig--walk .part-arm-far,
-.rig--walk .part-leg-near {
-  animation-delay: calc(var(--cycle) / -2);
+:is(.rig-flip--on, .rig-walking .rig-flip) > svg:nth-child(2) {
+  animation-delay: calc(var(--beat, 260ms) * -1);
 }
-/* Cat: hind-near, front-near, hind-far, front-far, a quarter cycle apart; the tail sways */
-.rig--walk.rig--gait-cat .part-leg-near {
-  animation-delay: 0ms;
-}
-.rig--walk.rig--gait-cat .part-arm-near {
-  animation-delay: calc(var(--cycle) / -4);
-}
-.rig--walk.rig--gait-cat .part-leg-far {
-  animation-delay: calc(var(--cycle) / -2);
-}
-.rig--walk.rig--gait-cat .part-arm-far {
-  animation-delay: calc(var(--cycle) * -3 / 4);
-}
-.rig--walk .part-tail {
-  animation: rig-sway var(--cycle) ease-in-out infinite;
-}
-@keyframes rig-bob {
-  0%,
-  100% {
-    transform: translateY(0);
+@keyframes rig-flip {
+  0% {
+    opacity: 1;
   }
   50% {
-    transform: translateY(-1.6px);
+    opacity: 0;
   }
 }
-@keyframes rig-swing {
-  0%,
-  100% {
-    transform: rotate(-9deg);
+
+/* Forward is a negative turn for a figure drawn facing right */
+:is(.rig-flip--on, .rig-walking .rig-flip) > .rig--frame-0 :is(.part-arm-near, .part-leg-far),
+:is(.rig-flip--on, .rig-walking .rig-flip) > .rig--frame-1 :is(.part-arm-far, .part-leg-near) {
+  transform: rotate(-8deg);
+}
+:is(.rig-flip--on, .rig-walking .rig-flip) > .rig--frame-0 :is(.part-arm-far, .part-leg-near),
+:is(.rig-flip--on, .rig-walking .rig-flip) > .rig--frame-1 :is(.part-arm-near, .part-leg-far) {
+  transform: rotate(8deg);
+}
+:is(.rig-flip--on, .rig-walking .rig-flip) > .rig--frame-1 .rig-body {
+  transform: translateY(-1.6px);
+}
+/* The cat's tail sways against the stride */
+:is(.rig-flip--on, .rig-walking .rig-flip) > .rig--frame-0 .part-tail {
+  transform: rotate(-6deg);
+}
+:is(.rig-flip--on, .rig-walking .rig-flip) > .rig--frame-1 .part-tail {
+  transform: rotate(6deg);
+}
+
+/* The map LOD stays still when idle: a 60px blink or breath can't be seen, and would repaint the
+   sprite every frame */
+.rig.rig--idle[data-lod='map'] * {
+  animation: none;
+}
+
+/* ---- poses drawn as poses (#16) -------------------------------------------------------------
+   The KO is its own lying pose (寶咖咖 asleep on his tummy, 摩卡 in a loaf), so it must not be
+   tipped over by the generic slump; it just breathes slowly in its sleep. */
+
+.rig--ko.rig--rest .rig-body {
+  transform: none;
+  opacity: 1;
+}
+.rig--ko.rig--rest .part-torso {
+  animation: rig-breathe 3.2s ease-in-out infinite;
+}
+
+/* ---- hero actions (§ 5.1, § 5.2, § 7.9): the same 490ms attack profile, acted out by the rig ----
+   (anticipation to 24.5%, strike at 42.9%, hit-stop to 55.1%, recover) */
+
+/* 丟積木: the raised arm winds back behind the head, then throws; the block leaves the hand at the strike */
+.rig--attack.rig--pose-throw .part-arm-far {
+  animation: rig-throw 490ms linear both;
+}
+.rig--attack.rig--pose-throw .part-block {
+  animation: rig-release 490ms linear both;
+}
+@keyframes rig-throw {
+  0% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  50% {
-    transform: rotate(9deg);
+  24.5% {
+    transform: rotate(-38deg);
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  42.9%,
+  55.1% {
+    transform: rotate(34deg);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  100% {
+    transform: rotate(0deg);
   }
 }
-@keyframes rig-sway {
+@keyframes rig-release {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  43%,
+  90% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* 哇哇大哭: the head shakes as he wails */
+.rig--attack.rig--pose-cry .part-head {
+  animation: rig-wail 163ms ease-in-out 3 both;
+}
+@keyframes rig-wail {
   0%,
   100% {
-    transform: rotate(-6deg);
+    transform: rotate(0deg);
+  }
+  33% {
+    transform: rotate(-5deg);
+  }
+  66% {
+    transform: rotate(5deg);
+  }
+}
+
+/* 拍拍手: three claps, the forearms swinging in and out */
+.rig--attack.rig--pose-clap .part-arm-near {
+  animation: rig-clap-near 163ms ease-in-out 3 both;
+}
+.rig--attack.rig--pose-clap .part-arm-far {
+  animation: rig-clap-far 163ms ease-in-out 3 both;
+}
+@keyframes rig-clap-near {
+  0%,
+  100% {
+    transform: rotate(0deg);
   }
   50% {
-    transform: rotate(6deg);
+    transform: rotate(-12deg);
+  }
+}
+@keyframes rig-clap-far {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(12deg);
+  }
+}
+
+/* 勇敢的第一步: stands up, wobbles, charges */
+.rig--attack.rig--pose-step .rig-body {
+  animation: rig-first-step 490ms linear both;
+}
+@keyframes rig-first-step {
+  0% {
+    transform: translate(0, 6px) scale(1.04, 0.9);
+    animation-timing-function: ease-out;
+  }
+  10% {
+    transform: translate(0, 0) rotate(-6deg);
+  }
+  18% {
+    transform: translate(-2px, 0) rotate(5deg);
+  }
+  24.5% {
+    transform: translate(-5px, 0) rotate(-2deg) scale(1.03, 0.97);
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  42.9%,
+  55.1% {
+    transform: translate(20px, 0) rotate(4deg);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+/* 摩卡's pounce: crouch, leap in an arc, land */
+.rig--attack.rig--pose-pounce .rig-body {
+  animation: rig-pounce 490ms linear both;
+}
+@keyframes rig-pounce {
+  0% {
+    transform: translate(0, 0) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  24.5% {
+    transform: translate(-6px, 6px) scale(1.06, 0.92);
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  42.9%,
+  55.1% {
+    transform: translate(22px, -8px) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  100% {
+    transform: translate(0, 0) scale(1, 1);
+  }
+}
+
+/* 摩卡's tail acting (§ 5.2): annoyed = a low tail whose tip flicks */
+.rig--tail-flick.rig--idle .part-tail {
+  animation: rig-flick 1.4s ease-in-out infinite;
+}
+@keyframes rig-flick {
+  0%,
+  70%,
+  100% {
+    transform: rotate(0deg);
+  }
+  80% {
+    transform: rotate(-4deg);
+  }
+  90% {
+    transform: rotate(3deg);
   }
 }
 
@@ -224,7 +392,8 @@
 @media (prefers-reduced-motion: reduce) {
   .rig,
   .rig *,
-  .rig-body {
+  .rig-body,
+  .rig-flip > svg {
     animation: none !important;
   }
   .rig--attack,
@@ -234,7 +403,8 @@
 }
 .reduce-motion .rig,
 .reduce-motion .rig *,
-.reduce-motion .rig-body {
+.reduce-motion .rig-body,
+.reduce-motion .rig-flip > svg {
   animation: none !important;
 }
 .reduce-motion .rig--attack,

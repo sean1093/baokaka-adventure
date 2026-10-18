@@ -8,8 +8,8 @@ export type SpeakerRole = 'family' | 'folk' | 'foe' | 'friend';
 /** The backlight colour for each role, used when a speaker doesn't name its own. */
 export const ROLE_BACKLIGHT: Readonly<Record<SpeakerRole, Backlight>> = { family: 'warm', folk: 'warm', foe: 'violet', friend: 'moon' };
 
-/** Each hero's backlight: 寶咖咖's pajama gold, 摩卡's jade eyes, 阿藍's sky, 黑糖's amber. */
-export const HERO_BACKLIGHT: Readonly<Record<HeroId, Backlight>> = { baokaka: 'gold', mocha: 'jade', magpie: 'sky', bear: 'amber' };
+/** Each hero's backlight: 寶咖咖's butter pajamas, 摩卡's tabby orange, 阿藍's sky, 黑糖's amber. */
+export const HERO_BACKLIGHT: Readonly<Record<HeroId, Backlight>> = { baokaka: 'butter', mocha: 'tabby', magpie: 'sky', bear: 'amber' };
 
 export type SpeakerEntry = { name: string; sprite: SpriteName; role: SpeakerRole; /** Overrides the role's backlight */ color?: Backlight };
 
@@ -34,7 +34,7 @@ export const SPEAKERS: Record<string, SpeakerEntry> = {
   magpieNpc: { name: '阿藍', sprite: 'pigeon', role: 'friend', color: 'sky' },
   octo: { name: '大章魚', sprite: 'octopus', role: 'foe' },
   snore: { name: '打呼嚕大王', sprite: 'snoreKing', role: 'foe' },
-  mochaNpc: { name: '摩卡貓', sprite: 'mochaCat', role: 'friend', color: 'jade' },
+  mochaNpc: { name: '摩卡貓', sprite: 'mochaCat', role: 'friend', color: 'tabby' },
 };
 
 /** A speaker's backlight: its own colour, else its role's. */

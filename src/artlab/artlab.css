@@ -31,3 +31,9 @@
   animation: none !important;
   transform: translate(-50%, -14px);
 }
+
+/* The walk flipbook (#16): with `?still=1` show its first key frame, posed (forcing every frame to
+   the same moment would show all of them or none) */
+.artlab-still .rig-flip > svg {
+  animation: none !important;
+}

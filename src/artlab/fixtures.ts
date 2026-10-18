@@ -91,7 +91,7 @@ const CHAPTER_CARD: Step = { do: 'chapter', n: 1, title: '度晬前一晚', time
 const CHAPTER_CARD_DAWN: Step = { do: 'chapter', n: 14, title: '離天空最近的地方', time: '05:15', next: '象山' };
 
 /**
- * Script `ch1.daan.intro` (until #21 adds it), paused on 摩卡's first line: the bust with its jade
+ * Script `ch1.daan.intro` (until #21 adds it), paused on 摩卡's first line: the bust (得意, smug) with its tabby
  * backlight, a 【寶物】 key term in gold, and the page dots (line 3 of 4).
  */
 const DAAN_INTRO: Step[] = [

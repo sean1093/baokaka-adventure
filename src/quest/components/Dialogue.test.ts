@@ -21,7 +21,7 @@ describe('the talk box adapter', () => {
   test('speakerOf resolves heroes, NPCs and narration with their backlights', () => {
     expect(speakerOf(null)).toBeNull();
     expect(speakerOf('nobody')).toBeNull();
-    expect(speakerOf('mocha')).toMatchObject({ name: '摩卡貓', color: BACKLIGHT.jade, sprite: 'mochaCat' });
+    expect(speakerOf('mocha')).toMatchObject({ name: '摩卡貓', color: BACKLIGHT.tabby, sprite: 'mochaCat' });
     expect(speakerOf('mom')).toMatchObject({ name: '媽媽', color: BACKLIGHT.warm });
     expect(speakerOf('octo')?.color).toBe(BACKLIGHT.violet);
   });
