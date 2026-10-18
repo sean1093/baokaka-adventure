@@ -46,6 +46,14 @@ export const TARGETS = [
     fullPage: true,
     artlab: true,
   },
+  {
+    name: 'artlab-map',
+    // The iso renderer v2 (#13): the test map at 00:00 / 03:00 / 05:15, the sky strip, every material
+    hash: '#/artlab?section=map&still=1',
+    waitFor: '[data-artlab-map] [data-material="carFloor"] [data-ground]',
+    fullPage: true,
+    artlab: true,
+  },
 ];
 
 /** The screenshot target for one art lab fixture. */

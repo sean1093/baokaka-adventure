@@ -1,5 +1,8 @@
 import { TERRAIN, covers, terrainAt } from './iso';
-import type { GameMap, Tile } from './types';
+import { STANDING_LIGHTS, type GameMap, type MapLight, type Tile } from './types';
+
+/** A lamp post, lantern stand or sign pole on a whole tile blocks it, like solid decor. */
+export const standsOn = (light: MapLight, c: number, r: number): boolean => STANDING_LIGHTS.includes(light.kind) && light.c === c && light.r === r;
 
 const hasFlag = (flags: readonly string[], flag: string | undefined): boolean => flag === undefined || flags.includes(flag);
 
@@ -12,7 +15,8 @@ export const chestOpened = (flags: readonly string[], chestId: string): boolean 
 /** Terrain and decor: the parts of a map that never move. */
 export function isSolid(map: GameMap, c: number, r: number): boolean {
   if (!TERRAIN[terrainAt(map, c, r)].walk) return true;
-  return map.decor.some((entry) => entry.solid !== false && covers(entry, c, r));
+  if (map.decor.some((entry) => entry.solid !== false && covers(entry, c, r))) return true;
+  return (map.lights ?? []).some((light) => standsOn(light, c, r));
 }
 
 /**

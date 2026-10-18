@@ -1,6 +1,6 @@
-import type { GameMap, Terrain, Tile } from './types';
+import type { GameMap, LegacyTerrain, Material, Structure, Terrain, Tile } from './types';
 
-/** A diamond tile is 64 wide and 32 tall: the classic 2:1 isometric projection. */
+/** A diamond tile is 72 wide and 36 tall: the classic 2:1 isometric projection (art direction § 4.4). */
 export const TILE_W = 72;
 export const TILE_H = 36;
 
@@ -16,35 +16,80 @@ export const toTile = (x: number, y: number): { c: number; r: number } => ({
   r: (y / (TILE_H / 2) - x / (TILE_W / 2)) / 2,
 });
 
-export type TerrainStyle = {
-  top: string;
-  /** Second shade for a soft checkerboard; same as top when the ground should be flat */
-  alt: string;
-  /** The far edge of each tile, so the floor catches light instead of reading as a swatch */
-  shade: string;
+/** How a terrain behaves: whether it can be walked on, and how tall it stands (walls, fences). */
+export type TerrainRule = {
   walk: boolean;
-  /** Raised as a block this many pixels (walls and fences) */
+  /** Raised as a block this many pixels; the art draws it as merged runs (src/art/tiles) */
   height?: number;
-  left?: string;
-  right?: string;
 };
 
-export const TERRAIN: Record<Terrain, TerrainStyle> = {
-  floor: { top: '#EAD4A8', alt: '#E4CC9C', shade: '#CDB185', walk: true },
-  rug: { top: '#E3A28B', alt: '#DE9A82', shade: '#C4826C', walk: true },
-  tile: { top: '#DCEBF2', alt: '#D1E4ED', shade: '#B9CEDA', walk: true },
-  grass: { top: '#9CC58A', alt: '#93BD82', shade: '#78A468', walk: true },
-  path: { top: '#D9BE8C', alt: '#D2B583', shade: '#B99A6A', walk: true },
-  sand: { top: '#F0DEB0', alt: '#EAD6A4', shade: '#D6BE87', walk: true },
-  cobble: { top: '#CFC3B3', alt: '#C6BAA9', shade: '#A79B8C', walk: true },
-  dark: { top: '#5A5270', alt: '#544C69', shade: '#403A52', walk: true },
-  blanket: { top: '#B497C2', alt: '#AB8DBA', shade: '#8E729C', walk: true },
-  door: { top: '#B08A5E', alt: '#B08A5E', shade: '#8E6B44', walk: true },
-  water: { top: '#7FB6D9', alt: '#77AED3', shade: '#5D97BE', walk: false },
-  wall: { top: '#F3E3C3', alt: '#F3E3C3', shade: '#D9C29A', walk: false, height: 30, left: '#D9C29A', right: '#C4A97C' },
-  fence: { top: '#D8B98A', alt: '#D8B98A', shade: '#C09C6A', walk: false, height: 14, left: '#C09C6A', right: '#A98653' },
-  void: { top: 'transparent', alt: 'transparent', shade: 'transparent', walk: false },
+const FLOOR: TerrainRule = { walk: true };
+
+/**
+ * Every terrain's rule. Materials are walkable unless they are water; how each one looks lives in
+ * `src/art/tiles/terrain.ts` (`TILE_MATERIALS`), so the engine stays free of colours.
+ */
+export const TERRAIN: Record<Terrain, TerrainRule> = {
+  grass: FLOOR,
+  gravel: FLOOR,
+  brickWalk: FLOOR,
+  asphalt: FLOOR,
+  zebra: FLOOR,
+  water: { walk: false },
+  marble: FLOOR,
+  undergroundTile: FLOOR,
+  wood: FLOOR,
+  rug: FLOOR,
+  playMat: FLOOR,
+  oldBrick: FLOOR,
+  stoneSlab: FLOOR,
+  planks: FLOOR,
+  stallTile: FLOOR,
+  grate: FLOOR,
+  apron: FLOOR,
+  runway: FLOOR,
+  teaSoil: FLOOR,
+  wetStone: FLOOR,
+  deck: FLOOR,
+  jadeWater: { walk: false },
+  seawall: FLOOR,
+  polished: FLOOR,
+  carpet: FLOOR,
+  deckGrate: FLOOR,
+  granite: FLOOR,
+  carFloor: FLOOR,
+  door: FLOOR,
+  wall: { walk: false, height: 34 },
+  fence: { walk: false, height: 14 },
+  void: { walk: false },
+  // Legacy names (until #21), walking like the material they are drawn as
+  floor: FLOOR,
+  tile: FLOOR,
+  path: FLOOR,
+  sand: FLOOR,
+  cobble: FLOOR,
+  dark: FLOOR,
+  blanket: FLOOR,
 };
+
+/**
+ * What each pre-redesign terrain is drawn as (decision D-30). #21 replaces the old maps and then
+ * these names go.
+ */
+export const TERRAIN_ALIAS: Readonly<Record<LegacyTerrain, Material>> = {
+  floor: 'wood',
+  tile: 'undergroundTile',
+  path: 'gravel',
+  sand: 'gravel',
+  cobble: 'stoneSlab',
+  dark: 'carpet',
+  blanket: 'playMat',
+};
+
+/** The material a terrain is drawn with, or the structure it is. */
+export function surfaceOf(terrain: Terrain): Material | Structure {
+  return Object.prototype.hasOwnProperty.call(TERRAIN_ALIAS, terrain) ? TERRAIN_ALIAS[terrain as LegacyTerrain] : (terrain as Material | Structure);
+}
 
 export const terrainAt = (map: GameMap, c: number, r: number): Terrain => {
   const row = map.grid[r];

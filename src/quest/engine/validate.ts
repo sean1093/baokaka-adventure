@@ -24,7 +24,7 @@ import {
 } from './progress';
 import { CLEARED_FLAG } from './scene';
 import { STATION_PLACEHOLDERS, fillStation } from './text';
-import { HERO_ORDER, RIDE_TO, type GameMap, type Item, type ItemId, type Step, type Tile } from './types';
+import { AMBIENT_ELEMENTS, HERO_ORDER, MAX_AMBIENT_ELEMENTS, RIDE_TO, STANDING_LIGHTS, type GameMap, type Item, type ItemId, type Step, type Tile } from './types';
 
 /** At most three foes fit across the battle box. */
 export const MAX_FOES_PER_BATTLE = 3;
@@ -198,6 +198,46 @@ export function validateIncludes(events: Record<string, Step[]>, errors: string[
 const inGrid = (map: GameMap, tile: Tile): boolean =>
   tile.r >= 0 && tile.r < map.grid.length && tile.c >= 0 && tile.c < map.grid[0].length;
 
+/** The most light sources one map may carry: each is a bloom, a pool and maybe a streak in the light layer (§ 8.5). */
+export const MAX_LIGHTS = 24;
+
+const HEX_COLOUR = /^#[0-9A-Fa-f]{6}$/;
+const LIQUID: ReadonlySet<string> = new Set(['water', 'jadeWater']);
+
+/**
+ * `GameMap.lights` and `GameMap.ambient` (art direction § 4.1, § 4.3, § 8.5): lights inside the
+ * grid, neon only on maps flagged `neon`, standing fixtures on a whole walkable tile of their own,
+ * and no more ambient elements than the budget allows.
+ */
+function validateLights(map: GameMap, errors: string[], claim: (c: number, r: number, what: string) => void): void {
+  const where = `map ${map.id}`;
+  const lights = map.lights ?? [];
+  if (lights.length > MAX_LIGHTS) errors.push(`${where}: ${lights.length} lights, at most ${MAX_LIGHTS}`);
+  for (const light of lights) {
+    const at = `${light.kind} light at ${light.c},${light.r}`;
+    const tile = { c: Math.round(light.c), r: Math.round(light.r) };
+    if (!inGrid(map, tile) || light.c < -0.5 || light.r < -0.5) {
+      errors.push(`${where}: ${at} is outside the grid`);
+      continue;
+    }
+    if (light.kind === 'neon' && !map.neon) errors.push(`${where}: ${at}, but neon is only allowed on maps flagged neon (art direction § 4.3)`);
+    if (light.color !== undefined && !HEX_COLOUR.test(light.color)) errors.push(`${where}: ${at} has colour "${light.color}", expected #RRGGBB`);
+    if (STANDING_LIGHTS.includes(light.kind)) {
+      if (!Number.isInteger(light.c) || !Number.isInteger(light.r)) errors.push(`${where}: ${at} stands on the ground, so it needs a whole tile`);
+      else if (!TERRAIN[terrainAt(map, light.c, light.r)].walk) errors.push(`${where}: ${at} stands on unwalkable ground`);
+      else claim(light.c, light.r, at);
+    }
+  }
+
+  const ambient = map.ambient ?? [];
+  if (new Set(ambient).size !== ambient.length) errors.push(`${where}: an ambient kind is listed twice`);
+  const elements = ambient.reduce((sum, kind) => sum + AMBIENT_ELEMENTS[kind], 0);
+  if (elements > MAX_AMBIENT_ELEMENTS) errors.push(`${where}: ambient FX add ${elements} animated elements, at most ${MAX_AMBIENT_ELEMENTS} (§ 8.5)`);
+  if (ambient.includes('ripples') && !map.grid.some((row) => [...row].some((glyph) => LIQUID.has(map.legend[glyph])))) {
+    errors.push(`${where}: ripples need water on the map`);
+  }
+}
+
 /**
  * One map's layout and references. `maps` resolves exit targets; tests pass their own table.
  * The 月亮線 rules that need the station table (`@rideTo` only in cars, `mrtArrival` on every
@@ -249,6 +289,8 @@ export function validateMap(map: GameMap, errors: string[], maps: Readonly<Recor
     else if (!TERRAIN[terrainAt(map, chest.c, chest.r)].walk) errors.push(`${where}: chest ${chest.id} sits on unwalkable ground`);
     claim(chest.c, chest.r, `chest ${chest.id}`);
   }
+
+  validateLights(map, errors, claim);
 
   for (const exit of map.exits) {
     if (!inGrid(map, exit)) errors.push(`${where}: exit to ${exit.to} is outside the grid`);
