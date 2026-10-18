@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { parseRoute } from './route';
+import { hashParams, parseRoute } from './route';
 
 describe('parseRoute', () => {
   test.each([
@@ -13,7 +13,27 @@ describe('parseRoute', () => {
     ['#/find/', 'legacy'],
     ['#find', 'legacy'],
     ['#/sudoku', 'legacy'],
+    ['#/find?x=1', 'legacy'],
+    ['#/artlab', 'artlab'],
+    ['#/artlab/', 'artlab'],
+    ['#/artlab?section=sprites&bg=night', 'artlab'],
+    ['#/artlabs', 'game'],
   ])('%j -> %s', (hash, route) => {
     expect(parseRoute(hash)).toBe(route);
+  });
+});
+
+describe('hashParams', () => {
+  test('reads the query after the route', () => {
+    const params = hashParams('#/artlab?section=sprites&bg=night&size=124&only=baokaka');
+    expect(params.get('section')).toBe('sprites');
+    expect(params.get('bg')).toBe('night');
+    expect(params.get('size')).toBe('124');
+    expect(params.get('only')).toBe('baokaka');
+  });
+
+  test('is empty without a query', () => {
+    expect([...hashParams('#/artlab').keys()]).toEqual([]);
+    expect([...hashParams('').keys()]).toEqual([]);
   });
 });

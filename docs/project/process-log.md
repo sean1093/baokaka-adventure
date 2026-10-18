@@ -69,3 +69,11 @@ Format:
 - Fixed the follow-up from #2: the world screen's home button is now 回到標題.
 - Verified: `npm test` (114 tests), `npm run build`, `npm run sim` identical to before. Screenshots in `docs/screenshots/3/`.
 - Follow-ups: the old story's remaining tone words (e.g. 「暴擊」, 打/倒下 in older dialogue) are replaced when the content is rewritten (M1+); the two-line battle log can be cut off when several foes faint in one action — the battle UI is redone in M2 (#12).
+
+### 2026-10-18 · Staff engineer · #4 Visual QA tooling (PR #62)
+- `#/artlab` (dev only; `App` lazy-loads `src/artlab/ArtLab.tsx` behind `import.meta.env.DEV`, so production has one JS chunk and no art lab code). Sprites section: all 75 sprites at 48/64/124/300 px on light, night, brick and a mask-based silhouette row; `only`, `bg`, `size`, `section`, `still=1` parameters. Screens section: `ARTLAB_FIXTURES` (`src/artlab/fixtures.ts`): title-continue, world, dialogue, chapter, battle (3 foes, opens on a hero turn), victory, shop, menu, defeat, ending, built from `freshRun`/`startBattle`/`EVENTS` and unit-tested (`fixtures.test.ts`).
+- Refactor: `src/quest/QuestScreens.tsx` holds the view switch; `QuestGame` keeps storage and music. Fixtures render through it with a live reducer.
+- `parseRoute` knows `artlab` and ignores `?…`; new `hashParams()`. Unit-tested.
+- `scripts/visual-check.mjs` + `scripts/visual-targets.mjs`; `npm run visual` / `visual:update`; baselines for 12 targets × 2 viewports in `tests/visual-baseline/`; `artifacts/` gitignored. Verified: update → pass with 0 px diff; changing `sun` in the palette fails title and battle with diff images; `--perf` prints stats (median 33 ms / p95 67 ms on the dev build at 4× throttle, 1,103 DOM nodes). Production `#/artlab` shows the title.
+- README § 5 *Visual QA* documents usage; D-21 records the deviations (dev server for `--serve`, fixture discovery, silhouettes via mask).
+- Follow-ups: #57 should measure frame work from a trace on a production build (rAF intervals are vsync-floored); #10 should regenerate baselines once web fonts land.
