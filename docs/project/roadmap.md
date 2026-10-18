@@ -4,7 +4,7 @@ Tracking epic: **[#1 Epic: 寶咖咖抓周大冒險 — redesign](https://github
 
 Planning docs (story bible, script, art direction, this plan) merged in [PR #59](https://github.com/sean1093/baokaka-adventure/pull/59).
 
-Work the issues **in numeric order**; an issue may start only when every issue in its "Depends on" column is closed. Update the **Status** column when you pick up (`in progress`) and when you merge (`done`, with the PR number). Status values: `todo`, `in progress`, `done (#PR)`, `blocked (reason)`.
+Work the issues **in numeric order**; an issue may start only when every issue in its "Depends on" column is closed. Update the **Status** column when you pick up (`in progress`) and when you merge (`done`, with the PR number). Status values: `todo`, `in progress`, `done (#70)`, `blocked (reason)`.
 
 ## Milestones
 
@@ -34,7 +34,7 @@ Work the issues **in numeric order**; an issue may start only when every issue i
 | 9 | 月亮線 travel: travel step, STATIONS table, @rideTo exits and the 路線圖 screen | engine, ui, mrt | #6, #7 | done (#67) |
 | **M2** | | | | |
 | 10 | Art tokens v2: option D palette, per-hour night grades, fonts, Tailwind theme | art, ui | #4 | done (#69) |
-| 11 | Sprite rig contract v4: parts, LOD, shared defs, unique ids, placeholder sprite, sprite lint | art | #10 | todo |
+| 11 | Sprite rig contract v4: parts, LOD, shared defs, unique ids, placeholder sprite, sprite lint | art | #10 | done (#70) |
 | 12 | UI kit v2: panels, buttons, bars, dialogue with bust portrait, chapter card with clock, command panel | ui, art | #6, #11 | todo |
 | 13 | Iso map renderer v2: single-SVG ground, materials, night lighting, sky layer, light sources | art | #11 | todo |
 | 14 | Battle stage v2: backdrop system, four-hero layout, 布袋戲 boss frame | art, ui | #5, #12 | todo |

@@ -118,9 +118,10 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
 Run `npm run dev` and open `http://localhost:5173/baokaka-adventure/#/artlab`. In a production build the hash shows the game, and the art lab code is not in the bundle at all (`src/App.tsx` drops the lazy import when `import.meta.env.DEV` is false).
 
 - **Tokens** (`section=tokens`): every palette token, the night clock's sky at nine times with the graded ground and characters, the web fonts with their load state, and the UI contrast table.
-- **Sprites:** every `SpriteName` at 48, 64, 124 and 300 px on light, night and brick backgrounds, plus a black silhouette row.
+- **Rig** (`section=rig`, `skeleton=1` for the joint overlay, `state=attack|hurt|ko|victory|walk`): the option D rig test figure (`src/art/demo/RigDemo.tsx`) at the four LODs on night and parchment, its silhouettes, expressions and rig states, the shared `<ArtDefs/>` gradients, the placeholder sprite of each kind at battle and map size, and the § 8.2 element/byte budget per LOD.
+- **Sprites:** every `SpriteName` at 48, 64, 124 and 300 px on light, night and brick backgrounds, plus a black silhouette row. Option D sprites are drawn at the LOD for the cell size (48 icon, 64 map, 124 battle, 300 portrait); legacy sprites ignore `lod`.
 - **Screens:** named fixtures (`ARTLAB_FIXTURES` in `src/artlab/fixtures.ts`): title, world, dialogue, dialogue-choice, chapter-card (with its clock), battle (three heroes), battle-4-heroes, victory, shop, menu, party-sheet-equip (bag with signature gear picked), travel-screen (the 路線圖 with 3 lit, 1 new and 10 locked stations), defeat, ending. Each renders the real `QuestScreens` over a live reducer, so you can also play on from it. Add a fixture when you add a screen; the visual check picks it up automatically.
-- **URL parameters:** `section=sprites|fixtures`, `only=<sprite names, comma separated>` or `only=<one fixture>`, `bg=light,night,brick,silhouette`, `size=48,124`, `still=1` (freezes animations). Example: `#/artlab?section=sprites&bg=night&size=124&only=baokaka`, `#/artlab?section=fixtures&only=battle&still=1`.
+- **URL parameters:** `section=tokens|rig|sprites|fixtures`, `only=<sprite names, comma separated>` or `only=<one fixture>`, `bg=light,night,brick,silhouette`, `size=48,124`, `still=1` (freezes animations). Example: `#/artlab?section=sprites&bg=night&size=124&only=baokaka`, `#/artlab?section=fixtures&only=battle&still=1`.
 
 ### Screenshots and baseline diffs: `npm run visual`
 
@@ -132,7 +133,7 @@ node scripts/visual-check.mjs --serve --perf                # also measure frame
 node scripts/visual-check.mjs --url http://localhost:5173/baokaka-adventure/   # use a server you started
 ```
 
-- Targets are listed in `scripts/visual-targets.mjs` (`title`, `artlab-sprites-night`) plus every art lab fixture. Each is shot at **390×844** and **375×667** (2× pixel ratio, mobile, touch, reduced motion) after `document.fonts.ready` and once the DOM has been still for 0.5 s.
+- Targets are listed in `scripts/visual-targets.mjs` (`title`, `artlab-sprites-night`, `artlab-tokens`, `artlab-rig`) plus every art lab fixture. Each is shot at **390×844** and **375×667** (2× pixel ratio, mobile, touch, reduced motion) after `document.fonts.ready` and once the DOM has been still for 0.5 s.
 - PNGs go to `artifacts/visual/<viewport>/<name>.png` (gitignored). Diff mode compares against `tests/visual-baseline/<viewport>/` with pixelmatch (threshold 0.1) and fails when more than 0.5 % of pixels differ, writing `<name>.diff.png` next to the screenshot. It also fails on console errors.
 - **When a PR changes visuals on purpose,** run `npm run visual:update` in the same PR and say so in the PR body. Baselines will churn a lot in M2/M3; that is expected.
 - **Attaching to a PR:** copy the relevant 390×844 PNGs from `artifacts/visual/390x844/` to `docs/screenshots/<issue>/`, commit them, and link them in the PR body.
