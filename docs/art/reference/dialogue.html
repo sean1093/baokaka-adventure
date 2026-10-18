@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<title>Dialogue Box Mock</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@500;700;900&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2E2235;--line:#3A2838;--muted:#6E5A6A;--paper:#FBF4E6;--sun:#FFC63F;--sunDeep:#EE9A2C;--mrt:#3D7CC9;--mrtDeep:#2B5BA3;--persimmon:#E8743B}
+*{box-sizing:border-box;margin:0}
+body{background:#1B1830;font-family:'Chiron GoRound TC',system-ui,sans-serif;color:var(--ink)}
+.phone{position:relative;width:390px;height:844px;overflow:hidden;background:#F6E4CC}
+.map{position:absolute;left:-95px;top:-40px;width:580px;height:892px;border:0}
+.scrim{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(27,24,48,.0) 40%,rgba(27,24,48,.55) 100%)}
+.appbar{position:absolute;top:12px;left:14px;right:14px;display:flex;align-items:center;gap:10px}
+.back{width:46px;height:46px;border-radius:50%;background:rgba(255,253,248,.92);display:grid;place-items:center;box-shadow:0 8px 18px -10px rgba(30,24,52,.5)}
+.title{background:rgba(255,253,248,.92);border-radius:18px;padding:6px 14px 7px;box-shadow:0 8px 18px -10px rgba(30,24,52,.5)}
+.title small{display:block;font-weight:700;font-size:13px;color:var(--muted)}
+.title b{font-weight:900;font-size:20px;line-height:1.15}
+/* dialogue */
+.dlg{position:absolute;left:12px;right:12px;bottom:18px}
+.box{position:relative;background:linear-gradient(#FFFDF8,#FFF7EA);border-radius:28px;padding:22px 22px 20px;min-height:178px;box-shadow:0 22px 40px -18px rgba(20,16,40,.7),inset 0 1px 0 #fff,inset 0 0 0 1.5px rgba(58,40,56,.08)}
+.portrait{position:absolute;left:10px;bottom:100%;margin-bottom:-26px;width:124px;height:124px;border-radius:34px;overflow:hidden;background:radial-gradient(circle at 45% 30%,#BFE0FF,#5E9BE0 75%);box-shadow:0 12px 24px -12px rgba(20,16,40,.7),inset 0 0 0 3px rgba(255,255,255,.85)}
+.portrait img{position:absolute;width:190%;left:-46%;top:-14%}
+.portrait::after{content:'';position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 -18px 26px -16px rgba(30,40,90,.45)}
+.listener{position:absolute;right:16px;bottom:100%;margin-bottom:-6px;width:78px;height:78px;border-radius:26px;overflow:hidden;background:radial-gradient(circle at 45% 30%,#FFF1C4,#F2B94E 80%);filter:saturate(.55) brightness(.92);opacity:.92;box-shadow:inset 0 0 0 3px rgba(255,255,255,.7)}
+.listener img{position:absolute;width:190%;left:-48%;top:-8%}
+.name{position:absolute;left:144px;top:-16px;background:var(--mrt);color:#fff;font-weight:900;font-size:18px;padding:6px 16px 7px;border-radius:999px;box-shadow:0 4px 0 var(--mrtDeep),0 10px 16px -8px rgba(43,91,163,.8);letter-spacing:.06em}
+.text{font-weight:700;font-size:21px;line-height:1.62;letter-spacing:.01em;margin-top:22px}
+.text em{font-style:normal;color:#C9601F;background:linear-gradient(transparent 62%,rgba(255,198,63,.45) 62%);padding:0 2px}
+.text .ghost{opacity:.18}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.hint{font-weight:700;font-size:14px;color:var(--muted)}
+.next{width:34px;height:34px;border-radius:50%;background:var(--sun);display:grid;place-items:center;box-shadow:0 3px 0 var(--sunDeep)}
+.dots{display:flex;gap:5px}.dots i{width:7px;height:7px;border-radius:50%;background:#E4D6C2}.dots i.on{background:var(--ink);width:18px;border-radius:9px}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+</style></head>
+<body><div class="phone">
+ <object class="map" type="image/svg+xml" data="iso-tiles.svg" aria-hidden="true"></object>
+ <div class="scrim"></div>
+ <div class="appbar">
+  <span class="back"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2E2235" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/></svg></span>
+  <span class="title"><small>第 1 章 · 雲端上的尖塔</small><b>信義區 · 台北101</b></span>
+ </div>
+ <div class="dlg">
+  <div class="box">
+   <div class="portrait"><img src="mocha-cat.svg" alt=""></div>
+   <div class="listener"><img src="baokaka.svg" alt=""></div>
+   <span class="name">摩卡貓</span>
+   <p class="text">喵～抬頭看！那根像竹子一節一節的，就是<em>台北101</em>。我們要爬到<span class="ghost">最上面去找它。</span></p>
+   <div class="foot"><span class="dots"><i></i><i class="on"></i><i></i><i></i></span><span class="hint">點一下繼續</span><span class="next"><svg width="16" height="16" viewBox="0 0 24 24" fill="#2E2235"><path d="M5 8h14l-7 9z"/></svg></span></div>
+  </div>
+ </div>
+ <div class="grain"></div>
+</div></body></html>

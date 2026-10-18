@@ -1,0 +1,60 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>Dialogue Mock D</title><link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@500;700;900&family=Noto+Serif+TC:wght@700;900&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0}body{background:#05050F;font-family:'Chiron GoRound TC',system-ui,sans-serif}
+:root{--gold:#E8C77A;--goldL:#FFE9B0;--navy:#141A4A;--ink:#F4F2FF;--mut:#BFC2EA}
+.phone{position:relative;width:390px;height:844px;overflow:hidden;background:#0A0B24}
+.sp{position:absolute}.sp svg,.sp img{display:block;width:100%;height:100%}
+.chip{position:absolute;top:14px;padding:6px 16px;color:var(--ink);font:900 15px 'Noto Serif TC';letter-spacing:.06em;background:linear-gradient(rgba(20,24,72,.82),rgba(12,14,44,.82));border:1px solid rgba(232,199,122,.7);border-radius:4px;box-shadow:0 6px 16px -8px #000,inset 0 0 0 3px rgba(12,14,44,.82),inset 0 0 0 4px rgba(232,199,122,.25)}
+.chip b{font-family:Fredoka;font-weight:600;color:var(--goldL);margin:0 2px}
+.plate{position:absolute;top:58px;right:18px;width:206px;padding:8px 14px 10px;color:var(--ink);background:linear-gradient(90deg,rgba(60,20,70,.0),rgba(40,18,64,.9) 18%,rgba(40,18,64,.9));clip-path:polygon(10% 0,100% 0,100% 100%,0 100%);border-top:1px solid var(--gold);border-bottom:1px solid var(--gold)}
+.plate .n{font:900 19px 'Noto Serif TC';letter-spacing:.08em}.plate .n small{font:600 13px Fredoka;color:var(--goldL);margin-left:6px}
+.plate .t{font:700 11px 'Chiron GoRound TC';color:#E8B8FF;letter-spacing:.2em}
+.dmg{position:absolute;z-index:6;font:700 44px Fredoka;color:#fff;-webkit-text-stroke:5px #C2185B;paint-order:stroke fill;text-shadow:0 0 14px rgba(255,90,160,.8),0 3px 0 #5A0A2A;font-style:italic}
+.dmg span{display:block;font:900 15px 'Noto Serif TC';-webkit-text-stroke:3px #5A0A2A;color:#FFE9B0;margin-top:-8px;text-align:center;font-style:normal}
+.turn{position:absolute;font:900 13px 'Noto Serif TC';color:#1A1440;background:linear-gradient(#FFF2C8,#E8C77A);padding:3px 12px;border-radius:2px;letter-spacing:.12em;box-shadow:0 0 12px rgba(255,220,140,.8)}
+.turn::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#E8C77A;border-bottom:0}
+.panel{position:absolute;left:0;right:0;bottom:0;height:346px;padding:20px 14px 18px;color:var(--ink);background:linear-gradient(rgba(22,26,78,.96),rgba(10,11,34,.99));border-top:1px solid var(--gold);box-shadow:0 -10px 30px rgba(0,0,0,.6)}
+.panel::before{content:'';position:absolute;left:10px;right:10px;top:5px;height:1px;background:linear-gradient(90deg,transparent,rgba(232,199,122,.55),transparent)}
+.orn{position:absolute;left:50%;top:-7px;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);background:linear-gradient(135deg,#FFF2C8,#C9A04A);box-shadow:0 0 10px rgba(255,220,140,.8)}
+.party{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mem{position:relative;display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:6px;background:linear-gradient(rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(232,199,122,.3)}
+.mem.on{border-color:var(--gold);box-shadow:0 0 14px rgba(232,199,122,.35),inset 0 0 12px rgba(232,199,122,.12)}
+.ava{width:48px;height:48px;border-radius:50%;overflow:hidden;flex:none;position:relative;background:radial-gradient(circle at 50% 35%,#5A6AC8,#1E2462);box-shadow:0 0 0 1.5px var(--gold),0 0 0 3px rgba(12,14,44,1),0 0 0 4px rgba(232,199,122,.4)}
+.ava img{position:absolute;width:190%;left:-45%;top:-4%}
+.nm{font:900 16px 'Noto Serif TC';letter-spacing:.06em}
+.bar{height:7px;border-radius:1px;background:rgba(0,0,0,.45);margin:4px 0 2px;box-shadow:0 0 0 1px rgba(232,199,122,.35);overflow:hidden}.bar i{display:block;height:100%}
+.st{font:600 12px Fredoka;color:var(--mut);display:flex;justify-content:space-between;white-space:nowrap;gap:6px}
+.prompt{margin:14px 4px 10px;display:flex;justify-content:space-between;align-items:center;font:900 17px 'Noto Serif TC';letter-spacing:.06em}
+.prompt a{font:700 14px 'Chiron GoRound TC';color:var(--mut)}
+.cmds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmd{position:relative;height:70px;border:1px solid rgba(232,199,122,.55);border-radius:6px;display:flex;align-items:center;gap:12px;padding:0 14px;background:linear-gradient(#262E74,#161B4C);color:#fff;font:900 21px 'Noto Serif TC';letter-spacing:.1em;box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 8px 16px -10px #000}
+.cmd::after{content:'';position:absolute;inset:3px;border:1px solid rgba(232,199,122,.18);border-radius:4px;pointer-events:none}
+.cmd .ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;border:1px solid rgba(232,199,122,.7);background:rgba(232,199,122,.08)}
+.cmd small{display:block;font:600 12px 'Chiron GoRound TC';color:var(--mut);letter-spacing:.04em;margin-top:1px}
+.cmd.pri{background:linear-gradient(#FFEFC0,#F0C060 55%,#D89A3A);color:#1A1440;border-color:#FFF2C8;box-shadow:0 0 18px rgba(255,200,100,.55),inset 0 1px 0 #fff}
+.cmd.pri small{color:#5A3A1A}.cmd.pri .ic{border-color:#5A3A1A;background:rgba(255,255,255,.35)}
+
+.map{position:absolute;left:-95px;top:-60px;width:580px;height:892px;border:0;filter:blur(1.2px) brightness(.9)}
+.scrim{position:absolute;inset:0;background:linear-gradient(rgba(10,8,32,0) 45%,rgba(10,8,32,.75))}
+.bust{position:absolute;left:-14px;top:318px;width:340px;height:310px;overflow:hidden}
+.bust img{position:absolute;width:340px;left:0;top:0}
+.glow{position:absolute;left:-20px;top:300px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(160,190,255,.45),rgba(160,190,255,0) 65%)}
+.box{position:absolute;left:12px;right:12px;bottom:22px;min-height:172px;padding:30px 22px 18px;border-radius:6px;color:var(--ink);background:linear-gradient(rgba(24,28,84,.94),rgba(12,13,40,.97));border:1px solid var(--gold);box-shadow:0 18px 40px -12px #000,inset 0 0 0 4px rgba(12,13,40,.9),inset 0 0 0 5px rgba(232,199,122,.3)}
+.box .c{position:absolute;width:10px;height:10px;transform:rotate(45deg);background:linear-gradient(135deg,#FFF2C8,#C9A04A)}
+.nameplate{position:absolute;left:18px;top:-20px;padding:6px 26px 7px;font:900 19px 'Noto Serif TC';letter-spacing:.18em;color:#1A1440;background:linear-gradient(#FFF2C8,#E8C77A 60%,#C9A04A);clip-path:polygon(8% 0,100% 0,92% 100%,0 100%);box-shadow:0 0 14px rgba(255,220,140,.6)}
+.txt{font:700 21px/1.7 'Chiron GoRound TC';letter-spacing:.02em}.txt em{font-style:normal;color:#FFD98A;text-shadow:0 0 10px rgba(255,200,100,.5)}.txt .g{opacity:.2}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font:700 14px 'Chiron GoRound TC';color:var(--mut)}
+.next{width:14px;height:14px;transform:rotate(45deg);background:linear-gradient(135deg,#FFF2C8,#C9A04A);box-shadow:0 0 10px rgba(255,220,140,.9)}
+.dots i{display:inline-block;width:6px;height:6px;margin-right:6px;transform:rotate(45deg);border:1px solid var(--gold)}.dots i.on{background:var(--gold)}
+.hdr{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:10px}
+.home{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(16,18,56,.85);border:1px solid rgba(232,199,122,.7)}
+.ttl{padding:6px 16px 8px;border-radius:4px;background:linear-gradient(rgba(20,24,72,.86),rgba(12,14,44,.86));border:1px solid rgba(232,199,122,.6);color:var(--ink)}
+.ttl small{display:block;font:700 12px 'Chiron GoRound TC';color:var(--mut);letter-spacing:.1em}.ttl b{font:900 19px 'Noto Serif TC';letter-spacing:.1em}
+.ttl i{font:600 13px Fredoka;font-style:normal;color:var(--goldL);margin-left:8px}
+</style></head><body><div class="phone">
+<object class="map" type="image/svg+xml" data="iso.svg"></object><div class="scrim"></div>
+<div class="hdr"><span class="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFE9B0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/></svg></span><span class="ttl"><small>第 1 章 · 度晬前一晚</small><b>大安森林公園</b><i>00:24</i></span></div>
+<div class="glow"></div><div class="bust"><img src="mocha-smug.svg"></div>
+<div class="box"><span class="c" style="left:-6px;top:-6px"></span><span class="c" style="right:-6px;top:-6px"></span><span class="c" style="left:-6px;bottom:-6px"></span><span class="c" style="right:-6px;bottom:-6px"></span>
+<span class="nameplate">摩卡貓</span>
+<p class="txt">風是往這邊吹的。<em>寶物</em>應該掉在附近。<span class="g">草地上會有搗蛋鬼。</span></p>
+<div class="foot"><span class="dots"><i></i><i class="on"></i><i></i><i></i></span><span>點一下繼續</span><span class="next"></span></div></div>
+</div></body></html>

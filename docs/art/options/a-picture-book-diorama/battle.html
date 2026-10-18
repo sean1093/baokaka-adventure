@@ -1,0 +1,110 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>Battle Mock A</title><link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@500;700;900&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0}body{background:#111;font-family:'Chiron GoRound TC',system-ui,sans-serif}
+.phone{position:relative;width:390px;height:844px;overflow:hidden}
+.stage{position:absolute;inset:0 0 auto 0;height:500px}.stage>svg{position:absolute;inset:0;width:100%;height:100%}
+.sp{position:absolute}.sp svg,.sp img{display:block;width:100%;height:100%}
+.topbar{position:absolute;top:14px;left:26px;right:26px;display:flex;justify-content:space-between;z-index:5}
+.panel{position:absolute;left:0;right:0;bottom:0;height:344px;padding:18px 16px 20px;z-index:7}
+.party{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mem{display:flex;gap:10px;align-items:center;padding:8px 10px}
+.ava{width:46px;height:46px;border-radius:50%;overflow:hidden;flex:none;position:relative}
+.ava img{position:absolute;width:210%;left:-92%;top:-30%}.ava.mc img{width:170%;left:-36%;top:-14%}
+.info{flex:1;min-width:0}.nm{font-weight:900;font-size:16px;line-height:1.1}
+.st{font:600 12.5px Fredoka;display:flex;justify-content:space-between;white-space:nowrap;gap:4px}
+.mini{height:9px;border-radius:9px;overflow:hidden;margin:3px 0 4px}.mini i{display:block;height:100%;border-radius:9px}
+.prompt{margin:14px 2px 10px;font-weight:700;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.prompt a{font-size:15px;font-weight:700;text-decoration:none}
+.cmds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmd{height:70px;border:0;display:flex;align-items:center;gap:12px;padding:0 16px;font:900 21px 'Chiron GoRound TC'}
+.cmd .ic{width:38px;height:38px;display:grid;place-items:center;flex:none}
+.cmd small{display:block;font:600 12px Fredoka;margin-top:1px}
+.pl{position:absolute;z-index:5}
+.dmg{position:absolute;z-index:6;font:700 38px Fredoka}
+.phone{background:#FBF4E6}
+.chip{background:rgba(20,16,48,.55);backdrop-filter:blur(6px);color:#FFF4E2;border-radius:999px;padding:7px 14px;font-weight:700;font-size:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.panel{background:linear-gradient(#FFFDF8,#FBF2E2);border-radius:30px 30px 0 0;box-shadow:0 -18px 36px -18px rgba(20,16,48,.6),inset 0 1px 0 #fff;color:#2E2235}
+.mem{background:#F6EBD8;border-radius:20px}.mem.on{background:#FFF1C9;box-shadow:inset 0 0 0 2.5px #FFC63F}
+.ava{background:radial-gradient(circle at 40% 35%,#fff,#F1DFC4)}.st{color:#6E5A6A}.mini{background:rgba(58,40,56,.12)}
+.mini i{position:relative}.mini i::after{content:'';position:absolute;left:4px;right:4px;top:2px;height:2px;border-radius:9px;background:rgba(255,255,255,.5)}
+.prompt a{color:#6E5A6A}
+.cmd{border-radius:22px;color:#2E2235;background:#fff;box-shadow:0 4px 0 #E3D3BA,0 10px 18px -12px rgba(46,34,53,.45),inset 0 1px 0 #fff}
+.cmd .ic{border-radius:13px}.cmd small{color:#6E5A6A}
+.cmd.pri{background:linear-gradient(#FFD45C,#FFB834);box-shadow:0 4px 0 #D98A22,0 12px 20px -10px rgba(238,154,44,.85),inset 0 1px 0 #FFF2BF}.cmd.pri small{color:#8A5316}
+.pl{background:rgba(20,16,48,.6);backdrop-filter:blur(6px);color:#FFF4E2;border-radius:16px;padding:7px 12px 9px;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.dmg{color:#FFF6DA;-webkit-text-stroke:6px #3A2838;paint-order:stroke fill;text-shadow:0 4px 0 rgba(46,34,53,.35)}
+.grain{position:absolute;inset:0;pointer-events:none;z-index:9;opacity:.07;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}</style></head><body><div class="phone">
+<div class="stage"><svg viewBox="0 0 390 500" preserveAspectRatio="xMidYMid slice"><defs>
+<linearGradient id="bA-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121844"/><stop offset=".7" stop-color="#2E2A66"/><stop offset="1" stop-color="#4A3A7A"/></linearGradient>
+<linearGradient id="bA-win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD98A"/><stop offset="1" stop-color="#F29A4A"/></linearGradient>
+<radialGradient id="bA-lamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD98A" stop-opacity=".9"/><stop offset="1" stop-color="#FFB86A" stop-opacity="0"/></radialGradient>
+<linearGradient id="bA-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A4A6E"/><stop offset="1" stop-color="#2A2440"/></linearGradient>
+<radialGradient id="bA-pool" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".5"/><stop offset="1" stop-color="#FFD9A0" stop-opacity="0"/></radialGradient>
+<radialGradient id="bA-vig" cx=".5" cy=".45" r=".75"><stop offset=".55" stop-color="#0E0A22" stop-opacity="0"/><stop offset="1" stop-color="#0E0A22" stop-opacity=".6"/></radialGradient>
+<radialGradient id="bA-steam" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+<rect width="390" height="500" fill="url(#bA-sky)"/>
+<g fill="#fff"><circle cx="40" cy="40" r="1"/><circle cx="120" cy="24" r=".8"/><circle cx="330" cy="58" r="1.1"/><circle cx="268" cy="30" r=".8"/><circle cx="190" cy="76" r=".7"/></g>
+<circle cx="300" cy="70" r="14" fill="#FFF1C9"/><circle cx="300" cy="70" r="34" fill="url(#bA-lamp)" opacity=".4"/>
+<path d="M0,190 V150 h20 v-14 h16 v20 h20 v-30 h18 v24 h14 v-10 h22 v18 h16 v-40 h18 v34 h20 v-16 h16 v22 h22 v-26 h16 v30 h18 v-20 h20 v26 h16 v-30 h22 v34 h18 V190 Z" fill="#1E1E4A"/>
+<path d="M0,110 Q195,160 390,100" stroke="#3A2838" stroke-width="1.2" fill="none"/><circle cx="30" cy="120" r="9" fill="url(#bA-lamp)"/><circle cx="30" cy="120" r="3.4" fill="#FFE9A8"/><circle cx="80" cy="132" r="9" fill="url(#bA-lamp)"/><circle cx="80" cy="132" r="3.4" fill="#FFE9A8"/><circle cx="130" cy="138" r="9" fill="url(#bA-lamp)"/><circle cx="130" cy="138" r="3.4" fill="#FFE9A8"/><circle cx="180" cy="140" r="9" fill="url(#bA-lamp)"/><circle cx="180" cy="140" r="3.4" fill="#FFE9A8"/><circle cx="230" cy="138" r="9" fill="url(#bA-lamp)"/><circle cx="230" cy="138" r="3.4" fill="#FFE9A8"/><circle cx="280" cy="132" r="9" fill="url(#bA-lamp)"/><circle cx="280" cy="132" r="3.4" fill="#FFE9A8"/><circle cx="330" cy="122" r="9" fill="url(#bA-lamp)"/><circle cx="330" cy="122" r="3.4" fill="#FFE9A8"/><circle cx="372" cy="112" r="9" fill="url(#bA-lamp)"/><circle cx="372" cy="112" r="3.4" fill="#FFE9A8"/>
+<rect x="-4" y="214" width="92" height="76" fill="#2A2350"/>
+<rect x="0" y="226" width="84" height="40" fill="url(#bA-win)"/>
+<path d="M-10,196 h104 v22 h-104 Z" fill="#E8553D"/><rect x="-10" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="3" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="16" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="29" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="42" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="55" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="68" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="81" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/>
+<path d="M-10,218 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 Z" fill="#E8553D"/><rect x="98" y="214" width="92" height="76" fill="#2A2350"/>
+<rect x="102" y="226" width="84" height="40" fill="url(#bA-win)"/>
+<path d="M92,196 h104 v22 h-104 Z" fill="#2F8F88"/><rect x="92" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="105" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="118" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="131" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="144" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="157" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="170" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="183" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/>
+<path d="M92,218 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 Z" fill="#2F8F88"/><rect x="200" y="214" width="92" height="76" fill="#2A2350"/>
+<rect x="204" y="226" width="84" height="40" fill="url(#bA-win)"/>
+<path d="M194,196 h104 v22 h-104 Z" fill="#E9A23A"/><rect x="194" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="207" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="220" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="233" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="246" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="259" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="272" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="285" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/>
+<path d="M194,218 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 Z" fill="#E9A23A"/><rect x="302" y="214" width="92" height="76" fill="#2A2350"/>
+<rect x="306" y="226" width="84" height="40" fill="url(#bA-win)"/>
+<path d="M296,196 h104 v22 h-104 Z" fill="#E8553D"/><rect x="296" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="309" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="322" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="335" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="348" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="361" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="374" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/><rect x="387" y="196" width="6.5" height="22" fill="#FFF1DC" opacity=".9"/>
+<path d="M296,218 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 q6.5,8 13,0 Z" fill="#E8553D"/><g transform="translate(22 150)"><rect width="66" height="30" rx="7" fill="#FFF1C9"/><rect width="66" height="30" rx="7" fill="none" stroke="#E8553D" stroke-width="3"/><text x="33" y="21" text-anchor="middle" font-family="Chiron GoRound TC" font-weight="900" font-size="17" fill="#E8553D">雞排</text></g><g transform="translate(162 150)"><rect width="66" height="30" rx="7" fill="#FFF1C9"/><rect width="66" height="30" rx="7" fill="none" stroke="#7A4A2E" stroke-width="3"/><text x="33" y="21" text-anchor="middle" font-family="Chiron GoRound TC" font-weight="900" font-size="17" fill="#7A4A2E">珍奶</text></g><g transform="translate(298 150)"><rect width="66" height="30" rx="7" fill="#FFF1C9"/><rect width="66" height="30" rx="7" fill="none" stroke="#2F8F88" stroke-width="3"/><text x="33" y="21" text-anchor="middle" font-family="Chiron GoRound TC" font-weight="900" font-size="17" fill="#2F8F88">臭豆腐</text></g>
+<path d="M0,290 L390,290 L390,500 L0,500 Z" fill="url(#bA-floor)"/>
+<g stroke="#8A7A9A" stroke-width="1.5" opacity=".4"><path d="M195,290 L60,500 M195,290 L330,500 M195,290 L-80,460 M195,290 L470,460"/></g>
+<ellipse cx="80" cy="200" rx="30" ry="40" fill="url(#bA-steam)"/><ellipse cx="300" cy="190" rx="26" ry="36" fill="url(#bA-steam)"/>
+<ellipse cx="195" cy="400" rx="200" ry="90" fill="url(#bA-pool)"/>
+<rect width="390" height="500" fill="url(#bA-vig)"/></svg>
+<div class="topbar"><span class="chip">士林夜市 · 03:40</span><span class="chip">第 2 回合</span></div>
+<div class="pl" style="top:64px;right:26px;width:200px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-weight:900;font-size:18px">珍珠粉圓</b><span style="font:600 14px Fredoka">×3</span></div></div>
+<div class="sp" style="left:216px;top:206px;width:92px;height:92px"><svg viewBox="0 0 100 100"><defs><radialGradient id="bA0" cx=".36" cy=".3" r=".75"><stop offset="0" stop-color="#8A6A84"/><stop offset=".45" stop-color="#43293F"/><stop offset="1" stop-color="#1E1220"/></radialGradient></defs>
+<ellipse cx="50" cy="92" rx="26" ry="4.6" fill="#120A20" opacity=".45"/>
+<path d="M58,26 L70,6" stroke="#3A2838" stroke-width="8.4" stroke-linecap="round"/><path d="M58,26 L70,6" stroke="#FF7F95" stroke-width="5" stroke-linecap="round"/><path d="M61,18 L65,11" stroke="#fff" stroke-width="1.2" opacity=".7" stroke-linecap="round"/>
+<circle cx="50" cy="58" r="32" fill="url(#bA0)" stroke="#3A2838" stroke-width="2.2"/>
+<path d="M76,44 C82,56 80,72 68,82" stroke="#D3A8FF" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+<ellipse cx="36" cy="40" rx="9" ry="5" transform="rotate(-30 36 40)" fill="#fff" opacity=".55"/>
+<ellipse cx="40" cy="58" rx="6.4" ry="7.4" fill="#fff" stroke="#3A2838" stroke-width="1.6"/><ellipse cx="62" cy="58" rx="6.4" ry="7.4" fill="#fff" stroke="#3A2838" stroke-width="1.6"/>
+<circle cx="42" cy="60" r="3.6" fill="#2E1E2C"/><circle cx="64" cy="60" r="3.6" fill="#2E1E2C"/><circle cx="43.2" cy="58.4" r="1.2" fill="#fff"/><circle cx="65.2" cy="58.4" r="1.2" fill="#fff"/>
+<path d="M33,48 L44,51 M69,48 L58,51" stroke="#E9DAF2" stroke-width="2" stroke-linecap="round"/>
+<path d="M42,72 C47,77 55,77 60,72 Z" fill="#FF8F9A" stroke="#3A2838" stroke-width="1.4" stroke-linejoin="round"/>
+<ellipse cx="31" cy="68" rx="4" ry="2.4" fill="#FF8A80" opacity=".5"/><ellipse cx="71" cy="68" rx="4" ry="2.4" fill="#FF8A80" opacity=".5"/></svg></div><div class="sp" style="left:292px;top:236px;width:86px;height:86px"><svg viewBox="0 0 100 100"><defs><radialGradient id="bA1" cx=".36" cy=".3" r=".75"><stop offset="0" stop-color="#8A6A84"/><stop offset=".45" stop-color="#43293F"/><stop offset="1" stop-color="#1E1220"/></radialGradient></defs>
+<ellipse cx="50" cy="92" rx="26" ry="4.6" fill="#120A20" opacity=".45"/>
+<path d="M58,26 L70,6" stroke="#3A2838" stroke-width="8.4" stroke-linecap="round"/><path d="M58,26 L70,6" stroke="#FF7F95" stroke-width="5" stroke-linecap="round"/><path d="M61,18 L65,11" stroke="#fff" stroke-width="1.2" opacity=".7" stroke-linecap="round"/>
+<circle cx="50" cy="58" r="32" fill="url(#bA1)" stroke="#3A2838" stroke-width="2.2"/>
+<path d="M76,44 C82,56 80,72 68,82" stroke="#D3A8FF" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+<ellipse cx="36" cy="40" rx="9" ry="5" transform="rotate(-30 36 40)" fill="#fff" opacity=".55"/>
+<ellipse cx="40" cy="58" rx="6.4" ry="7.4" fill="#fff" stroke="#3A2838" stroke-width="1.6"/><ellipse cx="62" cy="58" rx="6.4" ry="7.4" fill="#fff" stroke="#3A2838" stroke-width="1.6"/>
+<circle cx="42" cy="60" r="3.6" fill="#2E1E2C"/><circle cx="64" cy="60" r="3.6" fill="#2E1E2C"/><circle cx="43.2" cy="58.4" r="1.2" fill="#fff"/><circle cx="65.2" cy="58.4" r="1.2" fill="#fff"/>
+<path d="M33,48 L44,51 M69,48 L58,51" stroke="#E9DAF2" stroke-width="2" stroke-linecap="round"/>
+<path d="M42,72 C47,77 55,77 60,72 Z" fill="#FF8F9A" stroke="#3A2838" stroke-width="1.4" stroke-linejoin="round"/>
+<ellipse cx="31" cy="68" rx="4" ry="2.4" fill="#FF8A80" opacity=".5"/><ellipse cx="71" cy="68" rx="4" ry="2.4" fill="#FF8A80" opacity=".5"/></svg></div><div class="sp" style="left:250px;top:290px;width:96px;height:96px"><svg viewBox="0 0 100 100"><defs><radialGradient id="bA2" cx=".36" cy=".3" r=".75"><stop offset="0" stop-color="#8A6A84"/><stop offset=".45" stop-color="#43293F"/><stop offset="1" stop-color="#1E1220"/></radialGradient></defs>
+<ellipse cx="50" cy="92" rx="26" ry="4.6" fill="#120A20" opacity=".45"/>
+<path d="M58,26 L70,6" stroke="#3A2838" stroke-width="8.4" stroke-linecap="round"/><path d="M58,26 L70,6" stroke="#FF7F95" stroke-width="5" stroke-linecap="round"/><path d="M61,18 L65,11" stroke="#fff" stroke-width="1.2" opacity=".7" stroke-linecap="round"/>
+<circle cx="50" cy="58" r="32" fill="url(#bA2)" stroke="#3A2838" stroke-width="2.2"/>
+<path d="M76,44 C82,56 80,72 68,82" stroke="#D3A8FF" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+<ellipse cx="36" cy="40" rx="9" ry="5" transform="rotate(-30 36 40)" fill="#fff" opacity=".55"/>
+<ellipse cx="40" cy="58" rx="6.4" ry="7.4" fill="#fff" stroke="#3A2838" stroke-width="1.6"/><ellipse cx="62" cy="58" rx="6.4" ry="7.4" fill="#fff" stroke="#3A2838" stroke-width="1.6"/>
+<circle cx="42" cy="60" r="3.6" fill="#2E1E2C"/><circle cx="64" cy="60" r="3.6" fill="#2E1E2C"/><circle cx="43.2" cy="58.4" r="1.2" fill="#fff"/><circle cx="65.2" cy="58.4" r="1.2" fill="#fff"/>
+<path d="M33,48 L44,51 M69,48 L58,51" stroke="#E9DAF2" stroke-width="2" stroke-linecap="round"/>
+<path d="M42,72 C47,77 55,77 60,72 Z" fill="#FF8F9A" stroke="#3A2838" stroke-width="1.4" stroke-linejoin="round"/>
+<ellipse cx="31" cy="68" rx="4" ry="2.4" fill="#FF8A80" opacity=".5"/><ellipse cx="71" cy="68" rx="4" ry="2.4" fill="#FF8A80" opacity=".5"/></svg></div><div class="sp" style="left:234px;top:300px;width:56px;height:7px;border-radius:9px;background:rgba(0,0,0,.35);overflow:hidden"><i style="display:block;height:100%;width:100%;background:linear-gradient(#FF7A6A,#D9443C);border-radius:9px"></i></div><div class="sp" style="left:307px;top:323px;width:56px;height:7px;border-radius:9px;background:rgba(0,0,0,.35);overflow:hidden"><i style="display:block;height:100%;width:100%;background:linear-gradient(#FF7A6A,#D9443C);border-radius:9px"></i></div><div class="sp" style="left:270px;top:386px;width:56px;height:7px;border-radius:9px;background:rgba(0,0,0,.35);overflow:hidden"><i style="display:block;height:100%;width:40%;background:linear-gradient(#FF7A6A,#D9443C);border-radius:9px"></i></div><svg class="sp" style="left:236px;top:296px;width:58px;height:58px;z-index:6" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#FFF2C2" stroke-width="3" opacity=".7"/><path d="M50,8 L58,38 L90,30 L64,52 L86,78 L54,64 L44,94 L38,62 L8,70 L32,48 L12,22 L42,36 Z" fill="#FFE27A" stroke="#3A2838" stroke-width="2.4" stroke-linejoin="round"/><path d="M50,26 L54,42 L70,40 L58,52 L66,66 L50,58 L40,70 L42,54 L28,48 L44,44 Z" fill="#FFFDF2"/></svg><div class="dmg" style="left:196px;top:262px">18</div>
+<svg class="sp" style="left:4px;top:430px;width:140px;height:30px" viewBox="0 0 140 30"><ellipse cx="70" cy="15" rx="66" ry="12" fill="#FFD45C" opacity=".22" stroke="#FFD45C" stroke-width="3"/></svg>
+<div class="sp" style="left:124px;top:366px;width:84px;height:84px"><img src="mocha-cat.svg"></div>
+<div class="sp" style="left:8px;top:330px;width:124px;height:124px"><img src="baokaka-crawl.svg"></div>
+</div>
+<div class="panel">
+<div class="party">
+<div class="mem on"><span class="ava"><img src="baokaka-crawl.svg"></span><div class="info"><div class="nm">寶咖咖</div><div class="mini"><i style="width:84%;background:linear-gradient(#6AD184,#3FA35C);color:transparent"></i></div><div class="mini" style="height:6px"><i style="width:60%;background:linear-gradient(#78AEF0,#3F78C8);color:transparent"></i></div><div class="st"><span>體力 84/100</span><span>元氣 9</span></div></div></div>
+<div class="mem"><span class="ava mc"><img src="mocha-cat.svg"></span><div class="info"><div class="nm">摩卡貓</div><div class="mini"><i style="width:34%;background:linear-gradient(#FFB25A,#E5833A);color:transparent"></i></div><div class="mini" style="height:6px"><i style="width:88%;background:linear-gradient(#78AEF0,#3F78C8);color:transparent"></i></div><div class="st"><span>體力 31/90</span><span>元氣 14</span></div></div></div>
+</div>
+<p class="prompt"><span>寶咖咖要做什麼？</span><a>逃跑 ›</a></p>
+<div class="cmds"><button class="cmd pri"><span class="ic" style="background:rgba(255,255,255,.55)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3A2838" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="11" height="11" rx="1.5"/><path d="M5 9l4-4h11v11l-4 4M16 9l4-4"/></svg></span><span>攻擊<small>丟積木</small></span></button><button class="cmd"><span class="ic" style="background:#EDE2FF"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B47B8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.2 5.2L20 9l-4.3 3.8L17 18.5 12 15.6 7 18.5l1.3-5.7L4 9l5.8-.8z"/></svg></span><span>才藝<small>元氣 3</small></span></button><button class="cmd"><span class="ic" style="background:#DDF2E2"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2F8A4C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l-1 4H9z"/><path d="M7 7h10l-1.4 13H8.4z"/><path d="M14 3l3-1.5"/></svg></span><span>道具<small>4 樣</small></span></button><button class="cmd"><span class="ic" style="background:#DCEBFB"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2B5BA3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg></span><span>防禦<small>減傷一半</small></span></button></div>
+</div><div class="grain"></div></div></body></html>
