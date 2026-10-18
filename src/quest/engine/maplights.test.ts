@@ -46,3 +46,11 @@ describe('map lights and ambient FX (#13)', () => {
     expect(errorsOf({ ...MAPS.beach, ambient: ['ripples'] })).toEqual([]);
   });
 });
+
+describe('battle backdrops (#14)', () => {
+  it('accepts a known backdrop key and rejects an unknown one', () => {
+    expect(errorsOf({ ...MAPS.park, backdrop: 'daan' })).toEqual([]);
+    expect(errorsOf({ ...MAPS.park, backdrop: 'generic' })).toEqual([]);
+    expect(errorsOf({ ...MAPS.park, backdrop: 'nowhere' }).join()).toMatch(/unknown battle backdrop "nowhere"/);
+  });
+});

@@ -7,6 +7,9 @@
  *      commands are 70px tall (art direction § 7.2, docs/project/README.md § Code).
  *   3. Reduced motion (the OS setting, and the in-game 「減少動態」 toggle) leaves no looping,
  *      flipping or drawing animation running on any screen.
+ *   4. The battle stage (#14): the static backdrop is never touched while turns play (0 DOM
+ *      mutations inside it), nothing animating in the battle carries a CSS filter, and the 布袋戲
+ *      frame shows on boss fights only.
  *
  *   node scripts/ui-check.mjs [--serve] [--url <base>]     (npm run check:ui)
  *
@@ -154,6 +157,66 @@ async function checkReducedMotion(browser, base, fixtures) {
   await page.close();
 }
 
+/** 4. Play a few turns of the 4v3 fixture and watch the backdrop; then the frames. */
+async function checkStage(browser, base) {
+  console.log('Battle stage');
+  const page = await browser.newPage({ viewport: VIEWPORTS[0], reducedMotion: 'no-preference' });
+  await open(page, fixtureUrl(base, 'battle-4v3', false), 'battle-4v3');
+  await page.waitForSelector('[data-stage-static][data-stage="daan"]', { timeout: 20000 });
+  await page.waitForTimeout(600);
+  await page.evaluate(() => {
+    window.__stageMutations = 0;
+    const target = document.querySelector('[data-stage-static]');
+    window.__stageNode = target;
+    new MutationObserver((records) => (window.__stageMutations += records.length)).observe(target, { subtree: true, childList: true, attributes: true, characterData: true });
+  });
+  const filtered = new Set();
+  const sampleFilters = () =>
+    page.evaluate(() =>
+      document
+        .getAnimations()
+        .map((animation) => animation.effect?.target)
+        .filter((node) => node instanceof Element && node.closest('[data-battle-stage]') && getComputedStyle(node).filter !== 'none')
+        .map((node) => node.className.toString().slice(0, 40)),
+    );
+  const log = () => page.$eval('[data-battle-stage] [aria-live]', (node) => node.textContent);
+  const before = await log();
+  for (let turn = 0; turn < 3; turn += 1) {
+    const attack = page.locator('.kit-cmd', { hasText: '攻擊' });
+    if (await attack.isEnabled()) {
+      await attack.click();
+      const foe = page.locator('[data-foe]:not([disabled])').first();
+      if ((await foe.count()) > 0) await foe.click({ force: true, timeout: 5000 });
+    }
+    for (let i = 0; i < 6; i += 1) {
+      await page.waitForTimeout(150);
+      for (const name of await sampleFilters()) filtered.add(name);
+    }
+    await page.waitForTimeout(900);
+  }
+  const after = await log();
+  const result = await page.evaluate(() => ({ mutations: window.__stageMutations, same: window.__stageNode === document.querySelector('[data-stage-static]') }));
+  const played = before !== after;
+  const label = `4v3: ${played ? 'turns played' : 'no turn played'}, ${result.mutations} mutations in the static backdrop${result.same ? '' : ' (backdrop remounted)'}`;
+  if (played && result.mutations === 0 && result.same) pass(label);
+  else fail(label);
+  if (filtered.size === 0) pass('no animating element in the battle carries a filter');
+  else fail(`animating elements with a filter: ${[...filtered].join(', ')}`);
+
+  for (const [name, frame] of [
+    ['battle-4v3', null],
+    ['battle-boss', 'boss'],
+    ['battle-final', 'final'],
+  ]) {
+    await open(page, fixtureUrl(base, name), name);
+    await page.waitForTimeout(300);
+    const shown = await page.$eval('main', () => document.querySelector('[data-boss-frame]')?.getAttribute('data-boss-frame') ?? null);
+    if (shown === frame) pass(`${name}: frame ${frame ?? 'none'}`);
+    else fail(`${name}: expected frame ${frame ?? 'none'}, got ${shown ?? 'none'}`);
+  }
+  await page.close();
+}
+
 const dev = args.serve ? await startDevServer() : null;
 const base = dev ? dev.url : args.url;
 const browser = await chromium.launch();
@@ -167,6 +230,7 @@ try {
   await checkTyping(browser, base);
   await checkTargets(browser, base, fixtures);
   await checkReducedMotion(browser, base, fixtures);
+  await checkStage(browser, base);
 } finally {
   await browser.close();
   await dev?.server.close();

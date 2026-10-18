@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { aliveFoeSlots, aliveHeroes, battleStep, battleCoins, battleXp, canCast, foeIntent, startBattle } from './battle';
+import { aliveFoeSlots, aliveHeroes, battleFrame, battleStep, battleCoins, battleXp, canCast, foeIntent, startBattle } from './battle';
 import { FOES } from './foes';
 import { SPELLS, heroStats } from './heroes';
 import { freshRun } from './quest';
@@ -273,5 +273,16 @@ describe('four heroes', () => {
     const revived = battleStep(down, { type: 'spell', spell: 'nineLives' });
     expect(revived.heroes.bear.hp).toBe(Math.round(revived.stats.bear.hp * 0.5));
     expect(revived.events).toContainEqual({ kind: 'revive', who: { side: 'hero', hero: 'bear' } });
+  });
+});
+
+describe('stage frame (#14, D-31)', () => {
+  test('random fights have no frame, boss fights the valance, final fights the full proscenium', () => {
+    expect(battleFrame(fight(3, ['dustBunny', 'dustBunny']))).toBe('none');
+    expect(battleFrame(fight(3, ['crowBoss'], true))).toBe('boss');
+    const finals = { ...FOES, crowBoss: { ...FOES.crowBoss, final: true } };
+    expect(battleFrame(fight(3, ['crowBoss'], true), finals)).toBe('final');
+    // A final foe met outside a boss fight (never in content) still gets no frame
+    expect(battleFrame(fight(3, ['crowBoss'], false), finals)).toBe('none');
   });
 });
