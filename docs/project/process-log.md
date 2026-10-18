@@ -49,6 +49,6 @@ Format:
 ### 2026-10-18 · PM/TPM agent · Project plan
 - Read the story bible, script, art options, the in-progress art direction and the whole engine (`src/quest/**`, `src/art/**`, `src/App.tsx`, `src/shared/**`).
 - Wrote this folder: `README.md` (process, conventions, definition of done), `roadmap.md`, `decisions.md` (D-01…D-18, including routes, save reset, placeholder sprites, WIP ending card and the known doc inconsistencies), and this log.
-- Created the epic #1 and 57 ordered implementation issues #2–#58 on GitHub (see `roadmap.md`), then opened and merged the docs PR (story bible, script, art direction and options, project plan) to `main`.
+- Created the epic #1 and 57 ordered implementation issues #2–#58 on GitHub (see `roadmap.md`), then opened and merged docs PR #59 (story bible, script, art direction and options, project plan) to `main` with the "merge" method.
 - While writing the issues, added a conditional `include` step to #6 (the script has optional inserts such as `ending.party.lily` and the 小白機 at sunrise).
 - Note for the next agent: start with issue #2. `docs/art/` may receive a follow-up PR from the art agent; always read the latest `art-direction.md` before art/UI work.

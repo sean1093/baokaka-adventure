@@ -2,6 +2,8 @@
 
 Tracking epic: **[#1 Epic: 寶咖咖抓周大冒險 — redesign](https://github.com/sean1093/baokaka-adventure/issues/1)**
 
+Planning docs (story bible, script, art direction, this plan) merged in [PR #59](https://github.com/sean1093/baokaka-adventure/pull/59).
+
 Work the issues **in numeric order**; an issue may start only when every issue in its "Depends on" column is closed. Update the **Status** column when you pick up (`in progress`) and when you merge (`done`, with the PR number). Status values: `todo`, `in progress`, `done (#PR)`, `blocked (reason)`.
 
 ## Milestones
