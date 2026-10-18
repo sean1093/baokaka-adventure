@@ -5,8 +5,10 @@
  *   `base` (lit), `cel` (the hard shadow band), `deep` (occlusion) and `line` (the thin interior
  *   line tint). Contours use `LINE.sil`.
  * - `WORLD`: night-painted surfaces (tiles, props, glass). These are graded by the clock.
- * - `LIGHTS`: things that glow (windows, lamps, 101's rim, city glow). Never graded: the city's
- *   lights stay warm all night.
+ * - `LIGHTS`, `GLOW`: things that glow (windows, lamps, lanterns, neon, 101's rim, city glow).
+ *   Never graded: the city's lights stay warm all night.
+ * - `TILES`, `STRUCTURE`, `FIXTURE`, `SKY_ART`: the iso map's ground materials, walls and skirt,
+ *   light fixtures and sky art (§ 2.7, § 4.4), graded per clock by `gradeTiles()`.
  * - `UI`: the navy-glass and gold interface, mirrored into Tailwind (`tailwind.config.ts`).
  * - `MRT`: the five 月亮線 line colours.
  * - `SKY_KEYS` / `skyAt()` / `gradeTokens()` / `gradeCharacter()`: the night clock (§ 3.2).
