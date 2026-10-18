@@ -2,32 +2,28 @@ import { browserStorage, loadJson, saveJson, type StorageLike } from '../../shar
 import { FOES } from './foes';
 import { ITEMS, MAX_ITEM_COUNT, MAX_LEVEL, canWear } from './heroes';
 import { MAPS } from './maps';
-import { freshRun } from './quest';
-import { HERO_ORDER, type FoeId, type HeroId, type ItemId, type Run } from './types';
+import { DEFAULT_SETTINGS, freshRun } from './quest';
+import { HERO_ORDER, type FoeId, type HeroId, type ItemId, type QuestSettings, type Run } from './types';
 
 /**
  * The save format. Bump the version and the key for any incompatible Run change; never migrate
  * across stories (decisions.md D-12): an older record is discarded and the title says so once.
  */
-export const SAVE_VERSION = 5;
-export const QUEST_KEY = 'baokaka.quest.v5';
+export const SAVE_VERSION = 6;
+export const QUEST_KEY = 'baokaka.quest.v6';
 /** The 寶咖咖奇俠傳 save from before the 抓周 redesign. Any content under it means "reset". */
 export const LEGACY_QUEST_KEY = 'baokaka.quest';
 /**
  * Every key an older save may sit under: the pre-redesign one, then each earlier version
  * (v2 had three heroes, issue #5 made it four; v3 had no 圖鑑 `seenFoes`, issue #7 added it;
- * v4 held the old story's item ids, issue #8 replaced the catalogue).
+ * v4 held the old story's item ids, issue #8 replaced the catalogue; v5 had no 月亮線 `rideTo` /
+ * `seenStations`, issue #9 added them).
  * Any content under any of them means "reset".
  */
-export const LEGACY_QUEST_KEYS: readonly string[] = [LEGACY_QUEST_KEY, 'baokaka.quest.v2', 'baokaka.quest.v3', 'baokaka.quest.v4'];
+export const LEGACY_QUEST_KEYS: readonly string[] = [LEGACY_QUEST_KEY, 'baokaka.quest.v2', 'baokaka.quest.v3', 'baokaka.quest.v4', 'baokaka.quest.v5'];
 
-/** Player preferences that live beside the run. */
-export type QuestSettings = {
-  /** Skip the MRT ride cutscenes (issue #9) */
-  skipRides: boolean;
-};
-
-export const DEFAULT_SETTINGS: QuestSettings = { skipRides: false };
+export { DEFAULT_SETTINGS };
+export type { QuestSettings } from './types';
 
 export type QuestSave = { run: Run; sound: boolean; settings: QuestSettings };
 
@@ -92,6 +88,10 @@ function isRun(value: unknown): value is Run {
     Array.isArray(run.seenFoes) &&
     run.seenFoes.every(isFoe) &&
     new Set(run.seenFoes).size === run.seenFoes.length &&
+    (run.rideTo === null || (typeof run.rideTo === 'string' && Object.prototype.hasOwnProperty.call(MAPS, run.rideTo))) &&
+    Array.isArray(run.seenStations) &&
+    run.seenStations.every((station) => typeof station === 'string') &&
+    new Set(run.seenStations).size === run.seenStations.length &&
     isCount(run.steps) &&
     Number.isFinite(run.seed) &&
     Number.isInteger(run.chapter) &&

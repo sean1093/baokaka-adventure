@@ -4,6 +4,7 @@ import { FOES } from './foes';
 import { ITEMS, ITEM_ORDER, MAX_LEVEL, SPELLS, XP_TABLE } from './heroes';
 import { TERRAIN, covers, terrainAt } from './iso';
 import { MAPS, MAP_ORDER } from './maps';
+import { MRT_LINES, STATIONS, type Station } from './mrt';
 import { findPath, isSolid } from './path';
 import {
   BESTIARY_FLAG,
@@ -19,7 +20,9 @@ import {
   type Follower,
   type SideQuest,
 } from './progress';
-import { HERO_ORDER, type GameMap, type Item, type ItemId, type Step, type Tile } from './types';
+import { CLEARED_FLAG } from './scene';
+import { STATION_PLACEHOLDERS, fillStation } from './text';
+import { HERO_ORDER, RIDE_TO, type GameMap, type Item, type ItemId, type Step, type Tile } from './types';
 
 /** At most three foes fit across the battle box. */
 export const MAX_FOES_PER_BATTLE = 3;
@@ -157,7 +160,12 @@ export function validateIncludes(events: Record<string, Step[]>, errors: string[
 const inGrid = (map: GameMap, tile: Tile): boolean =>
   tile.r >= 0 && tile.r < map.grid.length && tile.c >= 0 && tile.c < map.grid[0].length;
 
-function validateMap(map: GameMap, errors: string[]): void {
+/**
+ * One map's layout and references. `maps` resolves exit targets; tests pass their own table.
+ * The 月亮線 rules that need the station table (`@rideTo` only in cars, `mrtArrival` on every
+ * station's map) live in `validateMrt`.
+ */
+export function validateMap(map: GameMap, errors: string[], maps: Readonly<Record<string, GameMap>> = MAPS): void {
   const width = map.grid[0]?.length ?? 0;
   const where = `map ${map.id}`;
   if (width === 0) errors.push(`${where}: empty grid`);
@@ -206,7 +214,11 @@ function validateMap(map: GameMap, errors: string[]): void {
 
   for (const exit of map.exits) {
     if (!inGrid(map, exit)) errors.push(`${where}: exit to ${exit.to} is outside the grid`);
-    const target = MAPS[exit.to];
+    if (exit.to === RIDE_TO) {
+      if (exit.blocked && !EVENTS[exit.blocked]) errors.push(`${where}: exit to ${exit.to} points at missing event ${exit.blocked}`);
+      continue;
+    }
+    const target = Object.prototype.hasOwnProperty.call(maps, exit.to) ? maps[exit.to] : undefined;
     if (!target) errors.push(`${where}: exit points at unknown map ${exit.to}`);
     else if (!inGrid(target, exit.at)) errors.push(`${where}: exit to ${exit.to} lands outside that grid`);
     else if (isSolid(target, exit.at.c, exit.at.r)) errors.push(`${where}: exit to ${exit.to} lands on a blocked tile`);
@@ -228,6 +240,17 @@ function validateMap(map: GameMap, errors: string[]): void {
   }
 
 
+  if (map.mrtArrival) {
+    const arrival = map.mrtArrival;
+    if (!inGrid(map, arrival)) errors.push(`${where}: mrtArrival is outside the grid`);
+    else if (isSolid(map, arrival.c, arrival.r)) errors.push(`${where}: mrtArrival is on a blocked tile`);
+    else if (spots.has(`${arrival.c},${arrival.r}`)) errors.push(`${where}: mrtArrival sits under ${spots.get(`${arrival.c},${arrival.r}`)}`);
+    if (map.exits.some((exit) => exit.c === arrival.c && exit.r === arrival.r)) errors.push(`${where}: mrtArrival is on an exit, so arriving would leave again`);
+    // The party steps out beside the station's gate NPC (bible § 3.1, `mrtGate`)
+    const gate = map.npcs.find((npc) => npc.id === MRT_GATE);
+    if (gate && Math.abs(gate.c - arrival.c) + Math.abs(gate.r - arrival.r) !== 1) errors.push(`${where}: mrtArrival must be next to the ${MRT_GATE} NPC`);
+  }
+
   // Layout reachability ignores NPCs and chests: an NPC standing in a doorway is a story gate
   if (isSolid(map, map.entry.c, map.entry.r)) {
     errors.push(`${where}: entry tile is blocked`);
@@ -248,6 +271,107 @@ function validateMap(map: GameMap, errors: string[]): void {
     if (isSolid(map, exit.c, exit.r)) errors.push(`${where}: exit to ${exit.to} sits on a blocked tile`);
     else if (findPath(map, [], map.entry, exit, true) === null) errors.push(`${where}: exit to ${exit.to} cannot be reached`);
   }
+  if (map.mrtArrival && inGrid(map, map.mrtArrival) && !isSolid(map, map.mrtArrival.c, map.mrtArrival.r)) {
+    if (findPath(map, [], map.entry, map.mrtArrival, true) === null) errors.push(`${where}: mrtArrival cannot be reached from the entry`);
+  }
+}
+
+/** The NPC id of a landmark's MRT entrance (story bible § 3.1 item 1). */
+export const MRT_GATE = 'mrtGate';
+
+/** Dialogue lines are at most 40 characters (script.md, *How to read this file*). */
+export const LINE_MAX = 40;
+
+/**
+ * How wide a line reads in the dialogue box, in full-width characters: CJK and full-width
+ * punctuation count 1, half-width Latin letters, digits and spaces ½. Used for lines whose
+ * station placeholders expand to English (「Next station, Taipei 101/World Trade Center.」).
+ */
+export function lineWidth(text: string): number {
+  let width = 0;
+  for (const char of text) width += (char.codePointAt(0) as number) < 0x2e80 ? 0.5 : 1;
+  return width;
+}
+
+/** The longest value of each station name field: the worst case for a line's width. */
+function longestNames(stations: readonly Station[]): Pick<Station, 'name' | 'nameTw' | 'nameEn'> {
+  const longest = (field: 'name' | 'nameTw' | 'nameEn') =>
+    stations.map((station) => station[field]).reduce((best, name) => (lineWidth(name) > lineWidth(best) ? name : best), '');
+  return { name: longest('name'), nameTw: longest('nameTw'), nameEn: longest('nameEn') };
+}
+
+/**
+ * 月亮線 content (bible § 3.1): the station rows; every station map that exists has an
+ * `mrtArrival`; `@rideTo` exits only in ride cars; every ride car that exists has a door to
+ * `@rideTo`, an entry trigger and no random encounters; and every line using `{station}`,
+ * `{stationTw}` or `{stationEn}` stays within LINE_MAX once the longest names are filled in.
+ * Takes its tables so tests can feed a fixture network.
+ */
+export function validateMrt(
+  maps: Readonly<Record<string, GameMap>>,
+  stations: readonly Station[],
+  events: Readonly<Record<string, Step[]>>,
+  errors: string[],
+): void {
+  const exists = (id: string) => Object.prototype.hasOwnProperty.call(maps, id);
+  const keys = new Set<string>();
+  const served = new Set<string>();
+  const cars = new Set(stations.map((station) => station.car));
+
+  for (const station of stations) {
+    const where = `station ${station.key}`;
+    if (station.key.length === 0) errors.push('station with an empty key');
+    if (keys.has(station.key)) errors.push(`${where}: defined twice`);
+    keys.add(station.key);
+    if (served.has(station.map)) errors.push(`${where}: map ${station.map} already has a station`);
+    served.add(station.map);
+    if (!station.name || !station.nameTw || !station.nameEn) errors.push(`${where}: needs a name in all three languages`);
+    if (!station.unlock) errors.push(`${where}: has no unlock flag`);
+    if (!MRT_LINES[station.line]) errors.push(`${where}: unknown line ${station.line}`);
+    const { x, y } = station.pos;
+    if (!(x >= 0 && x <= 1 && y >= 0 && y <= 1)) errors.push(`${where}: pos must be within 0..1, got ${x},${y}`);
+    if (cars.has(station.map)) errors.push(`${where}: its map ${station.map} is a ride car`);
+    if (exists(station.map) && !maps[station.map].mrtArrival) errors.push(`${where}: map ${station.map} needs an mrtArrival tile`);
+  }
+
+  for (const map of Object.values(maps)) {
+    const where = `map ${map.id}`;
+    const doors = map.exits.filter((exit) => exit.to === RIDE_TO);
+    if (!cars.has(map.id)) {
+      if (doors.length > 0) errors.push(`${where}: only a ride car (a station's car) may have a ${RIDE_TO} exit`);
+      continue;
+    }
+    if (doors.length === 0) errors.push(`${where}: a ride car needs a door exit to ${RIDE_TO}`);
+    for (const door of doors) {
+      if (inGrid(map, door) && terrainAt(map, door.c, door.r) !== 'door') errors.push(`${where}: the ${RIDE_TO} exit must be on a door tile`);
+      if (door.when !== undefined || door.not !== undefined) errors.push(`${where}: the ${RIDE_TO} door must always be open`);
+    }
+    const announcement = map.triggers.find((trigger) => trigger.c === map.entry.c && trigger.r === map.entry.r);
+    if (!announcement) errors.push(`${where}: a ride car needs an entry trigger (the announcement) on its entry tile`);
+    else if (announcement.once || !announcement.arrival) errors.push(`${where}: the entry trigger must be \`arrival: true\` and not \`once\`, so it plays on every ride and only then`);
+    if (map.encounters) errors.push(`${where}: ride cars have no random encounters`);
+  }
+
+  const names = longestNames(stations);
+  for (const [key, steps] of Object.entries(events)) {
+    for (const [index, step] of steps.entries()) {
+      const texts = 'text' in step ? [step.text] : step.do === 'choice' && step.prompt ? [step.prompt] : [];
+      for (const text of texts) {
+        if (!Object.keys(STATION_PLACEHOLDERS).some((token) => text.includes(token))) continue;
+        const filled = fillStation(text, names);
+        if (lineWidth(filled) > LINE_MAX) errors.push(`event ${key}[${index}]: "${filled}" is over ${LINE_MAX} characters with the longest station name`);
+      }
+    }
+  }
+}
+
+/** Stations that cannot be ridden yet because their map or ride car has not been built (chapter content and #27). */
+export function mrtWarnings(maps: Readonly<Record<string, GameMap>> = MAPS, stations: readonly Station[] = STATIONS): string[] {
+  const exists = (id: string) => Object.prototype.hasOwnProperty.call(maps, id);
+  return stations.flatMap((station) => {
+    const missing = [station.map, station.car].filter((id) => !exists(id));
+    return missing.length > 0 ? [`station ${station.key} cannot be ridden yet: no map ${missing.join(' or ')}`] : [];
+  });
 }
 
 /** A 圖鑑 blurb is one dialogue line; a home is a short place name. */
@@ -398,7 +522,12 @@ export function obtainableItems(): Set<ItemId> {
 /** Every flag some script, derived entry or the 圖鑑 can set. */
 export function settableFlags(): Set<string> {
   const flags = new Set<string>([BESTIARY_FLAG]);
-  for (const steps of Object.values(EVENTS)) for (const step of steps) if ('do' in step && step.do === 'flag') flags.add(step.flag);
+  for (const steps of Object.values(EVENTS)) {
+    for (const step of steps) {
+      if ('do' in step && step.do === 'flag') flags.add(step.flag);
+      if ('do' in step && step.do === 'ending') flags.add(CLEARED_FLAG);
+    }
+  }
   for (const entry of DERIVED) flags.add(entry.flag);
   return flags;
 }
@@ -419,10 +548,11 @@ export function progressWarnings(): string[] {
     read.add(follower.flag);
     read.add(follower.until);
   }
+  for (const station of STATIONS) read.add(station.unlock);
   const flags = [...read].filter((flag) => !settable.has(flag)).map((flag) => `progress flag ${flag} is never set by any event`);
   const available = obtainableItems();
   const items = ITEM_ORDER.filter((item) => !available.has(item)).map((item) => `item ${item} cannot be obtained yet`);
-  return [...flags, ...items];
+  return [...flags, ...items, ...mrtWarnings()];
 }
 
 /** Pure content checks; run at dev start-up and in content.test.ts so mistakes never ship. */
@@ -436,6 +566,7 @@ export function validateQuestContent(): string[] {
   validateIncludes(EVENTS, errors);
 
   for (const id of MAP_ORDER) validateMap(MAPS[id], errors);
+  validateMrt(MAPS, STATIONS, EVENTS, errors);
   validateProgress(errors);
   for (const id of Object.keys(MAPS)) if (!MAP_ORDER.includes(id as never)) errors.push(`map ${id} is missing from MAP_ORDER`);
 

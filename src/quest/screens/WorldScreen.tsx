@@ -11,7 +11,9 @@ import { CHAPTER_TITLES, MAPS } from '../engine/maps';
 import { adjacentTile, findPath, isBlocked, meets, restingSpot } from '../engine/path';
 import { FOLLOWERS, activeFollower, type Follower } from '../engine/progress';
 import type { QuestState } from '../engine/quest';
-import type { Tile } from '../engine/types';
+import { stationAt } from '../engine/mrt';
+import { UI } from '../engine/strings';
+import { RIDE_TO, type Tile } from '../engine/types';
 
 /** Tiles walked per second */
 const SPEED = 3.4;
@@ -331,7 +333,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
           <div className="pointer-events-none absolute left-2 top-2 flex flex-wrap gap-1">
             {doors.map((exit) => (
               <Chip key={`${exit.to}${exit.c}${exit.r}`} tone="ink">
-                往 {MAPS[exit.to].title}
+                往 {exit.to === RIDE_TO ? (run.rideTo ? (stationAt(run.rideTo)?.name ?? MAPS[run.rideTo].title) : UI.travelTitle) : MAPS[exit.to].title}
               </Chip>
             ))}
           </div>

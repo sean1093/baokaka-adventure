@@ -1,13 +1,15 @@
-import { describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 import { startBattle } from './battle';
 import { EVENTS } from './events';
 import { FOES } from './foes';
 import { ITEMS, heroStats, spellsFor } from './heroes';
 import { MAPS } from './maps';
+import { FIXTURE_FLAG, FIXTURE_MAPS, installMrtFixture } from './mrt.fixture';
 import { findPath } from './path';
 import { applyVictory, freshRun, initialState, questReducer, runStarted, type QuestState } from './quest';
 import { runScene } from './scene';
-import type { FoeId, HeroId, Run, Tile } from './types';
+import { UI } from './strings';
+import type { FoeId, HeroId, MapId, Run, Tile } from './types';
 
 const start = (): QuestState => initialState(freshRun(99), true);
 
@@ -478,5 +480,127 @@ describe('progress: the 圖鑑 and derived flags in the reducer', () => {
     const five = runScene(four, { steps: [{ do: 'flag', flag: 'clerk_longshan' }], at: 0 }).run;
     expect(five.flags).toContain('clerk5');
     expect(five.flags).not.toContain('clerk10');
+  });
+});
+
+describe('月亮線 travel (the fixture network: mrtA, mrtB, one car)', () => {
+  let uninstall: () => void = () => {};
+  beforeEach(() => {
+    uninstall = installMrtFixture();
+  });
+  afterEach(() => uninstall());
+
+  /** Standing on mrtA's arrival tile, next to the gate, with the stations lit (or not). */
+  const atGate = (flags: string[] = [FIXTURE_FLAG], skipRides = false): QuestState => {
+    const run: Run = { ...freshRun(5), map: 'mrtA' as MapId, pos: { c: 3, r: 2 }, flags };
+    return { ...initialState(run, false, { skipRides }), view: { screen: 'world' } };
+  };
+
+  /** Talks to the gate and taps through 「嗶——！」 to the 路線圖. */
+  const openMap = (state: QuestState): QuestState => readAll(questReducer(state, { type: 'interact', id: 'mrtGate' }));
+
+  const lines = (state: QuestState): string[] => {
+    const shown: string[] = [];
+    let current = state;
+    while (current.line) {
+      shown.push(current.line.text);
+      current = questReducer(current, { type: 'advance' });
+    }
+    return shown;
+  };
+
+  test('the gate stays shut until the stations are lit', () => {
+    const state = questReducer(atGate([]), { type: 'interact', id: 'mrtGate' });
+    expect(state.line?.text).toBe('捷運站的鐵門拉下來了。');
+    expect(readAll(state).view.screen).toBe('world');
+  });
+
+  test('the travel step opens the 路線圖, and new stations say 「叮！」 exactly once', () => {
+    const state = openMap(atGate());
+    expect(state.view).toEqual({ screen: 'travel', fresh: ['alpha', 'beta'], note: { who: null, text: UI.mrtNewStation } });
+    expect(state.run.seenStations).toEqual(['alpha', 'beta']);
+
+    const read = questReducer(state, { type: 'advance' });
+    expect(read.view).toMatchObject({ screen: 'travel', note: null });
+
+    const again = openMap(questReducer(read, { type: 'closeTravel' }));
+    expect(again.view).toEqual({ screen: 'travel', fresh: [], note: null });
+    expect(again.run.seenStations).toEqual(['alpha', 'beta']);
+  });
+
+  test('cancelling returns to the world at the gate', () => {
+    const open = questReducer(openMap(atGate()), { type: 'advance' });
+    const closed = questReducer(open, { type: 'closeTravel' });
+    expect(closed.view).toEqual({ screen: 'world' });
+    expect(closed.scene).toBeNull();
+    expect(closed.run).toMatchObject({ map: 'mrtA', pos: { c: 3, r: 2 }, rideTo: null });
+  });
+
+  test('a locked station only shows mrt.locked; a lit one waits until the note is read', () => {
+    const open = openMap(atGate());
+    // The 「叮！」 note is still up: taps on the map do nothing until it is read
+    expect(questReducer(open, { type: 'ride', station: 'beta' })).toBe(open);
+
+    const ready = questReducer(open, { type: 'advance' });
+    const locked = questReducer(ready, { type: 'ride', station: 'gamma' });
+    expect(locked.view).toMatchObject({ screen: 'travel', note: { who: null, text: UI.mrtLocked } });
+    expect(locked.run).toBe(ready.run);
+    expect(questReducer(locked, { type: 'advance' }).view).toMatchObject({ screen: 'travel', note: null });
+
+    // Riding to the station you are at, or to one whose map does not exist, does nothing
+    expect(questReducer(ready, { type: 'ride', station: 'alpha' })).toBe(ready);
+    const gammaLit = questReducer(openMap(atGate([FIXTURE_FLAG, 'gammaOpen'])), { type: 'advance' });
+    expect(questReducer(gammaLit, { type: 'ride', station: 'gamma' })).toBe(gammaLit);
+    expect(questReducer(ready, { type: 'ride', station: 'nowhere' })).toBe(ready);
+  });
+
+  test('the whole loop: ride, announcement, first-ride scene, walk out of the door, arrive', () => {
+    const open = questReducer(openMap(atGate()), { type: 'advance' });
+    const boarded = questReducer(open, { type: 'ride', station: 'beta' });
+    expect(boarded.view).toEqual({ screen: 'world' });
+    expect(boarded.run).toMatchObject({ map: 'mrtCar', pos: FIXTURE_MAPS.mrtCar.entry, rideTo: 'mrtB' });
+    // The car's entry trigger is the announcement, with the destination filled in
+    expect(lines(boarded)).toEqual(['下一站，乙站。', '下一站，乙站台。', 'Next station, Beta.']);
+    let state = readAll(boarded);
+    expect(state.scene).toBeNull();
+
+    state = walk(state, { c: 2, r: 1 });
+    expect(lines(state)).toEqual(['第一次搭月亮線！']);
+    state = readAll(state);
+
+    state = walk(state, { c: 1, r: 0 });
+    expect(state.run).toMatchObject({ map: 'mrtB', pos: FIXTURE_MAPS.mrtB.mrtArrival, rideTo: null, steps: 0 });
+    expect(lines(state)).toEqual(['歡迎來到乙站。']);
+    state = readAll(state);
+
+    // Back to A: the announcement plays every ride, the first-ride scene and B's welcome do not
+    const back = questReducer(questReducer(openMap(state), { type: 'advance' }), { type: 'ride', station: 'alpha' });
+    expect(back.run.rideTo).toBe('mrtA');
+    expect(lines(back)).toEqual(['下一站，甲站。', '下一站，甲站台。', 'Next station, Alpha.']);
+    state = walk(readAll(back), { c: 2, r: 1 });
+    expect(state.line).toBeNull();
+    state = walk(state, { c: 1, r: 0 });
+    expect(state.run).toMatchObject({ map: 'mrtA', pos: FIXTURE_MAPS.mrtA.mrtArrival, rideTo: null });
+    expect(state.line).toBeNull();
+  });
+
+  test('直接到站 skips the car and steps out at the destination', () => {
+    const open = questReducer(openMap(atGate([FIXTURE_FLAG], true)), { type: 'advance' });
+    const there = questReducer(open, { type: 'ride', station: 'beta' });
+    expect(there.run).toMatchObject({ map: 'mrtB', pos: FIXTURE_MAPS.mrtB.mrtArrival, rideTo: null });
+    expect(lines(there)).toEqual(['歡迎來到乙站。']);
+  });
+
+  test('the 直接到站 switch is a setting, kept across a new game', () => {
+    const on = questReducer(atGate(), { type: 'setSkipRides', on: true });
+    expect(on.settings).toEqual({ skipRides: true });
+    expect(questReducer(on, { type: 'newGame', seed: 3 }).settings).toEqual({ skipRides: true });
+    expect(questReducer(on, { type: 'setSkipRides', on: false }).settings).toEqual({ skipRides: false });
+  });
+
+  test('a car door with no ride on record opens the 路線圖 instead of trapping the party', () => {
+    const run: Run = { ...freshRun(5), map: 'mrtCar' as MapId, pos: { c: 2, r: 1 }, flags: [FIXTURE_FLAG, 'trigger:mrtCar-first'], seenStations: ['alpha', 'beta'] };
+    const state = walk({ ...initialState(run, false), view: { screen: 'world' } }, { c: 1, r: 0 });
+    expect(state.view).toEqual({ screen: 'travel', fresh: [], note: null });
   });
 });

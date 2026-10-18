@@ -3,9 +3,10 @@ import { EVENTS } from './events';
 import { FOES } from './foes';
 import { ITEMS, ITEM_ORDER, MAX_LEVEL, SPELLS, spellsFor } from './heroes';
 import { CHAPTER_TITLES, MAPS, MAP_ORDER } from './maps';
+import { carMaps } from './mrt';
 import { findPath } from './path';
 import { obtainableItems, progressWarnings, validateQuestContent } from './validate';
-import { HERO_ORDER, type FoeId, type MapId, type Step } from './types';
+import { HERO_ORDER, RIDE_TO, type FoeId, type MapId, type Step } from './types';
 
 const allSteps = (): Step[] => Object.values(EVENTS).flat();
 
@@ -88,6 +89,8 @@ describe('the maps join up', () => {
   test('every exit has a way back', () => {
     for (const map of Object.values(MAPS)) {
       for (const exit of map.exits) {
+        // A ride car's door goes wherever the ride goes; the 路線圖 is the way back
+        if (exit.to === RIDE_TO) continue;
         const back = MAPS[exit.to].exits.find((entry) => entry.to === map.id);
         expect(back, `${map.id} -> ${exit.to}`).toBeDefined();
       }
@@ -107,6 +110,7 @@ describe('the maps join up', () => {
       const map = MAPS[id];
       for (const exit of map.exits) {
         expect(findPath(map, flags, map.entry, exit, true), `${id} -> ${exit.to}`).not.toBeNull();
+        if (exit.to === RIDE_TO) continue;
         if (!seen.has(exit.to)) {
           seen.add(exit.to);
           queue.push(exit.to);
@@ -120,7 +124,8 @@ describe('the maps join up', () => {
     for (const map of Object.values(MAPS)) {
       const intro = map.triggers.find((trigger) => trigger.c === map.entry.c && trigger.r === map.entry.r);
       expect(intro, map.id).toBeDefined();
-      expect(intro?.once).toBe(true);
+      // A ride car's entry trigger is its announcement, played on every ride (bible § 3.1)
+      expect(intro?.once === true, map.id).toBe(!carMaps().has(map.id));
     }
   });
 });

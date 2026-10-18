@@ -52,6 +52,21 @@ export const UI = {
   onlyTag: (hero: HeroId) => `${HERO_CALL[hero]}專用`,
   onlyWear: (hero: HeroId) => `只有${HERO_CALL[hero]}能戴`,
 
+  /**
+   * 月亮線 (script § *月亮線 — 搭捷運*): the two lines the 路線圖 says itself (`### mrt.newStation`,
+   * `### mrt.locked`), the ride confirmation, and the screen's own labels.
+   */
+  mrtNewStation: '叮！路線圖上，又有一站亮起來了。',
+  mrtLocked: '這一站的燈，還沒亮。',
+  rideAsk: (station: string) => `搭乘月亮線前往〈${station}〉？`,
+  rideYes: '搭乘',
+  rideNo: '先不要',
+  travelTitle: '路線圖',
+  travelKicker: '月亮線',
+  travelLeave: '離開閘門',
+  skipRides: '直接到站',
+  hereTag: '你在這裡',
+
   /** The one-time title notice after an old-story save was discarded (decisions.md D-12) */
   legacyReset: ['冒險重新開始囉！', '舊的存檔是上一個故事的，已經收進回憶裡了。'] as const,
   ok: '好',
