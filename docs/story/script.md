@@ -10,20 +10,23 @@ Each `### key` is one entry in `EVENTS` (events.ts). Lines map 1:1 to `Step`s:
 |---|---|
 | `旁白：text` | `{ who: null, text: 'text' }` |
 | `mocha：「text」` | `{ who: 'mocha', text: '「text」' }` (keep the 「」 in the string, as today) |
-| `[chapter 3｜月亮線，出發！｜01:10]` | `{ do: 'chapter', n: 3, title: '月亮線，出發！', time: '02:00' }` |
+| `[chapter 3｜月亮線，出發！｜01:10]` | `{ do: 'chapter', n: 3, title: '月亮線，出發！', time: '01:10' }` (`[chapter 尾聲｜…]` adds `label: '尾聲'`) |
 | `[join magpie]` | `{ do: 'join', hero: 'magpie' }` |
 | `[flag x]` | `{ do: 'flag', flag: 'x' }` |
 | `[give item]` / `[give item ×2]` | `{ do: 'give', item, count }` |
 | `[coins 50]` | `{ do: 'coins', amount: 50 }` |
 | `[heal]` | `{ do: 'heal' }` |
+| `[heal 0.5]` | `{ do: 'heal', ratio: 0.5 }` (raises everyone to at least 50 %, never lowers, revives) |
 | `[battle a, b]` | `{ do: 'battle', foes: ['a','b'] }` |
 | `[boss x]` | `{ do: 'battle', foes: ['x'], boss: true }` |
 | `[shop a, b, …]` | `{ do: 'shop', stock: [...] }` |
-| `[inn 20]` | `{ do: 'inn', price: 20 }` |
+| `[inn 20]` | `{ do: 'inn', price: 20 }` (`[inn 0]` heals at once with 「休息了一下，大家的體力和元氣都滿了。」) |
 | `[goto map c,r]` | `{ do: 'goto', … }` (tile is a suggestion; set to the real entry tile) |
 | `[ending]` | `{ do: 'ending' }` |
 | `[travel]` | `{ do: 'travel' }` (opens the 路線圖, § 3.1) |
-| `→ key` / choice tables | `{ do: 'choice', options: [{ label, event }] }` (§ 3.2) |
+| choice tables | `{ do: 'choice', prompt?, options: [{ label, event }] }` (2–3 options, labels ≤ 12 characters; the picked event replaces the rest of the scene) |
+| `→ key` | `{ do: 'goEvent', event: 'key' }` (jump; the rest of the scene is dropped) |
+| optional inserts ("if `flag`, add `key` here") | `{ do: 'include', event: 'key', when: 'flag' }` (plays `key` inline, then carries on; included events must be linear) |
 | `[coins -20]` | spend coins; floors at 0 |
 
 "Talk rules" lines (`talk:`) show the NPC's `Npc.talk` list, in priority order (first match wins). Every line is at most 40 characters, so it fits the phone dialogue box.
