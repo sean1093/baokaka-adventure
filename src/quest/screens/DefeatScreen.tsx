@@ -25,7 +25,7 @@ export const DefeatScreen = ({ soundOn, onRetry }: Props) => {
         <div className="relative mx-auto mb-2 flex h-28 items-end justify-center gap-1">
           <span aria-hidden="true" className="absolute bottom-0 left-1/2 block h-28 w-60 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,theme(colors.backlight.moon/30%),transparent_65%)]" />
           <span className="relative block h-24 w-24 opacity-60 grayscale-[60%]">
-            <Baokaka lod="battle" />
+            <Baokaka lod="battle" expr="teary" />
           </span>
           <span className="relative block h-20 w-20 opacity-60 grayscale-[60%]">
             <MochaCat lod="battle" />

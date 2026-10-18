@@ -295,6 +295,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
     size: ACTOR_SIZE.hero,
     flip: walk.lead.flip,
     motion: walk.lead.moving ? 'walk' : 'none',
+    moves: true,
   });
   run.party.slice(1).forEach((hero, index) => {
     const spot = walk.trail[index] ?? walk.lead;
@@ -306,6 +307,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
       size: ACTOR_SIZE.follower,
       flip: spot.flip,
       motion: spot.moving ? 'walk' : 'idle',
+      moves: true,
     });
   });
 
@@ -319,6 +321,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
       size: ACTOR_SIZE.escort,
       flip: walk.escort.flip,
       motion: walk.escort.moving ? 'walk' : 'idle',
+      moves: true,
     });
   }
 

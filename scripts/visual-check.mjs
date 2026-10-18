@@ -166,7 +166,7 @@ async function measurePerf(browser, base) {
         const tick = (now) => {
           frames.push(now - last);
           last = now;
-          if (document.querySelector('.walk')) walking += 1;
+          if (document.querySelector('.walk, .rig-walking')) walking += 1;
           if (now - start < ms) requestAnimationFrame(tick);
           else {
             observer.disconnect();
@@ -193,7 +193,7 @@ async function measurePerf(browser, base) {
     const [fx, fy] = spots[index % spots.length];
     await page.touchscreen.tap(frame.x + frame.width * fx, frame.y + frame.height * fy);
     await page.waitForTimeout(150);
-    while (Date.now() < deadline && (await page.locator('.walk').count()) > 0) await page.waitForTimeout(100);
+    while (Date.now() < deadline && (await page.locator('.walk, .rig-walking').count()) > 0) await page.waitForTimeout(100);
   }
 
   const { frames, walking, nodes, grounds, groundMutations } = await sampling;

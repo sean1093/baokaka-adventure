@@ -3,6 +3,8 @@ import { BossFrame } from '../../art/backdrops/BossFrame';
 import { STAGE_H, STAGE_W, Stage, stageScale, useBackdrop } from '../../art/backdrops';
 import { FRAME, RIM, STAGE_LIGHT, UI as UI_TOKENS, withAlpha } from '../../art/palette';
 import { SceneClock, sceneRim } from '../../art/scene';
+import { actionPose } from '../../art/characters/actions';
+import { spriteMeta } from '../../art/sprite';
 import { SPRITES } from '../../art/sprites';
 import { CommandButton } from '../../components/Button';
 import { GlassChip, Num } from '../../components/Chip';
@@ -550,8 +552,13 @@ export const BattleScreen = ({ battle, backdrop, interior = false, time, place, 
 
             const member = who.hero;
             const Art = SPRITES[HERO_SPRITE[member]];
+            // Option D heroes act their move out and lie down when KO'd (#16); legacy sprites are tipped over
+            const rigged = Boolean(spriteMeta(Art));
             const state = battle.heroes[member];
             const down = state.hp === 0;
+            const move = act ? battle.events.find((event) => event.kind === 'act' && sameWho(event.who, who)) : undefined;
+            const pose = move?.kind === 'act' ? actionPose(move.fx, move.accent) : undefined;
+            const cheering = phase.kind === 'won' && !down;
             const pickable = needs === 'hero';
             const turn = hero === member;
             return (
@@ -574,9 +581,9 @@ export const BattleScreen = ({ battle, backdrop, interior = false, time, place, 
                   />
                 )}
                 {pickable && <span aria-hidden="true" className="absolute left-[6%] top-[84%] block h-[18%] w-[88%] rounded-[50%] border-2 border-gold-light bg-gold/15 shadow-[0_0_16px_theme(colors.gold.DEFAULT/70%)]" />}
-                <span className={`relative block h-full w-full ${down ? 'hero-down' : act ? 'hero-lunge' : ''}`} key={`s${battle.step}`}>
+                <span className={`relative block h-full w-full ${down ? (rigged ? '' : 'hero-down') : act ? 'hero-lunge' : ''}`} key={`s${battle.step}`}>
                   <span className={`block h-full w-full ${hit ? (flash ? 'fx-hurt' : 'fx-hurt-soft') : ''}`}>
-                    <Art lod="battle" state={down ? 'ko' : hit ? 'hurt' : act ? 'attack' : 'idle'} facing="right" />
+                    <Art lod="battle" state={down ? 'ko' : hit ? 'hurt' : act ? 'attack' : cheering ? 'victory' : 'idle'} pose={pose} facing="right" />
                   </span>
                   {state.shield && <span className="absolute inset-[6%] rounded-full shadow-[0_0_0_3px_theme(colors.mp.to/60%),inset_0_0_16px_theme(colors.mp.to/35%)]" />}
                   {state.guard && <span className="absolute right-[4%] top-[10%] rounded-sm bg-mp-from px-1.5 font-serif text-caption text-inkOnDark shadow-gold">防</span>}
