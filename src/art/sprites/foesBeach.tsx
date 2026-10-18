@@ -1,5 +1,6 @@
 import type { Sprite } from '../sprite';
 import { C } from '../palette';
+import { useSvgIds } from '../useSvgIds';
 
 /**
  * The chip-stealing gull. Same greedy pose as before - wings half open, brows driven down,
@@ -8,35 +9,36 @@ import { C } from '../palette';
  * with greyDeep flight feathers at the wing tips.
  */
 export const GreedyGull: Sprite = () => {
+  const id = useSvgIds('greedyGull');
   const wingL = 'M38,46 C22,42 10,54 14,72 C28,68 36,58 41,50 Z';
   const wingR = 'M56,46 C72,42 84,54 80,72 C66,68 58,58 53,50 Z';
   return (
     <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
       <defs>
-        <linearGradient id="greedyGull-body" x1="0.2" y1="0.05" x2="0.75" y2="1">
+        <linearGradient id={id('body')} x1="0.2" y1="0.05" x2="0.75" y2="1">
           <stop offset="0" stopColor={C.white} />
           <stop offset="0.68" stopColor={C.white} />
           <stop offset="1" stopColor={C.grey} />
         </linearGradient>
-        <linearGradient id="greedyGull-wing" x1="0.55" y1="0" x2="0.2" y2="1">
+        <linearGradient id={id('wing')} x1="0.55" y1="0" x2="0.2" y2="1">
           <stop offset="0" stopColor={C.white} />
           <stop offset="0.62" stopColor={C.white} />
           <stop offset="1" stopColor={C.grey} />
         </linearGradient>
-        <linearGradient id="greedyGull-tail" x1="0.9" y1="0" x2="0.1" y2="0.7">
+        <linearGradient id={id('tail')} x1="0.9" y1="0" x2="0.1" y2="0.7">
           <stop offset="0" stopColor={C.grey} />
           <stop offset="1" stopColor={C.greyDeep} />
         </linearGradient>
-        <clipPath id="greedyGull-body-clip">
+        <clipPath id={id('body-clip')}>
           <ellipse cx={44} cy={60} rx={28} ry={26} />
         </clipPath>
-        <clipPath id="greedyGull-head-clip">
+        <clipPath id={id('head-clip')}>
           <circle cx={58} cy={26} r={20} />
         </clipPath>
-        <clipPath id="greedyGull-wingL-clip">
+        <clipPath id={id('wingL-clip')}>
           <path d={wingL} />
         </clipPath>
-        <clipPath id="greedyGull-wingR-clip">
+        <clipPath id={id('wingR-clip')}>
           <path d={wingR} />
         </clipPath>
       </defs>
@@ -52,11 +54,11 @@ export const GreedyGull: Sprite = () => {
       <path d="M30,90 L44,90 M50,90 L64,90" stroke={C.sunDeep} strokeWidth={2.4} strokeLinecap="round" fill="none" />
 
       {/* Tail, cocked up behind the body */}
-      <path d="M24,50 L4,60 L26,72 Z" fill="url(#greedyGull-tail)" stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
+      <path d="M24,50 L4,60 L26,72 Z" fill={`url(#${id('tail')})`} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
       <path d="M22,55 L8,60 M23,64 L9,61" stroke={C.greyDeep} strokeWidth={2.2} strokeLinecap="round" fill="none" />
 
-      <ellipse cx={44} cy={60} rx={28} ry={26} fill="url(#greedyGull-body)" stroke={C.ink} strokeWidth={4} />
-      <g clipPath="url(#greedyGull-body-clip)">
+      <ellipse cx={44} cy={60} rx={28} ry={26} fill={`url(#${id('body')})`} stroke={C.ink} strokeWidth={4} />
+      <g clipPath={`url(#${id('body-clip')})`}>
         {/* Belly shadow, then the shadow the head casts across the chest */}
         <path d="M16,74 Q44,66 76,54 L76,90 L14,90 Z" fill={C.grey} opacity={0.5} />
         <path d="M40,38 Q58,52 76,38 L78,45 Q58,58 38,45 Z" fill={C.grey} opacity={0.3} />
@@ -66,21 +68,21 @@ export const GreedyGull: Sprite = () => {
       </g>
 
       {/* Half open wings: layered feathers, greyDeep at the tips, lit along the leading edge */}
-      <path d={wingL} fill="url(#greedyGull-wing)" stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-      <g clipPath="url(#greedyGull-wingL-clip)">
+      <path d={wingL} fill={`url(#${id('wing')})`} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
+      <g clipPath={`url(#${id('wingL-clip')})`}>
         <path d="M8,58 L30,74 L6,82 Z" fill={C.greyDeep} />
         <path d="M17,66 L24,63 M17,59 L29,56 M19,52 L31,49" stroke={C.grey} strokeWidth={4.5} strokeLinecap="round" fill="none" />
         <path d="M37,49 C24,46 14,55 16,66" stroke={C.white} strokeWidth={4} strokeLinecap="round" opacity={0.5} fill="none" />
       </g>
-      <path d={wingR} fill="url(#greedyGull-wing)" stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-      <g clipPath="url(#greedyGull-wingR-clip)">
+      <path d={wingR} fill={`url(#${id('wing')})`} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
+      <g clipPath={`url(#${id('wingR-clip')})`}>
         <path d="M86,58 L64,74 L88,82 Z" fill={C.greyDeep} />
         <path d="M77,66 L70,63 M77,59 L65,56 M75,52 L63,49" stroke={C.grey} strokeWidth={4.5} strokeLinecap="round" fill="none" />
         <path d="M57,49 C70,46 80,55 78,66" stroke={C.white} strokeWidth={3} strokeLinecap="round" opacity={0.3} fill="none" />
       </g>
 
-      <circle cx={58} cy={26} r={20} fill="url(#greedyGull-body)" stroke={C.ink} strokeWidth={4} />
-      <g clipPath="url(#greedyGull-head-clip)">
+      <circle cx={58} cy={26} r={20} fill={`url(#${id('body')})`} stroke={C.ink} strokeWidth={4} />
+      <g clipPath={`url(#${id('head-clip')})`}>
         {/* Under-chin shadow and the highlight on the crown */}
         <path d="M36,35 Q58,45 80,32 L80,50 L36,50 Z" fill={C.grey} opacity={0.42} />
         <ellipse cx={48} cy={15} rx={11} ry={6} fill={C.white} opacity={0.9} transform="rotate(-22 48 15)" />
@@ -119,6 +121,7 @@ export const GreedyGull: Sprite = () => {
  * so they fade to nothing at the tips.
  */
 export const Jellyfish: Sprite = () => {
+  const id = useSvgIds('jellyfish');
   const tentacles = [
     'M16,54 Q8,66 18,76 Q26,84 18,90',
     'M33,61 Q26,72 35,81 Q43,88 35,90',
@@ -131,22 +134,22 @@ export const Jellyfish: Sprite = () => {
   return (
     <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
       <defs>
-        <linearGradient id="jellyfish-bell" x1="0.25" y1="0" x2="0.68" y2="1">
+        <linearGradient id={id('bell')} x1="0.25" y1="0" x2="0.68" y2="1">
           <stop offset="0" stopColor={C.white} />
           <stop offset="0.4" stopColor={C.plum} />
           <stop offset="1" stopColor={C.plumDeep} />
         </linearGradient>
-        <linearGradient id="jellyfish-tent" gradientUnits="userSpaceOnUse" x1="0" y1="52" x2="0" y2="92">
+        <linearGradient id={id('tent')} gradientUnits="userSpaceOnUse" x1="0" y1="52" x2="0" y2="92">
           <stop offset="0" stopColor={C.sky} />
           <stop offset="0.55" stopColor={C.sky} stopOpacity="0.7" />
           <stop offset="1" stopColor={C.skyDeep} stopOpacity="0.22" />
         </linearGradient>
-        <linearGradient id="jellyfish-tentInk" gradientUnits="userSpaceOnUse" x1="0" y1="52" x2="0" y2="92">
+        <linearGradient id={id('tentInk')} gradientUnits="userSpaceOnUse" x1="0" y1="52" x2="0" y2="92">
           <stop offset="0" stopColor={C.ink} />
           <stop offset="0.45" stopColor={C.ink} stopOpacity="0.7" />
           <stop offset="1" stopColor={C.ink} stopOpacity="0.18" />
         </linearGradient>
-        <clipPath id="jellyfish-bell-clip">
+        <clipPath id={id('bell-clip')}>
           <path d={bell} />
         </clipPath>
       </defs>
@@ -155,15 +158,15 @@ export const Jellyfish: Sprite = () => {
       <ellipse cx={50} cy={96} rx={26} ry={3.2} fill={C.ink} opacity={0.12} />
 
       {tentacles.map((d, i) => (
-        <path key={`ink${i}`} d={d} stroke="url(#jellyfish-tentInk)" strokeWidth={9} strokeLinecap="round" fill="none" />
+        <path key={`ink${i}`} d={d} stroke={`url(#${id('tentInk')})`} strokeWidth={9} strokeLinecap="round" fill="none" />
       ))}
       {tentacles.map((d, i) => (
-        <path key={i} d={d} stroke="url(#jellyfish-tent)" strokeWidth={5} strokeLinecap="round" fill="none" />
+        <path key={i} d={d} stroke={`url(#${id('tent')})`} strokeWidth={5} strokeLinecap="round" fill="none" />
       ))}
 
       {/* Bell body, translucent enough that the tentacle roots show through it */}
-      <path d={bell} fill="url(#jellyfish-bell)" opacity={0.9} />
-      <g clipPath="url(#jellyfish-bell-clip)">
+      <path d={bell} fill={`url(#${id('bell')})`} opacity={0.9} />
+      <g clipPath={`url(#${id('bell-clip')})`}>
         {/* Inner core and canals, seen through the flesh */}
         <ellipse cx={50} cy={21} rx={16} ry={7} fill={C.plumDeep} opacity={0.35} />
         <ellipse cx={50} cy={20} rx={9} ry={3.6} fill={C.white} opacity={0.35} />
@@ -204,6 +207,7 @@ export const Jellyfish: Sprite = () => {
  * on every underside, and a gold earring plus a faint gold aura for the boss beat.
  */
 export const Octopus: Sprite = () => {
+  const id = useSvgIds('octopus');
   // Every arm curls the same way, so six arms read as one wave instead of a tangle.
   const arms: Array<{ d: string; suckers: Array<[number, number]> }> = [
     { d: 'M18,54 C10,66 12,82 24,84 C30,85 30,79 26,77', suckers: [[13, 64], [14, 73], [18, 81]] },
@@ -217,40 +221,40 @@ export const Octopus: Sprite = () => {
   return (
     <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
       <defs>
-        <radialGradient id="octopus-aura" cx="0.5" cy="0.5" r="0.5">
+        <radialGradient id={id('aura')} cx="0.5" cy="0.5" r="0.5">
           <stop offset="0.5" stopColor={C.gold} stopOpacity="0.4" />
           <stop offset="1" stopColor={C.gold} stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="octopus-mantle" x1="0.22" y1="0" x2="0.72" y2="1">
+        <linearGradient id={id('mantle')} x1="0.22" y1="0" x2="0.72" y2="1">
           <stop offset="0" stopColor={C.berry} />
           <stop offset="0.45" stopColor={C.berry} />
           <stop offset="1" stopColor={C.berryDeep} />
         </linearGradient>
-        <linearGradient id="octopus-arm" gradientUnits="userSpaceOnUse" x1="0" y1="52" x2="0" y2="90">
+        <linearGradient id={id('arm')} gradientUnits="userSpaceOnUse" x1="0" y1="52" x2="0" y2="90">
           <stop offset="0" stopColor={C.berry} />
           <stop offset="1" stopColor={C.berryDeep} />
         </linearGradient>
-        <linearGradient id="octopus-band" x1="0.15" y1="0" x2="0.6" y2="1">
+        <linearGradient id={id('band')} x1="0.15" y1="0" x2="0.6" y2="1">
           <stop offset="0" stopColor={C.sun} />
           <stop offset="1" stopColor={C.sunDeep} />
         </linearGradient>
-        <clipPath id="octopus-head-clip">
+        <clipPath id={id('head-clip')}>
           <ellipse cx={50} cy={38} rx={38} ry={32} />
         </clipPath>
-        <clipPath id="octopus-band-clip">
+        <clipPath id={id('band-clip')}>
           <path d={bandana} />
         </clipPath>
       </defs>
 
       {/* Faint aura, so the boss out-reads the little foes beside it */}
-      <ellipse cx={50} cy={50} rx={48} ry={48} fill="url(#octopus-aura)" />
+      <ellipse cx={50} cy={50} rx={48} ry={48} fill={`url(#${id('aura')})`} />
       {/* Heavy contact shadow: this thing has weight */}
       <ellipse cx={50} cy={91} rx={36} ry={5.4} fill={C.ink} opacity={0.18} />
 
       {arms.map((arm, i) => (
         <g key={i}>
           <path d={arm.d} stroke={C.ink} strokeWidth={12.5} strokeLinecap="round" fill="none" />
-          <path d={arm.d} stroke="url(#octopus-arm)" strokeWidth={7.5} strokeLinecap="round" fill="none" />
+          <path d={arm.d} stroke={`url(#${id('arm')})`} strokeWidth={7.5} strokeLinecap="round" fill="none" />
           {arm.suckers.map(([cx, cy]) => (
             <g key={`${cx}-${cy}`}>
               <circle cx={cx} cy={cy} r={2.7} fill={C.sandDeep} />
@@ -260,8 +264,8 @@ export const Octopus: Sprite = () => {
         </g>
       ))}
 
-      <ellipse cx={50} cy={38} rx={38} ry={32} fill="url(#octopus-mantle)" stroke={C.ink} strokeWidth={4} />
-      <g clipPath="url(#octopus-head-clip)">
+      <ellipse cx={50} cy={38} rx={38} ry={32} fill={`url(#${id('mantle')})`} stroke={C.ink} strokeWidth={4} />
+      <g clipPath={`url(#${id('head-clip')})`}>
         {/* Cel shadow across the shaded cheek, then the wet highlight on the lit one */}
         <path d="M10,48 Q50,36 92,26 L92,74 L10,74 Z" fill={C.berryDeep} opacity={0.55} />
         <ellipse cx={26} cy={42} rx={14} ry={9} fill={C.white} opacity={0.2} transform="rotate(-30 26 42)" />
@@ -277,8 +281,8 @@ export const Octopus: Sprite = () => {
       <polygon points="12,28 4,32 12,37" fill={C.sun} stroke={C.ink} strokeWidth={3} strokeLinejoin="round" />
       <polygon points="13,33 6,45 17,40" fill={C.sun} stroke={C.ink} strokeWidth={3} strokeLinejoin="round" />
       <path d="M8,31 L11,34 M10,37 L14,38" stroke={C.sunDeep} strokeWidth={2.2} strokeLinecap="round" fill="none" />
-      <path d={bandana} fill="url(#octopus-band)" stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-      <g clipPath="url(#octopus-band-clip)">
+      <path d={bandana} fill={`url(#${id('band')})`} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
+      <g clipPath={`url(#${id('band-clip')})`}>
         <path d="M86,32 C60,20 40,20 14,32 L14,26 C40,14 60,14 86,26 Z" fill={C.gold} />
         <path d="M86,32 C60,20 40,20 14,32 L14,29 C40,17 60,17 86,29 Z" fill={C.goldDeep} opacity={0.55} />
         <path d="M24,26 C30,12 40,8 52,7" stroke={C.white} strokeWidth={4} strokeLinecap="round" opacity={0.35} fill="none" />
