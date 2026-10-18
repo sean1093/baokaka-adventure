@@ -12,6 +12,9 @@ const fakeStorage = (seed?: string): StorageLike => {
     setItem: (key, value) => {
       cells[key] = value;
     },
+    removeItem: (key) => {
+      delete cells[key];
+    },
   };
 };
 
@@ -88,6 +91,7 @@ describe('saveQuest', () => {
       setItem: () => {
         throw new Error('QuotaExceededError');
       },
+      removeItem: () => {},
     };
     expect(() => saveQuest({ run: freshRun(1), sound: true }, angry)).not.toThrow();
   });

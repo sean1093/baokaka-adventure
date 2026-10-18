@@ -1,42 +1,6 @@
 import type { Sprite } from '../sprite';
 import { C } from '../palette';
 
-export const SunDisc: Sprite = () => {
-  const rays: Array<[number, number, number, number]> = [
-    [78, 50, 93, 50],
-    [69.8, 69.8, 80.4, 80.4],
-    [50, 78, 50, 93],
-    [30.2, 69.8, 19.6, 80.4],
-    [22, 50, 7, 50],
-    [30.2, 30.2, 19.6, 19.6],
-    [50, 22, 50, 7],
-    [69.8, 30.2, 80.4, 19.6],
-  ];
-  return (
-    <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-      {rays.map(([x1, y1, x2, y2]) => (
-        <line key={`${x1}-${y1}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={C.sunDeep} strokeWidth={6} strokeLinecap="round" />
-      ))}
-      <circle cx={50} cy={50} r={24} fill={C.sun} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    </svg>
-  );
-};
-
-export const Wave: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <path
-      d="M6,48 C22,30 38,30 50,48 C62,66 78,66 94,48 L94,70 C78,88 62,88 50,70 C38,52 22,52 6,70 Z"
-      fill={C.skyDeep}
-      stroke={C.ink}
-      strokeWidth={4}
-      strokeLinejoin="round"
-    />
-    <circle cx={26} cy={40} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={50} cy={59} r={4} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={72} cy={77} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-  </svg>
-);
-
 export const Sandcastle: Sprite = () => (
   <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
     <rect x={8} y={55} width={24} height={35} fill={C.sandDeep} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />

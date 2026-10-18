@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { SPRITES } from '../../art/sprites';
 import { Button } from '../../components/Button';
 import { Card, Screen } from '../../components/Screen';
-import { Home, Play, Sparkle } from '../../components/icons';
+import { Play, Sparkle } from '../../components/icons';
 import { Sheet } from '../../components/Sheet';
 import { CHAPTER_TITLES, MAPS } from '../engine/maps';
 import { runStarted } from '../engine/quest';
@@ -12,9 +12,9 @@ const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
 const Duck = SPRITES.duck;
 
-type Props = { run: Run; onNew: () => void; onContinue: () => void; onExit: () => void };
+type Props = { run: Run; onNew: () => void; onContinue: () => void };
 
-export const QuestTitleScreen = ({ run, onNew, onContinue, onExit }: Props) => {
+export const QuestTitleScreen = ({ run, onNew, onContinue }: Props) => {
   const [confirming, setConfirming] = useState(false);
   const started = runStarted(run);
 
@@ -71,10 +71,6 @@ export const QuestTitleScreen = ({ run, onNew, onContinue, onExit }: Props) => {
           開始冒險
         </Button>
       )}
-
-      <Button size="md" full variant="ghost" icon={<Home size={20} />} onClick={onExit}>
-        回遊戲選單
-      </Button>
 
       {run.cleared && <p className="text-center text-caption font-bold text-leafDeep">★ 已經通關過一次了</p>}
 

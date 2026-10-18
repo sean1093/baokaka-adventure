@@ -155,8 +155,8 @@ export const MochaCat: Sprite = () => (
  * Baokaka, the hero: a one year old swordsman. Round face, upright hair tufts and serious
  * almond eyes, in a teal 道袍 with a crossed collar and wide sleeves, a gold sash and a short
  * wine shoulder cape. Each arm leaves the shoulder from under the cape, bends at the elbow and
- * ends in a wide cuff plus a real hand. Deliberately no held prop: he is decor in every
- * hidden-object scene and a bright object in his fist would be mistaken for a target.
+ * ends in a wide cuff plus a real hand. Deliberately no held prop, so he reads cleanly at map
+ * size.
  */
 export const Baokaka: Sprite = () => (
   <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">

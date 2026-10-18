@@ -50,16 +50,3 @@ export const WallClock: Sprite = () => (
     <circle cx={50} cy={50} r={5} fill={C.ink} />
   </svg>
 );
-
-export const Rug: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <ellipse cx={50} cy={55} rx={42} ry={22} fill={C.paper} stroke={C.ink} strokeWidth={4} />
-    <ellipse cx={50} cy={55} rx={28} ry={13} fill="none" stroke={C.grey} strokeWidth={3} />
-    <line x1={11} y1={47} x2={4} y2={47} stroke={C.grey} strokeWidth={3} strokeLinecap="round" />
-    <line x1={8} y1={55} x2={1} y2={55} stroke={C.grey} strokeWidth={3} strokeLinecap="round" />
-    <line x1={11} y1={63} x2={4} y2={63} stroke={C.grey} strokeWidth={3} strokeLinecap="round" />
-    <line x1={89} y1={47} x2={96} y2={47} stroke={C.grey} strokeWidth={3} strokeLinecap="round" />
-    <line x1={92} y1={55} x2={99} y2={55} stroke={C.grey} strokeWidth={3} strokeLinecap="round" />
-    <line x1={89} y1={63} x2={96} y2={63} stroke={C.grey} strokeWidth={3} strokeLinecap="round" />
-  </svg>
-);

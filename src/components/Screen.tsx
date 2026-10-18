@@ -6,18 +6,16 @@ type ScreenProps = {
   children: ReactNode;
   /** Vertically centre the content (title and result pages) */
   center?: boolean;
-  /** Lock to the viewport height instead of scrolling (the battle and the hidden-object scene) */
-  fixed?: boolean;
   className?: string;
 };
 
 /** The page frame: phone-width column, safe-area padding, and the slide-up entrance. */
-export const Screen = ({ children, center, fixed, className = '' }: ScreenProps) => (
+export const Screen = ({ children, center, className = '' }: ScreenProps) => (
   <main
     className={[
       'screen-in mx-auto flex w-full max-w-md flex-col gap-4 px-4',
       'pb-[max(env(safe-area-inset-bottom),20px)] pt-[max(env(safe-area-inset-top),12px)]',
-      fixed ? 'h-dvh' : 'min-h-dvh',
+      'min-h-dvh',
       center ? 'justify-center' : '',
       className,
     ].join(' ')}

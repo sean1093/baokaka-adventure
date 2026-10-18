@@ -9,36 +9,31 @@ import * as foesNight from './foesNight';
 import * as foesPark from './foesPark';
 import * as foesYard from './foesYard';
 import * as folk from './folk';
+import * as items from './items';
 import * as town from './town';
 import * as living from './living';
 import * as market from './market';
 import * as night from './night';
 import * as park from './park';
-import * as targets from './targets';
 import * as yard from './yard';
 
 /**
  * sprite key -> drawing. Typed as Record<SpriteName, Sprite>, so a missing or extra
- * entry fails the build: level data and art cannot drift apart.
+ * entry fails the build: game content and art cannot drift apart.
  */
 export const SPRITES: Record<SpriteName, Sprite> = {
-  bottle: targets.Bottle,
-  sock: targets.Sock,
-  clothBook: targets.ClothBook,
-  bucket: targets.Bucket,
-  spade: targets.Spade,
-  dandelion: targets.Dandelion,
-  ball: targets.Ball,
-  sunHat: targets.SunHat,
-  cookie: targets.Cookie,
-  banana: targets.Banana,
-  driedFish: targets.DriedFish,
-  coinPurse: targets.CoinPurse,
-  shell: targets.Shell,
-  flask: targets.Flask,
-  toyBoat: targets.ToyBoat,
-  comfortDoll: targets.ComfortDoll,
-  nightLight: targets.NightLight,
+  bottle: items.Bottle,
+  clothBook: items.ClothBook,
+  bucket: items.Bucket,
+  sunHat: items.SunHat,
+  cookie: items.Cookie,
+  banana: items.Banana,
+  driedFish: items.DriedFish,
+  coinPurse: items.CoinPurse,
+  shell: items.Shell,
+  toyBoat: items.ToyBoat,
+  comfortDoll: items.ComfortDoll,
+  nightLight: items.NightLight,
 
   mochaCat: characters.MochaCat,
   baokaka: characters.Baokaka,
@@ -48,7 +43,6 @@ export const SPRITES: Record<SpriteName, Sprite> = {
   floorLamp: living.FloorLamp,
   pottedPlant: living.PottedPlant,
   wallClock: living.WallClock,
-  rug: living.Rug,
 
   bed: night.Bed,
   moonWindow: night.MoonWindow,
@@ -58,7 +52,6 @@ export const SPRITES: Record<SpriteName, Sprite> = {
   slipper: night.Slipper,
 
   tree: yard.Tree,
-  fence: yard.Fence,
   flowerPot: yard.FlowerPot,
   wateringCan: yard.WateringCan,
   butterfly: yard.Butterfly,
@@ -66,7 +59,6 @@ export const SPRITES: Record<SpriteName, Sprite> = {
 
   bench: park.Bench,
   slide: park.Slide,
-  cloud: park.Cloud,
   kite: park.Kite,
   bird: park.Bird,
 
@@ -77,8 +69,6 @@ export const SPRITES: Record<SpriteName, Sprite> = {
   scale: market.Scale,
   apple: market.Apple,
 
-  sunDisc: beach.SunDisc,
-  wave: beach.Wave,
   sandcastle: beach.Sandcastle,
   beachUmbrella: beach.BeachUmbrella,
   starfish: beach.Starfish,

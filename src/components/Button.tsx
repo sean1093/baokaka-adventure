@@ -5,8 +5,7 @@ type Props = {
   onClick: () => void;
   /** primary = the one thing to do next; tonal = secondary; ghost = quiet; danger = destructive */
   variant?: 'primary' | 'tonal' | 'ghost' | 'danger';
-  /** xl is the hidden-object game's 64px floor */
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg';
   full?: boolean;
   disabled?: boolean;
   /** Accessible name when the visible text is not enough (icon-only or abbreviated buttons) */
@@ -26,7 +25,6 @@ const SIZE: Record<NonNullable<Props['size']>, string> = {
   sm: 'h-10 px-4 text-label gap-1.5',
   md: 'h-12 px-5 text-copy gap-2',
   lg: 'h-14 px-7 text-heading gap-2',
-  xl: 'min-h-touch px-8 text-headline gap-2',
 };
 
 /**

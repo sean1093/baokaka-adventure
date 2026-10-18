@@ -25,15 +25,6 @@ export const Slide: Sprite = () => (
   </svg>
 );
 
-export const Cloud: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <rect x={10} y={50} width={80} height={32} rx={16} fill={C.white} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <circle cx={30} cy={48} r={19} fill={C.white} stroke={C.ink} strokeWidth={4} />
-    <circle cx={56} cy={38} r={26} fill={C.white} stroke={C.ink} strokeWidth={4} />
-    <circle cx={78} cy={50} r={17} fill={C.white} stroke={C.ink} strokeWidth={4} />
-  </svg>
-);
-
 export const Kite: Sprite = () => (
   <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
     <polygon points="50,8 85,38 50,60 15,38" fill={C.plum} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />

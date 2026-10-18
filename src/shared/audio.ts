@@ -2,7 +2,7 @@
  * Sound is synthesised with WebAudio; no mp3 is ever loaded.
  * Every cue is a short note run, so synthesising takes a few lines, ships no binary assets,
  * waits on no download, and still works on a flaky mobile connection.
- * No game depends on sound: both are fully completable muted.
+ * Nothing depends on sound: the game is fully completable muted.
  */
 
 export type Tone = 'tap' | 'found' | 'complete' | 'hit' | 'heal' | 'levelUp' | 'defeat';
