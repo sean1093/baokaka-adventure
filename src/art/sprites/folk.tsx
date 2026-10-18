@@ -2,9 +2,8 @@ import type { Sprite } from '../sprite';
 import { C } from '../palette';
 
 /**
- * The folk of Baokaka's town: the third party member (Duck) plus the family and
- * neighbours he can talk to, drawn at the 仙劍 bar - cel shaded, in 古裝, light
- * always coming from the upper left.
+ * The folk of Baokaka's town: the family and neighbours he can talk to, drawn
+ * at the 仙劍 bar - cel shaded, in 古裝, light always coming from the upper left.
  *
  * Every figure is built the same way so a scene can line them up. A head near
  * (50,29) with rx 22, shoulders at y 57, a sash at the waist, and a hem that
@@ -14,105 +13,6 @@ import { C } from '../palette';
  * cloth, not strokes: they leave the shoulder, widen at the cuff, and a C.skin
  * hand always comes out of the far end.
  */
-
-/**
- * Duck, the third party member: the water-walker from Bathtub Island. Two-tone
- * yellow, a broad C.sunDeep bill, and a sand 斗笠 with woven ribs whose wine cord
- * runs down outside the cheeks so it never masks the face.
- */
-export const Duck: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <defs>
-      <linearGradient id="duck-body" x1="0.15" y1="0" x2="0.85" y2="1">
-        <stop offset="0" stopColor={C.sun} />
-        <stop offset="1" stopColor={C.sunDeep} />
-      </linearGradient>
-      <linearGradient id="duck-hat" x1="0.2" y1="0" x2="0.8" y2="1">
-        <stop offset="0" stopColor={C.sand} />
-        <stop offset="1" stopColor={C.sandDeep} />
-      </linearGradient>
-    </defs>
-
-    {/* He is a water-walker, so the ground line is water: two rings of ripple */}
-    <path d="M9,96 Q19,93 29,96 M71,96 Q81,93 91,96" stroke={C.sky} strokeWidth={2.4} strokeLinecap="round" fill="none" opacity={0.55} />
-    <path d="M16,91 Q22,89 28,91 M72,91 Q78,89 84,91" stroke={C.sky} strokeWidth={1.8} strokeLinecap="round" fill="none" opacity={0.35} />
-
-    {/* Webbed feet flat on the ground, drawn first so the belly hides the joins */}
-    <path d="M42,85 Q24,87 13,95 Q28,98 47,95 Z" fill={C.sun} stroke={C.ink} strokeWidth={3.5} strokeLinejoin="round" />
-    <path d="M58,85 Q76,87 87,95 Q72,98 53,95 Z" fill={C.sun} stroke={C.ink} strokeWidth={3.5} strokeLinejoin="round" />
-    <path d="M22,93 L28,87 M33,95 L37,87 M78,93 L72,87 M67,95 L63,87" stroke={C.sunDeep} strokeWidth={2.2} strokeLinecap="round" fill="none" />
-
-    {/* Tail feathers cocked up behind the right flank */}
-    <path d="M74,64 Q88,58 92,66 Q85,71 77,73 Z" fill={C.sunDeep} stroke={C.ink} strokeWidth={3} strokeLinejoin="round" />
-    <path d="M79,65 Q85,64 89,67" stroke={C.sun} strokeWidth={2} strokeLinecap="round" fill="none" />
-
-    {/* Body: gradient base, hard shadow down the right flank, soft sheen up the left */}
-    <ellipse cx={50} cy={72} rx={31} ry={21} fill="url(#duck-body)" stroke={C.ink} strokeWidth={4} />
-    <path d="M74,62 Q80,76 70,86 Q59,93 43,91 Q64,88 70,77 Q74,69 74,62 Z" fill={C.sunDeep} />
-    <ellipse cx={40} cy={64} rx={14} ry={7} fill={C.white} opacity={0.3} transform="rotate(-22 40 64)" />
-    <path d="M32,78 Q50,86 68,78" stroke={C.sunDeep} strokeWidth={2.4} strokeLinecap="round" fill="none" />
-    <path d="M34,84 Q40,80 46,84 Q52,80 58,84 Q64,80 68,84" stroke={C.sunDeep} strokeWidth={2} strokeLinecap="round" fill="none" opacity={0.5} />
-    <path d="M70,60 Q75,70 72,80" stroke={C.sunDeep} strokeWidth={2.2} strokeLinecap="round" fill="none" opacity={0.7} />
-    <path d="M20,93 Q28,90 36,93 M64,93 Q72,90 80,93" stroke={C.sunDeep} strokeWidth={1.6} strokeLinecap="round" fill="none" opacity={0.4} />
-    <ellipse cx={49} cy={80} rx={17} ry={9} fill={C.sun} opacity={0.4} />
-    <path d="M36,68 Q50,64 64,68" stroke={C.sunDeep} strokeWidth={2} strokeLinecap="round" fill="none" opacity={0.55} />
-
-    {/* One folded wing, painted in the deeper yellow so it reads against the belly */}
-    <path d="M27,58 Q17,70 23,84 Q35,81 34,65 Z" fill={C.sunDeep} stroke={C.ink} strokeWidth={3.5} strokeLinejoin="round" />
-    <path d="M26,79 Q31,81 33,76 M25,71 Q30,74 33,68" stroke={C.sun} strokeWidth={2.2} strokeLinecap="round" fill="none" />
-    <path d="M24,75 Q29,77 32,71" stroke={C.sun} strokeWidth={2.2} strokeLinecap="round" fill="none" />
-    <path d="M29,61 Q24,68 23,76" stroke={C.white} strokeWidth={2.5} strokeLinecap="round" fill="none" opacity={0.3} />
-    <path d="M35,62 Q37,72 35,82" stroke={C.sunDeep} strokeWidth={2} strokeLinecap="round" fill="none" opacity={0.6} />
-
-    <circle cx={50} cy={38} r={21} fill="url(#duck-body)" stroke={C.ink} strokeWidth={4} />
-    <path d="M71,38 A21,21 0 0 1 58,57.6 Q66,49 70,35 Z" fill={C.sunDeep} opacity={0.45} />
-    <ellipse cx={38} cy={28} rx={10} ry={5} fill={C.white} opacity={0.32} transform="rotate(-25 38 28)" />
-
-    {/* Big friendly eyes: sclera, sky iris with a lit lower rim, pupil, glint */}
-    <path d="M31,27.5 Q38.5,24 45,26.5 M55,26.5 Q61.5,24 69,27.5" stroke={C.sunDeep} strokeWidth={2.4} strokeLinecap="round" fill="none" />
-    <path d="M31,36 C33,29.5 44,29 46,36.5 C44,43.5 33,43 31,36 Z" fill={C.cream} />
-    <path d="M69,36 C67,29.5 56,29 54,36.5 C56,43.5 67,43 69,36 Z" fill={C.cream} />
-    <path d="M31,36 C33,29.5 44,29 46,36.5 C43,32.8 35,32.3 31,36 Z" fill={C.sunDeep} opacity={0.45} />
-    <path d="M69,36 C67,29.5 56,29 54,36.5 C57,32.8 65,32.3 69,36 Z" fill={C.sunDeep} opacity={0.45} />
-    <circle cx={38.5} cy={36.3} r={5} fill={C.skyDeep} />
-    <circle cx={61.5} cy={36.3} r={5} fill={C.skyDeep} />
-    <ellipse cx={38.5} cy={39} rx={3.2} ry={1.8} fill={C.sky} />
-    <ellipse cx={61.5} cy={39} rx={3.2} ry={1.8} fill={C.sky} />
-    <circle cx={38.5} cy={36.3} r={2.2} fill={C.ink} />
-    <circle cx={61.5} cy={36.3} r={2.2} fill={C.ink} />
-    <circle cx={36.3} cy={33.9} r={1.6} fill={C.white} />
-    <circle cx={59.3} cy={33.9} r={1.6} fill={C.white} />
-    <path d="M31,36 C33,29.5 44,29 46,36.5 M69,36 C67,29.5 56,29 54,36.5" stroke={C.ink} strokeWidth={3} strokeLinecap="round" fill="none" />
-    <path d="M32.2,39.6 C35,42.6 43,42.2 46,36.5 M67.8,39.6 C65,42.6 57,42.2 54,36.5" stroke={C.ink} strokeWidth={1.4} strokeLinecap="round" fill="none" opacity={0.5} />
-
-    {/* Bill: wide enough to break the chin line, dark underside, lit top plate */}
-    <path d="M33,45 Q50,41 67,45 Q68,57 50,61 Q32,57 33,45 Z" fill={C.sunDeep} stroke={C.ink} strokeWidth={3.5} strokeLinejoin="round" />
-    <path d="M34,45.5 Q50,41.5 66,45.5 Q50,51 34,45.5 Z" fill={C.sun} />
-    <path d="M35,48.5 Q50,53 65,48.5" stroke={C.wineDeep} strokeWidth={2} strokeLinecap="round" fill="none" opacity={0.45} />
-    <circle cx={42} cy={45.5} r={1.2} fill={C.ink} opacity={0.5} />
-    <path d="M32,64 Q50,72 68,64" stroke={C.sunDeep} strokeWidth={2.4} strokeLinecap="round" fill="none" opacity={0.6} />
-
-    {/* Hat cord: two short ends dangling free of the brim tips, clear of the face */}
-    <path d="M20,23 Q17.5,28 19,33 M80,23 Q82.5,28 81,33" stroke={C.wine} strokeWidth={2.4} strokeLinecap="round" fill="none" />
-    <circle cx={19} cy={34.5} r={2.2} fill={C.wineDeep} />
-    <circle cx={81} cy={34.5} r={2.2} fill={C.wineDeep} />
-
-    {/* 斗笠: woven cone with a drooping brim that overhangs both temples */}
-    <path
-      d="M50,1 C43,4 34,9 28,15 Q17,18 14,21 Q50,28 86,21 Q83,18 72,15 C66,9 57,4 50,1 Z"
-      fill="url(#duck-hat)"
-      stroke={C.ink}
-      strokeWidth={4}
-      strokeLinejoin="round"
-    />
-    <path d="M50,3 Q40,10 32,17 M50,3 L50,20 M50,3 Q60,10 68,17" stroke={C.sandDeep} strokeWidth={1.8} strokeLinecap="round" fill="none" />
-    <path d="M35,11 Q50,16 65,11 M22,21 Q50,27 78,21" stroke={C.sandDeep} strokeWidth={1.8} strokeLinecap="round" fill="none" />
-    <path d="M50,3 Q45,11 41,19 M50,3 Q55,11 59,19" stroke={C.sandDeep} strokeWidth={1.5} strokeLinecap="round" fill="none" opacity={0.7} />
-    <path d="M20,22 Q50,29 80,22" stroke={C.sand} strokeWidth={2} strokeLinecap="round" fill="none" opacity={0.5} />
-    <path d="M46,3 Q36,9 29,16 L35,17 Q43,8 49,4 Z" fill={C.white} opacity={0.3} />
-    <path d="M70,16 Q83,19 86,21 Q68,26 56,27 Q70,22 70,16 Z" fill={C.sandDeep} />
-  </svg>
-);
 
 /** Mom: a plum 襦裙 under a cream 披帛, black hair side-parted into a bun with a gold 簪, one hand waving. */
 export const Mom: Sprite = () => (

@@ -8,7 +8,6 @@ import type { Run } from '../engine/types';
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
-const Duck = SPRITES.duck;
 const ComfortDoll = SPRITES.comfortDoll;
 const SnoreKing = SPRITES.snoreKing;
 const Star = SPRITES.star;
@@ -42,9 +41,6 @@ export const QuestEndingScreen = ({ run, soundOn, onContinue }: Props) => {
         <span className="block h-20 w-20">
           <MochaCat />
         </span>
-        <span className="block h-16 w-16">
-          <Duck />
-        </span>
         <span className="block h-20 w-20 opacity-90">
           <SnoreKing />
         </span>
@@ -52,7 +48,7 @@ export const QuestEndingScreen = ({ run, soundOn, onContinue }: Props) => {
 
       <Card className="p-5">
         <p className="text-copy leading-loose text-ink/85">
-          寶咖咖抱著娃娃，摩卡貓蜷在腳邊，小鴨鴨浮在洗澡水裡，
+          寶咖咖抱著娃娃，摩卡貓蜷在腳邊，阿藍和黑糖靠在一起打瞌睡，
           打呼嚕大王在旁邊打呼嚕——這次沒有人覺得吵。
           <br />
           <br />

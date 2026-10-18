@@ -2,11 +2,12 @@ import { describe, expect, test } from 'vitest';
 import { startBattle } from './battle';
 import { EVENTS } from './events';
 import { FOES } from './foes';
-import { ITEMS, heroStats } from './heroes';
+import { ITEMS, heroStats, spellsFor } from './heroes';
 import { MAPS } from './maps';
 import { findPath } from './path';
 import { applyVictory, freshRun, initialState, questReducer, runStarted, type QuestState } from './quest';
-import type { FoeId, HeroId, Tile } from './types';
+import { runScene } from './scene';
+import type { FoeId, HeroId, Run, Tile } from './types';
 
 const start = (): QuestState => initialState(freshRun(99), true);
 
@@ -331,5 +332,35 @@ describe('applyVictory', () => {
     const boss = (Object.keys(FOES) as FoeId[]).find((foe) => FOES[foe].boss);
     if (!boss) throw new Error('no boss in the content');
     expect(win([boss], true).summary.boss).toBe(boss);
+  });
+});
+
+describe('joining', () => {
+  const joinAt = (run: Run, hero: HeroId): Run => runScene(run, { steps: [{ do: 'join', hero }], at: 0 }).run;
+
+  test('heroes line up in the order they join, ending in HERO_ORDER for the story', () => {
+    let run = freshRun(1);
+    run = joinAt(run, 'mocha');
+    run = joinAt(run, 'magpie');
+    run = joinAt(run, 'bear');
+    expect(run.party).toEqual(['baokaka', 'mocha', 'magpie', 'bear']);
+  });
+
+  test('the old story joins 阿藍 then 黑糖, so every hero is playable', () => {
+    const joins = Object.values(EVENTS).flatMap((steps) => steps.flatMap((step) => ('do' in step && step.do === 'join' ? [step.hero] : [])));
+    expect(joins).toEqual(['mocha', 'magpie', 'bear']);
+  });
+
+  test('黑糖 joining at Lv10 knows his first three skills, at full HP and 元氣', () => {
+    const run = joinAt({ ...freshRun(1), party: ['baokaka', 'mocha', 'magpie'], level: 10 }, 'bear');
+    expect(spellsFor('bear', run.level).map((spell) => spell.id)).toEqual(['pawPat', 'groundPound', 'sugarHug']);
+    expect(run.hp.bear).toBe(heroStats('bear', 10).hp);
+    expect(run.mp.bear).toBe(heroStats('bear', 10).mp);
+  });
+
+  test('阿藍 joining at Lv3 knows 羽毛雨 only', () => {
+    const run = joinAt({ ...freshRun(1), party: ['baokaka', 'mocha'], level: 3 }, 'magpie');
+    expect(run.party).toContain('magpie');
+    expect(spellsFor('magpie', run.level).map((spell) => spell.id)).toEqual(['featherRain']);
   });
 });

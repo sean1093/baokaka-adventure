@@ -19,11 +19,26 @@ const END_DELAY_MS = 900;
 
 /** Column centres for 1..3 foes, as fractions of the arena width */
 const COLUMNS: Record<number, number[]> = { 1: [0.5], 2: [0.3, 0.7], 3: [0.18, 0.5, 0.82] };
-/** Vertical centres of the two ranks, as fractions of the arena height */
+/** Vertical centre of the foe rank, as a fraction of the arena height */
 const FOE_Y = 0.27;
-const HERO_Y = 0.79;
-/** Horizontal centres of up to three heroes */
-const HERO_X = [0.24, 0.5, 0.76];
+/**
+ * Where 1..4 heroes stand (centres, as fractions of the arena) and how wide each is drawn. Up to
+ * three share one rank; four stand in two staggered rows, so no sprite covers another's face.
+ */
+const HERO_SPOTS: Record<number, { spots: Spot[]; width: number }> = {
+  1: { spots: [{ x: 0.5, y: 0.79 }], width: 0.24 },
+  2: { spots: [{ x: 0.33, y: 0.79 }, { x: 0.67, y: 0.79 }], width: 0.24 },
+  3: { spots: [{ x: 0.24, y: 0.79 }, { x: 0.5, y: 0.79 }, { x: 0.76, y: 0.79 }], width: 0.24 },
+  4: {
+    spots: [
+      { x: 0.16, y: 0.83 },
+      { x: 0.38, y: 0.7 },
+      { x: 0.62, y: 0.83 },
+      { x: 0.84, y: 0.7 },
+    ],
+    width: 0.21,
+  },
+};
 
 type Menu = 'root' | 'spell' | 'item';
 type Pending = { kind: 'attack' } | { kind: 'spell'; spell: SpellId } | { kind: 'item'; item: ItemId };
@@ -57,7 +72,7 @@ function logLine(battle: Battle): string {
         parts.push(`${whoName(event.who, battle)} 防禦`);
         break;
       case 'shield':
-        parts.push('全隊被泡泡包住了');
+        parts.push(UI.shielded);
         break;
       case 'revive':
         parts.push(`${whoName(event.who, battle)} 站起來了！`);
@@ -106,6 +121,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
   const hero = phase.kind === 'hero' ? phase.hero : null;
   const alive = aliveFoeSlots(battle);
   const columns = COLUMNS[battle.foes.length] ?? COLUMNS[3];
+  const rank = HERO_SPOTS[battle.party.length] ?? HERO_SPOTS[4];
   const Backdrop = BACKDROPS[palette];
 
   const [menu, setMenu] = useState<Menu>('root');
@@ -150,7 +166,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
       return column === undefined ? null : { x: column, y: FOE_Y };
     }
     const index = battle.party.indexOf(who.hero);
-    return index < 0 ? null : { x: HERO_X[index] ?? 0.5, y: HERO_Y };
+    return index < 0 ? null : (rank.spots[index] ?? null);
   };
 
   // Heavy landings shake the arena: a crit, an AoE, or anything that knocks someone down
@@ -303,47 +319,49 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
           );
         })}
 
-        {/* The party lines up along the near edge */}
-        {battle.party.map((member, index) => {
-          const Art = SPRITES[HERO_SPRITE[member]];
-          const state = battle.heroes[member];
-          const dead = state.hp === 0;
-          const acting = battle.events.some((event) => event.kind === 'act' && sameWho(event.who, { side: 'hero', hero: member }));
-          const hit = battle.events.find((event) => event.kind !== 'flee' && event.kind !== 'shield' && sameWho(event.who, { side: 'hero', hero: member }));
-          const float = hit ? floater(hit) : null;
-          const pickable = needs === 'hero';
-          const struck = battle.events.some((event) => event.kind === 'hit' && sameWho(event.who, { side: 'hero', hero: member }));
-          const left = HERO_X[index] ?? 0.5;
+        {/* The party lines up along the near edge; the far row is drawn first so the near row overlaps it */}
+        {battle.party
+          .map((member, index) => ({ member, at: rank.spots[index] ?? rank.spots[0] }))
+          .sort((a, b) => a.at.y - b.at.y)
+          .map(({ member, at }) => {
+            const Art = SPRITES[HERO_SPRITE[member]];
+            const state = battle.heroes[member];
+            const dead = state.hp === 0;
+            const acting = battle.events.some((event) => event.kind === 'act' && sameWho(event.who, { side: 'hero', hero: member }));
+            const hit = battle.events.find((event) => event.kind !== 'flee' && event.kind !== 'shield' && sameWho(event.who, { side: 'hero', hero: member }));
+            const float = hit ? floater(hit) : null;
+            const pickable = needs === 'hero';
+            const struck = battle.events.some((event) => event.kind === 'hit' && sameWho(event.who, { side: 'hero', hero: member }));
 
-          return (
-            <button
-              key={member}
-              type="button"
-              disabled={!pickable}
-              onClick={() => pickHero(member)}
-              aria-label={HEROES[member].name}
-              className="absolute disabled:pointer-events-none"
-              style={{ left: `${left * 100}%`, top: `${HERO_Y * 100}%`, width: '24%', transform: 'translate(-50%, -50%)' }}
-            >
-              <span className={`relative block ${dead ? 'opacity-35 grayscale' : ''} ${acting ? 'lunge-up' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
-                <span className="block aspect-square w-full">
-                  <Art />
-                </span>
-                {state.shield && <span className="absolute inset-0 rounded-full ring-4 ring-sky/60" />}
-                {state.guard && <span className="absolute -right-1 top-1 rounded-full bg-sky px-1.5 text-caption font-bold text-white shadow-card">防</span>}
-                {pickable && <span className="absolute inset-0 rounded-2xl ring-2 ring-leaf" />}
-                {float && (
-                  <span
-                    key={battle.step}
-                    className={`float-up pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-label font-extrabold shadow-card ${float.tone}`}
-                  >
-                    {float.text}
+            return (
+              <button
+                key={member}
+                type="button"
+                disabled={!pickable}
+                onClick={() => pickHero(member)}
+                aria-label={HEROES[member].name}
+                className="absolute disabled:pointer-events-none"
+                style={{ left: `${at.x * 100}%`, top: `${at.y * 100}%`, width: `${rank.width * 100}%`, transform: 'translate(-50%, -50%)' }}
+              >
+                <span className={`relative block ${dead ? 'opacity-35 grayscale' : ''} ${acting ? 'lunge-up' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
+                  <span className="block aspect-square w-full">
+                    <Art />
                   </span>
-                )}
-              </span>
-            </button>
-          );
-        })}
+                  {state.shield && <span className="absolute inset-0 rounded-full ring-4 ring-sky/60" />}
+                  {state.guard && <span className="absolute -right-1 top-1 rounded-full bg-sky px-1.5 text-caption font-bold text-white shadow-card">防</span>}
+                  {pickable && <span className="absolute inset-0 rounded-2xl ring-2 ring-leaf" />}
+                  {float && (
+                    <span
+                      key={battle.step}
+                      className={`float-up pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-label font-extrabold shadow-card ${float.tone}`}
+                    >
+                      {float.text}
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
 
         <BattleFx key={battle.step} battle={battle} spot={spot} />
 

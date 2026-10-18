@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { StorageLike } from '../../shared/storage';
 import { freshRun } from './quest';
-import { DEFAULT_SETTINGS, LEGACY_QUEST_KEY, QUEST_KEY, SAVE_VERSION, discardLegacyQuest, loadQuest, saveQuest, type QuestSave } from './save';
+import { DEFAULT_SETTINGS, LEGACY_QUEST_KEY, LEGACY_QUEST_KEYS, QUEST_KEY, SAVE_VERSION, discardLegacyQuest, loadQuest, saveQuest, type QuestSave } from './save';
 import type { Run } from './types';
 
 const fakeStorage = (seed: Record<string, string> = {}): StorageLike & { cells: Record<string, string> } => {
@@ -18,9 +18,9 @@ const fakeStorage = (seed: Record<string, string> = {}): StorageLike & { cells: 
   };
 };
 
-/** A v2 record as it sits in storage, with one part of the run overridden. */
+/** A current (v3) record as it sits in storage, with one part of the run overridden. */
 const stored = (run: Partial<Run>, extra: Record<string, unknown> = {}): Record<string, string> => ({
-  [QUEST_KEY]: JSON.stringify({ version: 2, run: { ...freshRun(1), ...run }, sound: true, settings: { skipRides: false }, ...extra }),
+  [QUEST_KEY]: JSON.stringify({ version: 3, run: { ...freshRun(1), ...run }, sound: true, settings: { skipRides: false }, ...extra }),
 });
 
 const loadRun = (cells: Record<string, string>): Run => loadQuest(fakeStorage(cells)).save.run;
@@ -29,7 +29,7 @@ const loadRun = (cells: Record<string, string>): Run => loadQuest(fakeStorage(ce
 const LEGACY_RECORD = JSON.stringify({ run: { map: 'park', stickers: 42, level: 6 }, sound: true });
 
 describe('loadQuest', () => {
-  test('a v2 save round-trips identically', () => {
+  test('a current save round-trips identically', () => {
     const storage = fakeStorage();
     const run: Run = { ...freshRun(5), map: 'park', pos: { c: 3, r: 4 }, level: 6, xp: 300, coins: 42, flags: ['mochaJoined'] };
     const save: QuestSave = { run, sound: false, settings: { skipRides: true } };
@@ -37,12 +37,12 @@ describe('loadQuest', () => {
     expect(loadQuest(storage)).toEqual({ save, legacyReset: false });
   });
 
-  test('writes a versioned record under the v2 key', () => {
+  test('writes a versioned record under the v3 key', () => {
     const storage = fakeStorage();
     saveQuest({ run: freshRun(1), sound: true, settings: DEFAULT_SETTINGS }, storage);
-    expect(SAVE_VERSION).toBe(2);
-    expect(Object.keys(storage.cells)).toEqual(['baokaka.quest.v2']);
-    expect(JSON.parse(storage.cells[QUEST_KEY])).toMatchObject({ version: 2, sound: true, settings: { skipRides: false } });
+    expect(SAVE_VERSION).toBe(3);
+    expect(Object.keys(storage.cells)).toEqual(['baokaka.quest.v3']);
+    expect(JSON.parse(storage.cells[QUEST_KEY])).toMatchObject({ version: 3, sound: true, settings: { skipRides: false } });
   });
 
   test('falls back to a fresh run when nothing is saved', () => {
@@ -62,6 +62,22 @@ describe('loadQuest', () => {
     expect(loadQuest(storage).legacyReset).toBe(false);
   });
 
+  test('a v2 save (three heroes, before issue #5) also resets with the notice, and is discarded', () => {
+    const v2 = JSON.stringify({ version: 2, run: { map: 'park', level: 6 }, sound: true, settings: DEFAULT_SETTINGS });
+    const storage = fakeStorage({ 'baokaka.quest.v2': v2, [LEGACY_QUEST_KEY]: LEGACY_RECORD });
+    expect(LEGACY_QUEST_KEYS).toContain('baokaka.quest.v2');
+    const loaded = loadQuest(storage);
+    expect(loaded.legacyReset).toBe(true);
+    expect(loaded.save.run.level).toBe(1);
+    discardLegacyQuest(storage);
+    expect(storage.cells).toEqual({});
+  });
+
+  test('a run missing one of the four heroes is rejected', () => {
+    const { bear: _bear, ...threeHp } = freshRun(1).hp;
+    expect(loadRun(stored({ level: 4, hp: threeHp as Run['hp'] })).level).toBe(1);
+  });
+
   test('loading twice before the discard reports the reset both times (React StrictMode)', () => {
     const storage = fakeStorage({ [LEGACY_QUEST_KEY]: LEGACY_RECORD });
     expect(loadQuest(storage).legacyReset).toBe(true);
@@ -72,14 +88,14 @@ describe('loadQuest', () => {
     expect(loadQuest(fakeStorage({ [LEGACY_QUEST_KEY]: '{not json' })).legacyReset).toBe(true);
   });
 
-  test('a valid v2 save wins over a leftover legacy key', () => {
+  test('a valid current save wins over a leftover legacy key', () => {
     const storage = fakeStorage({ ...stored({ level: 4 }), [LEGACY_QUEST_KEY]: LEGACY_RECORD });
     const loaded = loadQuest(storage);
     expect(loaded.legacyReset).toBe(false);
     expect(loaded.save.run.level).toBe(4);
   });
 
-  test('a corrupt v2 save yields a fresh run without the notice', () => {
+  test('a corrupt current save yields a fresh run without the notice', () => {
     const loaded = loadQuest(fakeStorage({ [QUEST_KEY]: '{not json' }));
     expect(loaded.legacyReset).toBe(false);
     expect(loaded.save.run.map).toBe('home');
@@ -97,7 +113,7 @@ describe('loadQuest', () => {
 
   test('rejects a run that still counts stickers', () => {
     const { coins: _coins, ...old } = freshRun(1);
-    const cells = { [QUEST_KEY]: JSON.stringify({ version: 2, run: { ...old, level: 4, stickers: 10 }, sound: true, settings: DEFAULT_SETTINGS }) };
+    const cells = { [QUEST_KEY]: JSON.stringify({ version: 3, run: { ...old, level: 4, stickers: 10 }, sound: true, settings: DEFAULT_SETTINGS }) };
     expect(loadRun(cells).level).toBe(1);
   });
 
@@ -123,7 +139,7 @@ describe('loadQuest', () => {
   });
 
   test('rejects a consumable in an equipment slot', () => {
-    expect(loadRun(stored({ equip: { baokaka: 'cookie', mocha: null, duck: null } as never })).equip.baokaka).toBeNull();
+    expect(loadRun(stored({ equip: { baokaka: 'cookie', mocha: null, magpie: null, bear: null } as never })).equip.baokaka).toBeNull();
   });
 
   test('rejects an item count past the carry limit', () => {
@@ -139,13 +155,13 @@ describe('loadQuest', () => {
       ...freshRun(3),
       map: 'night',
       pos: { c: 7, r: 12 },
-      party: ['baokaka', 'mocha', 'duck'],
-      level: 11,
-      xp: 1200,
-      equip: { baokaka: 'blanket', mocha: 'star', duck: 'nightLight' },
+      party: ['baokaka', 'mocha', 'magpie', 'bear'],
+      level: 18,
+      xp: 5000,
+      equip: { baokaka: 'blanket', mocha: 'star', magpie: 'nightLight', bear: null },
       items: { bottle: 3, apple: 1 },
       coins: 210,
-      flags: ['mochaJoined', 'duckJoined', 'octopusDone'],
+      flags: ['mochaJoined', 'magpieJoined', 'bearJoined', 'octopusDone'],
       chapter: 7,
       cleared: true,
     };

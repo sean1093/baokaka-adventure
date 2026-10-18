@@ -19,6 +19,8 @@ export const UI = {
 
   victory: '大家都冷靜下來了！',
   bossVictory: (boss: string) => `${boss}不暈了！`,
+  /** Battle log when a party shield (鵲橋護盾) goes up */
+  shielded: '全隊被護盾保護住了',
   fleeOk: '溜走了！',
   fleeFail: '被擋住了！',
   heroKo: (name: string) => `${name}累倒了……`,

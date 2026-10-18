@@ -8,10 +8,15 @@ import { HERO_ORDER, type HeroId, type ItemId, type Run } from './types';
  * The save format. Bump the version and the key for any incompatible Run change; never migrate
  * across stories (decisions.md D-12): an older record is discarded and the title says so once.
  */
-export const SAVE_VERSION = 2;
-export const QUEST_KEY = 'baokaka.quest.v2';
+export const SAVE_VERSION = 3;
+export const QUEST_KEY = 'baokaka.quest.v3';
 /** The 寶咖咖奇俠傳 save from before the 抓周 redesign. Any content under it means "reset". */
 export const LEGACY_QUEST_KEY = 'baokaka.quest';
+/**
+ * Every key an older save may sit under: the pre-redesign one, then each earlier version
+ * (v2 had three heroes, issue #5 made it four). Any content under any of them means "reset".
+ */
+export const LEGACY_QUEST_KEYS: readonly string[] = [LEGACY_QUEST_KEY, 'baokaka.quest.v2'];
 
 /** Player preferences that live beside the run. */
 export type QuestSettings = {
@@ -99,10 +104,10 @@ function isStoredSave(value: unknown): value is StoredSave {
   return save.version === SAVE_VERSION && typeof save.sound === 'boolean' && isSettings(save.settings) && isRun(save.run);
 }
 
-/** True when the pre-redesign key is present with any content at all. Never throws. */
+/** True when any older key is present with any content at all. Never throws. */
 function hasLegacy(storage: StorageLike | null): boolean {
   try {
-    return storage?.getItem(LEGACY_QUEST_KEY) != null;
+    return LEGACY_QUEST_KEYS.some((key) => storage?.getItem(key) != null);
   } catch {
     return false;
   }
@@ -111,9 +116,9 @@ function hasLegacy(storage: StorageLike | null): boolean {
 const freshSave = (): QuestSave => ({ run: freshRun(Date.now() | 0), sound: true, settings: { ...DEFAULT_SETTINGS } });
 
 /**
- * A valid v2 save is loaded as is. Otherwise, if an old-story save is present, the result is a
+ * A valid current save is loaded as is. Otherwise, if an older save is present, the result is a
  * fresh run with `legacyReset` so the title can explain the fresh start once; the caller then
- * deletes it with `discardLegacyQuest`. Anything else unreadable (a corrupt v2 record, no storage,
+ * deletes it with `discardLegacyQuest`. Anything else unreadable (a corrupt current record, no storage,
  * a throwing storage) quietly becomes a fresh run: the player never sees an error.
  *
  * Reading never writes: React may call a state initializer twice (StrictMode), and a load that
@@ -125,12 +130,14 @@ export function loadQuest(storage: StorageLike | null = browserStorage()): Loade
   return { save: freshSave(), legacyReset: hasLegacy(storage) };
 }
 
-/** Deletes the old-story save. Never throws; if storage refuses, the v2 save written next still wins. */
+/** Deletes every older save. Never throws; if storage refuses, the current save written next still wins. */
 export function discardLegacyQuest(storage: StorageLike | null = browserStorage()): void {
-  try {
-    storage?.removeItem(LEGACY_QUEST_KEY);
-  } catch {
-    // The key stays behind; once a v2 save exists it is never read again
+  for (const key of LEGACY_QUEST_KEYS) {
+    try {
+      storage?.removeItem(key);
+    } catch {
+      // The key stays behind; once a current save exists it is never read again
+    }
   }
 }
 

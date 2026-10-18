@@ -81,7 +81,6 @@ export type SpriteName =
   | 'nightmareCloud'
   | 'snoreKing'
   // Quest people and places
-  | 'duck'
   | 'mom'
   | 'dad'
   | 'grandma'

@@ -19,7 +19,7 @@ export const SPEAKERS: Record<string, { name: string; sprite: SpriteName }> = {
   golem: { name: '積木巨人', sprite: 'blockGolem' },
   crow: { name: '烏鴉老大', sprite: 'crowBoss' },
   fish: { name: '大魚', sprite: 'bigFish' },
-  duckNpc: { name: '小鴨鴨', sprite: 'duck' },
+  magpieNpc: { name: '阿藍', sprite: 'pigeon' },
   octo: { name: '大章魚', sprite: 'octopus' },
   snore: { name: '打呼嚕大王', sprite: 'snoreKing' },
   mochaNpc: { name: '摩卡貓', sprite: 'mochaCat' },
@@ -195,14 +195,15 @@ export const EVENTS: Record<string, Step[]> = {
     { do: 'chapter', n: 5, title: '浴缸島' },
     { who: null, text: '浴室的地板亮亮的，浴缸大得像一座島。' },
   ],
-  'bath.duck': [
-    { who: 'duckNpc', text: '「呱！終於有人來了！」' },
-    { who: 'duckNpc', text: '「我在這個浴缸裡漂了好久好久。帶我出去，我幫你們打壞人。」' },
-    { do: 'join', hero: 'duck' },
-    { do: 'flag', flag: 'duckJoined' },
-    { who: null, text: '小鴨鴨加入了隊伍！' },
-    { who: 'duck', text: '「我的元氣很多，水花四濺可以打到全部的敵人。」' },
-    { who: 'duck', text: '「浴缸後面那條路，通到海邊。走吧！」' },
+  // Temporary (issue #5): 阿藍 stands in for the old third hero until this story is replaced (#21)
+  'bath.magpie': [
+    { who: 'magpieNpc', text: '「根據我的研究——你們需要一位教授。」' },
+    { who: 'magpieNpc', text: '「我在浴缸邊觀察好久了。帶我一起走，我幫你們打壞人。」' },
+    { do: 'join', hero: 'magpie' },
+    { do: 'flag', flag: 'magpieJoined' },
+    { who: null, text: '阿藍加入了隊伍！' },
+    { who: 'magpie', text: '「我的元氣很多，羽毛雨可以打到全部的敵人。」' },
+    { who: 'magpie', text: '「浴缸後面那條路，通到海邊。走吧！」' },
   ],
   'bath.notYet': [
     { who: null, text: '水太深了，一個人過不去。' },
@@ -212,7 +213,7 @@ export const EVENTS: Record<string, Step[]> = {
   'beach.intro': [
     { do: 'chapter', n: 6, title: '海邊的大章魚' },
     { who: null, text: '風是鹹的，沙子燙燙的。' },
-    { who: 'duck', text: '「呱！這裡才是我的老家！」' },
+    { who: 'magpie', text: '「根據我的研究，海風對羽毛不太好。」' },
   ],
   'beach.vendor': [
     { who: 'vendor', text: '「海邊的貨比較好喔，貴一點點。」' },
@@ -220,7 +221,7 @@ export const EVENTS: Record<string, Step[]> = {
   ],
   'beach.octo': [
     { who: 'octo', text: '「八隻手一起來！」' },
-    { who: 'duck', text: '「牠很大隻！先用泡泡護盾擋一下！」' },
+    { who: 'magpie', text: '「牠很大隻！學會鵲橋護盾的話，先擋一下！」' },
     { do: 'battle', foes: ['octopus'], boss: true },
     { do: 'flag', flag: 'octopusDone' },
     { who: 'octo', text: '「……好吧，我認輸。」' },
@@ -233,7 +234,14 @@ export const EVENTS: Record<string, Step[]> = {
   'night.intro': [
     { do: 'chapter', n: 7, title: '棉被山之巔' },
     { who: null, text: '房間裡黑黑的，棉被堆成一座山。山上傳來呼嚕聲。' },
-    { who: 'duck', text: '「呱……好可怕。」' },
+    { who: 'magpie', text: '「好、好暗……」' },
+    // Temporary (issue #5): 黑糖 joins here so the four-hero party can be played before #21
+    { who: null, text: '棉被山腳下，有一團黑黑的東西在發抖。是一隻好大的黑熊。' },
+    { who: 'baokaka', text: '「抱抱。」' },
+    { do: 'join', hero: 'bear' },
+    { do: 'flag', flag: 'bearJoined' },
+    { who: null, text: '黑糖加入了隊伍！' },
+    { who: 'bear', text: '「歹、歹勢……我很怕黑。可是我跟你們一起上去。」' },
     { who: 'baokaka', text: '「娃娃在上面。」' },
   ],
   'night.boss': [

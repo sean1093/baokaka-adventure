@@ -5,7 +5,7 @@ import { SPELLS, heroStats } from './heroes';
 import { freshRun } from './quest';
 import type { Battle, FoeId, HeroId, Run } from './types';
 
-const runAt = (level: number, party: HeroId[] = ['baokaka', 'mocha', 'duck']): Run => {
+const runAt = (level: number, party: HeroId[] = ['baokaka', 'mocha', 'magpie']): Run => {
   const base = freshRun(7);
   const run: Run = { ...base, level, party };
   const hp = { ...run.hp };
@@ -37,8 +37,8 @@ describe('turn order', () => {
     const battle = fight(3, ['snail']);
     const speeds = battle.order.map((who) => (who.side === 'hero' ? battle.stats[who.hero].spd : FOES[battle.foes[who.slot].foe].stats.spd));
     expect(speeds).toEqual([...speeds].sort((a, b) => b - a));
-    // Mocha is the fastest hero, so she opens the round
-    expect(battle.phase).toEqual({ kind: 'hero', hero: 'mocha' });
+    // 阿藍 (身手 11) is the fastest hero, so she opens the round
+    expect(battle.phase).toEqual({ kind: 'hero', hero: 'magpie' });
   });
 
   test('skips the fallen and rebuilds every round', () => {
@@ -113,12 +113,12 @@ describe('spells', () => {
 
   test('an unlearned spell cannot be cast', () => {
     const battle = untilHero(fight(1, ['dustBunny']), 'baokaka');
-    expect(canCast(battle, 'baokaka', SPELLS.crawlDash)).toBe(false);
+    expect(canCast(battle, 'baokaka', SPELLS.firstStep)).toBe(false);
   });
 
   test('a party spell hits every living foe', () => {
-    const battle = untilHero(fight(8, ['dustBunny', 'dustBunny', 'sockMonster']), 'duck');
-    const after = battleStep(battle, { type: 'spell', spell: 'splash' });
+    const battle = untilHero(fight(8, ['dustBunny', 'dustBunny', 'sockMonster']), 'magpie');
+    const after = battleStep(battle, { type: 'spell', spell: 'featherRain' });
     expect(after.foes.every((foe, slot) => foe.hp < FOES[battle.foes[slot].foe].stats.hp)).toBe(true);
   });
 
@@ -133,15 +133,15 @@ describe('spells', () => {
   });
 
   test('九命回春 brings a fallen hero back', () => {
-    const start = untilHero(fight(9, ['dustBunny']), 'mocha');
+    const start = untilHero(fight(11, ['dustBunny']), 'mocha');
     const down: Battle = { ...start, heroes: { ...start.heroes, baokaka: { ...start.heroes.baokaka, hp: 0 } } };
     const revived = battleStep(down, { type: 'spell', spell: 'nineLives' });
     expect(revived.heroes.baokaka.hp).toBeGreaterThan(0);
     expect(revived.events.some((event) => event.kind === 'revive')).toBe(true);
   });
 
-  test('泡泡護盾 halves what the party takes for the round', () => {
-    const shielded = battleStep(untilHero(fight(7, ['sockMonster']), 'duck'), { type: 'spell', spell: 'bubbleShield' });
+  test('鵲橋護盾 covers the party for the round', () => {
+    const shielded = battleStep(untilHero(fight(7, ['sockMonster']), 'magpie'), { type: 'spell', spell: 'magpieBridge' });
     expect(shielded.events.some((event) => event.kind === 'shield')).toBe(true);
     expect(shielded.party.every((hero) => shielded.heroes[hero].shield)).toBe(true);
   });
@@ -217,5 +217,61 @@ describe('determinism', () => {
       return battle;
     };
     expect(play()).toEqual(play());
+  });
+});
+
+const ALL: HeroId[] = ['baokaka', 'mocha', 'magpie', 'bear'];
+
+describe('four heroes', () => {
+  test('stand in battle in join order and act fastest first: 阿藍 and 摩卡 early, 黑糖 last', () => {
+    const battle = fight(10, ['snail'], false, ALL);
+    expect(battle.party).toEqual(ALL);
+    const heroes = battle.order.flatMap((who) => (who.side === 'hero' ? [who.hero] : []));
+    expect(heroes).toEqual(['magpie', 'mocha', 'baokaka', 'bear']);
+  });
+
+  test('a four-hero battle plays to a win', () => {
+    let battle = fight(10, ['dustBunny', 'sockMonster', 'dustBunny'], false, ALL);
+    const acted = new Set<HeroId>();
+    for (let step = 0; step < 200 && battle.phase.kind !== 'won' && battle.phase.kind !== 'lost'; step += 1) {
+      if (battle.phase.kind === 'hero') acted.add(battle.phase.hero);
+      battle =
+        battle.phase.kind === 'foe' ? battleStep(battle, { type: 'tick' }) : battleStep(battle, { type: 'attack', target: aliveFoeSlots(battle)[0] });
+    }
+    expect(battle.phase).toEqual({ kind: 'won' });
+    expect([...acted].sort()).toEqual([...ALL].sort());
+  });
+
+  test('the shield halves an all-party hit for every one of the four', () => {
+    // 打呼嚕大王 opens with 呼嚕音波, which hits the whole party, and moves after all four heroes.
+    // The shield goes up in one copy and is taken away in the other.
+    const start = untilHero(fight(10, ['snoreKing'], true, ALL), 'magpie');
+    const shielded = battleStep(start, { type: 'spell', spell: 'magpieBridge' });
+    const plain: Battle = { ...shielded, heroes: { ...shielded.heroes } };
+    for (const hero of ALL) plain.heroes[hero] = { ...plain.heroes[hero], shield: false };
+
+    const strike = (from: Battle) => {
+      let battle = from;
+      while (battle.phase.kind !== 'foe') battle = battleStep(battle, { type: 'guard' });
+      return battleStep(battle, { type: 'tick' });
+    };
+    // Everyone after 阿藍 guards in both copies with the same seed, so only the shield differs
+    const withShield = strike(shielded);
+    const without = strike(plain);
+    const dealt = (battle: Battle) =>
+      Object.fromEntries(battle.events.flatMap((event) => (event.kind === 'hit' && event.who.side === 'hero' ? [[event.who.hero, event.amount]] : [])));
+    const a = dealt(withShield);
+    const b = dealt(without);
+    expect(Object.keys(a).sort()).toEqual([...ALL].sort());
+    // Half, give or take the rounding of each halving
+    for (const hero of ALL) expect(Math.abs(a[hero] - b[hero] / 2), hero).toBeLessThanOrEqual(1);
+  });
+
+  test('九命回春 revives a fallen hero in a party of four', () => {
+    const start = untilHero(fight(11, ['dustBunny'], false, ALL), 'mocha');
+    const down: Battle = { ...start, heroes: { ...start.heroes, bear: { ...start.heroes.bear, hp: 0 } } };
+    const revived = battleStep(down, { type: 'spell', spell: 'nineLives' });
+    expect(revived.heroes.bear.hp).toBe(Math.round(revived.stats.bear.hp * 0.5));
+    expect(revived.events).toContainEqual({ kind: 'revive', who: { side: 'hero', hero: 'bear' } });
   });
 });

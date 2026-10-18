@@ -98,7 +98,6 @@ export const SPRITES: Record<SpriteName, Sprite> = {
   nightmareCloud: foesNight.NightmareCloud,
   snoreKing: foesNight.SnoreKing,
 
-  duck: folk.Duck,
   mom: folk.Mom,
   dad: folk.Dad,
   grandma: folk.Grandma,

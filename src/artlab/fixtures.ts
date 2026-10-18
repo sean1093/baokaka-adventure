@@ -3,7 +3,7 @@ import { EVENTS } from '../quest/engine/events';
 import { SPELLS } from '../quest/engine/heroes';
 import { freshRun, initialState, type QuestState, type QuestView } from '../quest/engine/quest';
 import { fullHp, fullMp } from '../quest/engine/scene';
-import { HERO_ORDER, type FoeId, type Line, type Run, type Step } from '../quest/engine/types';
+import { HERO_ORDER, type FoeId, type HeroId, type Line, type Run, type Step } from '../quest/engine/types';
 
 /**
  * Named game states for the art lab (`#/artlab?section=fixtures&only=<name>`). Each one is
@@ -22,17 +22,17 @@ export type ArtLabFixture = {
 };
 
 /** Story flags of a run a few fights in: the intro has played and the whole party has joined. */
-export const SAMPLE_FLAGS: readonly string[] = ['trigger:home-intro', 'mochaJoined', 'dustDone', 'grandmaGave', 'duckJoined'];
+export const SAMPLE_FLAGS: readonly string[] = ['trigger:home-intro', 'mochaJoined', 'dustDone', 'grandmaGave', 'magpieJoined', 'bearJoined'];
 
 const SAMPLE_LEVEL = 4;
 
 /** A party a few fights in, standing in the living room, a little worn so the bars show. */
-export function sampleRun(): Run {
+export function sampleRun(party: readonly HeroId[] = HERO_ORDER, level = SAMPLE_LEVEL): Run {
   const base = freshRun(7);
   const run: Run = {
     ...base,
-    party: [...HERO_ORDER],
-    level: SAMPLE_LEVEL,
+    party: [...party],
+    level,
     xp: 120,
     coins: 46,
     items: { cookie: 3, bottle: 1, banana: 2, sunHat: 1 },
@@ -71,19 +71,20 @@ function worldAt(event: string, at: number): QuestState {
 /** Three foes, so the battle layout is at its widest. */
 export const BATTLE_FOES: readonly FoeId[] = ['dustBunny', 'sockMonster', 'dustBunny'];
 
+/** A random fight against BATTLE_FOES, opening on a hero's turn. */
+function battleWith(party: readonly HeroId[], level = SAMPLE_LEVEL): QuestState {
+  const run = sampleRun(party, level);
+  return withView({ screen: 'battle', battle: startBattle(run, [...BATTLE_FOES], run.seed, false) }, run);
+}
+
 export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
   { name: 'title-continue', label: 'Title with a run to continue', state: () => withView({ screen: 'title' }) },
   { name: 'world', label: 'World: home map', state: world },
   { name: 'dialogue', label: 'World: dialogue line', state: () => worldAt('home.mom.hug', 0) },
   { name: 'chapter', label: 'World: chapter card', state: () => worldAt('home.intro', 0) },
-  {
-    name: 'battle',
-    label: 'Battle: three foes',
-    state: () => {
-      const run = sampleRun();
-      return withView({ screen: 'battle', battle: startBattle(run, [...BATTLE_FOES], run.seed, false) }, run);
-    },
-  },
+  { name: 'battle', label: 'Battle: three heroes, three foes', state: () => battleWith(HERO_ORDER.slice(0, 3)) },
+  // 黑糖's expected join level (story bible § 2.1), so every hero has a few 才藝
+  { name: 'battle-4-heroes', label: 'Battle: four heroes, three foes', state: () => battleWith(HERO_ORDER, 10) },
   {
     name: 'victory',
     label: 'Victory: level up',
