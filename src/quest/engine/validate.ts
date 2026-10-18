@@ -27,7 +27,7 @@ import { HERO_ORDER, RIDE_TO, type GameMap, type Item, type ItemId, type Step, t
 /** At most three foes fit across the battle box. */
 export const MAX_FOES_PER_BATTLE = 3;
 
-/** A chapter card's clock, 00:00–23:59 (decision D-16). */
+/** A chapter card's or map's clock, 00:00–23:59 (decision D-16). */
 export const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 /** A choice shows 2–3 buttons whose labels fit one line on a phone. */
@@ -239,6 +239,7 @@ export function validateMap(map: GameMap, errors: string[], maps: Readonly<Recor
     }
   }
 
+  if (map.time !== undefined && !CLOCK.test(map.time)) errors.push(`${where}: time "${map.time}" is not HH:MM`);
 
   if (map.mrtArrival) {
     const arrival = map.mrtArrival;

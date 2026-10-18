@@ -37,7 +37,7 @@ export const AppBar = ({ title, kicker, onBack, backLabel = '返回', right }: A
   <header className="flex items-center gap-3">
     {onBack && <IconButton icon={<ChevronLeft />} label={backLabel} onClick={onBack} />}
     <div className="min-w-0 flex-1">
-      {kicker && <p className="truncate text-caption font-bold text-muted">{kicker}</p>}
+      {kicker && <p className="truncate text-caption font-bold opacity-75">{kicker}</p>}
       <h1 className="truncate text-heading font-extrabold leading-tight">{title}</h1>
     </div>
     {right}
@@ -56,7 +56,7 @@ export const Card = ({ children, className = '', tone = 'surface' }: CardProps) 
   <section
     className={[
       'rounded-3xl',
-      tone === 'surface' ? 'bg-surface shadow-card' : tone === 'tonal' ? 'bg-ink/[0.05]' : 'bg-gradient-to-br from-sun/40 via-cream to-sky/30 shadow-card',
+      tone === 'surface' ? 'bg-surface text-ink shadow-card' : tone === 'tonal' ? 'bg-white/[0.06]' : 'bg-gradient-to-br from-sun/40 via-cream to-sky/30 text-ink shadow-card',
       className,
     ].join(' ')}
   >
@@ -72,14 +72,14 @@ export const Chip = ({ children, tone = 'neutral', className = '' }: { children:
       tone === 'leaf'
         ? 'bg-leaf/15 text-leafDeep'
         : tone === 'sun'
-          ? 'bg-sun/25 text-mochaDeep'
+          ? 'bg-sun text-ink'
           : tone === 'berry'
             ? 'bg-berry/15 text-berryDeep'
             : tone === 'sky'
               ? 'bg-sky/25 text-skyDeep'
               : tone === 'ink'
                 ? 'bg-ink text-cream'
-                : 'bg-ink/[0.07] text-ink/80',
+                : 'tint-current',
       className,
     ].join(' ')}
   >

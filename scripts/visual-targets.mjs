@@ -22,6 +22,14 @@ export const TARGETS = [
     fullPage: true,
     artlab: true,
   },
+  {
+    name: 'artlab-tokens',
+    hash: '#/artlab?section=tokens&still=1',
+    // The Tokens section shows the web fonts' load state; wait until all three are in
+    waitFor: '[data-artlab-tokens] [data-font="Fredoka"][data-font-loaded="true"]',
+    fullPage: true,
+    artlab: true,
+  },
 ];
 
 /** The screenshot target for one art lab fixture. */

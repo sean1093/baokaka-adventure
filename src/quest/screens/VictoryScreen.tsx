@@ -62,7 +62,7 @@ export const VictoryScreen = ({ summary, soundOn, onContinue }: Props) => {
           {summary.learned.length > 0 && (
             <div className="mt-2 flex flex-col items-center gap-1">
               {summary.learned.map((spell) => (
-                <p key={spell} className="flex items-center gap-1 rounded-full bg-surface px-2.5 py-0.5 text-label font-extrabold shadow-card">
+                <p key={spell} className="flex items-center gap-1 rounded-full bg-surface px-2.5 py-0.5 text-ink text-label font-extrabold shadow-card">
                   <Sparkle size={16} className="shrink-0 text-mochaDeep" />
                   {UI.newSkill(HEROES[SPELLS[spell].hero].name, SPELLS[spell].name)}
                 </p>

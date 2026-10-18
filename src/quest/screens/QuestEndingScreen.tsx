@@ -56,7 +56,7 @@ export const QuestEndingScreen = ({ run, soundOn, onContinue }: Props) => {
         </p>
       </Card>
 
-      <p className="text-center text-label font-bold text-muted">
+      <p className="text-center text-label font-bold opacity-75">
         等級 {run.level} · 走過 7 個地方 · 收集 {UI.coinCount(run.coins)}
       </p>
 

@@ -6,8 +6,8 @@
   "scope": "/baokaka-adventure/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FAF1E0",
-  "theme_color": "#FAF1E0",
+  "background_color": "#0A0B22",
+  "theme_color": "#0A0B22",
   "icons": [
     {
       "src": "icons/icon.svg",

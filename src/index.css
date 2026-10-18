@@ -3,13 +3,25 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Motion tokens (art direction § 7.9), mirrored by Tailwind's duration and ease utilities */
+    --dur-instant: 80ms;
+    --dur-quick: 160ms;
+    --dur-base: 240ms;
+    --dur-slow: 400ms;
+    --dur-scene: 600ms;
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+    color-scheme: dark;
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
+    background-color: theme('colors.panel.deep');
   }
 
   body {
-    @apply bg-bg text-ink;
-    font-family: ui-rounded, 'Hiragino Maru Gothic ProN', 'Noto Sans TC', 'PingFang TC', system-ui, sans-serif;
+    @apply bg-panel-deep font-body text-inkOnDark;
     /* Single tap only: kill the tap highlight, double-tap zoom delay, long-press selection
        and rubber-band scrolling */
     -webkit-tap-highlight-color: transparent;
@@ -19,7 +31,8 @@
     min-height: 100dvh;
   }
 
-  /* Soft light falling from the top left and a warm glow at the bottom: depth without pictures */
+  /* The midnight behind every screen: navy deepening to the bottom with a faint moonlit glow at
+     the top, so nothing flashes cream before a screen paints */
   body::before {
     content: '';
     position: fixed;
@@ -27,9 +40,8 @@
     z-index: -1;
     pointer-events: none;
     background:
-      radial-gradient(120% 60% at 15% -10%, rgba(255, 255, 255, 0.9), transparent 60%),
-      radial-gradient(80% 50% at 110% 110%, rgba(242, 169, 59, 0.28), transparent 60%),
-      radial-gradient(60% 40% at -10% 80%, rgba(127, 182, 217, 0.22), transparent 60%);
+      radial-gradient(90% 45% at 50% -8%, theme('colors.command.top / 55%'), transparent 70%),
+      linear-gradient(180deg, theme('colors.panel.solid'), theme('colors.panel.deep'));
   }
 
   button {
@@ -38,11 +50,17 @@
 
   :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 4px rgba(127, 182, 217, 0.55);
+    box-shadow: 0 0 0 3px theme('colors.gold.light / 75%');
   }
 }
 
 @layer utilities {
+  /* A faint wash of the text colour: tonal buttons and chips read on the navy page and on the
+     old cream cards alike while both exist (until #12) */
+  .tint-current {
+    background-color: color-mix(in srgb, currentColor 10%, transparent);
+  }
+
   /* Every screen slides up as it mounts. `backwards` leaves no transform behind, so fixed
      children (sheets) keep positioning against the viewport */
   .screen-in {

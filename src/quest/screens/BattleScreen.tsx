@@ -258,7 +258,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
     <main className="screen-in mx-auto flex h-dvh w-full max-w-md flex-col gap-2 px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-[max(env(safe-area-inset-top),10px)]">
       <header className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-caption font-bold text-muted">{battle.boss ? '頭目戰' : '遭遇戰'}</p>
+          <p className="truncate text-caption font-bold opacity-75">{battle.boss ? '頭目戰' : '遭遇戰'}</p>
           <h1 className="text-heading font-extrabold leading-tight">第 {battle.round} 回合</h1>
         </div>
         <SoundToggle on={soundOn} onToggle={onToggleSound} />
@@ -387,7 +387,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
               disabled={!pickable}
               onClick={() => pickHero(member)}
               className={`min-w-0 flex-1 rounded-2xl px-2 py-1.5 text-left transition-transform duration-150 active:scale-[0.97] disabled:pointer-events-none ${
-                pickable ? 'bg-leaf/15 ring-2 ring-leaf' : active ? 'bg-sun/25 ring-2 ring-sun' : 'bg-surface/90'
+                pickable ? 'bg-surface text-ink ring-2 ring-leaf' : active ? 'bg-cream text-ink ring-[3px] ring-sun' : 'bg-surface/90 text-ink'
               }`}
             >
               <p className="truncate text-caption font-extrabold">{HEROES[member].name}</p>
@@ -409,7 +409,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
       </div>
 
       {/* The command window */}
-      <div className="rounded-3xl bg-surface p-3 shadow-card">
+      <div className="rounded-3xl bg-surface p-3 text-ink shadow-card">
         <div className="mb-2 flex items-center justify-between gap-2">
           <p className="truncate text-copy font-extrabold">{headline}</p>
           {(pending || menu !== 'root') && hero && (

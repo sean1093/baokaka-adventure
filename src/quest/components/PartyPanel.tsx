@@ -27,7 +27,7 @@ export const PartyPanel = ({ run, compact = false }: { run: Run; compact?: boole
   // the bars, but not for a portrait too (the map already shows everyone)
   const portraits = !compact || run.party.length <= 3;
   return (
-    <div className="rounded-3xl bg-surface/95 p-3 shadow-card backdrop-blur">
+    <div className="rounded-3xl bg-surface/95 p-3 text-ink shadow-card backdrop-blur">
       <div className="mb-2 flex items-center justify-between gap-2 text-caption font-bold">
         <span className="inline-flex items-center gap-1.5">
           <span className="grid h-6 w-6 place-items-center rounded-full bg-ink text-cream">{run.level}</span>

@@ -14,7 +14,7 @@ export const ShopScreen = ({ stock, run, onBuy, onClose }: Props) => (
   <Screen className="gap-3">
     <AppBar title="用銅板換東西" kicker="小店" onBack={onClose} backLabel="離開小店" right={<Chip tone="sun">{UI.coins} {run.coins}</Chip>} />
 
-    <section className="flex items-center gap-3 rounded-3xl bg-gradient-to-br from-sun/30 via-cream to-berry/15 p-4 shadow-card">
+    <section className="flex items-center gap-3 rounded-3xl bg-gradient-to-br from-sun/30 via-cream to-berry/15 p-4 text-ink shadow-card">
       <span className="block h-16 w-16 shrink-0">
         <Vendor />
       </span>
@@ -29,7 +29,7 @@ export const ShopScreen = ({ stock, run, onBuy, onClose }: Props) => (
         const broke = run.coins < entry.price;
         const full = held >= MAX_ITEM_COUNT;
         return (
-          <div key={item} className="flex items-center gap-3 rounded-3xl bg-surface p-3 shadow-card">
+          <div key={item} className="flex items-center gap-3 rounded-3xl bg-surface p-3 text-ink shadow-card">
             <span className="block h-12 w-12 shrink-0">
               <Art />
             </span>

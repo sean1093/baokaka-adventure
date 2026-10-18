@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useReducer, type CSSProperties, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { C, skyAt } from '../art/palette';
 import { SPRITES } from '../art/sprites';
 import type { SpriteName } from '../art/types';
 import { questReducer } from '../quest/engine/quest';
 import { QuestScreens } from '../quest/QuestScreens';
 import { hashParams } from '../shared/route';
 import { ARTLAB_FIXTURES, type ArtLabFixture } from './fixtures';
+import { TokensSection } from './TokensSection';
 import './artlab.css';
 
 /**
@@ -13,7 +15,7 @@ import './artlab.css';
  * ugly but useful. Everything is driven by registries (SPRITES, ARTLAB_FIXTURES, the tables
  * below), so later issues add entries rather than code. URL parameters, all optional:
  *
- *   section  sprites | fixtures              (default: both)
+ *   section  tokens | sprites | fixtures     (default: fixtures and sprites)
  *   only     comma list: sprite names, or one fixture name to show that screen alone
  *   bg       comma list of BACKGROUNDS keys  (default: all)
  *   size     comma list of pixel sizes       (default: SIZES)
@@ -26,12 +28,13 @@ import './artlab.css';
 export const SIZES: readonly number[] = [48, 64, 124, 300];
 
 /**
- * What a sprite is checked against. Dev-only swatches, deliberately not palette tokens: the lab
- * must show how sprites sit on light, on the night grade and on a busy warm wall.
+ * What a sprite is checked against: light (the old cream), the 01:00 night sky, and a busy warm
+ * wall (a dev-only swatch, deliberately not a token).
  */
+const NIGHT = skyAt('01:00');
 const BACKGROUNDS = {
-  light: { label: 'light', style: { background: '#FFF7E8' } },
-  night: { label: 'night', style: { background: 'linear-gradient(180deg, #0B1238 0%, #1B2456 100%)', color: '#FFF7E8' } },
+  light: { label: 'light', style: { background: C.cream, color: C.ink } },
+  night: { label: 'night', style: { background: `linear-gradient(180deg, ${NIGHT.top} 0%, ${NIGHT.mid} 100%)`, color: C.cream } },
   brick: {
     label: 'brick',
     style: {
@@ -90,7 +93,7 @@ const Silhouette = ({ name, size }: { name: SpriteName; size: number }) => {
 const SpriteCard = ({ name, backgrounds, sizes }: { name: SpriteName; backgrounds: Background[]; sizes: number[] }) => {
   const Art = SPRITES[name];
   return (
-    <section data-sprite={name} className="rounded-xl border border-ink/15 bg-surface p-2">
+    <section data-sprite={name} className="rounded-xl border border-ink/15 bg-surface p-2 text-ink">
       <h3 className="mb-1 w-0 min-w-full truncate font-mono text-[13px] font-bold" title={name}>{name}</h3>
       <div className="flex flex-col gap-1">
         {backgrounds.map((bg) => (
@@ -112,7 +115,7 @@ const SpriteCard = ({ name, backgrounds, sizes }: { name: SpriteName; background
 };
 
 const Link = ({ href, children }: { href: string; children: ReactNode }) => (
-  <a href={href} className="rounded-full bg-ink/10 px-3 py-1 font-mono text-[13px] font-bold underline-offset-2 hover:underline">
+  <a href={href} className="rounded-full bg-white/10 px-3 py-1 font-mono text-[13px] font-bold underline-offset-2 hover:underline">
     {children}
   </a>
 );
@@ -131,9 +134,9 @@ const SpritesSection = ({ params }: { params: URLSearchParams }) => {
   return (
     <section className="flex flex-col gap-2">
       <h2 className="text-heading font-extrabold">
-        Sprites <span className="text-caption text-muted">({names.length} · {backgrounds.join(', ')} · {sizes.join('/')}px)</span>
+        Sprites <span className="text-caption text-mutedOnDark">({names.length} · {backgrounds.join(', ')} · {sizes.join('/')}px)</span>
       </h2>
-      {unknown.length > 0 && <p className="font-mono text-[13px] font-bold text-berryDeep">Unknown sprite: {unknown.join(', ')}</p>}
+      {unknown.length > 0 && <p className="font-mono text-[13px] font-bold text-hp-critTo">Unknown sprite: {unknown.join(', ')}</p>}
       <div className="flex flex-wrap items-start gap-2">
         {names.map((name) => (
           <SpriteCard key={name} name={name} backgrounds={backgrounds} sizes={sizes} />
@@ -151,7 +154,7 @@ const FixtureList = () => (
         <li key={fixture.name} data-fixture={fixture.name} className="flex flex-wrap items-center gap-2">
           <Link href={`#/artlab?section=fixtures&only=${fixture.name}`}>{fixture.name}</Link>
           <Link href={`#/artlab?section=fixtures&only=${fixture.name}&still=1`}>still</Link>
-          <span className="text-caption text-muted">{fixture.label}</span>
+          <span className="text-caption text-mutedOnDark">{fixture.label}</span>
         </li>
       ))}
     </ul>
@@ -187,10 +190,11 @@ const ArtLab = ({ hash }: { hash: string }) => {
   }
 
   return (
-    <main data-artlab="index" className="flex flex-col gap-4 p-3 text-ink">
+    <main data-artlab="index" className="flex flex-col gap-4 p-3 text-inkOnDark">
       <header className="flex flex-wrap items-center gap-2">
         <h1 className="mr-2 text-headline font-extrabold">Art lab</h1>
         <Link href="#/artlab">all</Link>
+        <Link href="#/artlab?section=tokens">tokens</Link>
         <Link href="#/artlab?section=sprites">sprites</Link>
         <Link href="#/artlab?section=fixtures">screens</Link>
         {(Object.keys(BACKGROUNDS) as Background[]).map((bg) => (
@@ -200,6 +204,7 @@ const ArtLab = ({ hash }: { hash: string }) => {
         ))}
         <Link href="#/">game</Link>
       </header>
+      {section === 'tokens' && <TokensSection />}
       {(section === null || section === 'fixtures') && <FixtureList />}
       {(section === null || section === 'sprites') && <SpritesSection params={params} />}
     </main>
