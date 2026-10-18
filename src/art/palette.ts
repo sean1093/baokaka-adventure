@@ -438,6 +438,62 @@ export const FRAME = {
   tassel: '#FFB84A',
 } as const;
 
+/**
+ * Battle VFX (§ 7.10, issue #15): emissive, never graded. Soft and toy-like (battles are tantrums,
+ * not violence): gold for the glyph ring and heals, white-pink for impacts, the toy-block primaries,
+ * 阿藍's cobalt feathers, the bridge cyan, 咻咻's storm greys. Solid objects (blocks, feathers, the
+ * paw) take the character contour `LINE.sil` so they sit with the cast.
+ */
+export const FX = {
+  core: '#FFFFFF',
+  cream: '#FFF6E6',
+  gold: '#FFD66A',
+  goldLight: '#FFF1B8',
+  goldDeep: '#E8A93A',
+  /** Impacts and claw arcs: a warm pink-white, never red */
+  pink: '#FF8FB8',
+  pinkLight: '#FFD8E8',
+  pinkDeep: '#E0609A',
+  blockRed: '#F26B5E',
+  blockRedDeep: '#C4473F',
+  blockBlue: '#4F95E6',
+  blockBlueDeep: '#2F66B8',
+  blockGreen: '#5CC58E',
+  blockGreenDeep: '#3A966A',
+  blockYellow: '#FFD24A',
+  blockYellowDeep: '#E09A2E',
+  /** 哇哇大哭's sound rings and tears */
+  sound: '#BDE6FF',
+  soundDeep: '#6FB6F0',
+  feather: '#3F74DC',
+  featherLight: '#9CC2FF',
+  featherDeep: '#2448A0',
+  featherHood: '#26244A',
+  /** 熊掌: the paw pad and the dust it kicks up */
+  pad: '#FFE3C2',
+  padDeep: '#E8B98A',
+  dust: '#E2D2BE',
+  dustDeep: '#B39C84',
+  moon: '#FFF2C4',
+  moonDeep: '#F2C25A',
+  bridge: '#A8E4FF',
+  bridgeLight: '#EAF8FF',
+  bridgeDeep: '#4FA4E6',
+  storm: '#C8D4E8',
+  stormDeep: '#8A9AC0',
+  rain: '#CFEAFF',
+  neonPink: '#FF5FA2',
+  neonCyan: '#5FE6DA',
+  zap: '#FFF07A',
+  water: '#82D8F6',
+  waterDeep: '#3F9FDC',
+  waterLight: '#E8FAFF',
+  steam: '#F4F2FF',
+  steamDeep: '#C9C6E6',
+  star: '#FFE27A',
+  starDeep: '#F0B43A',
+} as const;
+
 // ---------------------------------------------------------------------------------------------
 // UI
 

@@ -1,4 +1,4 @@
-import { startBattle, type StageFrame } from '../quest/engine/battle';
+import { battleStep, startBattle, type StageFrame } from '../quest/engine/battle';
 import { EVENTS } from '../quest/engine/events';
 import { SPELLS } from '../quest/engine/heroes';
 import { MAPS } from '../quest/engine/maps';
@@ -145,10 +145,36 @@ function battleWith(party: readonly HeroId[], level = SAMPLE_LEVEL): QuestState 
 export const STAGE_FOES: readonly FoeId[] = ['dustBunny', 'sockMonster', 'dustBunny'];
 /** A boss for the frame fixtures: an existing one until the chapter bosses are drawn. */
 export const STAGE_BOSS: FoeId = 'crowBoss';
+/** Sturdy enough to stand through 哇哇大哭 at level 10 */
+const FX_FOES: readonly FoeId[] = ['crab', 'jellyfish', 'crab'];
 
 function stageBattle(foes: readonly FoeId[], boss: boolean): QuestState {
   const run = { ...sampleRun(HERO_ORDER, 10), map: 'park' as const, pos: MAPS.park.entry };
   return withView({ screen: 'battle', battle: startBattle(run, [...foes], run.seed, boss) }, run);
+}
+
+/**
+ * The battle VFX fixture (#15): the 4v3 stage just as 寶咖咖 casts 哇哇大哭 on all three foes, the
+ * busiest effect the game draws (glyph ring, wash, three impacts). Played on the real engine: other
+ * heroes guard and foes act until it is 寶咖咖's turn, then the cast; the step after it is the next
+ * actor's, so the screen holds on the effect's events.
+ */
+function fxBattle(): QuestState {
+  const state = stageBattle(FX_FOES, false);
+  if (state.view.screen !== 'battle') throw new Error('Fixture: not a battle');
+  let battle = state.view.battle;
+  for (let guard = 0; guard < 60; guard += 1) {
+    const { phase } = battle;
+    if (phase.kind === 'hero' && phase.hero === 'baokaka') {
+      battle = battleStep(battle, { type: 'spell', spell: 'bigCry' });
+      // Hold on the cast only when a hero acts next (a foe's turn would play on by itself)
+      if (battle.phase.kind === 'hero' && battle.events.filter((event) => event.kind === 'hit').length === 3) return { ...state, view: { screen: 'battle', battle } };
+      continue;
+    }
+    if (phase.kind !== 'hero' && phase.kind !== 'foe') break;
+    battle = battleStep(battle, phase.kind === 'foe' ? { type: 'tick' } : { type: 'guard' });
+  }
+  throw new Error('Fixture: no 哇哇大哭 on three foes followed by a hero turn');
 }
 
 /**
@@ -185,6 +211,7 @@ export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
   { name: 'battle-4v3', label: 'Battle stage: 大安 band-shell at 00:20, four heroes v three foes', state: () => stageBattle(STAGE_FOES, false) },
   { name: 'battle-boss', label: 'Battle stage: boss fight, the 布袋戲 valance', state: () => stageBattle([STAGE_BOSS], true) },
   { name: 'battle-final', label: 'Battle stage: final fight, the full 布袋戲 proscenium', state: () => stageBattle([STAGE_BOSS], true), battleFrame: 'final' },
+  { name: 'battle-fx', label: 'Battle VFX: 寶咖咖 casts 哇哇大哭 on three foes (still = the impact frame)', state: fxBattle },
   {
     name: 'battle-375',
     label: 'Battle stage: four v three in a 375×667 phone at any viewport',

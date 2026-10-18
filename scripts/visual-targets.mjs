@@ -62,6 +62,14 @@ export const TARGETS = [
     fullPage: true,
     artlab: true,
   },
+  {
+    name: 'artlab-fx',
+    // The battle VFX (#15): every FX kind and accent frozen at its impact frame, the glyph rings, all-target casts
+    hash: '#/artlab?section=fx&still=1',
+    waitFor: '[data-artlab-fx] [data-fx-all="claw"] [data-fx-target]',
+    fullPage: true,
+    artlab: true,
+  },
 ];
 
 /** The screenshot target for one art lab fixture. */

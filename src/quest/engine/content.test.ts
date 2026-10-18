@@ -5,8 +5,8 @@ import { ITEMS, ITEM_ORDER, MAX_LEVEL, SPELLS, spellsFor } from './heroes';
 import { CHAPTER_TITLES, MAPS, MAP_ORDER } from './maps';
 import { carMaps } from './mrt';
 import { findPath } from './path';
-import { obtainableItems, progressWarnings, validateQuestContent } from './validate';
-import { HERO_ORDER, RIDE_TO, type FoeId, type MapId, type Step } from './types';
+import { obtainableItems, progressWarnings, validateFx, validateQuestContent } from './validate';
+import { FX_KINDS, HERO_ORDER, RIDE_TO, type FoeId, type MapId, type Step } from './types';
 
 const allSteps = (): Step[] => Object.values(EVENTS).flat();
 
@@ -127,5 +127,47 @@ describe('the maps join up', () => {
       // A ride car's entry trigger is its announcement, played on every ride (bible § 3.1)
       expect(intro?.once === true, map.id).toBe(!carMaps().has(map.id));
     }
+  });
+});
+
+describe('battle VFX mapping (#15, art direction § 7.10)', () => {
+  const errorsOf = (spells = SPELLS, foes = FOES): string[] => {
+    const errors: string[] = [];
+    validateFx(errors, spells, foes);
+    return errors;
+  };
+
+  test('every skill, plain attack and foe move maps to a kind the effect layer draws', () => {
+    expect(errorsOf()).toEqual([]);
+    for (const spell of Object.values(SPELLS)) expect(FX_KINDS).toContain(spell.fx);
+    for (const foe of Object.values(FOES)) for (const move of foe.moves) if (move.kind === 'attack') expect(FX_KINDS, `${foe.id} ${move.name}`).toContain(move.fx);
+  });
+
+  test('follows the issue table for the 16 skills', () => {
+    const look = Object.fromEntries(Object.values(SPELLS).map((spell) => [spell.id, spell.fxAccent ? `${spell.fx}+${spell.fxAccent}` : spell.fx]));
+    expect(look).toEqual({
+      throwBlock: 'blocks',
+      bigCry: 'cry',
+      clapClap: 'heal+clap',
+      firstStep: 'impact+stomp',
+      purr: 'heal',
+      clawCombo: 'claw',
+      catnipFury: 'claw',
+      nineLives: 'heal',
+      featherRain: 'feather',
+      divePeck: 'feather',
+      magpieBridge: 'shield',
+      cometTail: 'feather+comet',
+      pawPat: 'paw',
+      groundPound: 'paw',
+      sugarHug: 'heal',
+      moonCharge: 'paw+moon',
+    });
+  });
+
+  test('catches an unknown kind or accent', () => {
+    const spells = { ...SPELLS, bigCry: { ...SPELLS.bigCry, fx: 'slash' as never, fxAccent: 'sparkles' as never } };
+    const foes = { ...FOES, crab: { ...FOES.crab, moves: [{ kind: 'attack' as const, name: '夾', power: 1, target: 'one' as const, fx: 'bolt' as never }] } };
+    expect(errorsOf(spells, foes)).toEqual(['spell bigCry: unknown fx slash', 'spell bigCry: unknown fx accent sparkles', 'foe crab move 夾: unknown fx bolt']);
   });
 });

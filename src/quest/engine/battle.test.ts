@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { aliveFoeSlots, aliveHeroes, battleFrame, battleStep, battleCoins, battleXp, canCast, foeIntent, startBattle } from './battle';
+import { aliveFoeSlots, aliveHeroes, battleFrame, battleStep, battleCoins, battleXp, canCast, foeIntent, moveFx, startBattle } from './battle';
 import { FOES } from './foes';
-import { SPELLS, heroStats } from './heroes';
+import { HEROES, SPELLS, heroStats } from './heroes';
 import { freshRun } from './quest';
 import type { Battle, FoeId, HeroId, Run } from './types';
 
@@ -284,5 +284,28 @@ describe('stage frame (#14, D-31)', () => {
     expect(battleFrame(fight(3, ['crowBoss'], true), finals)).toBe('final');
     // A final foe met outside a boss fight (never in content) still gets no frame
     expect(battleFrame(fight(3, ['crowBoss'], false), finals)).toBe('none');
+  });
+});
+
+describe('battle VFX (#15)', () => {
+  test("a plain attack looks like the hero's own attack", () => {
+    for (const hero of ['baokaka', 'mocha', 'magpie'] as const) {
+      const battle = untilHero(fight(3, ['dustBunny', 'dustBunny']), hero);
+      const after = battleStep(battle, { type: 'attack', target: 0 });
+      const act = after.events.find((event) => event.kind === 'act');
+      expect(act && act.kind === 'act' ? act.fx : null).toBe(HEROES[hero].attackFx);
+    }
+  });
+
+  test('a skill carries its fx and accent; foe moves default to a plain impact', () => {
+    const battle = untilHero(fight(20, ['moleKing']), 'baokaka');
+    const after = battleStep(battle, { type: 'spell', spell: 'firstStep', target: 0 });
+    expect(after.events[0]).toMatchObject({ kind: 'act', fx: 'impact', accent: 'stomp', arcane: true });
+    const plain = battleStep(untilHero(fight(20, ['moleKing']), 'baokaka'), { type: 'spell', spell: 'bigCry' });
+    expect(plain.events[0]).toMatchObject({ kind: 'act', fx: 'cry' });
+    expect(plain.events[0]).not.toHaveProperty('accent');
+    expect(moveFx({ kind: 'attack', name: 'x', power: 1, target: 'one' })).toBe('impact');
+    expect(moveFx({ kind: 'heal', name: 'x', ratio: 0.2 })).toBe('heal');
+    expect(moveFx({ kind: 'guard', name: 'x' })).toBeNull();
   });
 });

@@ -38,24 +38,51 @@ export type SpellId =
   | 'moonCharge';
 
 /**
- * What a move looks like when it lands. Content, not layout: the drawings live in
- * components/BattleFx.tsx, but which one a move uses is authored next to the move itself.
+ * What a move looks like when it lands (art direction § 7.10). Content, not layout: the drawings
+ * live in art/fx/BattleFxArt.tsx, but which one a move uses is authored next to the move itself
+ * (`Spell.fx`, `FoeMove.fx`, a hero's `attackFx`). Battles are tantrums, not violence: 「咚」 and
+ * 「拍拍」, never blood.
  */
-export type FxKind =
-  | 'slash'
-  | 'claw'
-  | 'impact'
-  | 'blocks'
-  | 'shout'
-  | 'jet'
-  | 'splash'
-  | 'wave'
-  | 'bubble'
-  | 'heal'
-  | 'sparkle'
-  | 'thud'
-  | 'bolt'
-  | 'dust';
+export const FX_KINDS = [
+  /** 積木: a toy-block arc and bounce */
+  'blocks',
+  /** 哭聲: sound rings */
+  'cry',
+  /** 貓爪: three slash arcs */
+  'claw',
+  /** 羽毛: blue feathers */
+  'feather',
+  /** 熊掌: a ground shock ring with dust */
+  'paw',
+  /** 治療: gold four-point stars */
+  'heal',
+  /** 護盾: the magpie-bridge arch over the party */
+  'shield',
+  /** 颱風: a spiral and rain (咻咻's moves) */
+  'typhoon',
+  /** A generic foe hit: a soft 「咚」 burst */
+  'impact',
+  /** Items and little magic: gold glints */
+  'sparkle',
+  /** An electric zigzag (neon foes) */
+  'neon',
+  /** A splash (swan and river foes) */
+  'water',
+  /** A puff of steam (food stalls, hot springs) */
+  'steam',
+  /** Calmed or sleepy stars circling */
+  'dizzy',
+] as const;
+
+export type FxKind = (typeof FX_KINDS)[number];
+
+/**
+ * A skill's flourish on top of its kind (art direction § 5.1–5.4 battle actions): 拍拍手's clap
+ * sparkle, 勇敢的第一步's big stomp, 長尾流星's comet, 月牙衝擊's moon crescent.
+ */
+export const FX_ACCENTS = ['clap', 'stomp', 'comet', 'moon'] as const;
+
+export type FxAccent = (typeof FX_ACCENTS)[number];
 
 export type SpellEffect =
   /** power multiplies the caster's spell strength */
@@ -75,6 +102,8 @@ export type Spell = {
   level: number;
   effect: SpellEffect;
   fx: FxKind;
+  /** An extra flourish drawn with the kind */
+  fxAccent?: FxAccent;
   blurb: string;
 };
 
@@ -522,8 +551,8 @@ export type Phase =
 
 /** What happened during one step; the UI turns these into floating numbers and log lines. */
 export type BattleEvent =
-  /** `arcane` is a cast rather than a swing: the UI draws a 法陣 under the caster */
-  | { kind: 'act'; who: Who; name: string; fx: FxKind | null; arcane: boolean }
+  /** `arcane` is a cast rather than a swing: the UI draws the caster's gold glyph ring under them */
+  | { kind: 'act'; who: Who; name: string; fx: FxKind | null; arcane: boolean; accent?: FxAccent }
   | { kind: 'hit'; who: Who; amount: number; crit: boolean }
   | { kind: 'heal'; who: Who; amount: number }
   | { kind: 'mp'; who: Who; amount: number }

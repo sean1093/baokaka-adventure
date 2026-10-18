@@ -15,8 +15,8 @@ export const FOES: Record<FoeId, Foe> = {
     xp: 6,
     coins: 3,
     moves: [
-      { kind: 'attack', name: '滾過來', power: 1, target: 'one', fx: 'thud' },
-      { kind: 'attack', name: '滾過來', power: 1, target: 'one', fx: 'thud' },
+      { kind: 'attack', name: '滾過來', power: 1, target: 'one', fx: 'impact' },
+      { kind: 'attack', name: '滾過來', power: 1, target: 'one', fx: 'impact' },
       { kind: 'guard', name: '縮成一團' },
     ],
   },
@@ -29,8 +29,8 @@ export const FOES: Record<FoeId, Foe> = {
     coins: 5,
     drop: { item: 'teaEgg', chance: 0.3 },
     moves: [
-      { kind: 'attack', name: '甩襪子', power: 1, target: 'one', fx: 'thud' },
-      { kind: 'attack', name: '臭臭攻擊', power: 0.7, target: 'all', fx: 'dust' },
+      { kind: 'attack', name: '甩襪子', power: 1, target: 'one', fx: 'impact' },
+      { kind: 'attack', name: '臭臭攻擊', power: 0.7, target: 'all', fx: 'steam' },
     ],
   },
   blockGolem: {
@@ -59,8 +59,8 @@ export const FOES: Record<FoeId, Foe> = {
     xp: 8,
     coins: 4,
     moves: [
-      { kind: 'attack', name: '叮一口', power: 1, target: 'one', fx: 'jet' },
-      { kind: 'attack', name: '叮一口', power: 1, target: 'one', fx: 'jet' },
+      { kind: 'attack', name: '叮一口', power: 1, target: 'one', fx: 'impact' },
+      { kind: 'attack', name: '叮一口', power: 1, target: 'one', fx: 'impact' },
       { kind: 'heal', name: '吸飽飽', ratio: 0.3 },
     ],
   },
@@ -74,7 +74,7 @@ export const FOES: Record<FoeId, Foe> = {
     drop: { item: 'teaEgg', chance: 0.3 },
     moves: [
       { kind: 'guard', name: '縮進殼裡' },
-      { kind: 'attack', name: '黏液攻擊', power: 1.3, target: 'one', fx: 'splash' },
+      { kind: 'attack', name: '黏液攻擊', power: 1.3, target: 'one', fx: 'water' },
       { kind: 'attack', name: '殼殼撞', power: 1.3, target: 'one', fx: 'impact' },
     ],
   },
@@ -88,9 +88,9 @@ export const FOES: Record<FoeId, Foe> = {
     xp: 12,
     coins: 6,
     moves: [
-      { kind: 'attack', name: '啄一下', power: 1, target: 'one', fx: 'slash' },
-      { kind: 'attack', name: '拍翅膀', power: 0.7, target: 'all', fx: 'dust' },
-      { kind: 'attack', name: '啄一下', power: 1, target: 'one', fx: 'slash' },
+      { kind: 'attack', name: '啄一下', power: 1, target: 'one', fx: 'impact' },
+      { kind: 'attack', name: '拍翅膀', power: 0.7, target: 'all', fx: 'feather' },
+      { kind: 'attack', name: '啄一下', power: 1, target: 'one', fx: 'impact' },
     ],
   },
   kiteGhost: {
@@ -102,8 +102,8 @@ export const FOES: Record<FoeId, Foe> = {
     coins: 6,
     drop: { item: 'douhua', chance: 0.25 },
     moves: [
-      { kind: 'attack', name: '飄過來', power: 1, target: 'one', fx: 'dust' },
-      { kind: 'attack', name: '線線纏繞', power: 1.4, target: 'one', fx: 'slash' },
+      { kind: 'attack', name: '飄過來', power: 1, target: 'one', fx: 'impact' },
+      { kind: 'attack', name: '線線纏繞', power: 1.4, target: 'one', fx: 'dizzy' },
     ],
   },
   moleKing: {
@@ -115,9 +115,9 @@ export const FOES: Record<FoeId, Foe> = {
     coins: 14,
     drop: { item: 'pineappleCake', chance: 0.5 },
     moves: [
-      { kind: 'attack', name: '挖洞', power: 1, target: 'one', fx: 'dust' },
+      { kind: 'attack', name: '挖洞', power: 1, target: 'one', fx: 'paw' },
       { kind: 'guard', name: '躲進土裡' },
-      { kind: 'attack', name: '土石流', power: 0.9, target: 'all', fx: 'dust' },
+      { kind: 'attack', name: '土石流', power: 0.9, target: 'all', fx: 'paw' },
     ],
   },
   crowBoss: {
@@ -130,10 +130,10 @@ export const FOES: Record<FoeId, Foe> = {
     boss: true,
     taunt: '嘎！亮晶晶的東西都是我的！',
     moves: [
-      { kind: 'attack', name: '俯衝啄擊', power: 1.2, target: 'one', fx: 'slash' },
-      { kind: 'attack', name: '黑羽狂風', power: 0.8, target: 'all', fx: 'dust' },
-      { kind: 'attack', name: '俯衝啄擊', power: 1.2, target: 'one', fx: 'slash' },
-      { kind: 'attack', name: '嘎嘎嘎', power: 1.7, target: 'one', fx: 'shout' },
+      { kind: 'attack', name: '俯衝啄擊', power: 1.2, target: 'one', fx: 'feather' },
+      { kind: 'attack', name: '黑羽狂風', power: 0.8, target: 'all', fx: 'feather' },
+      { kind: 'attack', name: '俯衝啄擊', power: 1.2, target: 'one', fx: 'feather' },
+      { kind: 'attack', name: '嘎嘎嘎', power: 1.7, target: 'one', fx: 'cry' },
     ],
   },
 
@@ -146,7 +146,7 @@ export const FOES: Record<FoeId, Foe> = {
     xp: 16,
     coins: 8,
     moves: [
-      { kind: 'attack', name: '夾一下', power: 1.1, target: 'one', fx: 'slash' },
+      { kind: 'attack', name: '夾一下', power: 1.1, target: 'one', fx: 'claw' },
       { kind: 'guard', name: '舉起大螯' },
       { kind: 'attack', name: '橫著走', power: 0.8, target: 'all', fx: 'impact' },
     ],
@@ -160,8 +160,8 @@ export const FOES: Record<FoeId, Foe> = {
     coins: 8,
     drop: { item: 'railBento', chance: 0.15 },
     moves: [
-      { kind: 'attack', name: '蘋果滾滾', power: 1, target: 'one', fx: 'thud' },
-      { kind: 'attack', name: '蘋果滾滾', power: 1, target: 'one', fx: 'thud' },
+      { kind: 'attack', name: '蘋果滾滾', power: 1, target: 'one', fx: 'impact' },
+      { kind: 'attack', name: '蘋果滾滾', power: 1, target: 'one', fx: 'impact' },
       { kind: 'attack', name: '滾撞', power: 1.5, target: 'one', fx: 'impact' },
     ],
   },
@@ -175,10 +175,10 @@ export const FOES: Record<FoeId, Foe> = {
     boss: true,
     taunt: '噗嚕噗嚕，誰在偷看我的魚攤？',
     moves: [
-      { kind: 'attack', name: '尾巴拍', power: 1.1, target: 'one', fx: 'thud' },
-      { kind: 'attack', name: '噴水柱', power: 0.9, target: 'all', fx: 'jet' },
+      { kind: 'attack', name: '尾巴拍', power: 1.1, target: 'one', fx: 'water' },
+      { kind: 'attack', name: '噴水柱', power: 0.9, target: 'all', fx: 'water' },
       { kind: 'guard', name: '鱗片閃亮' },
-      { kind: 'attack', name: '大魚翻身', power: 1.8, target: 'one', fx: 'wave' },
+      { kind: 'attack', name: '大魚翻身', power: 1.8, target: 'one', fx: 'water' },
     ],
   },
 
@@ -192,9 +192,9 @@ export const FOES: Record<FoeId, Foe> = {
     coins: 10,
     drop: { item: 'teaEgg', chance: 0.4 },
     moves: [
-      { kind: 'attack', name: '搶食物', power: 1.1, target: 'one', fx: 'slash' },
+      { kind: 'attack', name: '搶食物', power: 1.1, target: 'one', fx: 'claw' },
       { kind: 'attack', name: '俯衝', power: 1.4, target: 'one', fx: 'impact' },
-      { kind: 'attack', name: '海鷗合唱', power: 0.7, target: 'all', fx: 'shout' },
+      { kind: 'attack', name: '海鷗合唱', power: 0.7, target: 'all', fx: 'cry' },
     ],
   },
   jellyfish: {
@@ -205,9 +205,9 @@ export const FOES: Record<FoeId, Foe> = {
     xp: 20,
     coins: 10,
     moves: [
-      { kind: 'attack', name: '電一下', power: 1.2, target: 'one', fx: 'bolt' },
+      { kind: 'attack', name: '電一下', power: 1.2, target: 'one', fx: 'neon' },
       { kind: 'heal', name: '漂一漂', ratio: 0.25 },
-      { kind: 'attack', name: '觸手掃', power: 0.8, target: 'all', fx: 'slash' },
+      { kind: 'attack', name: '觸手掃', power: 0.8, target: 'all', fx: 'water' },
     ],
   },
   octopus: {
@@ -220,9 +220,9 @@ export const FOES: Record<FoeId, Foe> = {
     boss: true,
     taunt: '八隻手一起來！',
     moves: [
-      { kind: 'attack', name: '觸手拍', power: 1.1, target: 'one', fx: 'thud' },
-      { kind: 'attack', name: '墨汁噴射', power: 0.9, target: 'all', fx: 'splash' },
-      { kind: 'attack', name: '觸手拍', power: 1.1, target: 'one', fx: 'thud' },
+      { kind: 'attack', name: '觸手拍', power: 1.1, target: 'one', fx: 'impact' },
+      { kind: 'attack', name: '墨汁噴射', power: 0.9, target: 'all', fx: 'water' },
+      { kind: 'attack', name: '觸手拍', power: 1.1, target: 'one', fx: 'impact' },
       { kind: 'attack', name: '八爪纏繞', power: 1.9, target: 'one', fx: 'impact' },
     ],
   },
@@ -237,8 +237,8 @@ export const FOES: Record<FoeId, Foe> = {
     coins: 12,
     drop: { item: 'douhua', chance: 0.3 },
     moves: [
-      { kind: 'attack', name: '撒瞌睡粉', power: 0.8, target: 'all', fx: 'sparkle' },
-      { kind: 'attack', name: '枕頭砸', power: 1.3, target: 'one', fx: 'thud' },
+      { kind: 'attack', name: '撒瞌睡粉', power: 0.8, target: 'all', fx: 'dizzy' },
+      { kind: 'attack', name: '枕頭砸', power: 1.3, target: 'one', fx: 'impact' },
     ],
   },
   nightmareCloud: {
@@ -250,8 +250,8 @@ export const FOES: Record<FoeId, Foe> = {
     coins: 14,
     drop: { item: 'pineappleCake', chance: 0.3 },
     moves: [
-      { kind: 'attack', name: '雷聲隆隆', power: 1, target: 'all', fx: 'shout' },
-      { kind: 'attack', name: '閃電', power: 1.5, target: 'one', fx: 'bolt' },
+      { kind: 'attack', name: '雷聲隆隆', power: 1, target: 'all', fx: 'typhoon' },
+      { kind: 'attack', name: '閃電', power: 1.5, target: 'one', fx: 'neon' },
       { kind: 'heal', name: '吸收水氣', ratio: 0.2 },
     ],
   },
@@ -265,10 +265,10 @@ export const FOES: Record<FoeId, Foe> = {
     boss: true,
     taunt: '呼……嚕……誰吵我……',
     moves: [
-      { kind: 'attack', name: '呼嚕音波', power: 0.9, target: 'all', fx: 'shout' },
+      { kind: 'attack', name: '呼嚕音波', power: 0.9, target: 'all', fx: 'cry' },
       { kind: 'attack', name: '翻身壓', power: 1.4, target: 'one', fx: 'impact' },
       { kind: 'guard', name: '翻進棉被' },
-      { kind: 'attack', name: '超級大鼾', power: 1.2, target: 'all', fx: 'shout' },
+      { kind: 'attack', name: '超級大鼾', power: 1.2, target: 'all', fx: 'cry' },
       { kind: 'attack', name: '夢遊拳', power: 2.0, target: 'one', fx: 'impact' },
     ],
   },

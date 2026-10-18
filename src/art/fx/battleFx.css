@@ -1,0 +1,595 @@
+/*
+ * Battle VFX motion (art direction § 7.9, § 7.10; issue #15). Transform and opacity only, no
+ * filters (§ 8.4). Every node starts at its own `animation-delay` (the impact time, set inline) and
+ * runs once with `both` fill, so it is invisible before it lands and gone after.
+ *
+ * A node's resting style (what shows with no animation) is its IMPACT FRAME: the art lab's
+ * `?still=1` (artlab.css) and the reduced-motion fade both rely on it.
+ *
+ * Durations: shapes 600ms, rings 520ms, particles 560ms, the glyph 600ms, the wash 200ms; the
+ * longest (640ms) is FX_NODE_MS in battleFx.ts.
+ */
+
+.fx-node {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+}
+
+/* ---- Resting poses (the impact frame) -------------------------------------------------------- */
+
+.fx-ring {
+  transform: scale(1.05);
+  opacity: 0.4;
+}
+.fx-particle {
+  transform: translate(calc(var(--dx) * 0.78), calc(var(--dy) * 0.78)) rotate(calc(var(--spin) * 0.5));
+}
+.fx-wash {
+  opacity: 0.24;
+  mix-blend-mode: screen;
+}
+.fx-a-glyph {
+  transform-origin: 50px 25px;
+}
+.fx-a-emblem {
+  transform-origin: 50px 25px;
+}
+.fx-a-emblem,
+.fx-a-glyph {
+  transform-box: view-box;
+}
+
+/* ---- Shapes ----------------------------------------------------------------------------------- */
+
+/* Pops in, holds big through the hit-stop, settles, fades */
+.fx-a-pop {
+  animation: fx-pop 600ms linear both;
+}
+@keyframes fx-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  7% {
+    transform: scale(1.14);
+    opacity: 1;
+  }
+  17% {
+    /* hit-stop: held */
+    transform: scale(1.14);
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  30% {
+    transform: scale(1);
+  }
+  62% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.08);
+    opacity: 0;
+  }
+}
+
+/* Sound arcs throb outward twice */
+.fx-a-throb {
+  animation: fx-throb 600ms ease-out both;
+}
+@keyframes fx-throb {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  12% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(0.96);
+  }
+  48% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.22);
+    opacity: 0;
+  }
+}
+
+/* Toy blocks arc in from the upper left, squash on landing, bounce, settle */
+.fx-a-drop {
+  animation: fx-drop 600ms linear both;
+}
+@keyframes fx-drop {
+  0% {
+    transform: translate(-36px, -44px) rotate(-40deg) scale(0.7);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  4% {
+    opacity: 1;
+  }
+  11% {
+    transform: translate(0, 2px) rotate(0deg) scale(1.08, 0.88);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  21% {
+    transform: translate(0, -7px) rotate(3deg) scale(0.97, 1.04);
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  31% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  66% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(3px, 4px) rotate(4deg) scale(1);
+    opacity: 0;
+  }
+}
+
+/* A claw arc rakes through: wipes in along its length, then thins away */
+.fx-a-slash {
+  animation: fx-slash 520ms linear both;
+}
+@keyframes fx-slash {
+  0% {
+    transform: translate(-16px, 0) scale(0.5, 0.7);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  12% {
+    transform: translate(0, 0) scale(1.06, 1.1);
+    opacity: 1;
+  }
+  24% {
+    transform: translate(0, 0) scale(1, 1);
+  }
+  58% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(8px, 0) scale(1.06, 0.6);
+    opacity: 0;
+  }
+}
+
+/* The paw stamps down from a little above */
+.fx-a-stamp {
+  animation: fx-stamp 600ms linear both;
+}
+@keyframes fx-stamp {
+  0% {
+    transform: translate(0, -14px) scale(1.3);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  8% {
+    transform: translate(0, 2px) scale(1.06, 0.9);
+    opacity: 1;
+  }
+  18% {
+    transform: translate(0, 2px) scale(1.06, 0.9);
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  32% {
+    transform: translate(0, 0) scale(1);
+  }
+  64% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.04);
+    opacity: 0;
+  }
+}
+
+/* Stars bloom, then drift up as they fade */
+.fx-a-rise {
+  animation: fx-rise 640ms linear both;
+}
+@keyframes fx-rise {
+  0% {
+    transform: translate(0, 10px) scale(0.4);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  12% {
+    transform: translate(0, 0) scale(1.14);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  28% {
+    transform: translate(0, 0) scale(1);
+  }
+  66% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, -16px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* The magpie bridge spans out from its middle, and stays a beat */
+.fx-a-arch {
+  transform-origin: 50px 66px;
+  animation: fx-arch 640ms linear both;
+}
+@keyframes fx-arch {
+  0% {
+    transform: scale(0.2, 0.5);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  16% {
+    transform: scale(1.04, 1.06);
+    opacity: 1;
+  }
+  28% {
+    transform: scale(1);
+  }
+  76% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.02);
+    opacity: 0;
+  }
+}
+
+/* 咻咻's spiral turns as it grows */
+.fx-a-spin {
+  animation: fx-spin 640ms linear both;
+}
+@keyframes fx-spin {
+  0% {
+    transform: rotate(-120deg) scale(0.4);
+    opacity: 0;
+  }
+  16% {
+    transform: rotate(-40deg) scale(1.04);
+    opacity: 1;
+  }
+  64% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(150deg) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* Rain falls through */
+.fx-a-rain {
+  animation: fx-rain 600ms linear both;
+}
+@keyframes fx-rain {
+  0% {
+    transform: translate(4px, -16px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-6px, 18px);
+    opacity: 0;
+  }
+}
+
+/* The neon zigzag jitters (a shake, never a flicker: no flashes) */
+.fx-a-zap {
+  animation: fx-zap 560ms linear both;
+}
+@keyframes fx-zap {
+  0% {
+    transform: scale(0.5, 0.2);
+    opacity: 0;
+  }
+  8% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  16% {
+    transform: translate(2px, -1px) scale(1);
+  }
+  24% {
+    transform: translate(-2px, 1px);
+  }
+  32% {
+    transform: translate(1px, 0);
+  }
+  40% {
+    transform: translate(0, 0);
+  }
+  62% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 0) scale(1.04);
+    opacity: 0;
+  }
+}
+
+/* The splash crown rises out of its ripple and drops */
+.fx-a-splash {
+  transform-origin: 50px 70px;
+  animation: fx-splash 600ms linear both;
+}
+@keyframes fx-splash {
+  0% {
+    transform: scale(0.7, 0.2);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  10% {
+    transform: scale(1.04, 1.12);
+    opacity: 1;
+  }
+  26% {
+    transform: scale(1);
+  }
+  64% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.1, 0.8);
+    opacity: 0;
+  }
+}
+
+/* Steam billows up and thins */
+.fx-a-puff {
+  animation: fx-puff 640ms ease-out both;
+}
+@keyframes fx-puff {
+  0% {
+    transform: translate(0, 8px) scale(0.5);
+    opacity: 0;
+  }
+  18% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(0, -18px) scale(1.25);
+    opacity: 0;
+  }
+}
+
+/* Dizzy stars sway on their orbit */
+.fx-a-wobble {
+  transform-origin: 50px 30px;
+  animation: fx-wobble 640ms ease-in-out both;
+}
+@keyframes fx-wobble {
+  0% {
+    transform: rotate(-14deg) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    transform: rotate(6deg) scale(1);
+    opacity: 1;
+  }
+  40% {
+    transform: rotate(-6deg);
+  }
+  65% {
+    transform: rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-3deg);
+    opacity: 0;
+  }
+}
+
+/* 長尾流星: the comet arrives along its tail */
+.fx-a-comet {
+  animation: fx-comet 600ms linear both;
+}
+@keyframes fx-comet {
+  0% {
+    transform: translate(-60px, -54px);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  6% {
+    opacity: 1;
+  }
+  14% {
+    transform: translate(0, 0);
+    animation-timing-function: ease-out;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(8px, 7px);
+    opacity: 0;
+  }
+}
+
+/* ---- Rings and particles ---------------------------------------------------------------------- */
+
+.fx-a-ring {
+  animation: fx-ring 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes fx-ring {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  14% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+.fx-a-fly-burst {
+  animation: fx-fly-burst 560ms cubic-bezier(0.15, 0.85, 0.3, 1) both;
+}
+@keyframes fx-fly-burst {
+  0% {
+    transform: translate(0, 0) scale(0.3);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.3), calc(var(--dy) * 0.3)) scale(1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--spin)) scale(0.6);
+    opacity: 0;
+  }
+}
+
+/* Feathers and puffs float: out quickly, then a slow sway as they settle */
+.fx-a-fly-drift {
+  animation: fx-fly-drift 560ms ease-out both;
+}
+@keyframes fx-fly-drift {
+  0% {
+    transform: translate(0, 0) scale(0.3);
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.45), calc(var(--dy) * 0.2)) rotate(calc(var(--spin) * 0.3)) scale(1);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.8), calc(var(--dy) * 0.65)) rotate(calc(var(--spin) * -0.2)) scale(1);
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--spin)) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* ---- Anticipation: the glyph ring opens under the caster (120ms), the emblem rises ------------ */
+
+.fx-a-glyph {
+  animation: fx-glyph 600ms linear both;
+}
+@keyframes fx-glyph {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  20% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+}
+
+.fx-a-emblem {
+  animation: fx-emblem 600ms linear both;
+}
+/* The emblem presses into the ring like a seal, glows through the strike, sinks away */
+@keyframes fx-emblem {
+  0% {
+    transform: scale(1.6);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  18% {
+    transform: scale(0.94);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  30% {
+    transform: scale(1);
+  }
+  66% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* ---- The wash: ≤ 0.3 opacity, 200ms (§ 7.10) ---------------------------------------------------- */
+
+.fx-a-wash {
+  animation: fx-wash 200ms ease-out both;
+}
+@keyframes fx-wash {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---- Reduced motion (the OS setting or 「減少動態」): only the impact shape, as a still fade ------ */
+
+@keyframes fx-still {
+  0% {
+    opacity: 0;
+  }
+  23% {
+    opacity: 1;
+  }
+  61.5% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-ring,
+  .fx-particle,
+  .fx-glyph,
+  .fx-wash {
+    display: none;
+    animation: none;
+  }
+  /* 520ms: in over 120ms, held, out over 200ms (STILL_FADE_MS); the inline delay still applies */
+  .fx-shape,
+  .fx-accent {
+    animation: fx-still 520ms linear both;
+  }
+}
+.reduce-motion .fx-ring,
+.reduce-motion .fx-particle,
+.reduce-motion .fx-glyph,
+.reduce-motion .fx-wash {
+  display: none;
+  animation: none;
+}
+.reduce-motion .fx-shape,
+.reduce-motion .fx-accent {
+  animation: fx-still 520ms linear both;
+}

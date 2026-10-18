@@ -34,37 +34,72 @@
 
 /* ---- Actors ------------------------------------------------------------------------------------ */
 
-/* Heroes face right and lunge up toward the foes; foes lunge down toward the party */
+/*
+ * Attacks (§ 7.9): anticipation 120ms → strike 90ms → hit-stop 60ms → recover 220ms (490ms; the
+ * percentages are 120/490, 210/490, 270/490). Heroes face right and lunge up toward the foes; foes
+ * lunge down toward the party. The strike lands at 210ms, when art/fx/battleFx.ts's IMPACT_AT
+ * starts the impact, the hurt reaction and the damage number.
+ */
 .hero-lunge {
-  animation: hero-lunge 420ms var(--ease-out);
+  animation: hero-lunge 490ms linear;
 }
 @keyframes hero-lunge {
-  0%,
+  0% {
+    transform: translate(0, 0) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  24.5% {
+    /* anticipation: pull back and crouch */
+    transform: translate(-5%, 2%) scale(1.04, 0.95);
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  42.9% {
+    /* strike */
+    transform: translate(16%, -10%) scale(0.97, 1.04);
+  }
+  55.1% {
+    /* hit-stop */
+    transform: translate(16%, -10%) scale(0.97, 1.04);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
   100% {
-    transform: translate(0, 0);
-  }
-  30% {
-    transform: translate(-4%, 2%);
-  }
-  55% {
-    transform: translate(16%, -10%);
+    transform: translate(0, 0) scale(1, 1);
   }
 }
 
 .foe-lunge {
-  animation: foe-lunge 420ms var(--ease-out);
+  animation: foe-lunge 490ms linear;
 }
 @keyframes foe-lunge {
-  0%,
+  0% {
+    transform: translate(0, 0) scale(1, 1);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  24.5% {
+    transform: translate(5%, -2%) scale(1.04, 0.95);
+    animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6);
+  }
+  42.9% {
+    transform: translate(-16%, 10%) scale(0.97, 1.04);
+  }
+  55.1% {
+    transform: translate(-16%, 10%) scale(0.97, 1.04);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
   100% {
-    transform: translate(0, 0);
+    transform: translate(0, 0) scale(1, 1);
   }
-  30% {
-    transform: translate(4%, -2%);
-  }
-  55% {
-    transform: translate(-16%, 10%);
-  }
+}
+
+/* A rig sprite's own hurt state (rig.css) waits for the strike too, and skips its blink when the
+   step may not flash (`fx-hurt-soft`, at most two flashes a second) */
+.fx-hurt .rig--hurt,
+.fx-hurt .rig--hurt .rig-body,
+.fx-hurt-soft .rig--hurt .rig-body {
+  animation-delay: 210ms;
+}
+.fx-hurt-soft .rig--hurt {
+  animation: none;
 }
 
 /* The gold light ring under whoever's turn it is: a slow breath */
@@ -92,8 +127,9 @@
 
 /* ---- Damage numbers: rise 24px and fade over 600ms (§ 7.4) ------------------------------------- */
 
+/* The resolution layer (§ 7.10): the number rises once the impact has landed (210ms) */
 .dmg-rise {
-  animation: dmg-rise 600ms var(--ease-out) forwards;
+  animation: dmg-rise 600ms var(--ease-out) 210ms both;
 }
 @keyframes dmg-rise {
   0% {
@@ -271,7 +307,7 @@
   animation: none;
 }
 .reduce-motion .dmg-rise {
-  animation: dmg-fade 600ms ease-out forwards;
+  animation: dmg-fade 600ms ease-out 210ms both;
 }
 .reduce-motion .foe-calm {
   animation: kit-fade-out 200ms ease-out forwards;
@@ -295,7 +331,7 @@
     animation: none;
   }
   .dmg-rise {
-    animation: dmg-fade 600ms ease-out forwards;
+    animation: dmg-fade 600ms ease-out 210ms both;
   }
   .foe-calm {
     animation: kit-fade-out 200ms ease-out forwards;

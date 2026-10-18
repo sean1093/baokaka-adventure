@@ -15,3 +15,19 @@
   height: 100% !important;
   min-height: 0 !important;
 }
+
+/* Battle VFX (#15): with `?still=1` every FX node shows its impact frame (its resting style, see
+   src/art/fx/battleFx.css), whatever the motion setting, instead of a moment half a second in */
+.artlab-still .fx-node {
+  animation: none !important;
+  display: inline !important;
+}
+.artlab-still span.fx-node {
+  display: block !important;
+}
+
+/* …and the damage numbers (the resolution layer) held at their peak rather than faded out */
+.artlab-still .dmg-rise {
+  animation: none !important;
+  transform: translate(-50%, -14px);
+}
