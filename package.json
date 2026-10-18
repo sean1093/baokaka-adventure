@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sim": "vite-node scripts/sim.ts"
+    "sim": "vite-node scripts/sim.ts",
+    "visual": "node scripts/visual-check.mjs --serve",
+    "visual:update": "node scripts/visual-check.mjs --serve --update"
   },
   "dependencies": {
     "react": "^18.3.1",

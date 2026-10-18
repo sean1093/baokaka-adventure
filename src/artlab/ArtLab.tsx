@@ -35,11 +35,10 @@ const BACKGROUNDS = {
   brick: {
     label: 'brick',
     style: {
-      backgroundColor: '#9C4A32',
-      backgroundImage:
-        'linear-gradient(#6E2F1F 2px, transparent 2px), linear-gradient(90deg, #6E2F1F 2px, transparent 2px), linear-gradient(90deg, #6E2F1F 2px, transparent 2px)',
-      backgroundSize: '100% 16px, 32px 32px, 32px 32px',
-      backgroundPosition: '0 0, 0 0, 16px 16px',
+      // One 32px tile: two courses of brick, the second offset by half a brick
+      background: `#9C4A32 url("data:image/svg+xml,${encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><path d="M0 1H32M0 17H32M1 0V16M17 16V32" stroke="#6E2F1F" stroke-width="2"/></svg>',
+      )}")`,
       color: '#FFF7E8',
     },
   },
@@ -92,7 +91,7 @@ const SpriteCard = ({ name, backgrounds, sizes }: { name: SpriteName; background
   const Art = SPRITES[name];
   return (
     <section data-sprite={name} className="rounded-xl border border-ink/15 bg-surface p-2">
-      <h3 className="mb-1 font-mono text-[13px] font-bold">{name}</h3>
+      <h3 className="mb-1 w-0 min-w-full truncate font-mono text-[13px] font-bold" title={name}>{name}</h3>
       <div className="flex flex-col gap-1">
         {backgrounds.map((bg) => (
           <div key={bg} className="flex flex-wrap items-end gap-2 rounded-lg p-2" style={BACKGROUNDS[bg].style} title={bg}>

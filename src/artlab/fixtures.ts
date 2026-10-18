@@ -72,7 +72,7 @@ function worldAt(event: string, at: number): QuestState {
 export const BATTLE_FOES: readonly FoeId[] = ['dustBunny', 'sockMonster', 'dustBunny'];
 
 export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
-  { name: 'title', label: 'Title (a run to continue)', state: () => withView({ screen: 'title' }) },
+  { name: 'title-continue', label: 'Title with a run to continue', state: () => withView({ screen: 'title' }) },
   { name: 'world', label: 'World: home map', state: world },
   { name: 'dialogue', label: 'World: dialogue line', state: () => worldAt('home.mom.hug', 0) },
   { name: 'chapter', label: 'World: chapter card', state: () => worldAt('home.intro', 0) },
