@@ -67,11 +67,11 @@ export const EVENTS: Record<string, Step[]> = {
   'home.grandma.first': [
     { who: 'grandma', text: '「阿嬤的乖孫，要出門喔？」' },
     { who: 'grandma', text: '「帶著這個，肚子餓就吃。」' },
-    { do: 'give', item: 'cookie', count: 2 },
-    { do: 'give', item: 'bottle' },
+    { do: 'give', item: 'teaEgg', count: 2 },
+    { do: 'give', item: 'pineappleCake' },
     { do: 'coins', amount: 20 },
     { do: 'flag', flag: 'grandmaGave' },
-    { who: null, text: '拿到 小餅乾 ×2、奶瓶 ×1，還有 20 個銅板。' },
+    { who: null, text: '拿到 茶葉蛋 ×2、鳳梨酥 ×1，還有 20 個銅板。' },
     { who: 'grandma', text: '「銅板可以跟市場的老闆娘換東西。」' },
   ],
   'home.grandma.again': [
@@ -116,8 +116,8 @@ export const EVENTS: Record<string, Step[]> = {
     { do: 'flag', flag: 'golemDone' },
     { who: 'golem', text: '「……積木、還你……」' },
     { who: null, text: '積木巨人散成一地積木，露出通往公園的小路。' },
-    { do: 'give', item: 'sunHat' },
-    { who: null, text: '積木堆裡撿到 遮陽帽（裝備：防禦 +4）。' },
+    { do: 'give', item: 'bib' },
+    { who: null, text: '積木堆裡撿到 口水巾（裝備：防禦 +3）。' },
     { who: 'mocha', text: '「打開選單就可以穿上。」' },
   ],
 
@@ -134,7 +134,7 @@ export const EVENTS: Record<string, Step[]> = {
   ],
   'park.uncle': [
     { who: 'uncle', text: '「冰的、涼的，要不要來一個？」' },
-    { do: 'shop', stock: ['cookie', 'driedFish', 'bottle'] },
+    { do: 'shop', stock: ['teaEgg', 'douhua', 'pineappleCake'] },
   ],
   'park.kid': [
     { who: 'kid', text: '「你有看到一隻很大的烏鴉嗎？」' },
@@ -144,8 +144,8 @@ export const EVENTS: Record<string, Step[]> = {
   'park.kid.after': [
     { who: 'kid', text: '「哇，你把烏鴉老大打跑了！好厲害。」' },
     { who: 'kid', text: '「這個給你。」' },
-    { do: 'give', item: 'banana' },
-    { who: null, text: '拿到 香蕉。' },
+    { do: 'give', item: 'braisedRice' },
+    { who: null, text: '拿到 滷肉飯。' },
   ],
   'park.crow': [
     { who: 'crow', text: '「嘎！亮晶晶的東西都是我的！」' },
@@ -155,9 +155,9 @@ export const EVENTS: Record<string, Step[]> = {
     { do: 'flag', flag: 'crowDone' },
     { who: 'crow', text: '「嘎……還你就是了……」' },
     { who: null, text: '烏鴉老大放下一條紅緞帶，飛走了。' },
-    { do: 'give', item: 'coinPurse' },
+    { do: 'give', item: 'amulet' },
     { do: 'coins', amount: 30 },
-    { who: null, text: '撿到 小錢包 和 30 個銅板。往右邊就是市場。' },
+    { who: null, text: '撿到 平安符 和 30 個銅板。往右邊就是市場。' },
   ],
 
   // ---------------------------------------------------------------- 第四章 市場
@@ -168,7 +168,7 @@ export const EVENTS: Record<string, Step[]> = {
   ],
   'market.vendor': [
     { who: 'vendor', text: '「來喔！用銅板換，什麼都有！」' },
-    { do: 'shop', stock: ['cookie', 'bottle', 'banana', 'driedFish', 'blanket', 'toyBoat'] },
+    { do: 'shop', stock: ['teaEgg', 'pineappleCake', 'braisedRice', 'douhua', 'flowerVest', 'flipFlops'] },
   ],
   'market.uncle': [
     { who: 'uncle', text: '「豆花～吃一碗，睡一下，什麼都好了。」' },
@@ -185,7 +185,7 @@ export const EVENTS: Record<string, Step[]> = {
     { do: 'flag', flag: 'fishDone' },
     { who: 'fish', text: '「噗嚕……我只是想回水裡……」' },
     { who: null, text: '大魚翻了個身，滑進水桶，不見了。' },
-    { do: 'give', item: 'apple' },
+    { do: 'give', item: 'railBento' },
     { do: 'coins', amount: 40 },
     { who: 'mocha', text: '「牠說家裡的浴室通到水的世界。回家看看浴室吧。」' },
   ],
@@ -217,7 +217,7 @@ export const EVENTS: Record<string, Step[]> = {
   ],
   'beach.vendor': [
     { who: 'vendor', text: '「海邊的貨比較好喔，貴一點點。」' },
-    { do: 'shop', stock: ['bottle', 'banana', 'apple', 'shell', 'star', 'nightLight'] },
+    { do: 'shop', stock: ['pineappleCake', 'braisedRice', 'railBento', 'redTurtleCake', 'tigerShoes', 'helmet'] },
   ],
   'beach.octo': [
     { who: 'octo', text: '「八隻手一起來！」' },

@@ -2,7 +2,7 @@ import { roll } from '../../shared/random';
 import { battleBoss, battleCoins, battleStep, battleXp, startBattle } from './battle';
 import { EVENTS } from './events';
 import { FOES } from './foes';
-import { ITEMS, STARTING_ITEMS, addItem, heroStats, isEquip, removeItem } from './heroes';
+import { ITEMS, STARTING_ITEMS, addItem, canWear, heroStats, removeItem } from './heroes';
 import { MAPS } from './maps';
 import { chestOpened, meets } from './path';
 import { addFlags, recordFoes } from './progress';
@@ -368,7 +368,8 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
     case 'buy': {
       if (view.screen !== 'shop' || !view.stock.includes(action.item)) return state;
       const price = ITEMS[action.item].price;
-      if (run.coins < price) return state;
+      // A gift (price 0) is never for sale, even if a shop stock lists it by mistake
+      if (price <= 0 || run.coins < price) return state;
       return { ...state, run: { ...run, coins: run.coins - price, items: addItem(run.items, action.item) } };
     }
 
@@ -410,7 +411,8 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
     case 'equip': {
       if (!run.party.includes(action.hero)) return state;
       const worn = run.equip[action.hero];
-      if (action.item !== null && (!isEquip(action.item) || (run.items[action.item] ?? 0) === 0)) return state;
+      // Signature gear (`Item.only`) stays in the bag for anyone but its owner
+      if (action.item !== null && (!canWear(action.hero, action.item) || (run.items[action.item] ?? 0) === 0)) return state;
 
       let items = run.items;
       if (action.item !== null) items = removeItem(items, action.item);

@@ -39,8 +39,8 @@ export function sampleRun(party: readonly HeroId[] = HERO_ORDER, level = SAMPLE_
     level,
     xp: 120,
     coins: 46,
-    items: { cookie: 3, bottle: 1, banana: 2, sunHat: 1 },
-    equip: { ...base.equip, baokaka: 'sunHat' },
+    items: { teaEgg: 3, pineappleCake: 1, braisedRice: 2, bib: 1 },
+    equip: { ...base.equip, baokaka: 'bib' },
     flags: [...SAMPLE_FLAGS],
     chapter: 2,
   };
@@ -136,7 +136,7 @@ export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
         summary: {
           xp: 31,
           coins: 14,
-          drops: ['cookie'],
+          drops: ['teaEgg'],
           levels: 1,
           learned: Object.values(SPELLS)
             .filter((spell) => spell.level === SAMPLE_LEVEL + 1)
@@ -146,7 +146,7 @@ export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
         },
       }),
   },
-  { name: 'shop', label: 'Shop', state: () => withView({ screen: 'shop', stock: ['cookie', 'bottle', 'banana', 'driedFish', 'sunHat'] }) },
+  { name: 'shop', label: 'Shop', state: () => withView({ screen: 'shop', stock: ['teaEgg', 'pineappleCake', 'braisedRice', 'douhua', 'bib'] }) },
   { name: 'menu', label: 'Menu: party sheet', state: world, menu: true },
   { name: 'defeat', label: 'Defeat', state: () => withView({ screen: 'defeat' }) },
   { name: 'ending', label: 'Ending', state: () => withView({ screen: 'ending' }) },

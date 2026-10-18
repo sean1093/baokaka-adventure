@@ -10,9 +10,9 @@ import { QuestScreens } from './QuestScreens';
 if (import.meta.env.DEV) {
   const errors = validateQuestContent();
   if (errors.length > 0) throw new Error(`Invalid quest content:\n${errors.join('\n')}`);
-  // Side quests and collections read flags that later chapters set; listed, but not fatal yet
+  // Side quests, collections and the item catalogue run ahead of the chapters that place them; listed, not fatal yet
   const warnings = progressWarnings();
-  if (warnings.length > 0) console.warn(`Quest content: ${warnings.length} progress flags are not set by any event yet\n${warnings.join('\n')}`);
+  if (warnings.length > 0) console.warn(`Quest content: ${warnings.length} flags or items are not placed by any content yet\n${warnings.join('\n')}`);
 }
 
 /** The RPG: the run state machine lives in engine/quest.ts, battles in engine/battle.ts. */

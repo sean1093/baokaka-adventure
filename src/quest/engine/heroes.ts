@@ -223,42 +223,79 @@ export function spellsFor(hero: HeroId, level: number): Spell[] {
   return Object.values(SPELLS).filter((spell) => spell.hero === hero && spell.level <= level);
 }
 
+/**
+ * The item catalogue: story bible § 6.1 *Consumables* and § 6.2 *Equipment* (effects and prices),
+ * blurbs from script § *Items: in-game names & blurbs* (the bible's for the three consumables the
+ * script leaves out; the equipment it leaves out got a short line in the same voice, decisions D-25).
+ * `price: 0` is a gift or quest reward ("—" in the tables): never sold, never bought.
+ *
+ * TEMP icons until #19 (item art). Each item borrows the closest existing sprite:
+ *   teaEgg → stone          pineappleCake → cookie     chickenCutlet → driedFish
+ *   douhua → bucket         bubbleTea → bottle         brownSugarMilk → bottle
+ *   braisedRice → bucket    mangoIce → banana          railBento → crate
+ *   meatBall → apple        grassJellyTea → bottle     mysteryFood → toyBox
+ *   redTurtleCake → shell   bib → blanket              flipFlops → slipper
+ *   gradCap → clothBook     helmet → sunHat            tigerShoes → slipper
+ *   flowerVest → blanket    amulet → coinPurse         neckPillow → pillow
+ *   raincoat → beachUmbrella plushCharm → comfortDoll  travelerHat → sunHat
+ *   deliveryBag → crate     luckyCat → coinPurse       moonPassCharm → star
+ *   bellCollar → lantern    profGlasses → clothBook    courageScarf → blanket
+ *   tigerHat → sunHat       pinwheel → kite            clerkVest → blanket
+ *   championBelt → star     goldAmulet → coinPurse     earthCane → signpost
+ */
 export const ITEMS: Record<ItemId, Item> = {
-  cookie: { id: 'cookie', name: '小餅乾', sprite: 'cookie', blurb: '體力恢復 25。', price: 5, use: { kind: 'hp', amount: 25 } },
-  bottle: { id: 'bottle', name: '奶瓶', sprite: 'bottle', blurb: '體力恢復 60。', price: 12, use: { kind: 'hp', amount: 60 } },
-  banana: { id: 'banana', name: '香蕉', sprite: 'banana', blurb: '全隊體力恢復 40。', price: 25, use: { kind: 'hpAll', amount: 40 } },
-  driedFish: { id: 'driedFish', name: '小魚乾', sprite: 'driedFish', blurb: '元氣恢復 20。', price: 10, use: { kind: 'mp', amount: 20 } },
-  apple: { id: 'apple', name: '蘋果', sprite: 'apple', blurb: '一個人體力和元氣全滿。', price: 40, use: { kind: 'full' } },
-  shell: { id: 'shell', name: '貝殼', sprite: 'shell', blurb: '聽聽海的聲音，倒下的人醒過來（一半體力）。', price: 30, use: { kind: 'revive', ratio: 0.5 } },
-  clothBook: { id: 'clothBook', name: '布書', sprite: 'clothBook', blurb: '裝備：元氣 +15。', price: 50, use: { kind: 'equip', bonus: { mp: 15 } } },
-  coinPurse: { id: 'coinPurse', name: '小錢包', sprite: 'coinPurse', blurb: '裝備：幸運 +8。', price: 50, use: { kind: 'equip', bonus: { luck: 8 } } },
-  sunHat: { id: 'sunHat', name: '遮陽帽', sprite: 'sunHat', blurb: '裝備：防禦 +4。', price: 45, use: { kind: 'equip', bonus: { def: 4 } } },
-  blanket: { id: 'blanket', name: '小被被', sprite: 'blanket', blurb: '裝備：體力 +25。', price: 60, use: { kind: 'equip', bonus: { hp: 25 } } },
-  toyBoat: { id: 'toyBoat', name: '小船', sprite: 'toyBoat', blurb: '裝備：武力 +5。', price: 60, use: { kind: 'equip', bonus: { atk: 5 } } },
-  star: { id: 'star', name: '星星髮夾', sprite: 'star', blurb: '裝備：身手 +6。', price: 60, use: { kind: 'equip', bonus: { spd: 6 } } },
-  nightLight: { id: 'nightLight', name: '小夜燈', sprite: 'nightLight', blurb: '裝備：防禦 +8。', price: 80, use: { kind: 'equip', bonus: { def: 8 } } },
+  // § 6.1 Consumables
+  teaEgg: { id: 'teaEgg', name: '茶葉蛋', sprite: 'stone', blurb: '便利商店的電鍋裡，永遠有一顆在等你。體力 +30。', price: 8, use: { kind: 'hp', amount: 30 } },
+  pineappleCake: { id: 'pineappleCake', name: '鳳梨酥', sprite: 'cookie', blurb: '外皮酥酥，內餡酸甜。體力 +70。', price: 20, use: { kind: 'hp', amount: 70 } },
+  chickenCutlet: { id: 'chickenCutlet', name: '雞排', sprite: 'driedFish', blurb: '比臉還大。體力 +160。', price: 45, use: { kind: 'hp', amount: 160 } },
+  douhua: { id: 'douhua', name: '豆花', sprite: 'bucket', blurb: '滑滑嫩嫩。元氣 +20。', price: 15, use: { kind: 'mp', amount: 20 } },
+  bubbleTea: { id: 'bubbleTea', name: '珍珠奶茶', sprite: 'bottle', blurb: '台灣之光。元氣 +45。', price: 35, use: { kind: 'mp', amount: 45 } },
+  // "Full MP, one hero": the reducer and the battle cap MP at the hero's maximum
+  brownSugarMilk: { id: 'brownSugarMilk', name: '黑糖珍奶', sprite: 'bottle', blurb: '黑糖最喜歡的。元氣全滿。', price: 80, use: { kind: 'mp', amount: 999 } },
+  braisedRice: { id: 'braisedRice', name: '滷肉飯', sprite: 'bucket', blurb: '一人一碗。全隊體力 +50。', price: 40, use: { kind: 'hpAll', amount: 50 } },
+  mangoIce: { id: 'mangoIce', name: '芒果冰', sprite: 'banana', blurb: '夏天的味道。全隊體力 +130。', price: 90, use: { kind: 'hpAll', amount: 130 } },
+  railBento: { id: 'railBento', name: '鐵路便當', sprite: 'crate', blurb: '排骨、滷蛋、醃黃瓜。一人體力和元氣全滿。', price: 60, use: { kind: 'full' } },
+  meatBall: { id: 'meatBall', name: '肉圓', sprite: 'apple', blurb: 'Q彈的皮，香香的肉。體力 +110。', price: 35, use: { kind: 'hp', amount: 110 } },
+  grassJellyTea: { id: 'grassJellyTea', name: '仙草茶', sprite: 'bottle', blurb: '涼涼的，黑黑的。元氣 +30。', price: 25, use: { kind: 'mp', amount: 30 } },
+  mysteryFood: { id: 'mysteryFood', name: '神秘排隊美食', sprite: 'toyBox', blurb: '排了兩個小時。不知道是什麼，可是全隊體力全滿。', price: 0, use: { kind: 'hpAll', amount: 999 } },
+  redTurtleCake: { id: 'redTurtleCake', name: '紅龜粿', sprite: 'shell', blurb: '生日要吃紅龜粿，呷百二。倒下的人醒過來。', price: 40, use: { kind: 'revive', ratio: 0.5 } },
+
+  // § 6.2 Equipment (one slot per hero)
+  bib: { id: 'bib', name: '口水巾', sprite: 'blanket', blurb: '阿嬤縫的。裝備：防禦 +3。', price: 25, use: { kind: 'equip', bonus: { def: 3 } } },
+  flipFlops: { id: 'flipFlops', name: '藍白拖', sprite: 'slipper', blurb: '爸爸的。台灣人的戰鬥鞋。裝備：武力 +5。', price: 40, use: { kind: 'equip', bonus: { atk: 5 } } },
+  gradCap: { id: 'gradCap', name: '學士帽', sprite: 'clothBook', blurb: '圖書館台階上撿到的。裝備：元氣 +15。', price: 60, use: { kind: 'equip', bonus: { mp: 15 } } },
+  helmet: { id: 'helmet', name: '安全帽', sprite: 'sunHat', blurb: '騎車要戴，走路也可以戴。裝備：防禦 +8。', price: 80, use: { kind: 'equip', bonus: { def: 8 } } },
+  tigerShoes: { id: 'tigerShoes', name: '虎頭鞋', sprite: 'slipper', blurb: '鞋頭有老虎，走路有力氣。裝備：身手 +6。', price: 90, use: { kind: 'equip', bonus: { spd: 6 } } },
+  flowerVest: { id: 'flowerVest', name: '花布背心', sprite: 'blanket', blurb: '紅紅的花布，阿姨親手做。裝備：體力 +45。', price: 100, use: { kind: 'equip', bonus: { hp: 45 } } },
+  amulet: { id: 'amulet', name: '平安符', sprite: 'coinPurse', blurb: '保平安。裝備：幸運 +10。', price: 0, use: { kind: 'equip', bonus: { luck: 10 } } },
+  neckPillow: { id: 'neckPillow', name: '旅行頸枕', sprite: 'pillow', blurb: '推車阿伯送的，軟軟的。裝備：體力 +30、防禦 +5。', price: 85, use: { kind: 'equip', bonus: { hp: 30, def: 5 } } },
+  raincoat: { id: 'raincoat', name: '機車雨衣', sprite: 'beachUmbrella', blurb: '颱風天的好朋友。裝備：防禦 +12、體力 +25。', price: 180, use: { kind: 'equip', bonus: { def: 12, hp: 25 } } },
+  plushCharm: { id: 'plushCharm', name: '小熊吊飾', sprite: 'comfortDoll', blurb: '娃娃機夾到的小熊。裝備：幸運 +8、防禦 +4。', price: 0, use: { kind: 'equip', bonus: { luck: 8, def: 4 } } },
+  travelerHat: { id: 'travelerHat', name: '旅行者的帽子', sprite: 'sunHat', blurb: '背包客哥哥的帽子。裝備：身手 +8、防禦 +6。', price: 0, use: { kind: 'equip', bonus: { spd: 8, def: 6 } } },
+  deliveryBag: { id: 'deliveryBag', name: '外送保溫袋', sprite: 'crate', blurb: '月亮外送的大袋子。裝備：體力 +40、防禦 +6。', price: 0, use: { kind: 'equip', bonus: { hp: 40, def: 6 } } },
+  luckyCat: { id: 'luckyCat', name: '招財貓', sprite: 'coinPurse', blurb: '一直招手的貓。裝備：幸運 +20。', price: 0, use: { kind: 'equip', bonus: { luck: 20 } } },
+  moonPassCharm: { id: 'moonPassCharm', name: '月亮線紀念票', sprite: 'star', blurb: '月亮線乘客的紀念。裝備：身手 +6、元氣 +20。', price: 0, use: { kind: 'equip', bonus: { spd: 6, mp: 20 } } },
+  bellCollar: { id: 'bellCollar', name: '摩卡的鈴鐺項圈', sprite: 'lantern', blurb: '小時候的鈴鐺。裝備：身手 +10、幸運 +12。', price: 0, only: 'mocha', use: { kind: 'equip', bonus: { spd: 10, luck: 12 } } },
+  profGlasses: { id: 'profGlasses', name: '藍教授的眼鏡', sprite: 'clothBook', blurb: '畢業的證明。裝備：元氣 +35、武力 +6。', price: 0, only: 'magpie', use: { kind: 'equip', bonus: { mp: 35, atk: 6 } } },
+  courageScarf: { id: 'courageScarf', name: '勇氣圍巾', sprite: 'blanket', blurb: '爬上山頂的勇氣。裝備：體力 +80、防禦 +10。', price: 0, only: 'bear', use: { kind: 'equip', bonus: { hp: 80, def: 10 } } },
+  tigerHat: { id: 'tigerHat', name: '阿嬤的虎頭帽', sprite: 'sunHat', blurb: '阿嬤一針一線縫的。裝備：體力 +60、防禦 +8、幸運 +8。', price: 0, only: 'baokaka', use: { kind: 'equip', bonus: { hp: 60, def: 8, luck: 8 } } },
+  pinwheel: { id: 'pinwheel', name: '小風車', sprite: 'kite', blurb: '咻咻送的，一吹就轉。裝備：身手 +10、幸運 +6。', price: 0, use: { kind: 'equip', bonus: { spd: 10, luck: 6 } } },
+  clerkVest: { id: 'clerkVest', name: '店員背心', sprite: 'blanket', blurb: '歡迎光臨！裝備：幸運 +15、身手 +8。', price: 0, use: { kind: 'equip', bonus: { luck: 15, spd: 8 } } },
+  championBelt: { id: 'championBelt', name: '冠軍腰帶', sprite: 'star', blurb: '老朋友擂台的冠軍。裝備：武力 +12、體力 +60。', price: 0, use: { kind: 'equip', bonus: { atk: 12, hp: 60 } } },
+  goldAmulet: { id: 'goldAmulet', name: '金平安符', sprite: 'coinPurse', blurb: '土地公的獎品。裝備：幸運 +25、防禦 +6。', price: 0, use: { kind: 'equip', bonus: { luck: 25, def: 6 } } },
+  earthCane: { id: 'earthCane', name: '土地公的拐杖', sprite: 'signpost', blurb: '一直在旁邊守護你的那個人的拐杖。全能力提升。', price: 0, use: { kind: 'equip', bonus: { atk: 8, def: 8, spd: 5, luck: 10 } } },
 };
 
-/** Inventory display order: consumables first, then things to wear. */
-export const ITEM_ORDER: readonly ItemId[] = [
-  'cookie',
-  'bottle',
-  'banana',
-  'driedFish',
-  'apple',
-  'shell',
-  'clothBook',
-  'coinPurse',
-  'sunHat',
-  'blanket',
-  'toyBoat',
-  'star',
-  'nightLight',
-];
+/** Inventory display order: consumables first, then things to wear (both in bible table order). */
+export const ITEM_ORDER: readonly ItemId[] = Object.keys(ITEMS) as ItemId[];
+
+/** True when this hero may wear this item: anything that isn't signature gear, or their own. */
+export const canWear = (hero: HeroId, item: ItemId): boolean => isEquip(item) && (ITEMS[item].only ?? hero) === hero;
 
 export const MAX_ITEM_COUNT = 9;
 
-export const STARTING_ITEMS: Inventory = { cookie: 2 };
+/** The 紅包's coins come from an event in Ch1; the bag starts with two tea eggs. */
+export const STARTING_ITEMS: Inventory = { teaEgg: 2 };
 
 export const isEquip = (item: ItemId): boolean => ITEMS[item].use.kind === 'equip';
 

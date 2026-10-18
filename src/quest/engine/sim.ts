@@ -34,7 +34,7 @@ export const POLICIES: Record<'careful' | 'casual' | 'reckless', Policy> = {
   reckless: { healBelow: 0, guardBelow: 0, restBelow: 0, shop: false, shield: false },
 };
 
-const HEAL_ITEMS: readonly ItemId[] = ['cookie', 'bottle', 'banana', 'apple'];
+const HEAL_ITEMS: readonly ItemId[] = ['teaEgg', 'pineappleCake', 'braisedRice', 'railBento'];
 
 /** One fight to the finish. Returns the battle in its final phase. */
 export function playBattle(run: Run, foes: FoeId[], boss: boolean, seed: number, policy: Policy): Battle {
@@ -202,9 +202,9 @@ function buy(run: Run): Run {
       items[item] = (items[item] ?? 0) + 1;
     }
   };
-  stock('bottle', 5);
-  stock('driedFish', 3);
-  stock('cookie', 5);
+  stock('pineappleCake', 5);
+  stock('douhua', 3);
+  stock('teaEgg', 5);
   return { ...run, coins, items };
 }
 

@@ -80,7 +80,7 @@ export const MAPS: Record<MapId, GameMap> = {
       { id: 'dust', name: '灰塵球', sprite: 'dustBunny', c: 6, r: 9, not: 'dustDone', talk: [{ event: 'home.dust' }] },
       { id: 'dad', name: '爸爸', sprite: 'dad', c: 11, r: 5, talk: [{ event: 'home.dad' }] },
     ],
-    chests: [{ id: 'home-book', c: 12, r: 9, item: 'clothBook' }],
+    chests: [{ id: 'home-book', c: 12, r: 9, item: 'gradCap' }],
     exits: [
       { c: 6, r: 10, to: 'yard', at: { c: 8, r: 1 } },
       { c: 0, r: 6, to: 'bath', at: { c: 1, r: 5 }, when: 'fishDone', blocked: 'home.bathDoor' },
@@ -126,7 +126,7 @@ export const MAPS: Record<MapId, GameMap> = {
       { id: 'dog', name: '小狗', sprite: 'dog', c: 10, r: 4, talk: [{ when: 'golemDone', event: 'yard.dog.after' }, { event: 'yard.dog' }] },
       { id: 'golem', name: '積木巨人', sprite: 'blockGolem', c: 16, r: 12, not: 'golemDone', talk: [{ event: 'yard.golem' }] },
     ],
-    chests: [{ id: 'yard-cookies', c: 2, r: 2, item: 'cookie', count: 2 }],
+    chests: [{ id: 'yard-cookies', c: 2, r: 2, item: 'teaEgg', count: 2 }],
     exits: [
       { c: 8, r: 0, to: 'home', at: { c: 6, r: 9 } },
       { c: 16, r: 13, to: 'park', at: { c: 1, r: 7 } },
@@ -184,7 +184,7 @@ export const MAPS: Record<MapId, GameMap> = {
       { id: 'kid', name: '小花', sprite: 'kid', c: 8, r: 9, flip: true, talk: [{ when: 'crowDone', event: 'park.kid.after' }, { event: 'park.kid' }] },
       { id: 'crow', name: '烏鴉老大', sprite: 'crowBoss', c: 20, r: 8, not: 'crowDone', talk: [{ event: 'park.crow' }] },
     ],
-    chests: [{ id: 'park-purse', c: 20, r: 2, item: 'coinPurse' }],
+    chests: [{ id: 'park-purse', c: 20, r: 2, item: 'amulet' }],
     exits: [
       { c: 0, r: 7, to: 'yard', at: { c: 16, r: 12 } },
       { c: 21, r: 8, to: 'market', at: { c: 1, r: 7 } },
@@ -239,7 +239,7 @@ export const MAPS: Record<MapId, GameMap> = {
       { id: 'kid', name: '小花', sprite: 'kid', c: 8, r: 11, talk: [{ event: 'market.kid' }] },
       { id: 'fish', name: '大魚', sprite: 'bigFish', c: 15, r: 4, not: 'fishDone', talk: [{ event: 'market.fish' }] },
     ],
-    chests: [{ id: 'market-fish', c: 17, r: 11, item: 'driedFish', count: 2 }],
+    chests: [{ id: 'market-fish', c: 17, r: 11, item: 'douhua', count: 2 }],
     exits: [{ c: 0, r: 7, to: 'park', at: { c: 20, r: 8 } }],
     triggers: [{ id: 'market-intro', c: 1, r: 7, event: 'market.intro', once: true }],
     encounters: {
@@ -275,7 +275,7 @@ export const MAPS: Record<MapId, GameMap> = {
       { sprite: 'toyBoat', c: 9, r: 2, size: 0.8, solid: false },
     ],
     npcs: [{ id: 'magpieNpc', name: '阿藍', sprite: 'pigeon', c: 8, r: 5, flip: true, not: 'magpieJoined', talk: [{ event: 'bath.magpie' }] }],
-    chests: [{ id: 'bath-boat', c: 2, r: 2, item: 'toyBoat' }],
+    chests: [{ id: 'bath-boat', c: 2, r: 2, item: 'flipFlops' }],
     exits: [
       { c: 0, r: 5, to: 'home', at: { c: 1, r: 6 } },
       { c: 11, r: 5, to: 'beach', at: { c: 1, r: 6 }, when: 'magpieJoined', blocked: 'bath.notYet' },
@@ -317,7 +317,7 @@ export const MAPS: Record<MapId, GameMap> = {
       { id: 'vendor', name: '老闆娘', sprite: 'vendor', c: 3, r: 2, talk: [{ event: 'beach.vendor' }] },
       { id: 'octo', name: '大章魚', sprite: 'octopus', c: 19, r: 7, not: 'octopusDone', talk: [{ event: 'beach.octo' }] },
     ],
-    chests: [{ id: 'beach-star', c: 20, r: 2, item: 'star' }],
+    chests: [{ id: 'beach-star', c: 20, r: 2, item: 'tigerShoes' }],
     exits: [{ c: 0, r: 6, to: 'bath', at: { c: 10, r: 5 } }],
     triggers: [{ id: 'beach-intro', c: 1, r: 6, event: 'beach.intro', once: true }],
     encounters: {
@@ -364,8 +364,8 @@ export const MAPS: Record<MapId, GameMap> = {
       { id: 'snore', name: '打呼嚕大王', sprite: 'snoreKing', c: 12, r: 4, not: 'snoreDone', talk: [{ event: 'night.boss' }] },
     ],
     chests: [
-      { id: 'night-lamp', c: 2, r: 11, item: 'nightLight' },
-      { id: 'night-banana', c: 14, r: 11, item: 'banana' },
+      { id: 'night-lamp', c: 2, r: 11, item: 'helmet' },
+      { id: 'night-banana', c: 14, r: 11, item: 'braisedRice' },
     ],
     exits: [{ c: 7, r: 13, to: 'home', at: { c: 6, r: 1 } }],
     triggers: [{ id: 'night-intro', c: 7, r: 12, event: 'night.intro', once: true }],

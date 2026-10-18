@@ -127,11 +127,11 @@ describe('talking', () => {
 
   test('阿嬤 hands over her parcel exactly once', () => {
     const first = readAll(questReducer(opened(), { type: 'interact', id: 'grandma' }));
-    expect(first.run.items.cookie).toBe(4);
+    expect(first.run.items.teaEgg).toBe(4);
     expect(first.run.coins).toBe(20);
 
     const second = readAll(questReducer(first, { type: 'interact', id: 'grandma' }));
-    expect(second.run.items.cookie).toBe(4);
+    expect(second.run.items.teaEgg).toBe(4);
     expect(second.run.coins).toBe(20);
   });
 
@@ -156,11 +156,11 @@ describe('chests', () => {
 
   test('open once and remember it', () => {
     const first = readAll(questReducer(opened(), { type: 'interact', id: 'home-book' }));
-    expect(first.run.items.clothBook).toBe(1);
+    expect(first.run.items.gradCap).toBe(1);
     expect(first.run.flags).toContain('chest:home-book');
 
     const second = questReducer(first, { type: 'interact', id: 'home-book' });
-    expect(second.run.items.clothBook).toBe(1);
+    expect(second.run.items.gradCap).toBe(1);
   });
 });
 
@@ -175,15 +175,21 @@ describe('the shop', () => {
     let state = readAll(shopping());
     expect(state.view.screen).toBe('shop');
     const before = state.run.coins;
-    state = questReducer(state, { type: 'buy', item: 'cookie' });
-    expect(state.run.coins).toBe(before - ITEMS.cookie.price);
-    expect(state.run.items.cookie).toBe(3);
+    state = questReducer(state, { type: 'buy', item: 'teaEgg' });
+    expect(state.run.coins).toBe(before - ITEMS.teaEgg.price);
+    expect(state.run.items.teaEgg).toBe(3);
   });
 
   test('refuses when the coins run out', () => {
     let state = readAll(shopping());
     state = { ...state, run: { ...state.run, coins: 1 } };
-    expect(questReducer(state, { type: 'buy', item: 'bottle' })).toBe(state);
+    expect(questReducer(state, { type: 'buy', item: 'pineappleCake' })).toBe(state);
+  });
+
+  test('a gift item is never sold, even if a stock lists it', () => {
+    const state = readAll(shopping());
+    const rigged = { ...state, view: { screen: 'shop' as const, stock: ['amulet' as const] } };
+    expect(questReducer(rigged, { type: 'buy', item: 'amulet' })).toBe(rigged);
   });
 
   test('closing returns to the map', () => {
@@ -233,47 +239,104 @@ describe('the inn', () => {
 describe('items and equipment', () => {
   const ready = (): QuestState => {
     const state = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
-    return { ...state, run: { ...state.run, items: { cookie: 1, shell: 1, sunHat: 1 }, hp: { ...state.run.hp, baokaka: 2 } } };
+    return { ...state, run: { ...state.run, items: { teaEgg: 1, redTurtleCake: 1, bib: 1 }, hp: { ...state.run.hp, baokaka: 2 } } };
   };
 
-  test('a cookie heals and is spent', () => {
-    const used = questReducer(ready(), { type: 'useItem', item: 'cookie', hero: 'baokaka' });
-    expect(used.run.hp.baokaka).toBe(27);
-    expect(used.run.items.cookie).toBeUndefined();
+  test('a tea egg heals and is spent', () => {
+    const used = questReducer(ready(), { type: 'useItem', item: 'teaEgg', hero: 'baokaka' });
+    expect(used.run.hp.baokaka).toBe(32);
+    expect(used.run.items.teaEgg).toBeUndefined();
   });
 
   test('a revive only works on someone who is down', () => {
     const state = ready();
-    expect(questReducer(state, { type: 'useItem', item: 'shell', hero: 'baokaka' })).toBe(state);
+    expect(questReducer(state, { type: 'useItem', item: 'redTurtleCake', hero: 'baokaka' })).toBe(state);
 
     const down = { ...state, run: { ...state.run, hp: { ...state.run.hp, baokaka: 0 } } };
-    const back = questReducer(down, { type: 'useItem', item: 'shell', hero: 'baokaka' });
+    const back = questReducer(down, { type: 'useItem', item: 'redTurtleCake', hero: 'baokaka' });
     expect(back.run.hp.baokaka).toBeGreaterThan(0);
   });
 
   test('equipping moves the item out of the bag and raises the stat', () => {
-    const worn = questReducer(ready(), { type: 'equip', item: 'sunHat', hero: 'baokaka' });
-    expect(worn.run.equip.baokaka).toBe('sunHat');
-    expect(worn.run.items.sunHat).toBeUndefined();
-    expect(heroStats('baokaka', worn.run.level, 'sunHat').def).toBe(heroStats('baokaka', worn.run.level).def + 4);
+    const worn = questReducer(ready(), { type: 'equip', item: 'bib', hero: 'baokaka' });
+    expect(worn.run.equip.baokaka).toBe('bib');
+    expect(worn.run.items.bib).toBeUndefined();
+    expect(heroStats('baokaka', worn.run.level, 'bib').def).toBe(heroStats('baokaka', worn.run.level).def + 3);
 
     const off = questReducer(worn, { type: 'equip', item: null, hero: 'baokaka' });
     expect(off.run.equip.baokaka).toBeNull();
-    expect(off.run.items.sunHat).toBe(1);
+    expect(off.run.items.bib).toBe(1);
   });
 
   test('unequipping an HP bonus never leaves a hero above their maximum', () => {
     let state = ready();
-    state = { ...state, run: { ...state.run, items: { blanket: 1 } } };
-    state = questReducer(state, { type: 'equip', item: 'blanket', hero: 'baokaka' });
-    state = { ...state, run: { ...state.run, hp: { ...state.run.hp, baokaka: heroStats('baokaka', state.run.level, 'blanket').hp } } };
+    state = { ...state, run: { ...state.run, items: { flowerVest: 1 } } };
+    state = questReducer(state, { type: 'equip', item: 'flowerVest', hero: 'baokaka' });
+    state = { ...state, run: { ...state.run, hp: { ...state.run.hp, baokaka: heroStats('baokaka', state.run.level, 'flowerVest').hp } } };
     state = questReducer(state, { type: 'equip', item: null, hero: 'baokaka' });
     expect(state.run.hp.baokaka).toBe(heroStats('baokaka', state.run.level).hp);
   });
 
   test('a consumable cannot be worn', () => {
     const state = ready();
-    expect(questReducer(state, { type: 'equip', item: 'cookie', hero: 'baokaka' })).toBe(state);
+    expect(questReducer(state, { type: 'equip', item: 'teaEgg', hero: 'baokaka' })).toBe(state);
+  });
+
+  /** All four heroes in the party at level 10, every one hurt and low on 元氣. */
+  const party = (items: Run['items']): QuestState => {
+    const state = ready();
+    const all: HeroId[] = ['baokaka', 'mocha', 'magpie', 'bear'];
+    const hp = { baokaka: 5, mocha: 5, magpie: 5, bear: 0 };
+    const mp = { baokaka: 1, mocha: 1, magpie: 1, bear: 1 };
+    return { ...state, run: { ...state.run, party: all, level: 10, hp, mp, items } };
+  };
+  const max = (hero: HeroId) => heroStats(hero, 10);
+
+  test('every kind of item use, with the new catalogue', () => {
+    // hp: 鳳梨酥 +70, capped at the maximum
+    let state = questReducer(party({ pineappleCake: 1 }), { type: 'useItem', item: 'pineappleCake', hero: 'baokaka' });
+    expect(state.run.hp.baokaka).toBe(75);
+    // hpAll: 滷肉飯 +50 to everyone standing; the hero who is down stays down
+    state = questReducer(party({ braisedRice: 1 }), { type: 'useItem', item: 'braisedRice', hero: 'mocha' });
+    expect([state.run.hp.baokaka, state.run.hp.mocha, state.run.hp.magpie, state.run.hp.bear]).toEqual([55, 55, 55, 0]);
+    // hpAll 999: 神秘排隊美食 fills the standing party
+    state = questReducer(party({ mysteryFood: 1 }), { type: 'useItem', item: 'mysteryFood', hero: 'mocha' });
+    expect(state.run.hp.magpie).toBe(max('magpie').hp);
+    expect(state.run.items.mysteryFood).toBeUndefined();
+    // mp: 豆花 +20; 黑糖珍奶 999 fills MP to the maximum and no further
+    state = questReducer(party({ douhua: 1 }), { type: 'useItem', item: 'douhua', hero: 'magpie' });
+    expect(state.run.mp.magpie).toBe(21);
+    state = questReducer(party({ brownSugarMilk: 1 }), { type: 'useItem', item: 'brownSugarMilk', hero: 'magpie' });
+    expect(state.run.mp.magpie).toBe(max('magpie').mp);
+    // full: 鐵路便當, one hero
+    state = questReducer(party({ railBento: 1 }), { type: 'useItem', item: 'railBento', hero: 'mocha' });
+    expect([state.run.hp.mocha, state.run.mp.mocha]).toEqual([max('mocha').hp, max('mocha').mp]);
+    expect(state.run.hp.baokaka).toBe(5);
+    // revive: 紅龜粿 wakes the hero at half HP
+    state = questReducer(party({ redTurtleCake: 1 }), { type: 'useItem', item: 'redTurtleCake', hero: 'bear' });
+    expect(state.run.hp.bear).toBe(Math.round(max('bear').hp * 0.5));
+  });
+
+  test('signature gear: only its owner can wear it', () => {
+    const owners: [Run['equip'][HeroId] & string, HeroId][] = [
+      ['bellCollar', 'mocha'],
+      ['profGlasses', 'magpie'],
+      ['courageScarf', 'bear'],
+      ['tigerHat', 'baokaka'],
+    ];
+    for (const [item, owner] of owners) {
+      const state = party({ [item]: 1 });
+      for (const hero of state.run.party) {
+        if (hero === owner) continue;
+        expect(questReducer(state, { type: 'equip', item, hero }), `${item} on ${hero}`).toBe(state);
+      }
+      const worn = questReducer(state, { type: 'equip', item, hero: owner });
+      expect(worn.run.equip[owner]).toBe(item);
+      expect(worn.run.items[item]).toBeUndefined();
+    }
+    // Ordinary gear still fits anyone
+    const pin = questReducer(party({ pinwheel: 1 }), { type: 'equip', item: 'pinwheel', hero: 'bear' });
+    expect(pin.run.equip.bear).toBe('pinwheel');
   });
 });
 
@@ -284,13 +347,13 @@ describe('losing', () => {
     state = {
       ...state,
       view: { screen: 'defeat' },
-      run: { ...state.run, party, hp: { ...state.run.hp, baokaka: 0 }, items: { cookie: 3 }, coins: 15, pos: { c: 10, r: 8 } },
+      run: { ...state.run, party, hp: { ...state.run.hp, baokaka: 0 }, items: { teaEgg: 3 }, coins: 15, pos: { c: 10, r: 8 } },
     };
     const back = questReducer(state, { type: 'retry' });
     expect(back.view).toEqual({ screen: 'world' });
     expect(back.run.pos).toEqual(MAPS.home.entry);
     expect(back.run.hp.baokaka).toBeGreaterThan(0);
-    expect(back.run.items.cookie).toBe(3);
+    expect(back.run.items.teaEgg).toBe(3);
     expect(back.run.coins).toBe(15);
   });
 });

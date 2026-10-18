@@ -150,16 +150,16 @@ describe('spells', () => {
 describe('items and guarding', () => {
   test('an item is spent and heals its target', () => {
     const start = untilHero(fight(4, ['dustBunny']), 'mocha');
-    const hurt: Battle = { ...start, items: { cookie: 2 }, heroes: { ...start.heroes, baokaka: { ...start.heroes.baokaka, hp: 10 } } };
-    const used = battleStep(hurt, { type: 'item', item: 'cookie', target: 'baokaka' });
-    expect(used.items.cookie).toBe(1);
-    expect(used.heroes.baokaka.hp).toBe(35);
+    const hurt: Battle = { ...start, items: { teaEgg: 2 }, heroes: { ...start.heroes, baokaka: { ...start.heroes.baokaka, hp: 10 } } };
+    const used = battleStep(hurt, { type: 'item', item: 'teaEgg', target: 'baokaka' });
+    expect(used.items.teaEgg).toBe(1);
+    expect(used.heroes.baokaka.hp).toBe(40);
   });
 
   test('an item the party does not carry does nothing', () => {
     const battle = untilHero(fight(4, ['dustBunny']), 'mocha');
     const empty: Battle = { ...battle, items: {} };
-    expect(battleStep(empty, { type: 'item', item: 'bottle', target: 'mocha' })).toBe(empty);
+    expect(battleStep(empty, { type: 'item', item: 'pineappleCake', target: 'mocha' })).toBe(empty);
   });
 
   test('guarding halves the next hit and gives back a little 元氣', () => {

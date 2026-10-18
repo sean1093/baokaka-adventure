@@ -81,20 +81,44 @@ export type Spell = {
 // ---------------------------------------------------------------------------------------------
 // Items
 
+/** Story bible § 6.1 (consumables) then § 6.2 (equipment), in table order. */
 export type ItemId =
-  | 'cookie'
-  | 'bottle'
-  | 'banana'
-  | 'driedFish'
-  | 'apple'
-  | 'shell'
-  | 'clothBook'
-  | 'coinPurse'
-  | 'sunHat'
-  | 'blanket'
-  | 'toyBoat'
-  | 'star'
-  | 'nightLight';
+  | 'teaEgg'
+  | 'pineappleCake'
+  | 'chickenCutlet'
+  | 'douhua'
+  | 'bubbleTea'
+  | 'brownSugarMilk'
+  | 'braisedRice'
+  | 'mangoIce'
+  | 'railBento'
+  | 'meatBall'
+  | 'grassJellyTea'
+  | 'mysteryFood'
+  | 'redTurtleCake'
+  | 'bib'
+  | 'flipFlops'
+  | 'gradCap'
+  | 'helmet'
+  | 'tigerShoes'
+  | 'flowerVest'
+  | 'amulet'
+  | 'neckPillow'
+  | 'raincoat'
+  | 'plushCharm'
+  | 'travelerHat'
+  | 'deliveryBag'
+  | 'luckyCat'
+  | 'moonPassCharm'
+  | 'bellCollar'
+  | 'profGlasses'
+  | 'courageScarf'
+  | 'tigerHat'
+  | 'pinwheel'
+  | 'clerkVest'
+  | 'championBelt'
+  | 'goldAmulet'
+  | 'earthCane';
 
 export type ItemUse =
   | { kind: 'hp'; amount: number }
@@ -110,9 +134,14 @@ export type Item = {
   name: string;
   sprite: SpriteName;
   blurb: string;
-  /** Price in 銅板 when a shop stocks it */
+  /**
+   * Price in 銅板 when a shop stocks it. 0 marks a gift or quest reward ("—" in the bible's
+   * tables): it can never be bought, and `validate.ts` keeps it out of every shop.
+   */
   price: number;
   use: ItemUse;
+  /** Signature gear (bible § 2.1b): only this hero can wear it */
+  only?: HeroId;
 };
 
 export type Inventory = Partial<Record<ItemId, number>>;
