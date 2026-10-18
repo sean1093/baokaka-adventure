@@ -52,3 +52,13 @@ Format:
 - Created the epic #1 and 57 ordered implementation issues #2–#58 on GitHub (see `roadmap.md`), then opened and merged docs PR #59 (story bible, script, art direction and options, project plan) to `main` with the "merge" method.
 - While writing the issues, added a conditional `include` step to #6 (the script has optional inserts such as `ending.party.lily` and the 小白機 at sunrise).
 - Note for the next agent: start with issue #2. `docs/art/` may receive a follow-up PR from the art agent; always read the latest `art-direction.md` before art/UI work.
+
+### 2026-10-18 · Staff engineer · #2 RPG only (PR #60)
+- Deleted `src/hub`, `src/find`, `src/sudoku` (code and tests). `App` now renders `OrientationGuard` + `QuestGame`; `QuestGame` lost `onExit`, and the title screen lost its 回遊戲選單 button (no layout gap; `stopMusic` still runs on unmount).
+- `src/shared/route.ts` reduced to D-13: `parseRoute` returns `game` or `legacy`; `installRouteRedirect()` (called in `main.tsx`) rewrites `#/find` / `#/sudoku` to `#/` with `replaceState` on boot and on `hashchange`. Unit-tested.
+- `src/shared/legacy.ts` `cleanupLegacyStorage()` removes `baokaka.progress` and `baokaka.sudoku` on boot (never touches `baokaka.quest`); `StorageLike` gained `removeItem`. Unit-tested with fake and throwing storages.
+- Removed unreferenced art and dead shared code (list in D-19); `sprites/targets.tsx` → `sprites/items.tsx`. A first pass wrongly dropped `comfortDoll` (the ending screen uses `SPRITES.comfortDoll`); `tsc` caught it and it was restored — grep for `SPRITES.` accesses as well as `sprite: '…'` when pruning art.
+- `index.html` and `manifest.webmanifest` carry the new title and description; `.gitignore` ignores Python bytecode.
+- Verified: `npm test` (91 tests), `npm run build`, and a Playwright smoke run at 390×844 (title, redirects incl. back button, new game, intro, first battle won, no console errors). Screenshots in `docs/screenshots/2/`.
+- Follow-ups: none new. The world screen's home button still says 回遊戲選單 although it now returns to the RPG title; it gets re-labelled with the UI re-skin (M2).
+

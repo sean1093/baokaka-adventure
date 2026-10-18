@@ -11,16 +11,6 @@ export const Tree: Sprite = () => (
   </svg>
 );
 
-export const Fence: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <rect x={6} y={42} width={88} height={8} rx={2} fill={C.sandDeep} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <rect x={6} y={68} width={88} height={8} rx={2} fill={C.sandDeep} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <polygon points="10,90 10,35 22,18 34,35 34,90" fill={C.sand} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <polygon points="38,90 38,35 50,18 62,35 62,90" fill={C.sand} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <polygon points="66,90 66,35 78,18 90,35 90,90" fill={C.sand} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-  </svg>
-);
-
 export const FlowerPot: Sprite = () => (
   <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
     <polygon points="26,68 74,68 65,94 35,94" fill={C.sandDeep} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />

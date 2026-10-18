@@ -1,7 +1,6 @@
 /**
- * Design tokens for the whole collection. Screens compose these; they never invent sizes,
- * colours or shadows of their own. The hidden-object game keeps its elderly floor (20px copy,
- * 64px targets) by using the larger steps of the same scale.
+ * Design tokens for the game. Screens compose these; they never invent sizes, colours or
+ * shadows of their own.
  */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
@@ -15,10 +14,6 @@ export default {
         headline: ['24px', { lineHeight: '1.25' }],
         display: ['32px', { lineHeight: '1.15', letterSpacing: '-0.01em' }],
         hero: ['40px', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
-      },
-      spacing: {
-        // Touch target floor for the hidden-object game
-        touch: '64px',
       },
       borderRadius: {
         '4xl': '32px',

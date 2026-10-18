@@ -11,13 +11,6 @@ export const Bottle: Sprite = () => (
   </svg>
 );
 
-export const Sock: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <path d="M22,20 L58,20 L58,50 Q58,60 70,60 L80,60 Q94,60 94,74 Q94,88 80,88 L36,88 Q22,88 22,74 Z" fill={C.sky} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <rect x={20} y={8} width={40} height={18} rx={8} fill={C.cream} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-  </svg>
-);
-
 export const ClothBook: Sprite = () => (
   <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
     <rect x={8} y={14} width={40} height={68} rx={6} fill={C.cream} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
@@ -37,53 +30,6 @@ export const Bucket: Sprite = () => (
     <path d="M14,30 L86,30 L70,88 Q70,92 66,92 L34,92 Q30,92 30,88 Z" fill={C.sky} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
     <path d="M20,28 Q50,2 80,28" fill="none" stroke={C.ink} strokeWidth={4} strokeLinecap="round" />
     <ellipse cx={50} cy={30} rx={36} ry={9} fill={C.sky} stroke={C.ink} strokeWidth={4} />
-  </svg>
-);
-
-export const Spade: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <path d="M16,50 L84,50 L62,92 L38,92 Z" fill={C.berry} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <rect x={44} y={12} width={12} height={42} rx={3} fill={C.sand} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <rect x={16} y={4} width={68} height={12} rx={6} fill={C.sand} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-  </svg>
-);
-
-export const Dandelion: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <path d="M47,96 Q43,74 48,50 L52,50 Q57,74 53,96 Z" fill={C.leaf} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <line x1={59} y1={34} x2={74} y2={34} stroke={C.ink} strokeWidth={7} strokeLinecap="round" />
-    <line x1={56.36} y1={40.36} x2={66.97} y2={50.97} stroke={C.ink} strokeWidth={7} strokeLinecap="round" />
-    <line x1={50} y1={43} x2={50} y2={58} stroke={C.ink} strokeWidth={7} strokeLinecap="round" />
-    <line x1={43.64} y1={40.36} x2={33.03} y2={50.97} stroke={C.ink} strokeWidth={7} strokeLinecap="round" />
-    <line x1={41} y1={34} x2={26} y2={34} stroke={C.ink} strokeWidth={7} strokeLinecap="round" />
-    <line x1={43.64} y1={27.64} x2={33.03} y2={17.03} stroke={C.ink} strokeWidth={7} strokeLinecap="round" />
-    <line x1={50} y1={25} x2={50} y2={10} stroke={C.ink} strokeWidth={7} strokeLinecap="round" />
-    <line x1={56.36} y1={27.64} x2={66.97} y2={17.03} stroke={C.ink} strokeWidth={7} strokeLinecap="round" />
-    <line x1={59} y1={34} x2={74} y2={34} stroke={C.white} strokeWidth={3} strokeLinecap="round" />
-    <line x1={56.36} y1={40.36} x2={66.97} y2={50.97} stroke={C.white} strokeWidth={3} strokeLinecap="round" />
-    <line x1={50} y1={43} x2={50} y2={58} stroke={C.white} strokeWidth={3} strokeLinecap="round" />
-    <line x1={43.64} y1={40.36} x2={33.03} y2={50.97} stroke={C.white} strokeWidth={3} strokeLinecap="round" />
-    <line x1={41} y1={34} x2={26} y2={34} stroke={C.white} strokeWidth={3} strokeLinecap="round" />
-    <line x1={43.64} y1={27.64} x2={33.03} y2={17.03} stroke={C.white} strokeWidth={3} strokeLinecap="round" />
-    <line x1={50} y1={25} x2={50} y2={10} stroke={C.white} strokeWidth={3} strokeLinecap="round" />
-    <line x1={56.36} y1={27.64} x2={66.97} y2={17.03} stroke={C.white} strokeWidth={3} strokeLinecap="round" />
-    <circle cx={74} cy={34} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={66.97} cy={50.97} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={50} cy={58} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={33.03} cy={50.97} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={26} cy={34} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={33.03} cy={17.03} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={50} cy={10} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={66.97} cy={17.03} r={5} fill={C.white} stroke={C.ink} strokeWidth={3} />
-    <circle cx={50} cy={34} r={11} fill={C.white} stroke={C.ink} strokeWidth={4} />
-  </svg>
-);
-
-export const Ball: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <circle cx={50} cy={50} r={40} fill={C.cream} stroke={C.ink} strokeWidth={4} />
-    <path d="M50,50 L50,10 A40,40 0 0 1 90,50 Z" fill={C.berry} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <path d="M50,50 L50,90 A40,40 0 0 1 10,50 Z" fill={C.berry} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
   </svg>
 );
 
@@ -143,14 +89,6 @@ export const Shell: Sprite = () => (
     <line x1={50} y1={88} x2={70} y2={23} stroke={C.sandDeep} strokeWidth={3} strokeLinecap="round" />
     <line x1={50} y1={88} x2={88} y2={32} stroke={C.sandDeep} strokeWidth={3} strokeLinecap="round" />
     <circle cx={50} cy={88} r={5} fill={C.sandDeep} stroke={C.ink} strokeWidth={3} />
-  </svg>
-);
-
-export const Flask: Sprite = () => (
-  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-    <rect x={24} y={30} width={52} height={58} rx={16} fill={C.leaf} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
-    <path d="M64,18 Q88,18 88,40 Q88,54 70,56" fill="none" stroke={C.ink} strokeWidth={4} strokeLinecap="round" />
-    <rect x={36} y={12} width={28} height={22} rx={7} fill={C.cream} stroke={C.ink} strokeWidth={4} strokeLinejoin="round" />
   </svg>
 );
 

@@ -19,10 +19,8 @@ if (import.meta.env.DEV) {
   if (errors.length > 0) throw new Error(`Invalid quest content:\n${errors.join('\n')}`);
 }
 
-type Props = { onExit: () => void };
-
 /** 寶咖咖奇俠傳: the run state machine lives in engine/quest.ts, battles in engine/battle.ts. */
-export const QuestGame = ({ onExit }: Props) => {
+export const QuestGame = () => {
   const [state, dispatch] = useReducer(questReducer, undefined, () => {
     const saved = loadQuest();
     return initialState(saved.run, saved.sound);
@@ -48,11 +46,6 @@ export const QuestGame = ({ onExit }: Props) => {
 
   useEffect(() => () => stopMusic(), []);
 
-  const leave = () => {
-    stopMusic();
-    onExit();
-  };
-
   switch (view.screen) {
     case 'title':
       return (
@@ -66,7 +59,6 @@ export const QuestGame = ({ onExit }: Props) => {
             unlockAudio();
             dispatch({ type: 'continue' });
           }}
-          onExit={leave}
         />
       );
 

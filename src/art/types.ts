@@ -1,28 +1,19 @@
 /**
- * Art contract shared by every game in the collection.
- *
- * Coordinate system: a scene box is 3:4 portrait unless a screen says otherwise.
- *   x, y  placement CENTRE; x relative to box width, y relative to box height, both 0..1
- *   r     half-edge, relative to box width (square, kept square by aspect-ratio)
- * Because a 3:4 box has height = width * 4/3, a placement covers r * 3/4 of the box height.
+ * Art contract for the RPG: every sprite key the game can draw, and the palette (setting) names
+ * that pick a battle backdrop and map ground colours. `SPRITES` in ./sprites is typed against
+ * `SpriteName`, so a missing or extra drawing fails the build.
  */
-
 export type SpriteName =
-  // Hidden-object targets (the 18 hidden objects)
+  // Items (inventory, chests, shop)
   | 'bottle'
-  | 'sock'
   | 'clothBook'
   | 'bucket'
-  | 'spade'
-  | 'dandelion'
-  | 'ball'
   | 'sunHat'
   | 'cookie'
   | 'banana'
   | 'driedFish'
   | 'coinPurse'
   | 'shell'
-  | 'flask'
   | 'toyBoat'
   | 'comfortDoll'
   | 'nightLight'
@@ -35,7 +26,6 @@ export type SpriteName =
   | 'floorLamp'
   | 'pottedPlant'
   | 'wallClock'
-  | 'rug'
   // Bedtime
   | 'bed'
   | 'moonWindow'
@@ -45,7 +35,6 @@ export type SpriteName =
   | 'slipper'
   // Yard
   | 'tree'
-  | 'fence'
   | 'flowerPot'
   | 'wateringCan'
   | 'butterfly'
@@ -53,7 +42,6 @@ export type SpriteName =
   // Park
   | 'bench'
   | 'slide'
-  | 'cloud'
   | 'kite'
   | 'bird'
   // Market
@@ -64,8 +52,6 @@ export type SpriteName =
   | 'scale'
   | 'apple'
   // Beach
-  | 'sunDisc'
-  | 'wave'
   | 'sandcastle'
   | 'beachUmbrella'
   | 'starfish'
@@ -110,12 +96,3 @@ export type SpriteName =
   | 'bathtub';
 
 export type PaletteName = 'living' | 'yard' | 'park' | 'market' | 'beach' | 'night';
-
-export type Placement = {
-  sprite: SpriteName;
-  x: number;
-  y: number;
-  r: number;
-  /** Mirror horizontally so a repeated sprite does not look stamped out */
-  flip?: boolean;
-};

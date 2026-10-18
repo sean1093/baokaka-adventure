@@ -1,28 +1,30 @@
-import { useSyncExternalStore } from 'react';
-
 /**
- * The collection is routed by URL hash so each game has a shareable link
- * (…/#/find, …/#/quest, …/#/sudoku) and the browser back button leaves a game. No router library:
- * three routes do not justify one.
+ * The site is one game, so routing is tiny (decisions.md D-13). `#/`, `#/quest` (kept so old
+ * shared links still work) and any unknown hash all show the game. The hashes of the removed
+ * mini-games (`#/find`, `#/sudoku`) are rewritten to `#/` in place, so the back button never
+ * returns to a dead link. No router library.
  */
-export type Route = 'hub' | 'find' | 'quest' | 'sudoku';
+export type Route = 'game' | 'legacy';
 
-const HASHES: Record<Exclude<Route, 'hub'>, string> = { find: '#/find', quest: '#/quest', sudoku: '#/sudoku' };
+const LEGACY: ReadonlySet<string> = new Set(['find', 'sudoku']);
 
 export function parseRoute(hash: string): Route {
   const path = hash.replace(/^#\/?/, '').replace(/\/+$/, '');
-  return path === 'find' || path === 'quest' || path === 'sudoku' ? path : 'hub';
+  return LEGACY.has(path) ? 'legacy' : 'game';
 }
 
-export function navigate(route: Route): void {
-  window.location.hash = route === 'hub' ? '#/' : HASHES[route];
-  window.scrollTo(0, 0);
+/**
+ * Rewrites a retired hash to `#/` with `replaceState`: no new history entry, so back does not
+ * bounce between the old link and the game.
+ */
+function redirectLegacyRoute(): void {
+  if (parseRoute(window.location.hash) !== 'legacy') return;
+  const { pathname, search } = window.location;
+  window.history.replaceState(window.history.state, '', `${pathname}${search}#/`);
 }
 
-const subscribe = (onChange: () => void) => {
-  window.addEventListener('hashchange', onChange);
-  return () => window.removeEventListener('hashchange', onChange);
-};
-
-export const useRoute = (): Route =>
-  useSyncExternalStore(subscribe, () => parseRoute(window.location.hash), () => 'hub');
+/** Tidies the URL on boot, and again if someone edits the hash to an old game while playing. */
+export function installRouteRedirect(): void {
+  redirectLegacyRoute();
+  window.addEventListener('hashchange', redirectLegacyRoute);
+}
