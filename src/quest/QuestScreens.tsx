@@ -5,7 +5,7 @@ import type { Follower } from './engine/progress';
 import type { QuestAction, QuestState } from './engine/quest';
 import { BattleScreen } from './screens/BattleScreen';
 import { DefeatScreen } from './screens/DefeatScreen';
-import { PartySheet } from './screens/PartySheet';
+import { PartySheet, type SheetStart } from './screens/PartySheet';
 import { QuestEndingScreen } from './screens/QuestEndingScreen';
 import { QuestTitleScreen } from './screens/QuestTitleScreen';
 import { ShopScreen } from './screens/ShopScreen';
@@ -18,8 +18,8 @@ type Props = {
   /** An old-story save was just discarded: the title explains the fresh start */
   legacyNotice?: boolean;
   onDismissNotice?: () => void;
-  /** Open the party sheet on mount (the art lab's menu fixture) */
-  menuOpen?: boolean;
+  /** Open the party sheet on mount (the art lab's menu fixtures), optionally on a tab with an item picked */
+  menuOpen?: boolean | SheetStart;
   /** Escort table override (the art lab's follower fixture); defaults to the content's FOLLOWERS */
   followers?: readonly Follower[];
 };
@@ -30,7 +30,8 @@ type Props = {
  * always show the real wiring.
  */
 export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissNotice = () => {}, menuOpen: openOnMount = false, followers }: Props) => {
-  const [menuOpen, setMenuOpen] = useState(openOnMount);
+  const [menuOpen, setMenuOpen] = useState(openOnMount !== false);
+  const sheetStart = typeof openOnMount === 'object' ? openOnMount : undefined;
   const { view, run, sound } = state;
 
   switch (view.screen) {
@@ -67,6 +68,7 @@ export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissN
           />
           <PartySheet
             open={menuOpen}
+            start={sheetStart}
             run={run}
             onClose={() => setMenuOpen(false)}
             onUseItem={(item, hero) => dispatch({ type: 'useItem', item, hero })}

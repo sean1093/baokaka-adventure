@@ -38,7 +38,7 @@ export const ShopScreen = ({ stock, run, onBuy, onClose }: Props) => (
                 <span className="truncate text-heading font-extrabold leading-tight">{entry.name}</span>
                 {held > 0 && <span className="shrink-0 text-caption font-bold text-muted">有 {held}</span>}
               </span>
-              <span className="block truncate text-caption leading-snug text-muted">{entry.blurb}</span>
+              <span className="line-clamp-2 block text-caption leading-snug text-muted">{entry.blurb}</span>
             </span>
             <Button size="sm" variant={broke || full ? 'tonal' : 'primary'} disabled={broke || full} onClick={() => onBuy(item)}>
               {full ? '滿了' : `${entry.price} 個`}

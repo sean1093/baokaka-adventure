@@ -4,14 +4,18 @@ import { Button } from '../../components/Button';
 import { Chip } from '../../components/Screen';
 import { Sheet } from '../../components/Sheet';
 import { HERO_SPRITE } from '../components/PartyPanel';
-import { HEROES, ITEMS, ITEM_ORDER, XP_TABLE, heroStats, isEquip, spellsFor } from '../engine/heroes';
+import { HEROES, ITEMS, ITEM_ORDER, XP_TABLE, canWear, heroStats, isEquip, spellsFor } from '../engine/heroes';
 import { UI } from '../engine/strings';
 import type { HeroId, ItemId, Run } from '../engine/types';
 
 type Tab = 'party' | 'bag';
 
+/** Where the sheet opens: a tab, and optionally an item already picked (the art lab's fixtures). */
+export type SheetStart = { tab: Tab; picking?: ItemId };
+
 type Props = {
   open: boolean;
+  start?: SheetStart;
   run: Run;
   onClose: () => void;
   onUseItem: (item: ItemId, hero: HeroId) => void;
@@ -26,10 +30,10 @@ const STAT_ROWS: { key: 'atk' | 'def' | 'spd' | 'luck'; label: string }[] = [
 ];
 
 /** 隊伍 and 百寶袋: stats, spells learned, what each hero wears, and using or equipping things. */
-export const PartySheet = ({ open, run, onClose, onUseItem, onEquip }: Props) => {
-  const [tab, setTab] = useState<Tab>('party');
+export const PartySheet = ({ open, start, run, onClose, onUseItem, onEquip }: Props) => {
+  const [tab, setTab] = useState<Tab>(start?.tab ?? 'party');
   const [who, setWho] = useState<HeroId>(run.party[0]);
-  const [picking, setPicking] = useState<ItemId | null>(null);
+  const [picking, setPicking] = useState<ItemId | null>(start?.picking ?? null);
 
   const hero = run.party.includes(who) ? who : run.party[0];
   const stats = heroStats(hero, run.level, run.equip[hero]);
@@ -112,7 +116,7 @@ export const PartySheet = ({ open, run, onClose, onUseItem, onEquip }: Props) =>
                 <span className="block h-8 w-8 shrink-0">{art(run.equip[hero] as ItemId)}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-label font-extrabold">{ITEMS[run.equip[hero] as ItemId].name}</span>
-                  <span className="block truncate text-caption text-muted">{ITEMS[run.equip[hero] as ItemId].blurb}</span>
+                  <span className="line-clamp-2 block text-caption leading-snug text-muted">{ITEMS[run.equip[hero] as ItemId].blurb}</span>
                 </span>
                 <Button size="sm" variant="tonal" onClick={() => onEquip(null, hero)}>
                   脫下
@@ -137,8 +141,9 @@ export const PartySheet = ({ open, run, onClose, onUseItem, onEquip }: Props) =>
                     <span className="flex items-baseline gap-1.5">
                       <span className="truncate text-label font-extrabold">{ITEMS[item].name}</span>
                       <span className="shrink-0 text-caption font-bold text-muted">×{run.items[item]}</span>
+                      {ITEMS[item].only && <Chip tone="sun" className="shrink-0 self-center">{UI.onlyTag(ITEMS[item].only)}</Chip>}
                     </span>
-                    <span className="block truncate text-caption text-muted">{ITEMS[item].blurb}</span>
+                    <span className="line-clamp-2 block text-caption leading-snug text-muted">{ITEMS[item].blurb}</span>
                   </span>
                   <Button size="sm" variant={picking === item ? 'primary' : 'tonal'} onClick={() => setPicking(picking === item ? null : item)}>
                     {isEquip(item) ? '穿上' : '使用'}
@@ -146,22 +151,33 @@ export const PartySheet = ({ open, run, onClose, onUseItem, onEquip }: Props) =>
                 </div>
 
                 {picking === item && (
-                  <div className="mt-2 flex gap-1.5">
-                    {run.party.map((member) => (
-                      <button
-                        key={member}
-                        type="button"
-                        onClick={() => {
-                          if (isEquip(item)) onEquip(item, member);
-                          else onUseItem(item, member);
-                          setPicking(null);
-                        }}
-                        className="min-h-10 flex-1 rounded-xl bg-surface px-2 text-label font-extrabold shadow-card transition-transform active:scale-[0.96]"
-                      >
-                        {HEROES[member].name}
-                      </button>
-                    ))}
-                  </div>
+                  <>
+                    <div className="mt-2 flex gap-1.5">
+                      {run.party.map((member) => {
+                        // Signature gear greys out everyone but its owner; the reason sits under the row
+                        const barred = isEquip(item) && !canWear(member, item);
+                        return (
+                          <button
+                            key={member}
+                            type="button"
+                            disabled={barred}
+                            aria-label={barred ? `${HEROES[member].name}：${UI.onlyWear(ITEMS[item].only as HeroId)}` : undefined}
+                            onClick={() => {
+                              if (isEquip(item)) onEquip(item, member);
+                              else onUseItem(item, member);
+                              setPicking(null);
+                            }}
+                            className={`min-h-11 min-w-0 flex-1 truncate rounded-xl px-1.5 text-label font-extrabold transition-transform ${
+                              barred ? 'bg-ink/[0.06] text-ink/35' : 'bg-surface shadow-card active:scale-[0.96]'
+                            }`}
+                          >
+                            {HEROES[member].name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {ITEMS[item].only && <p className="mt-1.5 text-center text-caption font-bold text-muted">{UI.onlyWear(ITEMS[item].only)}</p>}
+                  </>
                 )}
               </div>
             ))}

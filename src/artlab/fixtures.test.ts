@@ -25,6 +25,15 @@ describe('art lab fixtures', () => {
     }
   });
 
+  test('party-sheet-equip opens the bag with signature gear picked that the party carries', () => {
+    const fixture = ARTLAB_FIXTURES.find((entry) => entry.name === 'party-sheet-equip')!;
+    expect(fixture.menu).toEqual({ tab: 'bag', picking: 'bellCollar' });
+    const state = fixture.state();
+    expect(state.run.items.bellCollar).toBe(1);
+    expect(state.run.party).toContain('mocha');
+    expect(questReducer(state, { type: 'equip', item: 'bellCollar', hero: 'baokaka' })).toBe(state);
+  });
+
   test('chapter-card shows the clock and dialogue-choice plays on when an option is picked', () => {
     const card = ARTLAB_FIXTURES.find((fixture) => fixture.name === 'chapter-card')!.state();
     expect(card.card).toEqual({ n: 1, title: '度晬前一晚', time: '00:00' });
