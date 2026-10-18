@@ -84,11 +84,6 @@
     animation: lunge-down 420ms ease-out;
   }
 
-  /* The tile the party is walking to */
-  .marker {
-    animation: marker 900ms ease-in-out infinite;
-  }
-
   /* The "there is more to read" arrow */
   .blink {
     animation: blink 1s step-end infinite;
@@ -246,18 +241,6 @@
   }
   35% {
     transform: translateY(12%) scale(1.06);
-  }
-}
-
-@keyframes marker {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(0.86);
-  }
-  50% {
-    opacity: 0.95;
-    transform: scale(1);
   }
 }
 
@@ -555,7 +538,6 @@
 @media (prefers-reduced-motion: reduce) {
   .walk,
   .idle,
-  .marker,
   .blink,
   .pop-dot,
   .fx-hurt,
@@ -591,7 +573,6 @@
 /* The same, for the in-game 「減少動態」 toggle (.reduce-motion on <html>, OR'd with the OS setting) */
 .reduce-motion .walk,
 .reduce-motion .idle,
-.reduce-motion .marker,
 .reduce-motion .blink,
 .reduce-motion .pop-dot,
 .reduce-motion .fx-hurt,
