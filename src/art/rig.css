@@ -345,6 +345,20 @@
   }
 }
 
+/* Standing (first steps), idle: he wobbles, a toddler still finding his balance */
+.rig--idle.rig--pose-step .rig-body {
+  animation: rig-wobble 1.8s ease-in-out infinite;
+}
+@keyframes rig-wobble {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
 /* 摩卡's pounce: crouch, leap in an arc, land */
 .rig--attack.rig--pose-pounce .rig-body {
   animation: rig-pounce 490ms linear both;

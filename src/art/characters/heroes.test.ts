@@ -173,4 +173,9 @@ describe('heroes: wiring', () => {
     expect(reduced).toContain('.rig-flip > svg');
     expect(rigCss).toContain('.reduce-motion .rig-flip > svg');
   });
+
+  it('rig.css: standing, he wobbles (an idle loop on the stand pose)', () => {
+    expect(rigCss).toMatch(/\.rig--idle\.rig--pose-step \.rig-body \{\s*animation: rig-wobble/);
+    expect(render(Baokaka, { lod: 'battle', pose: 'stand' })).toContain('rig--idle rig--gait-crawl rig--pose-step');
+  });
 });
