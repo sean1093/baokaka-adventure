@@ -170,7 +170,7 @@ export const Fig = ({ char, lod, groups }: { char: string; lod: Lod; groups: rea
 
     const body = (
       <>
-        {unoutlined.length > 0 && (
+        {unoutlined.length > 0 && !inline && (
           <defs>
             {unoutlined.map((part) => (
               <path key={pid(part)} id={pid(part)} d={compactPath(part.d)} />
@@ -208,7 +208,7 @@ export type SpriteSvgProps = {
   box?: readonly [number, number, number, number];
   /** Where the figure stands: the origin for whole-body motion (hop, lunge, squash) */
   ground?: Vec;
-  /** The walk cycle `rig.css` plays in the `walk` state: a toddler's crawl or the cat's 4-beat gait */
+  /** Who walks (`rig--gait-*`): a toddler's crawl or the cat's diagonal gait; both use the two-frame flipbook */
   gait?: 'crawl' | 'cat';
   /** The pose or action being drawn, as `rig--pose-{pose}`: `rig.css` keys action animations on it */
   pose?: string;
