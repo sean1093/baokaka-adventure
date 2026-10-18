@@ -4,7 +4,8 @@ import { MAPS } from '../quest/engine/maps';
 import { questReducer } from '../quest/engine/quest';
 import { validateSteps } from '../quest/engine/validate';
 import { activeFollower } from '../quest/engine/progress';
-import { ARTLAB_FIXTURES, ARTLAB_FOLLOWERS, SAMPLE_FLAGS, sampleRun } from './fixtures';
+import { STATIONS, stationUnlocked } from '../quest/engine/mrt';
+import { ARTLAB_FIXTURES, ARTLAB_FOLLOWERS, SAMPLE_FLAGS, TRAVEL_HERE, sampleRun } from './fixtures';
 
 describe('art lab fixtures', () => {
   test('names are unique and file-safe', () => {
@@ -23,6 +24,21 @@ describe('art lab fixtures', () => {
       validateSteps(fixture.name, state.scene.steps, errors);
       expect(errors).toEqual([]);
     }
+  });
+
+  test('travel-screen shows 3 lit stations (one of them "you are here"), 1 new and 10 locked', () => {
+    const fixture = ARTLAB_FIXTURES.find((entry) => entry.name === 'travel-screen')!;
+    const state = fixture.state();
+    expect(fixture.travelHere).toBe(TRAVEL_HERE);
+    expect(state.view.screen).toBe('travel');
+    if (state.view.screen !== 'travel') return;
+    const lit = STATIONS.filter((station) => stationUnlocked(state.run, station)).map((station) => station.key);
+    const fresh = state.view.fresh;
+    expect(fresh).toEqual(['ntu']);
+    expect(lit.filter((key) => !fresh.includes(key))).toEqual(['daan', 'station', 'ximen']);
+    expect(lit).toContain(TRAVEL_HERE);
+    expect(STATIONS.length - lit.length).toBe(10);
+    expect(state.view.note).toBeNull();
   });
 
   test('party-sheet-equip opens the bag with signature gear picked that the party carries', () => {

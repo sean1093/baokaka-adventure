@@ -9,6 +9,7 @@ import { PartySheet, type SheetStart } from './screens/PartySheet';
 import { QuestEndingScreen } from './screens/QuestEndingScreen';
 import { QuestTitleScreen } from './screens/QuestTitleScreen';
 import { ShopScreen } from './screens/ShopScreen';
+import { TravelScreen } from './screens/TravelScreen';
 import { VictoryScreen } from './screens/VictoryScreen';
 import { WorldScreen } from './screens/WorldScreen';
 
@@ -22,6 +23,8 @@ type Props = {
   menuOpen?: boolean | SheetStart;
   /** Escort table override (the art lab's follower fixture); defaults to the content's FOLLOWERS */
   followers?: readonly Follower[];
+  /** The 路線圖's 「你在這裡」 station override (the art lab's travel fixture, until station maps exist) */
+  travelHere?: string;
 };
 
 /**
@@ -29,7 +32,7 @@ type Props = {
  * those, and the art lab renders this same component over fixture states, so its screenshots
  * always show the real wiring.
  */
-export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissNotice = () => {}, menuOpen: openOnMount = false, followers }: Props) => {
+export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissNotice = () => {}, menuOpen: openOnMount = false, followers, travelHere }: Props) => {
   const [menuOpen, setMenuOpen] = useState(openOnMount !== false);
   const sheetStart = typeof openOnMount === 'object' ? openOnMount : undefined;
   const { view, run, sound } = state;
@@ -102,6 +105,21 @@ export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissN
           run={run}
           onBuy={(item) => dispatch({ type: 'buy', item })}
           onClose={() => dispatch({ type: 'closeShop' })}
+        />
+      );
+
+    case 'travel':
+      return (
+        <TravelScreen
+          run={run}
+          fresh={view.fresh}
+          note={view.note}
+          skipRides={state.settings.skipRides}
+          here={travelHere}
+          onRide={(station) => dispatch({ type: 'ride', station })}
+          onClose={() => dispatch({ type: 'closeTravel' })}
+          onAdvance={() => dispatch({ type: 'advance' })}
+          onSkipRides={(on) => dispatch({ type: 'setSkipRides', on })}
         />
       );
 

@@ -163,7 +163,7 @@ const FixtureView = ({ fixture }: { fixture: ArtLabFixture }) => {
   const [state, dispatch] = useReducer(questReducer, undefined, fixture.state);
   return (
     <div data-artlab-fixture={fixture.name} style={{ display: 'contents' }}>
-      <QuestScreens state={state} dispatch={dispatch} menuOpen={fixture.menu} followers={fixture.followers} />
+      <QuestScreens state={state} dispatch={dispatch} menuOpen={fixture.menu} followers={fixture.followers} travelHere={fixture.travelHere} />
     </div>
   );
 };

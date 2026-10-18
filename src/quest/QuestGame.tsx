@@ -39,7 +39,7 @@ export const QuestGame = () => {
       return;
     }
     if (view.screen === 'battle') playMusic(view.battle.boss ? 'boss' : 'battle');
-    else if (view.screen === 'world' || view.screen === 'shop') playMusic(MAPS[run.map].palette === 'night' ? 'night' : 'field');
+    else if (view.screen === 'world' || view.screen === 'shop' || view.screen === 'travel') playMusic(MAPS[run.map].palette === 'night' ? 'night' : 'field');
     else if (view.screen === 'ending') playMusic('ending');
     else stopMusic();
   }, [view.screen, view.screen === 'battle' ? view.battle.boss : false, run.map, sound]);

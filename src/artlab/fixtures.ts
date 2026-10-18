@@ -24,6 +24,8 @@ export type ArtLabFixture = {
   menu?: boolean | SheetStart;
   /** Escort table for the world screen, standing in for the content's (empty until the chapters) */
   followers?: readonly Follower[];
+  /** The 路線圖's 「你在這裡」 station, standing in until the station maps exist */
+  travelHere?: string;
 };
 
 /** Story flags of a run a few fights in: the intro has played and the whole party has joined. */
@@ -118,6 +120,20 @@ function battleWith(party: readonly HeroId[], level = SAMPLE_LEVEL): QuestState 
   return withView({ screen: 'battle', battle: startBattle(run, [...BATTLE_FOES], run.seed, false) }, run);
 }
 
+/**
+ * The 路線圖 just after 月亮票 (Ch3): the four `moonPass` stations are lit, the party stands at
+ * 台北車站, 公館 lights up for the first time (its 「叮！」), and the other ten are still locked.
+ * The 「叮！」 narration has been read, so the whole map shows.
+ */
+export const TRAVEL_HERE = 'station';
+function travelScreen(): QuestState {
+  const run = sampleRun();
+  return withView(
+    { screen: 'travel', fresh: ['ntu'], note: null },
+    { ...run, flags: [...run.flags, 'moonPass'], seenStations: ['daan', 'station', 'ximen', 'ntu'] },
+  );
+}
+
 export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
   { name: 'title-continue', label: 'Title with a run to continue', state: () => withView({ screen: 'title' }) },
   { name: 'world', label: 'World: home map', state: world },
@@ -156,6 +172,7 @@ export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
     state: () => withView({ screen: 'world' }, { ...sampleRun(), items: { teaEgg: 3, redTurtleCake: 1, bib: 1, bellCollar: 1, tigerHat: 1 } }),
     menu: { tab: 'bag', picking: 'bellCollar' },
   },
+  { name: 'travel-screen', label: '路線圖: 3 lit, 1 new, 10 locked', state: travelScreen, travelHere: TRAVEL_HERE },
   { name: 'defeat', label: 'Defeat', state: () => withView({ screen: 'defeat' }) },
   { name: 'ending', label: 'Ending', state: () => withView({ screen: 'ending' }) },
 ];

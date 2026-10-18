@@ -529,6 +529,62 @@
   }
 }
 
+/* 路線圖: the "you are here" ring breathes; a newly lit station rings out once with its 「叮！」 */
+.mrt-here {
+  animation: mrt-here 1.4s ease-in-out infinite;
+}
+
+.mrt-ding {
+  animation: mrt-ding 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.mrt-ding-text {
+  animation: mrt-ding-text 1600ms ease-out both;
+}
+
+@keyframes mrt-here {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes mrt-ding {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mrt-ding-text {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  20%,
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .screen-in,
   .sheet-in,
@@ -540,8 +596,16 @@
   .pop-dot,
   .fx-hurt,
   .fx-sigil,
-  .fx-quake {
+  .fx-quake,
+  .mrt-here,
+  .mrt-ding {
     animation: none;
+  }
+
+  /* No pop: the new station's 「叮！」 just stays up as a static highlight */
+  .mrt-ding-text {
+    animation: none;
+    opacity: 1;
   }
 
   /* Spell effects still play: they are the feedback for what a move did. They just hold
