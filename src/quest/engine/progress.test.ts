@@ -24,6 +24,8 @@ import {
   type Follower,
   type SideQuest,
 } from './progress';
+import { MAPS } from './maps';
+import { isBlocked, restingSpot } from './path';
 import { freshRun } from './quest';
 import { progressWarnings, settableFlags, validateDerived, validateFollowers, validateQuests } from './validate';
 import type { FoeId } from './types';
@@ -257,5 +259,20 @@ describe('activeFollower', () => {
     expect(FOLLOWERS).toEqual([]);
     expect(activeFollower(['chickFollowing'])).toBeNull();
     expect(SPRITES.bird).toBeDefined();
+  });
+});
+
+describe('restingSpot', () => {
+  test('a free tile right beside the entrance of every map, never a wall or an NPC', () => {
+    for (const map of Object.values(MAPS)) {
+      const spot = restingSpot(map, [], map.entry);
+      expect(Math.max(Math.abs(spot.c - map.entry.c), Math.abs(spot.r - map.entry.r)), map.id).toBe(1);
+      expect(isBlocked(map, [], spot.c, spot.r), map.id).toBe(false);
+    }
+  });
+
+  test('prefers the tile at screen-right of the party (same depth, so it hides nobody)', () => {
+    const { entry } = MAPS.park;
+    expect(restingSpot(MAPS.park, [], entry)).toEqual({ c: entry.c + 1, r: entry.r - 1 });
   });
 });

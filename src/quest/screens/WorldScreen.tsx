@@ -8,7 +8,8 @@ import { IsoMap, mapActors, type Actor } from '../components/IsoMap';
 import { ChapterCard, ChoicePrompt, Dialogue, InnPrompt } from '../components/Dialogue';
 import { HERO_SPRITE, PartyPanel } from '../components/PartyPanel';
 import { CHAPTER_TITLES, MAPS } from '../engine/maps';
-import { adjacentTile, findPath, isBlocked, meets } from '../engine/path';
+import { adjacentTile, findPath, isBlocked, meets, restingSpot } from '../engine/path';
+import { FOLLOWERS, activeFollower, type Follower } from '../engine/progress';
 import type { QuestState } from '../engine/quest';
 import type { Tile } from '../engine/types';
 
@@ -28,7 +29,25 @@ const SURROUND: Record<PaletteName, string> = {
 };
 
 type Walk = { c: number; r: number; flip: boolean; moving: boolean };
-type Motion = { x: number; y: number; history: { c: number; r: number }[]; flip: boolean };
+type Motion = { x: number; y: number; history: { c: number; r: number }[]; flip: boolean; escort: Tile[] };
+
+/** How many walked tiles the escort lags the leader: one tile behind the last hero (who trails at `(party - 1) * TRAIL - 1`). */
+const escortLag = (party: number): number => Math.max(1, (party - 1) * TRAIL);
+
+/**
+ * Where the escort follower stands: the oldest tile of its own queue, which starts on a free tile
+ * beside the party (`restingSpot`) and then takes every tile the leader walks, so it retraces the
+ * party's path one tile behind the last hero and never cuts through walls. Right after a map
+ * change it waits on that tile until the party has walked far enough for it to fall in behind.
+ */
+function escortOf(s: Motion, party: number, moving: boolean): Walk {
+  const [at, next] = s.escort;
+  // Face where it is about to step, like the leader does
+  const dx = next ? next.c - at.c - (next.r - at.r) : 0;
+  const flip = dx !== 0 ? dx < 0 : s.flip;
+  // While its queue is still filling it stands and waits; once full, it steps with the party
+  return { c: at.c, r: at.r, flip, moving: moving && s.escort.length > escortLag(party) };
+}
 
 /**
  * Where the followers stand. While walking they retrace the leader's own tiles; standing still
@@ -54,6 +73,8 @@ type Props = {
   onChoose: (index: number) => void;
   onMenu: () => void;
   onExit: () => void;
+  /** Escort table; the art lab passes its own, the game uses the content's */
+  followers?: readonly Follower[];
 };
 
 
@@ -62,9 +83,10 @@ type Props = {
  * The walk itself is animated here and reported to the reducer one tile at a time, so encounters,
  * triggers and exits all stay in the engine.
  */
-export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onChoose, onMenu, onExit }: Props) => {
+export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onChoose, onMenu, onExit, followers = FOLLOWERS }: Props) => {
   const { run, line, card, choice, inn, sound } = state;
   const map = MAPS[run.map];
+  const follower = activeFollower(run.flags, followers);
 
   const [box, setBox] = useState({ w: 360, h: 420 });
   const frame = useRef<HTMLDivElement>(null);
@@ -81,9 +103,11 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
 
   // The leader's smooth position, the trail the followers walk, and the camera all live in refs:
   // the animation loop writes them every frame and only publishes when something visibly changed.
-  const [walk, setWalk] = useState<{ lead: Walk; trail: Walk[]; camera: { c: number; r: number } }>(() => ({
+  const [arrival] = useState(() => restingSpot(map, run.flags, run.pos));
+  const [walk, setWalk] = useState<{ lead: Walk; trail: Walk[]; escort: Walk; camera: { c: number; r: number } }>(() => ({
     lead: { c: run.pos.c, r: run.pos.r, flip: run.facing === 'left', moving: false },
     trail: [],
+    escort: { ...arrival, flip: run.facing === 'left', moving: false },
     camera: { c: run.pos.c, r: run.pos.r },
   }));
   const [target, setTarget] = useState<Tile | null>(null);
@@ -91,8 +115,10 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
   const motion = useRef({
     x: run.pos.c,
     y: run.pos.r,
+    map: run.map,
     path: [] as Tile[],
     history: [] as { c: number; r: number }[],
+    escort: [arrival],
     flip: run.facing === 'left',
     camera: { c: run.pos.c, r: run.pos.r },
     pending: null as string | null,
@@ -111,18 +137,22 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
     }
   }, [frozen]);
 
-  // The reducer can teleport the party (an exit, a defeat); snap the animation to wherever it says
+  // The reducer can teleport the party (an exit, a defeat); snap the animation to wherever it says.
+  // A new map always snaps, even when the arrival tile happens to sit near the old position. The
+  // escort restarts beside the party; run.flags is read only at that moment, so it is not a dep.
   useEffect(() => {
     const state = motion.current;
-    if (Math.abs(state.x - run.pos.c) > 1.2 || Math.abs(state.y - run.pos.r) > 1.2) {
+    if (state.map !== run.map || Math.abs(state.x - run.pos.c) > 1.2 || Math.abs(state.y - run.pos.r) > 1.2) {
+      state.map = run.map;
       state.x = run.pos.c;
       state.y = run.pos.r;
       state.path = [];
       state.history = [];
+      state.escort = [restingSpot(MAPS[run.map], run.flags, run.pos)];
       state.pending = null;
       state.camera = { c: run.pos.c, r: run.pos.r };
       setTarget(null);
-      setWalk({ lead: { c: run.pos.c, r: run.pos.r, flip: state.flip, moving: false }, trail: [], camera: state.camera });
+      setWalk({ lead: { c: run.pos.c, r: run.pos.r, flip: state.flip, moving: false }, trail: [], escort: escortOf(state, run.party.length, false), camera: state.camera });
     }
   }, [run.pos, run.map]);
 
@@ -148,6 +178,8 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
           s.path.shift();
           s.history.unshift({ c: s.x, r: s.y });
           s.history.length = Math.min(s.history.length, 12);
+          s.escort.push({ c: s.x, r: s.y });
+          while (s.escort.length > escortLag(run.party.length) + 1) s.escort.shift();
           // Screen-left is -c/+r, so face by the isometric x delta
           if (dx - dy !== 0) s.flip = dx - dy < 0;
           callbacks.current.onStep({ c: next.c, r: next.r }, s.flip ? 'left' : 'right');
@@ -171,13 +203,15 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
       camera.r += (s.y - camera.r) * ease;
       const settling = Math.abs(s.x - camera.c) > 0.004 || Math.abs(s.y - camera.r) > 0.004;
 
-      if (moved || settling) setWalk({ lead: { c: s.x, r: s.y, flip: s.flip, moving: moved }, trail: trailOf(s, run.party.length, moved), camera: { ...camera } });
+      if (moved || settling) {
+        setWalk({ lead: { c: s.x, r: s.y, flip: s.flip, moving: moved }, trail: trailOf(s, run.party.length, moved), escort: escortOf(s, run.party.length, moved), camera: { ...camera } });
+      }
       raf = requestAnimationFrame(tick);
     };
 
     // A hero joining changes the trail while nothing is moving, so publish once up front
     const s = motion.current;
-    setWalk({ lead: { c: s.x, r: s.y, flip: s.flip, moving: false }, trail: trailOf(s, run.party.length, false), camera: { ...s.camera } });
+    setWalk({ lead: { c: s.x, r: s.y, flip: s.flip, moving: false }, trail: trailOf(s, run.party.length, false), escort: escortOf(s, run.party.length, false), camera: { ...s.camera } });
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [run.party.length]);
@@ -234,6 +268,19 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
       motion: spot.moving ? 'walk' : 'idle',
     });
   });
+
+  // An escort (the pigeon chick, 小籠包, the calf) toddles along one tile behind the last hero
+  if (follower) {
+    actors.push({
+      key: 'escort',
+      sprite: follower.sprite,
+      c: walk.escort.c,
+      r: walk.escort.r,
+      size: 0.95,
+      flip: walk.escort.flip,
+      motion: walk.escort.moving ? 'walk' : 'idle',
+    });
+  }
 
   // The doors of this map, marked so the way on is never a hunt
   const doors = map.exits.filter((exit) => meets(run.flags, exit) || !exit.blocked);

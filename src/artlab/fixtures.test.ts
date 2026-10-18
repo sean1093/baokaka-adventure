@@ -3,7 +3,8 @@ import { EVENTS } from '../quest/engine/events';
 import { MAPS } from '../quest/engine/maps';
 import { questReducer } from '../quest/engine/quest';
 import { validateSteps } from '../quest/engine/validate';
-import { ARTLAB_FIXTURES, SAMPLE_FLAGS, sampleRun } from './fixtures';
+import { activeFollower } from '../quest/engine/progress';
+import { ARTLAB_FIXTURES, ARTLAB_FOLLOWERS, SAMPLE_FLAGS, sampleRun } from './fixtures';
 
 describe('art lab fixtures', () => {
   test('names are unique and file-safe', () => {
@@ -53,6 +54,14 @@ describe('art lab fixtures', () => {
     for (const steps of Object.values(EVENTS)) for (const step of steps) if ('do' in step && step.do === 'flag') settable.add(step.flag);
     for (const map of Object.values(MAPS)) for (const trigger of map.triggers) settable.add(`trigger:${trigger.id}`);
     for (const flag of SAMPLE_FLAGS) expect(settable).toContain(flag);
+  });
+
+  test('world-follower brings its own escort table and turns it on', () => {
+    const fixture = ARTLAB_FIXTURES.find((entry) => entry.name === 'world-follower')!;
+    expect(fixture.followers).toBe(ARTLAB_FOLLOWERS);
+    expect(activeFollower(fixture.state().run.flags, fixture.followers)?.name).toBe('小蝸牛');
+    // The plain world fixture has no escort
+    expect(activeFollower(ARTLAB_FIXTURES.find((entry) => entry.name === 'world')!.state().run.flags, ARTLAB_FOLLOWERS)).toBeNull();
   });
 
   test('the sample run starts at the entry of its map (the respawn tile)', () => {

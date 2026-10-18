@@ -1,7 +1,9 @@
 import { startBattle } from '../quest/engine/battle';
 import { EVENTS } from '../quest/engine/events';
 import { SPELLS } from '../quest/engine/heroes';
+import { MAPS } from '../quest/engine/maps';
 import { freshRun, initialState, type QuestState, type QuestView } from '../quest/engine/quest';
+import type { Follower } from '../quest/engine/progress';
 import { fullHp, fullMp } from '../quest/engine/scene';
 import { HERO_ORDER, type FoeId, type HeroId, type Line, type Run, type Step } from '../quest/engine/types';
 
@@ -19,6 +21,8 @@ export type ArtLabFixture = {
   state: () => QuestState;
   /** Open the party sheet on mount */
   menu?: boolean;
+  /** Escort table for the world screen, standing in for the content's (empty until the chapters) */
+  followers?: readonly Follower[];
 };
 
 /** Story flags of a run a few fights in: the intro has played and the whole party has joined. */
@@ -90,6 +94,20 @@ const QUIZ_CHOICE: Step = {
   ],
 };
 
+/**
+ * A stand-in escort for `world-follower`: the content's FOLLOWERS stays empty until Ch5 adds the
+ * pigeon chick, so the fixture brings its own entry under a test-only flag. The snail is just an
+ * existing sprite that reads clearly at 0.95 tiles and looks like nobody in the party.
+ */
+export const FOLLOWER_FLAG = 'artlabFollower';
+export const ARTLAB_FOLLOWERS: readonly Follower[] = [{ flag: FOLLOWER_FLAG, until: 'artlabFollowerDone', sprite: 'snail', name: '小蝸牛' }];
+
+/** The whole party just arrived in the park (roomier than the living room), the stand-in escort beside them. */
+function worldFollower(): QuestState {
+  const run = sampleRun();
+  return withView({ screen: 'world' }, { ...run, map: 'park', pos: MAPS.park.entry, flags: [...run.flags, FOLLOWER_FLAG] });
+}
+
 /** Three foes, so the battle layout is at its widest. */
 export const BATTLE_FOES: readonly FoeId[] = ['dustBunny', 'sockMonster', 'dustBunny'];
 
@@ -102,6 +120,7 @@ function battleWith(party: readonly HeroId[], level = SAMPLE_LEVEL): QuestState 
 export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
   { name: 'title-continue', label: 'Title with a run to continue', state: () => withView({ screen: 'title' }) },
   { name: 'world', label: 'World: home map', state: world },
+  { name: 'world-follower', label: 'World: an escort behind the party', state: worldFollower, followers: ARTLAB_FOLLOWERS },
   { name: 'dialogue', label: 'World: dialogue line', state: () => worldAt('home.mom.hug', 0) },
   { name: 'chapter-card', label: 'World: chapter card with its clock', state: () => sceneAt([CHAPTER_CARD], 0, 'chapter-card') },
   { name: 'dialogue-choice', label: 'World: a choice with three options', state: () => sceneAt([QUIZ_CHOICE], 0, 'dialogue-choice') },
