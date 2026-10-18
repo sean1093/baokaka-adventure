@@ -1,4 +1,4 @@
-import type { HeroId, Inventory, Item, ItemId, Run, Spell, SpellId, Stats } from './types';
+import type { FxKind, HeroId, Inventory, Item, ItemId, Run, Spell, SpellId, Stats } from './types';
 import { HERO_ORDER } from './types';
 
 export const MAX_LEVEL = 20;
@@ -8,14 +8,19 @@ export const XP_TABLE: readonly number[] = [
   0, 22, 58, 108, 175, 265, 380, 520, 690, 900, 1150, 1450, 1800, 2200, 2700, 3300, 4000, 4800, 5700, 6700,
 ];
 
-/** Stats are the "Suggested stats" of story bible § 2.1; blurbs condense each hero's "Who" line. */
-export const HEROES: Record<HeroId, { name: string; base: Stats; growth: Stats; blurb: string }> = {
+/**
+ * Stats are the "Suggested stats" of story bible § 2.1; blurbs condense each hero's "Who" line.
+ * `attackFx` is what the plain 攻擊 looks like (art direction § 5.1–5.4, § 7.10): 寶咖咖 throws a
+ * block, 摩卡 swipes, 阿藍 pecks in a puff of feathers, 黑糖 pats the ground.
+ */
+export const HEROES: Record<HeroId, { name: string; base: Stats; growth: Stats; blurb: string; attackFx: FxKind }> = {
   // Sturdy all-rounder: the one who is always standing
   baokaka: {
     name: '寶咖咖',
     base: { hp: 60, mp: 12, atk: 9, def: 5, spd: 6, luck: 6 },
     growth: { hp: 11, mp: 3, atk: 2, def: 1, spd: 1, luck: 1 },
     blurb: '明天就滿一歲。爬得超快，什麼都想抱抱。',
+    attackFx: 'blocks',
   },
   // Fast striker and the party's medic
   mocha: {
@@ -23,6 +28,7 @@ export const HEROES: Record<HeroId, { name: string; base: Stats; growth: Stats; 
     base: { hp: 46, mp: 16, atk: 11, def: 3, spd: 10, luck: 9 },
     growth: { hp: 8, mp: 4, atk: 3, def: 1, spd: 2, luck: 1 },
     blurb: '七歲的虎斑貓，嘴巴很壞，心很軟。',
+    attackFx: 'claw',
   },
   // Mage: deep 元氣, fragile, fast; hits everyone and shields the party
   magpie: {
@@ -30,6 +36,7 @@ export const HEROES: Record<HeroId, { name: string; base: Stats; growth: Stats; 
     base: { hp: 40, mp: 24, atk: 7, def: 4, spd: 11, luck: 6 },
     growth: { hp: 7, mp: 5, atk: 2, def: 1, spd: 2, luck: 1 },
     blurb: '戴眼鏡的台灣藍鵲，自稱「藍教授」。',
+    attackFx: 'feather',
   },
   // Tank and bruiser: huge HP, hard hits, slowest of all
   bear: {
@@ -37,6 +44,7 @@ export const HEROES: Record<HeroId, { name: string; base: Stats; growth: Stats; 
     base: { hp: 80, mp: 10, atk: 12, def: 8, spd: 3, luck: 3 },
     growth: { hp: 14, mp: 2, atk: 3, def: 2, spd: 1, luck: 1 },
     blurb: '動物園的台灣黑熊，好大一隻，什麼都怕。',
+    attackFx: 'paw',
   },
 };
 
@@ -73,7 +81,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 5,
     level: 3,
     effect: { kind: 'damage', power: 1.0, target: 'all' },
-    fx: 'shout',
+    fx: 'cry',
     blurb: '哭聲大到整條街都醒了，打到所有敵人。',
   },
   clapClap: {
@@ -84,6 +92,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     level: 6,
     effect: { kind: 'heal', ratio: 0.25, target: 'party' },
     fx: 'heal',
+    fxAccent: 'clap',
     blurb: '拍手幫大家加油，全隊恢復體力。',
   },
   firstStep: {
@@ -94,6 +103,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     level: 15,
     effect: { kind: 'damage', power: 3.0, target: 'one' },
     fx: 'impact',
+    fxAccent: 'stomp',
     blurb: '站起來，往前走一步——然後撞過去。',
   },
   purr: {
@@ -133,7 +143,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 12,
     level: 11,
     effect: { kind: 'heal', ratio: 0.5, target: 'party', revive: true },
-    fx: 'sparkle',
+    fx: 'heal',
     blurb: '貓有九條命，分你們一條。',
   },
   featherRain: {
@@ -143,7 +153,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 5,
     level: 1,
     effect: { kind: 'damage', power: 1.1, target: 'all' },
-    fx: 'dust',
+    fx: 'feather',
     blurb: '抖一抖翅膀，藍色羽毛像雨一樣落下。',
   },
   divePeck: {
@@ -153,7 +163,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 4,
     level: 4,
     effect: { kind: 'damage', power: 1.9, target: 'one' },
-    fx: 'jet',
+    fx: 'feather',
     blurb: '從高處俯衝，啄一下就飛走。',
   },
   magpieBridge: {
@@ -163,7 +173,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 6,
     level: 7,
     effect: { kind: 'shield' },
-    fx: 'bubble',
+    fx: 'shield',
     blurb: '七夕的時候，喜鵲搭橋讓人相見；今天，藍鵲搭橋保護大家。',
   },
   cometTail: {
@@ -173,7 +183,8 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 12,
     level: 13,
     effect: { kind: 'damage', power: 2.0, target: 'all' },
-    fx: 'bolt',
+    fx: 'feather',
+    fxAccent: 'comet',
     blurb: '長長的尾巴在空中劃出一道藍色流星。',
   },
   pawPat: {
@@ -183,7 +194,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 4,
     level: 1,
     effect: { kind: 'damage', power: 2.0, target: 'one' },
-    fx: 'thud',
+    fx: 'paw',
     blurb: '很小心、很小心地拍一下。（還是很痛。）',
   },
   groundPound: {
@@ -193,7 +204,7 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 7,
     level: 8,
     effect: { kind: 'damage', power: 1.3, target: 'all' },
-    fx: 'impact',
+    fx: 'paw',
     blurb: '原地跳一下，整片地板都在晃。',
   },
   sugarHug: {
@@ -213,7 +224,8 @@ export const SPELLS: Record<SpellId, Spell> = {
     cost: 12,
     level: 17,
     effect: { kind: 'damage', power: 3.2, target: 'one' },
-    fx: 'bolt',
+    fx: 'paw',
+    fxAccent: 'moon',
     blurb: '胸口的月牙發光，全力衝撞。',
   },
 };

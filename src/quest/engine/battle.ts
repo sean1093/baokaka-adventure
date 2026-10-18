@@ -1,6 +1,6 @@
 import { roll } from '../../shared/random';
 import { FOES } from './foes';
-import { ITEMS, SPELLS, partyStats, removeItem } from './heroes';
+import { HEROES, ITEMS, SPELLS, partyStats, removeItem } from './heroes';
 import { UI } from './strings';
 import {
   HERO_ORDER,
@@ -24,9 +24,9 @@ const CRIT_MULTIPLIER = 1.5;
 const GUARD_MP = 4;
 const FLEE_BASE = 0.55;
 
-/** Every attack has a look; guarding has none and healing always sparkles green. */
-const moveFx = (move: FoeMove): FxKind | null =>
-  move.kind === 'attack' ? (move.fx ?? 'thud') : move.kind === 'heal' ? 'heal' : null;
+/** Every attack has a look (a plain 「咚」 unless authored); guarding has none and healing always gets gold stars. */
+export const moveFx = (move: FoeMove): FxKind | null =>
+  move.kind === 'attack' ? (move.fx ?? 'impact') : move.kind === 'heal' ? 'heal' : null;
 
 export const heroWho = (hero: HeroId): Who => ({ side: 'hero', hero });
 export const foeWho = (slot: number): Who => ({ side: 'foe', slot });
@@ -189,7 +189,7 @@ export function battleStep(battle: Battle, action: BattleAction): Battle {
       case 'attack': {
         const slot = firstAliveFoe(action.target);
         if (slot === null) return battle;
-        events.push({ kind: 'act', who: heroWho(hero), name: UI.commands.attack, fx: 'slash', arcane: false });
+        events.push({ kind: 'act', who: heroWho(hero), name: UI.commands.attack, fx: HEROES[hero].attackFx, arcane: false });
         const isCrit = crit();
         const base = Math.max(1, stats.atk - FOES[draft.foes[slot].foe].stats.def * 0.5);
         hitFoe(slot, vary(base) * (isCrit ? CRIT_MULTIPLIER : 1), isCrit);
@@ -200,7 +200,7 @@ export function battleStep(battle: Battle, action: BattleAction): Battle {
         const spell = SPELLS[action.spell];
         if (!canCast(draft, hero, spell)) return battle;
         draft.heroes[hero] = { ...draft.heroes[hero], mp: draft.heroes[hero].mp - spell.cost };
-        events.push({ kind: 'act', who: heroWho(hero), name: spell.name, fx: spell.fx, arcane: true });
+        events.push({ kind: 'act', who: heroWho(hero), name: spell.name, fx: spell.fx, arcane: true, ...(spell.fxAccent ? { accent: spell.fxAccent } : {}) });
         const strength = stats.atk * 0.7 + draft.level * 2;
 
         if (spell.effect.kind === 'damage') {

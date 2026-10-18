@@ -10,6 +10,7 @@ import { CommandGrid, CommandPanel, PartyCard } from '../../components/CommandPa
 import { Cube, Cup, Shield, Talent } from '../../components/icons';
 import { SoundToggle } from '../../components/Screen';
 import { playTone } from '../../shared/audio';
+import { flashAllowed } from '../../art/fx/battleFx';
 import { BattleFx, type Spot } from '../components/BattleFx';
 import { HERO_SPRITE, HeroHead } from '../components/PartyPanel';
 import { aliveFoeSlots, battleBoss, battleFrame, canCast, foeIntent, sameWho, type StageFrame } from '../engine/battle';
@@ -275,6 +276,19 @@ export const BattleScreen = ({ battle, backdrop, interior = false, time, place, 
   const [menu, setMenu] = useState<Menu>('root');
   const [pending, setPending] = useState<Pending | null>(null);
 
+  // At most two flashes a second (§ 7.10): a step that would flash (a hurt blink, a wash) only does
+  // so 500ms after the last one. Decided once per step, so re-renders and StrictMode agree.
+  const flashLog = useRef<{ last: number | null; step: number; ok: boolean }>({ last: null, step: -1, ok: true });
+  if (flashLog.current.step !== battle.step) {
+    const log = flashLog.current;
+    const touched = battle.events.filter((event) => event.kind === 'hit' || event.kind === 'heal').length;
+    const wants = touched > 1 || battle.events.some((event) => event.kind === 'hit');
+    const now = performance.now();
+    const ok = flashAllowed(now, log.last);
+    flashLog.current = { last: wants && ok ? now : log.last, step: battle.step, ok };
+  }
+  const flash = flashLog.current.ok;
+
   const callbacks = useRef({ onAction, onEnd, soundOn });
   callbacks.current = { onAction, onEnd, soundOn };
 
@@ -466,8 +480,6 @@ export const BattleScreen = ({ battle, backdrop, interior = false, time, place, 
             const size = place.s * k;
             const left = px(place.x);
             const feet = py(place.y);
-            const event = eventFor(who);
-            const float = event ? floater(event) : null;
             const hit = struck(who);
             const act = acting(who);
 
@@ -506,7 +518,7 @@ export const BattleScreen = ({ battle, backdrop, interior = false, time, place, 
                   <span aria-hidden="true" className={`absolute left-[14%] top-[89%] block h-[10%] w-[72%] rounded-[50%] bg-scrim/50 ${gone ? 'opacity-0' : ''}`} />
                   {targetable && <span aria-hidden="true" className="absolute left-[8%] top-[86%] block h-[16%] w-[84%] rounded-[50%] border-2 border-gold-light bg-gold/15 shadow-[0_0_16px_theme(colors.gold.DEFAULT/70%)]" />}
                   <span className={`relative block h-full w-full ${gone ? 'opacity-0' : ''} ${calming ? 'foe-calm' : act ? 'foe-lunge' : ''}`} key={`s${battle.step}`}>
-                    <span className={`block h-full w-full ${hit && !calming ? 'fx-hurt' : ''}`}>
+                    <span className={`block h-full w-full ${hit && !calming ? (flash ? 'fx-hurt' : 'fx-hurt-soft') : ''}`}>
                       <Art lod="battle" state={calming ? 'ko' : hit ? 'hurt' : 'idle'} facing="left" />
                     </span>
                     {state.guard && <span className="absolute right-[6%] top-[8%] rounded-sm bg-mp-from px-1.5 font-serif text-caption text-inkOnDark shadow-gold">防</span>}
@@ -532,7 +544,6 @@ export const BattleScreen = ({ battle, backdrop, interior = false, time, place, 
                       {foeIntent(battle, who.slot)}
                     </span>
                   )}
-                  {float && <FloatingNumber float={float} step={battle.step} />}
                 </button>
               );
             }
@@ -564,7 +575,7 @@ export const BattleScreen = ({ battle, backdrop, interior = false, time, place, 
                 )}
                 {pickable && <span aria-hidden="true" className="absolute left-[6%] top-[84%] block h-[18%] w-[88%] rounded-[50%] border-2 border-gold-light bg-gold/15 shadow-[0_0_16px_theme(colors.gold.DEFAULT/70%)]" />}
                 <span className={`relative block h-full w-full ${down ? 'hero-down' : act ? 'hero-lunge' : ''}`} key={`s${battle.step}`}>
-                  <span className={`block h-full w-full ${hit ? 'fx-hurt' : ''}`}>
+                  <span className={`block h-full w-full ${hit ? (flash ? 'fx-hurt' : 'fx-hurt-soft') : ''}`}>
                     <Art lod="battle" state={down ? 'ko' : hit ? 'hurt' : act ? 'attack' : 'idle'} facing="right" />
                   </span>
                   {state.shield && <span className="absolute inset-[6%] rounded-full shadow-[0_0_0_3px_theme(colors.mp.to/60%),inset_0_0_16px_theme(colors.mp.to/35%)]" />}
@@ -576,14 +587,28 @@ export const BattleScreen = ({ battle, backdrop, interior = false, time, place, 
                     <span aria-hidden="true" className="absolute left-1/2 top-full block h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[6px] border-x-transparent border-t-gold" />
                   </span>
                 )}
-                {float && <FloatingNumber float={float} step={battle.step} />}
               </button>
             );
           })}
         </SceneClock.Provider>
 
         <div className="pointer-events-none absolute inset-0 z-[550]">
-          <BattleFx key={battle.step} battle={battle} spot={spot} />
+          <BattleFx key={battle.step} battle={battle} spot={spot} flash={flash} />
+        </div>
+
+        {/* The resolution layer (§ 7.10): damage numbers over the effects, each over its sprite's box */}
+        <div className="pointer-events-none absolute inset-0 z-[560]">
+          {actors.map(({ who, place }) => {
+            const event = eventFor(who);
+            const float = event ? floater(event) : null;
+            if (!float) return null;
+            const size = place.s * k;
+            return (
+              <span key={who.side === 'foe' ? `n${who.slot}` : `n${who.hero}`} className="absolute block" style={{ left: px(place.x) - size / 2, top: py(place.y) - size * 0.94, width: size, height: size }}>
+                <FloatingNumber float={float} step={battle.step} />
+              </span>
+            );
+          })}
         </div>
         </div>
 

@@ -3,8 +3,9 @@ import { SPRITES } from '../../art/sprites';
 import { isBackdrop } from '../../art/backdrops/keys';
 import { BACKLIGHT } from '../../art/palette';
 import { EVENTS, ROLE_BACKLIGHT, SPEAKERS } from './events';
+import { moveFx } from './battle';
 import { FOES } from './foes';
-import { ITEMS, ITEM_ORDER, MAX_LEVEL, SPELLS, XP_TABLE } from './heroes';
+import { HEROES, ITEMS, ITEM_ORDER, MAX_LEVEL, SPELLS, XP_TABLE } from './heroes';
 import { TERRAIN, covers, terrainAt } from './iso';
 import { MAPS, MAP_ORDER } from './maps';
 import { MRT_LINES, STATIONS, type Station } from './mrt';
@@ -25,7 +26,22 @@ import {
 } from './progress';
 import { CLEARED_FLAG } from './scene';
 import { STATION_PLACEHOLDERS, fillStation } from './text';
-import { AMBIENT_ELEMENTS, HERO_ORDER, MAX_AMBIENT_ELEMENTS, RIDE_TO, STANDING_LIGHTS, type GameMap, type Item, type ItemId, type Step, type Tile } from './types';
+import {
+  AMBIENT_ELEMENTS,
+  FX_ACCENTS,
+  FX_KINDS,
+  HERO_ORDER,
+  MAX_AMBIENT_ELEMENTS,
+  RIDE_TO,
+  STANDING_LIGHTS,
+  type Foe,
+  type GameMap,
+  type Item,
+  type ItemId,
+  type Spell,
+  type Step,
+  type Tile,
+} from './types';
 
 /** At most three foes fit across the battle box. */
 export const MAX_FOES_PER_BATTLE = 3;
@@ -649,6 +665,27 @@ export function spriteWarnings(sprites: Readonly<Record<string, SpriteComponent>
   });
 }
 
+
+/**
+ * Battle VFX (art direction § 7.10, issue #15): every 才藝, every hero's plain attack and every
+ * foe move that has a look maps to a kind the effect layer draws, and accents are known ones.
+ */
+export function validateFx(errors: string[], spells: Readonly<Record<string, Spell>> = SPELLS, foes: Readonly<Record<string, Foe>> = FOES): void {
+  const kinds: readonly string[] = FX_KINDS;
+  const accents: readonly string[] = FX_ACCENTS;
+  for (const spell of Object.values(spells)) {
+    if (!kinds.includes(spell.fx)) errors.push(`spell ${spell.id}: unknown fx ${spell.fx}`);
+    if (spell.fxAccent !== undefined && !accents.includes(spell.fxAccent)) errors.push(`spell ${spell.id}: unknown fx accent ${spell.fxAccent}`);
+  }
+  for (const hero of HERO_ORDER) if (!kinds.includes(HEROES[hero].attackFx)) errors.push(`hero ${hero}: unknown attack fx ${HEROES[hero].attackFx}`);
+  for (const foe of Object.values(foes)) {
+    for (const move of foe.moves) {
+      const fx = moveFx(move);
+      if (fx !== null && !kinds.includes(fx)) errors.push(`foe ${foe.id} move ${move.name}: unknown fx ${fx}`);
+    }
+  }
+}
+
 /** Pure content checks; run at dev start-up and in content.test.ts so mistakes never ship. */
 export function validateQuestContent(): string[] {
   const errors: string[] = [];
@@ -670,6 +707,7 @@ export function validateQuestContent(): string[] {
     if (spell.cost <= 0) errors.push(`spell ${spell.id} is free`);
     if (!HERO_ORDER.includes(spell.hero)) errors.push(`spell ${spell.id} belongs to unknown hero ${spell.hero}`);
   }
+  validateFx(errors);
 
   for (const foe of Object.values(FOES)) {
     if (!SPRITES[foe.sprite]) errors.push(`foe ${foe.id} has unknown sprite ${foe.sprite}`);
