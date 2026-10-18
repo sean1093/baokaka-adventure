@@ -188,9 +188,11 @@ describe('<BattleFx>', () => {
     for (const [, ref] of html.matchAll(/url\(#([^)]+)\)/g)) expect(ids).toContain(ref);
   });
 
-  it('draws nothing for a step without a look (guard, flee)', () => {
+  it('draws nothing for a step without a look (a guard) or a move that only missed', () => {
     const battle = castOnAll('cry');
     battle.events = [{ kind: 'guard', who: { side: 'hero', hero: 'mocha' } }];
+    expect(renderToStaticMarkup(createElement(BattleFx, { battle, spot, flash: true }))).toBe('');
+    battle.events = [castOnAll('claw').events[0], { kind: 'miss', who: who('foe', 0) }];
     expect(renderToStaticMarkup(createElement(BattleFx, { battle, spot, flash: true }))).toBe('');
   });
 });

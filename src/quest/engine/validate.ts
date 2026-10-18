@@ -665,7 +665,6 @@ export function spriteWarnings(sprites: Readonly<Record<string, SpriteComponent>
   });
 }
 
-
 /**
  * Battle VFX (art direction § 7.10, issue #15): every 才藝, every hero's plain attack and every
  * foe move that has a look maps to a kind the effect layer draws, and accents are known ones.

@@ -29,12 +29,13 @@ export function fxPlanFor(battle: Pick<Battle, 'events' | 'party' | 'heroes' | '
   const act = battle.events.find((event): event is Extract<BattleEvent, { kind: 'act' }> => event.kind === 'act');
   if (!act || !act.fx) return null;
 
-  // The effect lands on whoever the step touched; a shield covers the standing party; a move
-  // that touched nobody lands on the actor
+  // The effect lands on whoever the step touched; a shield covers the standing party; a move that
+  // only missed draws nothing; one that touched nobody lands on the actor
   const shield = battle.events.some((event) => event.kind === 'shield');
   const landed: Who[] = shield
     ? battle.party.filter((hero) => battle.heroes[hero].hp > 0).map((hero) => ({ side: 'hero', hero }))
-    : battle.events.flatMap((event) => (event.kind === 'hit' || event.kind === 'heal' || event.kind === 'revive' || event.kind === 'miss' ? [event.who] : []));
+    : battle.events.flatMap((event) => (event.kind === 'hit' || event.kind === 'heal' || event.kind === 'revive' ? [event.who] : []));
+  if (landed.length === 0 && battle.events.some((event) => event.kind === 'miss')) return null;
   const targets = landed.length > 0 ? landed : [act.who];
 
   const seen = new Set<string>();
