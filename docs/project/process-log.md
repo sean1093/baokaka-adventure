@@ -77,3 +77,13 @@ Format:
 - `scripts/visual-check.mjs` + `scripts/visual-targets.mjs`; `npm run visual` / `visual:update`; baselines for 12 targets × 2 viewports in `tests/visual-baseline/`; `artifacts/` gitignored. Verified: update → pass with 0 px diff; changing `sun` in the palette fails title and battle with diff images; `--perf` prints stats (median 33 ms / p95 67 ms on the dev build at 4× throttle, 1,103 DOM nodes). Production `#/artlab` shows the title.
 - README § 5 *Visual QA* documents usage; D-21 records the deviations (dev server for `--serve`, fixture discovery, silhouettes via mask).
 - Follow-ups: #57 should measure frame work from a trace on a production build (rAF intervals are vsync-floored); #10 should regenerate baselines once web fonts land.
+
+### 2026-10-18 · Staff engineer · #5 Four-hero party, new 才藝, level cap 20 (PR #63)
+- `HeroId`/`HERO_ORDER` are `baokaka, mocha, magpie, bear`; heroes use the bible § 2.1 suggested stats (寶咖咖's def/luck went 4/5 → 5/6) and short blurbs; `SPELLS` is the 16-skill table (borrowed FX until #15); `MAX_LEVEL = 20` with the bible XP table. `freshRun` builds `equip` from `HERO_ORDER`.
+- Save v3 (`baokaka.quest.v3`); v2 is a legacy key now, so an old three-hero save resets with the notice (D-22).
+- Old content: 阿藍 replaces the duck in 浴缸島, 黑糖 joins in `night.intro` (both temporary until #21). The duck sprite is deleted; 阿藍/黑糖 borrow the pigeon/mole king sprites (`HERO_SPRITE`) until #17.
+- Battle: four heroes stand in two staggered rows, the card row holds four; the compact world party strip hides portraits with four heroes. New art lab fixture `battle-4-heroes` (Lv10); `battle` is now the three-hero layout. Baselines regenerated (title/ending lost the duck, sprite sheet lost it, world/menu/dialogue/chapter show four heroes, victory lists the new Lv5 skill).
+- Sim: careful/casual cast the shield before a party-wide hit; 阿藍 joins before 大章魚, 黑糖 before 打呼嚕大王. `npm run sim` (200 seeds): careful 200/200, casual 197/200, reckless 119/200 (before: 198, 176, 76) — the stronger roster and 黑糖 make the old final easy; balance is #54.
+- Tests: new `heroes.test.ts` (stats, the exact skill table, XP cap at 6700 → Lv20), late joins (黑糖 at Lv10 knows 熊掌拍拍/大地咚咚/黑糖暖暖; 阿藍 at Lv3 only 羽毛雨), four-hero battle to a win, the shield halving an all-party hit for all four, 九命回春 revive, v2-as-legacy save. 155 tests in all.
+- Follow-ups: none new beyond D-22's consequences (#14, #15, #17, #21, #54). The victory screen still draws only 寶咖咖 and 摩卡貓 (redone in M2).
+
