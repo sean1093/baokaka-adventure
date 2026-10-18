@@ -312,6 +312,12 @@ export type GameMap = {
    * Every map with a station in `STATIONS` (mrt.ts) must have one.
    */
   mrtArrival?: Tile;
+  /**
+   * The map's clock (`HH:MM`): it picks the sky, the night grade and the character rim (art
+   * direction § 3.2). Leave it out to use the § 4.2 location time or the chapter card's time
+   * (`mapClock` in clock.ts, decision D-16).
+   */
+  time?: string;
 };
 
 // ---------------------------------------------------------------------------------------------
