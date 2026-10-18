@@ -1,0 +1,11 @@
+/* Loaded only with the art lab (a dev-only chunk). `?still=1` freezes every CSS animation half
+   a second in and drops transitions, so screenshots are the same on every run. On <html>, so
+   portalled sheets freeze too. */
+.artlab-still *,
+.artlab-still *::before,
+.artlab-still *::after {
+  animation-play-state: paused !important;
+  animation-delay: -0.5s !important;
+  transition: none !important;
+  caret-color: transparent !important;
+}
