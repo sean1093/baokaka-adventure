@@ -1,8 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { UI as TOKENS, WORLD } from '../../art/palette';
 import { SPRITES } from '../../art/sprites';
+import { Button, IconButton } from '../../components/Button';
 import { ChevronLeft } from '../../components/icons';
-import { Dialogue } from '../components/Dialogue';
+import { Panel } from '../../components/Panel';
+import { TalkBox } from '../components/Dialogue';
 import { MRT_LINES, STATIONS, rideable, stationAt, stationUnlocked, type MapPos, type Station } from '../engine/mrt';
 import { UI } from '../engine/strings';
 import type { Line, Run } from '../engine/types';
@@ -11,8 +13,8 @@ import type { Line, Run } from '../engine/types';
  * The 路線圖 (月亮線 travel screen, story bible § 3.1, art direction § 7.7): a stylised five-line
  * network on a navy panel. Lit dots are gold, the station you are at blinks, locked ones are grey
  * with 「?」, and a station lit since the last visit rings out with 「叮！」. Tap a lit dot to get
- * a confirm sheet; the reducer does the riding. Placeholder-quality until the UI kit (#12) and
- * polish (#56); the network itself is content in `mrt.ts`.
+ * a confirm sheet; the reducer does the riding. On the UI kit since #12; final polish is #56. The
+ * network itself is content in `mrt.ts`.
  */
 
 /**
@@ -32,7 +34,7 @@ const points = (path: readonly MapPos[], h: number) =>
     })
     .join(' ');
 
-/** UI tokens (art direction § 3.1): the navy panel and gold. #12 moves the screen onto the UI kit. */
+/** UI tokens (art direction § 3.1) for the SVG drawing, which can't use the kit's classes. */
 const NAVY = TOKENS.panelTop;
 const NAVY_DEEP = TOKENS.panelBottom;
 const GOLD = TOKENS.gold;
@@ -187,23 +189,17 @@ const StationDot = ({ station, state, fresh, h, onTap }: DotProps) => {
   );
 };
 
-/** The 直接到站 switch: a labelled pill with a knob, 44px tall. */
+/** The 直接到站 switch: a glass pill with the kit's gold switch, 44px tall. */
 const SkipSwitch = ({ on, onToggle }: { on: boolean; onToggle: (on: boolean) => void }) => (
   <button
     type="button"
     role="switch"
     aria-checked={on}
     onClick={() => onToggle(!on)}
-    className="flex h-11 shrink-0 items-center gap-2 rounded-full border px-3 text-label font-bold transition-colors"
-    style={{ borderColor: on ? GOLD : 'rgba(232,199,122,0.4)', background: on ? 'rgba(232,199,122,0.18)' : 'rgba(255,255,255,0.04)', color: on ? GOLD_LIGHT : MUTED_ON_DARK }}
+    className={`kit-glass kit-press flex h-11 shrink-0 items-center gap-2 rounded-full pl-3.5 pr-2 font-serif text-[15px] tracking-[0.06em] ${on ? 'text-gold-light' : 'text-mutedOnDark'}`}
   >
     {UI.skipRides}
-    <span aria-hidden="true" className="relative inline-block h-5 w-9 rounded-full transition-colors" style={{ background: on ? GOLD : LOCKED }}>
-      <span
-        className="absolute top-0.5 h-4 w-4 rounded-full transition-[left]"
-        style={{ left: on ? 18 : 2, background: on ? NAVY : INK_ON_DARK }}
-      />
-    </span>
+    <span aria-hidden="true" className="kit-switch" />
   </button>
 );
 
@@ -212,40 +208,22 @@ const ConfirmSheet = ({ station, onYes, onNo }: { station: Station; onYes: () =>
   const line = MRT_LINES[station.line];
   const open = rideable(station);
   return (
-    <div className="sheet-in absolute inset-x-0 bottom-0 z-20 px-3 pb-3">
-      <div
-        role="dialog"
-        aria-label={UI.rideAsk(station.name)}
-        className="rounded-2xl border p-4 shadow-float"
-        style={{ borderColor: GOLD, background: `linear-gradient(180deg, rgba(22,26,78,0.97), rgba(10,11,34,0.99))` }}
-      >
-        <p className="flex items-center gap-2 text-caption font-bold" style={{ color: MUTED_ON_DARK }}>
-          <span aria-hidden="true" className="inline-block h-3 w-3 rounded-full" style={{ background: line.color }} />
-          {line.name} · {station.nameEn}
+    <div className="kit-sheet-in absolute inset-x-0 bottom-0 z-20 px-3 pb-[max(env(safe-area-inset-bottom),12px)]">
+      <Panel diamonds role="dialog" aria-label={UI.rideAsk(station.name)} className="px-5 pb-4 pt-4">
+        <p className="relative flex items-center gap-2 text-caption text-mutedOnDark">
+          <span aria-hidden="true" className="inline-block h-3 w-3 rounded-full shadow-[0_0_0_2px_theme(colors.panel.deep),0_0_0_3px_theme(colors.gold.DEFAULT/50%)]" style={{ background: line.color }} />
+          {line.name} · <span className="font-num">{station.nameEn}</span>
         </p>
-        <p className="mt-1 text-heading font-extrabold leading-snug" style={{ color: INK_ON_DARK }}>
-          {UI.rideAsk(station.name)}
-        </p>
-        <div className="mt-3 flex gap-2">
-          <button
-            type="button"
-            disabled={!open}
-            onClick={onYes}
-            className="h-12 flex-1 rounded-full text-copy font-extrabold shadow-glow transition-transform active:translate-y-0.5 disabled:opacity-40"
-            style={{ background: `linear-gradient(180deg, ${TOKENS.primaryTop}, ${TOKENS.primaryMid} 55%, ${TOKENS.primaryBottom})`, color: TOKENS.primaryText }}
-          >
+        <p className="relative mt-1.5 font-serif text-heading leading-snug tracking-[0.06em]">{UI.rideAsk(station.name)}</p>
+        <div className="relative mt-4 grid grid-cols-2 gap-2.5">
+          <Button size="lg" full disabled={!open} onClick={onYes}>
             {UI.rideYes}
-          </button>
-          <button
-            type="button"
-            onClick={onNo}
-            className="h-12 flex-1 rounded-full border text-copy font-bold"
-            style={{ borderColor: 'rgba(232,199,122,0.45)', color: GOLD_LIGHT }}
-          >
+          </Button>
+          <Button size="lg" full variant="secondary" onClick={onNo}>
             {UI.rideNo}
-          </button>
+          </Button>
         </div>
-      </div>
+      </Panel>
     </div>
   );
 };
@@ -303,32 +281,20 @@ export const TravelScreen = ({ run, fresh, note, skipRides, onRide, onClose, onA
 
   return (
     <div className="min-h-dvh w-full" style={{ background: `linear-gradient(180deg, ${NAVY} 0%, ${NAVY_DEEP} 100%)` }}>
-      <main className="screen-in mx-auto flex h-dvh w-full max-w-md flex-col gap-3 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pt-[max(env(safe-area-inset-top),12px)]">
+      <main className="kit-fade-in mx-auto flex h-dvh w-full max-w-md flex-col gap-3 px-4 pb-[max(env(safe-area-inset-bottom),14px)] pt-[max(env(safe-area-inset-top),12px)]">
         <header className="flex items-center gap-3">
-          <button
-            type="button"
-            aria-label={UI.travelLeave}
-            onClick={onClose}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border"
-            style={{ borderColor: 'rgba(232,199,122,0.5)', color: GOLD_LIGHT }}
-          >
-            <ChevronLeft />
-          </button>
+          <IconButton icon={<ChevronLeft size={22} />} label={UI.travelLeave} onClick={onClose} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-caption font-bold tracking-[0.3em]" style={{ color: GOLD }}>
-              {UI.travelKicker}
-            </p>
-            <h1 className="truncate text-heading font-extrabold leading-tight" style={{ color: INK_ON_DARK }}>
-              {UI.travelTitle}
-            </h1>
+            <p className="truncate text-caption tracking-[0.3em] text-gold">{UI.travelKicker}</p>
+            <h1 className="truncate font-serif text-heading tracking-[0.12em] text-inkOnDark">{UI.travelTitle}</h1>
           </div>
           <SkipSwitch on={skipRides} onToggle={onSkipRides} />
         </header>
 
         <div
           ref={panel}
-          className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border"
-          style={{ borderColor: 'rgba(232,199,122,0.55)', background: 'radial-gradient(120% 80% at 50% 40%, rgba(46,52,120,0.55), rgba(10,11,34,0.2))' }}
+          className="kit-panel relative min-h-0 flex-1 overflow-hidden"
+          style={{ background: `radial-gradient(120% 80% at 50% 40%, ${TOKENS.commandTop}, ${NAVY_DEEP})` }}
         >
           <svg viewBox={`0 0 ${W} ${h}`} preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full" role="group" aria-label={UI.travelTitle}>
             <defs>
@@ -362,13 +328,10 @@ export const TravelScreen = ({ run, fresh, note, skipRides, onRide, onClose, onA
           </svg>
 
           {here && (
-            <p
-              className="pointer-events-none absolute left-2 top-2 flex items-center gap-1.5 rounded-full border px-3 py-1 text-caption font-bold"
-              style={{ borderColor: 'rgba(232,199,122,0.5)', background: 'rgba(10,11,34,0.7)', color: MUTED_ON_DARK }}
-            >
-              <span aria-hidden="true" className="mrt-here inline-block h-2 w-2 rounded-full" style={{ background: GOLD_LIGHT }} />
+            <p className="kit-glass pointer-events-none absolute left-2.5 top-2.5 flex items-center gap-1.5 rounded-full px-3 py-1 text-caption text-mutedOnDark">
+              <span aria-hidden="true" className="mrt-here inline-block h-2 w-2 rounded-full bg-gold-light" />
               {UI.hereTag}
-              <span style={{ color: INK_ON_DARK }}>{here.name}</span>
+              <span className="font-serif text-inkOnDark">{here.name}</span>
             </p>
           )}
         </div>
@@ -376,7 +339,7 @@ export const TravelScreen = ({ run, fresh, note, skipRides, onRide, onClose, onA
         {/* The five lines, so a grandparent can match a colour to a name */}
         <ul className="flex flex-wrap justify-center gap-x-3 gap-y-1" aria-label="路線">
           {Object.entries(MRT_LINES).map(([id, line]) => (
-            <li key={id} className="flex items-center gap-1.5 text-caption font-bold" style={{ color: MUTED_ON_DARK }}>
+            <li key={id} className="flex items-center gap-1.5 text-caption text-mutedOnDark">
               <span aria-hidden="true" className="inline-block h-1.5 w-4 rounded-full" style={{ background: line.color }} />
               {line.name}
             </li>
@@ -386,7 +349,7 @@ export const TravelScreen = ({ run, fresh, note, skipRides, onRide, onClose, onA
 
       {picked && !note && (
         <div className="fixed inset-0 z-20 mx-auto max-w-md">
-          <button type="button" aria-label={UI.rideNo} className="absolute inset-0 bg-black/30" onClick={() => setPicked(null)} />
+          <button type="button" aria-label={UI.rideNo} className="kit-fade-in absolute inset-0 bg-scrim/60" onClick={() => setPicked(null)} />
           <ConfirmSheet
             station={picked}
             onYes={() => {
@@ -401,7 +364,7 @@ export const TravelScreen = ({ run, fresh, note, skipRides, onRide, onClose, onA
 
       {note && (
         <div className="fixed inset-0 z-20 mx-auto max-w-md">
-          <Dialogue line={note} onAdvance={onAdvance} />
+          <TalkBox talk={{ kind: 'line', line: note }} onAdvance={onAdvance} onChoose={() => {}} onInn={() => {}} />
         </div>
       )}
     </div>

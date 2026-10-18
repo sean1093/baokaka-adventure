@@ -28,6 +28,9 @@ Each `### key` is one entry in `EVENTS` (events.ts). Lines map 1:1 to `Step`s:
 | `→ key` | `{ do: 'goEvent', event: 'key' }` (jump; the rest of the scene is dropped) |
 | optional inserts ("if `flag`, add `key` here") | `{ do: 'include', event: 'key', when: 'flag' }` (plays `key` inline, then carries on; included events must be linear) |
 | `[coins -20]` | spend coins; floors at 0 |
+| (optional, any line) `【詞】` | a key term shown in gold in the dialogue box, brackets dropped (UI kit, #12); brackets must pair |
+| (optional) `mocha(smug)：「text」` | `{ who: 'mocha', text: '…', expr: 'smug' }`: the bust's expression (camelCase; sprites without it use their default face) |
+| (optional) `[chapter 3｜…｜01:10｜下一站 台北車站]` | adds `next: '台北車站'`: the 「下一站：…」 line on the card's departure board (≤ 8 characters, needs a time) |
 
 "Talk rules" lines (`talk:`) show the NPC's `Npc.talk` list, in priority order (first match wins). Every line is at most 40 characters, so it fits the phone dialogue box.
 

@@ -220,7 +220,41 @@ export const UI = {
   amber: '#FFB84A',
   /** Locked 路線圖 stations and other disabled marks on navy */
   locked: '#5D6190',
+  /** The sub-label on the gold primary button (MP cost, item count): a deep brown that reads on every stop */
+  primarySub: '#3E2410',
+  /** The departure board behind the chapter card's clock, darker than any panel, and its unlit dots */
+  board: '#07081A',
+  boardDot: '#2A2034',
+  /** The dark scrim over the map behind dialogue and sheets (drawn translucent) */
+  scrim: '#0A0820',
+  /** The HP lag bar: the pale band that catches up after a hit (§ 7.3) */
+  hpLag: '#FFF2E0',
 } as const;
+
+/**
+ * Speaker backlights (§ 7.5): the soft radial glow behind a dialogue bust. Each speaker has one
+ * (`SPEAKERS[id].color`, heroes in `HERO_BACKLIGHT`); the default is by role.
+ */
+export const BACKLIGHT = {
+  /** Moonlit blue: the default for the cast at night, and 摩卡貓's cool reference glow */
+  moon: '#A0BEFF',
+  /** Lamp warm: family and townsfolk */
+  warm: '#FFC98A',
+  /** 寶咖咖's pajama gold */
+  gold: '#FFE09A',
+  /** Jade: 摩卡貓's eyes */
+  jade: '#9AF0C0',
+  /** Sky blue: 阿藍 */
+  sky: '#8AD0FF',
+  /** Amber: 黑糖 */
+  amber: '#FFB870',
+  /** Violet: mischief-makers, foes and bosses */
+  violet: '#D0A8FF',
+  /** Rose: 咻咻 and other wind spirits */
+  rose: '#FF9AB8',
+} as const;
+
+export type Backlight = keyof typeof BACKLIGHT;
 
 /** The five 月亮線 line colours (§ 4.2, MRT cars row): the real Taipei line colours. */
 export const MRT = {
@@ -286,6 +320,11 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 export function mixHex(a: string, b: string, t: number): string {
   const [ca, cb] = [channels(a), channels(b)];
   return toHex([lerp(ca[0], cb[0], t), lerp(ca[1], cb[1], t), lerp(ca[2], cb[2], t)]);
+}
+
+/** A `#RRGGBB` colour with an alpha in [0, 1], as `#RRGGBBAA` (for gradients built from tokens). */
+export function withAlpha(hex: string, alpha: number): string {
+  return `${hex}${Math.round(Math.max(0, Math.min(1, alpha)) * 255).toString(16).padStart(2, '0').toUpperCase()}`;
 }
 
 /** Multiplies each channel of a `#RRGGBB` colour (clamped to 255). */
@@ -440,12 +479,3 @@ export const C = {
   wineDeep: '#6E2A34',
 } as const;
 
-/**
- * @deprecated legacy UI colour. The cream surfaces of the pre-D screens (Tailwind `surface`, `bg`,
- * `muted`), kept until #12 restyles those screens on `UI`.
- */
-export const LEGACY_UI = {
-  surface: '#FFFDF9',
-  bg: '#FAF1E0',
-  muted: '#7A6553',
-} as const;

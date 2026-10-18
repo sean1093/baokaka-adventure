@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { MIN_CONTRAST, TEXT_PAIRS, contrastRatio, luminance } from './contrast';
-import { UI } from './palette';
+import { CHAPTER_CLOCK } from '../quest/engine/clock';
+import { CARD_SCRIM, MIN_CONTRAST, TEXT_PAIRS, contrastRatio, luminance } from './contrast';
+import { UI, mixHex, skyAt, withAlpha } from './palette';
 
 describe('contrastRatio', () => {
   test('matches the WCAG reference values', () => {
@@ -25,6 +26,25 @@ describe('§ 3.3 contrast rules', () => {
     for (const pair of TEXT_PAIRS) {
       expect(UI[pair.text]).toMatch(/^#[0-9A-F]{6}$/);
       expect(UI[pair.on]).toMatch(/^#[0-9A-F]{6}$/);
+    }
+  });
+});
+
+test('withAlpha appends a two-digit alpha', () => {
+  expect(withAlpha('#0A0820', 0.62)).toBe('#0A08209E');
+  expect(withAlpha('#FFFFFF', 0)).toBe('#FFFFFF00');
+  expect(withAlpha('#FFFFFF', 2)).toBe('#FFFFFFFF');
+});
+
+describe('chapter card text over the sky (§ 7.6, § 3.3)', () => {
+  // Every chapter clock, the labelled cards' 05:30 (the 05:29 sky) and the in-between keys
+  const times = [...Object.values(CHAPTER_CLOCK), '04:30', '05:29', '05:30'];
+
+  test.each(times)('the title reads at %s on the card scrim', (time) => {
+    const sky = skyAt(time);
+    // The text sits between the top and mid stops; the lighter of the two is the worst case
+    for (const behind of [sky.top, sky.mid]) {
+      expect(contrastRatio(UI.inkOnDark, mixHex(behind, UI.scrim, CARD_SCRIM))).toBeGreaterThanOrEqual(MIN_CONTRAST.body);
     }
   });
 });

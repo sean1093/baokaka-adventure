@@ -100,10 +100,17 @@ function isRun(value: unknown): value is Run {
   );
 }
 
-function isSettings(value: unknown): value is QuestSettings {
+/**
+ * Settings as stored. `reducedMotion` arrived after save v6 shipped, so a v6 save without it is
+ * still valid and loads with the default (`withDefaults`); a present value must be a boolean.
+ */
+function isSettings(value: unknown): value is Partial<QuestSettings> & Pick<QuestSettings, 'skipRides'> {
   if (typeof value !== 'object' || value === null) return false;
-  return typeof (value as Partial<QuestSettings>).skipRides === 'boolean';
+  const settings = value as Partial<QuestSettings>;
+  return typeof settings.skipRides === 'boolean' && (settings.reducedMotion === undefined || typeof settings.reducedMotion === 'boolean');
 }
+
+const withDefaults = (settings: Partial<QuestSettings>): QuestSettings => ({ ...DEFAULT_SETTINGS, ...settings });
 
 function isStoredSave(value: unknown): value is StoredSave {
   if (typeof value !== 'object' || value === null) return false;
@@ -133,7 +140,7 @@ const freshSave = (): QuestSave => ({ run: freshRun(Date.now() | 0), sound: true
  */
 export function loadQuest(storage: StorageLike | null = browserStorage()): LoadedQuest {
   const stored = loadJson(QUEST_KEY, isStoredSave, storage);
-  if (stored) return { save: { run: stored.run, sound: stored.sound, settings: stored.settings }, legacyReset: false };
+  if (stored) return { save: { run: stored.run, sound: stored.sound, settings: withDefaults(stored.settings) }, legacyReset: false };
   return { save: freshSave(), legacyReset: hasLegacy(storage) };
 }
 

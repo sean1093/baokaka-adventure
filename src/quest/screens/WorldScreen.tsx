@@ -1,12 +1,15 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Button, IconButton } from '../../components/Button';
-import { Chip } from '../../components/Screen';
-import type { PaletteName } from '../../art/types';
-import { Home, Sparkle } from '../../components/icons';
+import { skyAt } from '../../art/palette';
+import { IconButton } from '../../components/Button';
+import { ChapterCard } from '../../components/ChapterCard';
+import { GlassChip, Num } from '../../components/Chip';
+import { Home, Pouch } from '../../components/icons';
+import { usePresence } from '../../components/motion';
 import { playTone } from '../../shared/audio';
 import { IsoMap, mapActors, type Actor } from '../components/IsoMap';
-import { ChapterCard, ChoicePrompt, Dialogue, InnPrompt } from '../components/Dialogue';
+import { TalkBox, linePage, type Talk } from '../components/Dialogue';
 import { HERO_SPRITE, PartyPanel } from '../components/PartyPanel';
+import { mapClock } from '../engine/clock';
 import { CHAPTER_TITLES, MAPS } from '../engine/maps';
 import { adjacentTile, findPath, isBlocked, meets, restingSpot } from '../engine/path';
 import { FOLLOWERS, activeFollower, type Follower } from '../engine/progress';
@@ -20,15 +23,10 @@ const SPEED = 3.4;
 /** How far behind the leader each follower trails, in path steps */
 const TRAIL = 2;
 
-/** Backdrop behind the tiles: the light each place sits in. */
-const SURROUND: Record<PaletteName, string> = {
-  living: 'bg-gradient-to-b from-mochaDeep/90 to-ink',
-  yard: 'bg-gradient-to-b from-sky/70 to-leafDeep/80',
-  park: 'bg-gradient-to-b from-sky/70 to-leaf/60',
-  market: 'bg-gradient-to-b from-sun/50 to-mochaDeep/80',
-  beach: 'bg-gradient-to-b from-sky/80 to-sand',
-  night: 'bg-gradient-to-b from-plum/70 to-ink',
-};
+/** How long the talk box takes to slide away (art direction § 7.9 *Dialogue in/out*). */
+const TALK_OUT_MS = 240;
+/** The map → map iris (§ 7.9). */
+const IRIS_MS = 400;
 
 type Walk = { c: number; r: number; flip: boolean; moving: boolean };
 type Motion = { x: number; y: number; history: { c: number; r: number }[]; flip: boolean; escort: Tile[] };
@@ -86,8 +84,10 @@ type Props = {
  * triggers and exits all stay in the engine.
  */
 export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onChoose, onMenu, onExit, followers = FOLLOWERS }: Props) => {
-  const { run, line, card, choice, inn, sound } = state;
+  const { run, line, card, choice, inn, sound, scene } = state;
   const map = MAPS[run.map];
+  const clock = mapClock(map);
+  const sky = skyAt(clock);
   const follower = activeFollower(run.flags, followers);
 
   const [box, setBox] = useState({ w: 360, h: 420 });
@@ -128,6 +128,29 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
 
   const callbacks = useRef({ onStep, onInteract });
   callbacks.current = { onStep, onInteract };
+
+  // A new map opens with an iris on the party (who stands at the centre of the view)
+  const [iris, setIris] = useState(0);
+  const shownMap = useRef(run.map);
+  useEffect(() => {
+    if (shownMap.current === run.map) return undefined;
+    shownMap.current = run.map;
+    setIris((count) => count + 1);
+    const timer = window.setTimeout(() => setIris(0), IRIS_MS + 50);
+    return () => window.clearTimeout(timer);
+  }, [run.map]);
+
+  // The talk box: a line, a choice or the inn question, kept for its exit animation
+  const talkNow: Talk | null = card
+    ? null
+    : line
+      ? { kind: 'line', line, page: scene ? linePage(scene.steps, scene.at) : undefined }
+      : choice
+        ? { kind: 'choice', prompt: choice.prompt, options: choice.options }
+        : inn !== null
+          ? { kind: 'inn', price: inn, coins: run.coins }
+          : null;
+  const talk = usePresence(talkNow, TALK_OUT_MS);
 
   // A scene, a card or a screen change stops the party where it stands
   const frozen = Boolean(line || card || choice || inn !== null);
@@ -288,22 +311,13 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
   const doors = map.exits.filter((exit) => meets(run.flags, exit) || !exit.blocked);
 
   return (
-    <main className="screen-in mx-auto flex h-dvh w-full max-w-md flex-col gap-2 px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-[max(env(safe-area-inset-top),10px)]">
-      <header className="flex items-center gap-2">
-        <IconButton icon={<Home />} label="回到標題" onClick={onExit} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-caption font-bold opacity-75">
-            第 {map.chapter} 章 · {CHAPTER_TITLES[map.chapter - 1]}
-          </p>
-          <h1 className="truncate text-heading font-extrabold leading-tight">{map.title}</h1>
-        </div>
-        <Button size="sm" variant="tonal" icon={<Sparkle size={18} />} onClick={onMenu}>
-          隊伍
-        </Button>
-      </header>
-
-      {/* The surround takes the map's own sky, so the world reads as a lit stage rather than a hole */}
-      <div ref={frame} className={`relative min-h-0 flex-1 overflow-hidden rounded-3xl shadow-card ${SURROUND[map.palette]}`}>
+    <main className="kit-fade-in relative mx-auto h-dvh w-full max-w-md overflow-hidden">
+      {/* The map fills the screen; behind the tiles, the sky of this map's hour (§ 3.2) */}
+      <div
+        ref={frame}
+        className="absolute inset-0"
+        style={{ background: `linear-gradient(180deg, ${sky.top} 0%, ${sky.mid} 62%, ${sky.horizon} 100%)` }}
+      >
         <IsoMap
           map={map}
           flags={run.flags}
@@ -318,34 +332,55 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
           }}
         />
 
-        {/* One light pool over the whole map: the party stands in the light, the edges fall
-            away. Doing this once beats shading every tile, which tiles into visible stripes. */}
+        {/* One light pool over the whole map: the party stands in the light, the edges fall into
+            the night. Doing this once beats shading every tile, which tiles into visible stripes. */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 78% 58% at 50% 48%, rgba(255,247,232,0.16) 0%, rgba(255,247,232,0) 55%, rgba(59,42,32,0.32) 100%)',
+              'radial-gradient(ellipse 80% 52% at 50% 50%, rgba(255,247,232,0.12) 0%, rgba(255,247,232,0) 55%, rgba(10,8,32,0.5) 100%)',
           }}
         />
-
-        {!frozen && doors.length > 0 && (
-          <div className="pointer-events-none absolute left-2 top-2 flex flex-wrap gap-1">
-            {doors.map((exit) => (
-              <Chip key={`${exit.to}${exit.c}${exit.r}`} tone="ink">
-                往 {exit.to === RIDE_TO ? (run.rideTo ? (stationAt(run.rideTo)?.name ?? MAPS[run.rideTo].title) : UI.travelTitle) : MAPS[exit.to].title}
-              </Chip>
-            ))}
-          </div>
-        )}
-
-        {card && <ChapterCard n={card.n} title={card.title} time={card.time} label={card.label} onDismiss={onAdvance} />}
-        {!card && line && <Dialogue line={line} onAdvance={onAdvance} />}
-        {!card && !line && inn !== null && <InnPrompt price={inn} coins={run.coins} onAnswer={onInn} />}
-        {!card && !line && choice && <ChoicePrompt prompt={choice.prompt} options={choice.options} onChoose={onChoose} />}
       </div>
 
-      <PartyPanel run={run} compact />
+      {/* HUD: home, where and when, the menu (§ 7.2 glass chips) */}
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start gap-2.5 px-3 pt-[max(env(safe-area-inset-top),12px)]">
+        <IconButton icon={<Home size={22} />} label="回到標題" onClick={onExit} className="pointer-events-auto" />
+        <div className="kit-glass min-w-0 flex-1 rounded px-3.5 pb-1.5 pt-1" data-hud="">
+          <p className="truncate text-caption tracking-[0.08em] text-mutedOnDark">
+            第 {map.chapter} 章 · {CHAPTER_TITLES[map.chapter - 1]}
+          </p>
+          <h1 className="flex items-baseline gap-2 font-serif text-[19px] font-black leading-tight tracking-[0.1em]">
+            <span className="truncate">{map.title}</span>
+            <Num className="shrink-0 text-[13px]">{clock}</Num>
+          </h1>
+        </div>
+        <IconButton icon={<Pouch size={22} />} label="隊伍和百寶袋" onClick={onMenu} className="pointer-events-auto" />
+      </header>
+
+      {!frozen && doors.length > 0 && (
+        <div className="pointer-events-none absolute inset-x-0 top-[calc(max(env(safe-area-inset-top),12px)+64px)] z-10 flex flex-wrap gap-1.5 px-3">
+          {doors.map((exit) => (
+            <GlassChip key={`${exit.to}${exit.c}${exit.r}`} className="text-[14px]">
+              <span aria-hidden="true" className="text-gold">›</span>往 {exit.to === RIDE_TO ? (run.rideTo ? (stationAt(run.rideTo)?.name ?? MAPS[run.rideTo].title) : UI.travelTitle) : MAPS[exit.to].title}
+            </GlassChip>
+          ))}
+        </div>
+      )}
+
+      <div className="absolute inset-x-0 bottom-0 z-10 px-3 pb-[max(env(safe-area-inset-bottom),12px)]">
+        <PartyPanel run={run} />
+      </div>
+
+      {iris > 0 && (
+        <div key={iris} aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+          <span className="kit-iris" style={{ ['--x' as string]: '50%', ['--y' as string]: '50%' }} />
+        </div>
+      )}
+
+      {talk.value && <TalkBox talk={talk.value} leaving={talk.leaving} onAdvance={onAdvance} onChoose={onChoose} onInn={onInn} />}
+      {card && <ChapterCard key={`${card.n}${card.label ?? ''}${card.title}`} kicker={card.label ?? `第 ${card.n} 章`} title={card.title} time={card.time} next={card.next} onDismiss={onAdvance} />}
     </main>
   );
 };

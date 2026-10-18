@@ -1,54 +1,80 @@
 import { SPRITES } from '../../art/sprites';
 import { Button } from '../../components/Button';
-import { AppBar, Chip, Screen } from '../../components/Screen';
+import { GlassChip, Num } from '../../components/Chip';
+import { Panel } from '../../components/Panel';
+import { AppBar, Screen } from '../../components/Screen';
+import { ListRow } from '../../components/Sheet';
 import { ITEMS, MAX_ITEM_COUNT } from '../engine/heroes';
 import { UI } from '../engine/strings';
 import type { ItemId, Run } from '../engine/types';
+import { ItemIcon } from './PartySheet';
 
 const Vendor = SPRITES.vendor;
 
 type Props = { stock: ItemId[]; run: Run; onBuy: (item: ItemId) => void; onClose: () => void };
 
-/** The 銅板 shop. One row per item: art, name, what it does, price and a buy button. */
+/** The 銅板 shop. One row per item: art, name, what it does, and the price on a buy button. */
 export const ShopScreen = ({ stock, run, onBuy, onClose }: Props) => (
   <Screen className="gap-3">
-    <AppBar title="用銅板換東西" kicker="小店" onBack={onClose} backLabel="離開小店" right={<Chip tone="sun">{UI.coins} {run.coins}</Chip>} />
+    <AppBar
+      title="用銅板換東西"
+      kicker="小店"
+      onBack={onClose}
+      backLabel="離開小店"
+      right={
+        <GlassChip className="rounded-full">
+          {UI.coins} <Num>{run.coins}</Num>
+        </GlassChip>
+      }
+    />
 
-    <section className="flex items-center gap-3 rounded-3xl bg-gradient-to-br from-sun/30 via-cream to-berry/15 p-4 text-ink shadow-card">
-      <span className="block h-16 w-16 shrink-0">
-        <Vendor lod="battle" />
+    {/* The shopkeeper speaks from a small panel, her backlight warm */}
+    <Panel className="flex items-center gap-3 px-3 py-3">
+      <span className="relative block h-[72px] w-[72px] shrink-0">
+        <span aria-hidden="true" className="absolute inset-[-6px] block rounded-full bg-[radial-gradient(circle,theme(colors.backlight.warm/55%),transparent_68%)]" />
+        <span className="relative block h-full w-full">
+          <Vendor lod="battle" />
+        </span>
       </span>
-      <p className="text-copy font-bold leading-relaxed text-ink/80">「看看有沒有喜歡的，銅板夠就拿去。」</p>
-    </section>
+      <span className="relative min-w-0">
+        <span className="kit-nameplate !static mb-1 inline-block !px-4 !py-0.5 !text-[15px]">老闆娘</span>
+        <span className="block text-body leading-relaxed">「看看有沒有喜歡的，銅板夠就拿去。」</span>
+      </span>
+    </Panel>
 
     <div className="flex flex-col gap-2">
       {stock.map((item) => {
         const entry = ITEMS[item];
-        const Art = SPRITES[entry.sprite];
         const held = run.items[item] ?? 0;
         const broke = run.coins < entry.price;
         const full = held >= MAX_ITEM_COUNT;
         return (
-          <div key={item} className="flex items-center gap-3 rounded-3xl bg-surface p-3 text-ink shadow-card">
-            <span className="block h-12 w-12 shrink-0">
-              <Art lod="icon" />
-            </span>
+          <ListRow key={item}>
+            <ItemIcon item={item} size={48} />
             <span className="min-w-0 flex-1">
-              <span className="flex items-baseline gap-1.5">
-                <span className="truncate text-heading font-extrabold leading-tight">{entry.name}</span>
-                {held > 0 && <span className="shrink-0 text-caption font-bold text-muted">有 {held}</span>}
+              <span className="flex items-baseline gap-2">
+                <span className="truncate font-serif text-[19px] font-black tracking-[0.06em]">{entry.name}</span>
+                {held > 0 && <span className="shrink-0 text-caption text-mutedOnDark">有 <span className="font-num">{held}</span></span>}
               </span>
-              <span className="line-clamp-2 block text-caption leading-snug text-muted">{entry.blurb}</span>
+              <span className="line-clamp-2 block text-caption leading-snug text-mutedOnDark">{entry.blurb}</span>
             </span>
-            <Button size="sm" variant={broke || full ? 'tonal' : 'primary'} disabled={broke || full} onClick={() => onBuy(item)}>
-              {full ? '滿了' : `${entry.price} 個`}
+            {/* Secondary on purpose: a shop is a list of equal choices, with no one gold "next thing" */}
+            <Button size="sm" variant="secondary" disabled={broke || full} label={full ? undefined : `買${entry.name}，${UI.coinCount(entry.price)}`} onClick={() => onBuy(item)} className="min-w-[76px] gap-1 !tracking-normal">
+              {full ? (
+                '滿了'
+              ) : (
+                <>
+                  <Num className="text-[19px]">{entry.price}</Num>
+                  <span className="text-[14px]">個</span>
+                </>
+              )}
             </Button>
-          </div>
+          </ListRow>
         );
       })}
     </div>
 
-    <Button size="lg" full variant="tonal" onClick={onClose}>
+    <Button size="lg" full variant="secondary" onClick={onClose}>
       不買了
     </Button>
   </Screen>

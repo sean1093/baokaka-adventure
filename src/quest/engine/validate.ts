@@ -1,6 +1,7 @@
 import { spriteMeta, type SpriteComponent } from '../../art/sprite';
 import { SPRITES } from '../../art/sprites';
-import { EVENTS, SPEAKERS } from './events';
+import { BACKLIGHT } from '../../art/palette';
+import { EVENTS, ROLE_BACKLIGHT, SPEAKERS } from './events';
 import { FOES } from './foes';
 import { ITEMS, ITEM_ORDER, MAX_LEVEL, SPELLS, XP_TABLE } from './heroes';
 import { TERRAIN, covers, terrainAt } from './iso';
@@ -35,8 +36,37 @@ export const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
 export const CHOICE_OPTIONS = { min: 2, max: 3 } as const;
 export const CHOICE_LABEL_MAX = 12;
 
+/** The longest 「下一站」 station name the chapter card's departure board fits. */
+export const CHAPTER_NEXT_MAX = 8;
+
 /** How deep `include` may nest (an include inside an included event is depth 2). */
 export const MAX_INCLUDE_DEPTH = 4;
+
+/** True when every 【 closes with a 】 before the next 【, and no pair is empty. */
+export function markupBalanced(text: string): boolean {
+  let open = false;
+  let inside = 0;
+  for (const char of text) {
+    if (char === '【') {
+      if (open) return false;
+      open = true;
+      inside = 0;
+    } else if (char === '】') {
+      if (!open || inside === 0) return false;
+      open = false;
+    } else if (open) inside += 1;
+  }
+  return !open;
+}
+
+/** Speakers: a known role, a real backlight colour and sprite (art direction § 7.5). */
+export function validateSpeakers(speakers: typeof SPEAKERS, errors: string[]): void {
+  for (const [id, entry] of Object.entries(speakers)) {
+    if (!SPRITES[entry.sprite]) errors.push(`speaker ${id} has unknown sprite ${entry.sprite}`);
+    if (!Object.prototype.hasOwnProperty.call(ROLE_BACKLIGHT, entry.role)) errors.push(`speaker ${id} has unknown role ${entry.role}`);
+    if (entry.color !== undefined && !Object.prototype.hasOwnProperty.call(BACKLIGHT, entry.color)) errors.push(`speaker ${id} has unknown backlight ${entry.color}`);
+  }
+}
 
 /** Checks one script's steps; exported so tests can feed it broken scripts. */
 export function validateSteps(where: string, steps: Step[], errors: string[]): void {
@@ -47,6 +77,10 @@ export function validateSteps(where: string, steps: Step[], errors: string[]): v
       if (step.who !== null && !HERO_ORDER.includes(step.who as never) && !SPEAKERS[step.who]) {
         errors.push(`${at}: unknown speaker ${step.who}`);
       }
+      // Key-term markup (【詞】, art direction § 7.5): brackets pair up, never nest, never empty
+      if (!markupBalanced(step.text)) errors.push(`${at}: unbalanced or empty 【】 key-term markup`);
+      if (step.expr !== undefined && !/^[a-z][a-zA-Z]*$/.test(step.expr)) errors.push(`${at}: expr must be a camelCase name, got ${JSON.stringify(step.expr)}`);
+      if (step.expr !== undefined && step.who === null) errors.push(`${at}: narration has no face, so no expr`);
       continue;
     }
     switch (step.do) {
@@ -80,6 +114,9 @@ export function validateSteps(where: string, steps: Step[], errors: string[]): v
         if (step.title.length === 0) errors.push(`${at}: chapter without a title`);
         if (step.time !== undefined && !CLOCK.test(step.time)) errors.push(`${at}: chapter time must be HH:MM, got "${step.time}"`);
         if (step.label !== undefined && step.label.length === 0) errors.push(`${at}: empty chapter label`);
+        // The departure board fits about eight characters after 「下一站：」
+        if (step.next !== undefined && (step.next.length === 0 || step.next.length > CHAPTER_NEXT_MAX)) errors.push(`${at}: chapter next station must be 1–${CHAPTER_NEXT_MAX} characters, got "${step.next}"`);
+        if (step.next !== undefined && step.time === undefined) errors.push(`${at}: a next station shows on the clock, so the card needs a time`);
         break;
       case 'heal':
         if (step.ratio !== undefined && !(step.ratio > 0 && step.ratio <= 1)) errors.push(`${at}: heal ratio must be in (0, 1], got ${step.ratio}`);
@@ -577,6 +614,7 @@ export function validateQuestContent(): string[] {
     validateSteps(`event ${key}`, steps, errors);
   }
   validateIncludes(EVENTS, errors);
+  validateSpeakers(SPEAKERS, errors);
 
   for (const id of MAP_ORDER) validateMap(MAPS[id], errors);
   validateMrt(MAPS, STATIONS, EVENTS, errors);

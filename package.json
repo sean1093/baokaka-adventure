@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "sim": "vite-node scripts/sim.ts",
     "visual": "node scripts/visual-check.mjs --serve",
-    "visual:update": "node scripts/visual-check.mjs --serve --update"
+    "visual:update": "node scripts/visual-check.mjs --serve --update",
+    "check:ui": "node scripts/ui-check.mjs --serve"
   },
   "dependencies": {
     "react": "^18.3.1",

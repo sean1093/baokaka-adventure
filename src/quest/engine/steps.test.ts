@@ -3,13 +3,13 @@
  * free inn, spending coins in events, and the two-phase boss retry pattern.
  */
 import { describe, expect, test } from 'vitest';
-import { EVENTS } from './events';
+import { EVENTS, ROLE_BACKLIGHT, SPEAKERS, speakerBacklight } from './events';
 import { MAPS } from './maps';
 import { freshRun, initialState, play, questReducer, type QuestState } from './quest';
 import { fullHp, fullMp, healParty, runScene, type Scene, type SceneResult } from './scene';
 import { UI } from './strings';
 import type { Line, Run, Step } from './types';
-import { validateIncludes, validateSteps } from './validate';
+import { markupBalanced, validateIncludes, validateSpeakers, validateSteps } from './validate';
 
 const run0 = (): Run => freshRun(5);
 
@@ -352,5 +352,50 @@ describe('a two-phase boss and its retry', () => {
     const scene: Scene = runScene({ ...run0(), flags: ['x'] }, { steps: [{ do: 'include', event: 'home.dust', when: 'x' }], at: 0 }).scene;
     expect(scene.steps).toEqual(EVENTS['home.dust']);
     expect(scene.steps[scene.at]).toBe(EVENTS['home.dust'][0]);
+  });
+});
+
+describe('UI kit v2 script fields (#12)', () => {
+  const errorsOf = (steps: Step[]): string[] => {
+    const errors: string[] = [];
+    validateSteps('t', steps, errors);
+    return errors;
+  };
+
+  test('a chapter card carries its 「下一站」 through to the state', () => {
+    const steps: Step[] = [{ do: 'chapter', n: 3, title: '月亮線，出發！', time: '01:10', next: '台北車站' }];
+    const state: QuestState = play({ ...initialState(run0(), false), view: { screen: 'world' } }, steps);
+    expect(state.card).toEqual({ n: 3, title: '月亮線，出發！', time: '01:10', next: '台北車站' });
+    expect(errorsOf(steps)).toEqual([]);
+  });
+
+  test('the next station needs a clock and fits the board', () => {
+    expect(errorsOf([{ do: 'chapter', n: 3, title: 'x', next: '台北車站' }])).toHaveLength(1);
+    expect(errorsOf([{ do: 'chapter', n: 3, title: 'x', time: '01:10', next: '一二三四五六七八九' }])).toHaveLength(1);
+    expect(errorsOf([{ do: 'chapter', n: 3, title: 'x', time: '01:10', next: '' }])).toHaveLength(1);
+  });
+
+  test('key-term markup must pair up', () => {
+    expect(markupBalanced('風往這邊吹。【寶物】在附近。')).toBe(true);
+    expect(markupBalanced('沒有記號')).toBe(true);
+    for (const broken of ['【寶物', '寶物】', '【】', '【a【b】】', '】a【']) expect(markupBalanced(broken)).toBe(false);
+    expect(errorsOf([{ who: null, text: '【寶物' }])).toHaveLength(1);
+    expect(errorsOf([{ who: 'mocha', text: '「【寶物】在這。」' }])).toEqual([]);
+  });
+
+  test('expr names a face, and narration has none', () => {
+    expect(errorsOf([{ who: 'mocha', text: '喵。', expr: 'smug' }])).toEqual([]);
+    expect(errorsOf([{ who: 'mocha', text: '喵。', expr: 'Big Grin' }])).toHaveLength(1);
+    expect(errorsOf([{ who: null, text: '風吹過。', expr: 'happy' }])).toHaveLength(1);
+  });
+
+  test('every speaker has a role and a real backlight; a broken entry is caught', () => {
+    const errors: string[] = [];
+    validateSpeakers(SPEAKERS, errors);
+    expect(errors).toEqual([]);
+    validateSpeakers({ bad: { name: '壞', sprite: 'mom', role: 'nobody' as never, color: 'neon' as never } }, errors);
+    expect(errors).toHaveLength(2);
+    expect(speakerBacklight(SPEAKERS.mom)).toBe(ROLE_BACKLIGHT.family);
+    expect(speakerBacklight(SPEAKERS.mochaNpc)).toBe('jade');
   });
 });

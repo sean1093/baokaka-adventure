@@ -1,5 +1,9 @@
 import { SPRITES } from '../../art/sprites';
 import type { SpriteName } from '../../art/types';
+import { Bar, HP_NUMBER, hpState } from '../../components/Bars';
+import { Num } from '../../components/Chip';
+import { HeadRing } from '../../components/CommandPanel';
+import { Alert } from '../../components/icons';
 import { HEROES, XP_TABLE, heroStats } from '../engine/heroes';
 import { UI } from '../engine/strings';
 import type { HeroId, Run } from '../engine/types';
@@ -10,62 +14,68 @@ import type { HeroId, Run } from '../engine/types';
  */
 export const HERO_SPRITE: Record<HeroId, SpriteName> = { baokaka: 'baokaka', mocha: 'mochaCat', magpie: 'pigeon', bear: 'moleKing' };
 
-const Meter = ({ value, max, tone }: { value: number; max: number; tone: 'hp' | 'mp' }) => {
-  const ratio = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
-  const fill = tone === 'mp' ? 'bg-sky' : ratio > 0.5 ? 'bg-leaf' : ratio > 0.22 ? 'bg-sun' : 'bg-berry';
+/**
+ * A hero's head for a gold ring: the icon LOD (option D sprites crop to the head), drawn larger
+ * than the ring and nudged up so a legacy full-figure sprite shows its face.
+ */
+export const HeroHead = ({ hero }: { hero: HeroId }) => {
+  const Art = SPRITES[HERO_SPRITE[hero]];
   return (
-    <span className="block h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
-      <span className={`block h-full rounded-full ${fill} transition-[width] duration-300`} style={{ width: `${ratio * 100}%` }} />
+    <span className="absolute left-[-30%] top-[-8%] block h-[160%] w-[160%]">
+      <Art lod="icon" />
     </span>
   );
 };
 
-/** The party strip: one row per hero with 體力 and 元氣, plus the shared 等級 and 銅板 line. */
-export const PartyPanel = ({ run, compact = false }: { run: Run; compact?: boolean }) => {
+/**
+ * The party strip over the bottom of the map: 等級 and 經驗 on the left, 銅板 on the right, then one
+ * mini card per hero with 體力 and 元氣 bars. With four heroes on a phone there is no room for the
+ * heads (the map shows everyone), so they drop out.
+ */
+export const PartyPanel = ({ run }: { run: Run }) => {
   const next = XP_TABLE[run.level] ?? null;
-  // Four heroes across a phone leave each compact card ~75px: room for the name, the number and
-  // the bars, but not for a portrait too (the map already shows everyone)
-  const portraits = !compact || run.party.length <= 3;
+  const heads = run.party.length <= 3;
   return (
-    <div className="rounded-3xl bg-surface/95 p-3 text-ink shadow-card backdrop-blur">
-      <div className="mb-2 flex items-center justify-between gap-2 text-caption font-bold">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="grid h-6 w-6 place-items-center rounded-full bg-ink text-cream">{run.level}</span>
-          <span className="text-muted">等級</span>
+    <section aria-label="隊伍狀態" className="kit-panel px-3 pb-3 pt-2.5">
+      <div className="relative mb-2 flex items-center gap-2 text-caption">
+        <span className="inline-flex items-baseline gap-1 font-serif tracking-[0.08em] text-gold">
+          等級 <Num className="text-[17px]">{run.level}</Num>
         </span>
-        <span className="text-muted">{next === null ? '經驗 已滿' : `經驗 ${run.xp} / ${next}`}</span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-sun/25 px-2 py-0.5 text-mochaDeep">{UI.coins} {run.coins}</span>
+        <span className="min-w-0 flex-1 truncate text-mutedOnDark">
+          經驗 <span className="font-num font-semibold tabular-nums">{next === null ? '已滿' : `${run.xp} / ${next}`}</span>
+        </span>
+        <span className="inline-flex items-baseline gap-1 text-mutedOnDark">
+          {UI.coins} <Num className="text-[17px]">{run.coins}</Num>
+        </span>
       </div>
 
-      <div className={compact ? 'flex gap-2' : 'flex flex-col gap-2'}>
+      <div className="relative grid gap-2" style={{ gridTemplateColumns: `repeat(${run.party.length}, minmax(0, 1fr))` }}>
         {run.party.map((hero) => {
-          const Art = SPRITES[HERO_SPRITE[hero]];
           const stats = heroStats(hero, run.level, run.equip[hero]);
           const hp = run.hp[hero];
+          const state = hpState(hp, stats.hp);
           return (
-            <div key={hero} className={`flex min-w-0 items-center gap-2 ${compact ? 'flex-1' : ''}`}>
-              {portraits && (
-                <span className={`block h-9 w-9 shrink-0 ${hp === 0 ? 'opacity-30 grayscale' : ''}`}>
-                  <Art lod="icon" />
-                </span>
+            <div key={hero} className="flex min-w-0 items-center gap-2" data-hero={hero}>
+              {heads && (
+                <HeadRing size={34} dim={hp === 0}>
+                  <HeroHead hero={hero} />
+                </HeadRing>
               )}
               <span className="min-w-0 flex-1">
-                {/* Three heroes across a 375px phone leaves no room for a name and a number side by side */}
-                <span className={compact ? 'block' : 'flex items-baseline justify-between gap-1'}>
-                  <span className="block truncate text-caption font-extrabold leading-tight">{HEROES[hero].name}</span>
-                  <span className="block shrink-0 text-caption font-bold leading-tight tabular-nums text-muted">
-                    {hp}/{stats.hp}
+                <span className="flex items-baseline justify-between gap-1">
+                  <span className="truncate font-serif text-[14px] font-black leading-tight tracking-[0.04em]">{HEROES[hero].name}</span>
+                  <span className={`inline-flex shrink-0 items-center font-num text-[12px] font-semibold tabular-nums leading-tight ${HP_NUMBER[state]}`}>
+                    {state === 'critical' && <Alert size={11} />}
+                    {hp}
                   </span>
                 </span>
-                <Meter value={hp} max={stats.hp} tone="hp" />
-                <span className="mt-1 block">
-                  <Meter value={run.mp[hero]} max={stats.mp} tone="mp" />
-                </span>
+                <Bar value={hp} max={stats.hp} kind="hp" className="mt-1" />
+                <Bar value={run.mp[hero]} max={stats.mp} kind="mp" className="mt-[3px]" />
               </span>
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 };

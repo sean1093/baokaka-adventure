@@ -1,5 +1,7 @@
-import { useState, type Dispatch } from 'react';
+import { useEffect, useState, type Dispatch, type ReactNode } from 'react';
+import { REDUCE_MOTION_CLASS, ReducedMotionContext } from '../components/motion';
 import { unlockAudio } from '../shared/audio';
+import { mapClock } from './engine/clock';
 import { MAPS } from './engine/maps';
 import type { Follower } from './engine/progress';
 import type { QuestAction, QuestState } from './engine/quest';
@@ -32,10 +34,27 @@ type Props = {
  * those, and the art lab renders this same component over fixture states, so its screenshots
  * always show the real wiring.
  */
-export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissNotice = () => {}, menuOpen: openOnMount = false, followers, travelHere }: Props) => {
+export const QuestScreens = (props: Props) => {
+  const reduced = props.state.settings.reducedMotion;
+
+  // 減少動態 reaches CSS through a class on <html>, so portalled sheets follow it too
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle(REDUCE_MOTION_CLASS, reduced);
+    return () => root.classList.remove(REDUCE_MOTION_CLASS);
+  }, [reduced]);
+
+  return (
+    <ReducedMotionContext.Provider value={reduced}>
+      <CurrentScreen {...props} />
+    </ReducedMotionContext.Provider>
+  );
+};
+
+const CurrentScreen = ({ state, dispatch, legacyNotice = false, onDismissNotice = () => {}, menuOpen: openOnMount = false, followers, travelHere }: Props): ReactNode => {
   const [menuOpen, setMenuOpen] = useState(openOnMount !== false);
   const sheetStart = typeof openOnMount === 'object' ? openOnMount : undefined;
-  const { view, run, sound } = state;
+  const { view, run, sound, settings } = state;
 
   switch (view.screen) {
     case 'title':
@@ -73,9 +92,13 @@ export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissN
             open={menuOpen}
             start={sheetStart}
             run={run}
+            sound={sound}
+            reducedMotion={settings.reducedMotion}
             onClose={() => setMenuOpen(false)}
             onUseItem={(item, hero) => dispatch({ type: 'useItem', item, hero })}
             onEquip={(item, hero) => dispatch({ type: 'equip', item, hero })}
+            onToggleSound={() => dispatch({ type: 'toggleSound' })}
+            onReducedMotion={(on) => dispatch({ type: 'setReducedMotion', on })}
           />
         </>
       );
@@ -85,6 +108,7 @@ export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissN
         <BattleScreen
           battle={view.battle}
           palette={MAPS[run.map].palette}
+          place={{ title: MAPS[run.map].title, time: mapClock(MAPS[run.map]) }}
           soundOn={sound}
           onAction={(action) => dispatch({ type: 'battle', action })}
           onEnd={() => dispatch({ type: 'battleEnd' })}
@@ -114,7 +138,7 @@ export const QuestScreens = ({ state, dispatch, legacyNotice = false, onDismissN
           run={run}
           fresh={view.fresh}
           note={view.note}
-          skipRides={state.settings.skipRides}
+          skipRides={settings.skipRides}
           here={travelHere}
           onRide={(station) => dispatch({ type: 'ride', station })}
           onClose={() => dispatch({ type: 'closeTravel' })}

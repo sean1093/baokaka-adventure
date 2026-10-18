@@ -323,8 +323,12 @@ export type GameMap = {
 // ---------------------------------------------------------------------------------------------
 // Scripts: dialogue and cutscenes
 
-/** A line spoken by a hero, an NPC (by id), or nobody (system narration). */
-export type Line = { who: HeroId | string | null; text: string };
+/**
+ * A line spoken by a hero, an NPC (by id), or nobody (system narration). `text` may mark key
+ * terms as `【詞】` (shown in gold, brackets dropped). `expr` names the speaker's expression for
+ * the dialogue bust (`SpriteProps.expr`); sprites that don't have it draw their default face.
+ */
+export type Line = { who: HeroId | string | null; text: string; expr?: string };
 
 /** One button of a `choice` step: what it says (≤ 12 characters) and the event it branches to. */
 export type ChoiceOption = { label: string; event: string };
@@ -342,9 +346,10 @@ export type Step =
   | Line
   /**
    * The chapter card. `time` is the clock on the card (`HH:MM`, decision D-16); `label` replaces
-   * 「第 n 章」 for 尾聲 / 番外 (D-15), and a labelled card does not move `run.chapter`.
+   * 「第 n 章」 for 尾聲 / 番外 (D-15), and a labelled card does not move `run.chapter`. `next` is
+   * the departure board's 「下一站：…」 line (art direction § 7.6), a station name.
    */
-  | { do: 'chapter'; n: number; title: string; time?: string; label?: string }
+  | { do: 'chapter'; n: number; title: string; time?: string; label?: string; next?: string }
   | { do: 'join'; hero: HeroId }
   | { do: 'flag'; flag: string }
   | { do: 'give'; item: ItemId; count?: number }
@@ -408,6 +413,8 @@ export type Run = {
 export type QuestSettings = {
   /** 直接到站: a 月亮線 ride skips the car and arrives at the destination at once */
   skipRides: boolean;
+  /** 減少動態: no loops, flips or draw-ons; everything a short fade (OR'd with the OS setting) */
+  reducedMotion: boolean;
 };
 
 // ---------------------------------------------------------------------------------------------

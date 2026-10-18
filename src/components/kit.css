@@ -1,0 +1,775 @@
+/*
+ * UI kit v2 (art direction § 7.2–7.9): navy glass, gold hairlines, one gold primary per screen.
+ * Every colour comes from the Tailwind theme (which reads src/art/palette.ts), so no hex lives
+ * here. Components in src/components put these classes together; screens never restyle them.
+ *
+ * Motion: every animation below is listed again at the end of the file, where reduced motion (the
+ * OS setting or the in-game 「減少動態」 toggle, `.reduce-motion` on <html>) turns loops, flips and
+ * draw-ons off and everything else into a 200ms fade (§ 7.9).
+ */
+
+/* ---- Panel (§ 7.2) ------------------------------------------------------------------------ */
+
+.kit-panel {
+  position: relative;
+  border: 1px solid theme('colors.gold.DEFAULT');
+  border-radius: 6px;
+  background: linear-gradient(180deg, theme('colors.panel.top'), theme('colors.panel.bottom'));
+  color: theme('colors.inkOnDark');
+  box-shadow:
+    0 18px 40px -14px rgb(0 0 0 / 0.8),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+/* The inner hairline: 1px gold at 30%, inset by 4px */
+.kit-panel::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid theme('colors.gold.DEFAULT / 30%');
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* A quieter surface inside a panel: list rows, party cards, stat boxes */
+.kit-inset {
+  position: relative;
+  border: 1px solid theme('colors.gold.DEFAULT / 28%');
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.02));
+}
+
+.kit-inset--on {
+  border-color: theme('colors.gold.DEFAULT');
+  box-shadow:
+    0 0 14px theme('colors.gold.DEFAULT / 35%'),
+    inset 0 0 12px theme('colors.gold.DEFAULT / 12%');
+}
+
+/* Gold diamond corner ornaments on major panels */
+.kit-diamond {
+  position: absolute;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  background: linear-gradient(135deg, theme('colors.gold.diamond'), theme('colors.gold.deep'));
+  box-shadow: 0 0 8px theme('colors.gold.light / 70%');
+  pointer-events: none;
+}
+
+.kit-diamond--tl {
+  left: -6px;
+  top: -6px;
+}
+.kit-diamond--tr {
+  right: -6px;
+  top: -6px;
+}
+.kit-diamond--bl {
+  left: -6px;
+  bottom: -6px;
+}
+.kit-diamond--br {
+  right: -6px;
+  bottom: -6px;
+}
+
+/* A gold rule that fades out at both ends */
+.kit-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, theme('colors.gold.DEFAULT / 70%'), transparent);
+}
+
+/* ---- Glass (chips, HUD plates, § 7.2) ----------------------------------------------------- */
+
+.kit-glass {
+  border: 1px solid theme('colors.gold.DEFAULT / 65%');
+  background: linear-gradient(180deg, theme('colors.panel.solid / 86%'), theme('colors.panel.deep / 86%'));
+  color: theme('colors.inkOnDark');
+  box-shadow:
+    0 6px 16px -8px rgb(0 0 0 / 0.9),
+    inset 0 0 0 3px theme('colors.panel.deep / 70%'),
+    inset 0 0 0 4px theme('colors.gold.DEFAULT / 22%');
+}
+
+/* ---- Buttons (§ 7.2) ---------------------------------------------------------------------- */
+
+/* Pressed: down 2px, glow off, 80ms */
+.kit-press {
+  transition:
+    transform var(--dur-instant) var(--ease-out),
+    box-shadow var(--dur-instant) var(--ease-out),
+    opacity var(--dur-quick) var(--ease-out);
+}
+
+.kit-press:active:not(:disabled),
+.kit-press[data-pressed] {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.kit-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 6px;
+  font-family: theme('fontFamily.serif');
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.kit-btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.kit-btn--lg {
+  min-height: 56px;
+  padding: 0 24px;
+  font-size: 21px;
+}
+.kit-btn--md {
+  min-height: 48px;
+  padding: 0 18px;
+  font-size: 18px;
+}
+.kit-btn--sm {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 16px;
+}
+
+.kit-btn--primary {
+  border: 1px solid theme('colors.gold.diamond');
+  background: linear-gradient(180deg, theme('colors.primary.top'), theme('colors.primary.mid') 55%, theme('colors.primary.bottom'));
+  color: theme('colors.primary.text');
+  box-shadow:
+    0 0 18px theme('colors.primary.mid / 50%'),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.kit-btn--secondary {
+  border: 1px solid theme('colors.gold.DEFAULT / 55%');
+  background: linear-gradient(180deg, theme('colors.command.top'), theme('colors.command.bottom'));
+  color: theme('colors.inkOnDark');
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 8px 16px -10px rgb(0 0 0 / 0.9);
+}
+
+.kit-btn--secondary::after,
+.kit-cmd::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid theme('colors.gold.DEFAULT / 18%');
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.kit-btn--text {
+  background: transparent;
+  color: theme('colors.mutedOnDark');
+  font-family: theme('fontFamily.body');
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.kit-btn--text:active:not(:disabled) {
+  color: theme('colors.gold.light');
+}
+
+/* The round icon button: glass with a gold hairline, 44px */
+.kit-icon-btn {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid theme('colors.gold.DEFAULT / 70%');
+  border-radius: 9999px;
+  background: radial-gradient(circle at 50% 30%, theme('colors.command.top / 92%'), theme('colors.panel.deep / 92%'));
+  color: theme('colors.gold.light');
+  box-shadow: 0 6px 14px -8px rgb(0 0 0 / 0.9);
+}
+
+.kit-icon-btn[aria-pressed='true'] {
+  border-color: theme('colors.gold.light');
+  box-shadow: 0 0 12px theme('colors.gold.DEFAULT / 45%');
+}
+
+/* The battle command button: 70px, an icon in a gold ring, serif label, a live sub-label */
+.kit-cmd {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 70px;
+  padding: 0 14px;
+  border: 1px solid theme('colors.gold.DEFAULT / 55%');
+  border-radius: 6px;
+  background: linear-gradient(180deg, theme('colors.command.top'), theme('colors.command.bottom'));
+  color: theme('colors.inkOnDark');
+  text-align: left;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.15),
+    0 8px 16px -10px rgb(0 0 0 / 0.9);
+}
+
+.kit-cmd:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.kit-cmd__icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid theme('colors.gold.DEFAULT / 70%');
+  border-radius: 9999px;
+  background: theme('colors.gold.DEFAULT / 8%');
+  color: theme('colors.gold.light');
+}
+
+.kit-cmd__label {
+  display: block;
+  font-family: theme('fontFamily.serif');
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: 0.1em;
+}
+
+.kit-cmd__sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: theme('colors.mutedOnDark');
+}
+
+.kit-cmd--primary {
+  border-color: theme('colors.gold.diamond');
+  background: linear-gradient(180deg, theme('colors.primary.top'), theme('colors.primary.mid') 55%, theme('colors.primary.bottom'));
+  color: theme('colors.primary.text');
+  box-shadow:
+    0 0 18px theme('colors.primary.mid / 55%'),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.kit-cmd--primary::after {
+  border-color: rgb(255 255 255 / 0.35);
+}
+
+.kit-cmd--primary .kit-cmd__sub {
+  color: theme('colors.primary.sub');
+}
+
+.kit-cmd--primary .kit-cmd__icon {
+  border-color: theme('colors.primary.sub');
+  background: rgb(255 255 255 / 0.35);
+  color: theme('colors.primary.text');
+}
+
+/* An on/off switch on a 44px row */
+.kit-switch {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 46px;
+  height: 26px;
+  border: 1px solid theme('colors.gold.DEFAULT / 55%');
+  border-radius: 9999px;
+  background: theme('colors.locked');
+  transition: background-color var(--dur-quick) var(--ease-out);
+}
+
+.kit-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: theme('colors.inkOnDark');
+  transition: transform var(--dur-quick) var(--ease-out);
+}
+
+[aria-checked='true'] > .kit-switch {
+  background: linear-gradient(180deg, theme('colors.primary.top'), theme('colors.primary.bottom'));
+}
+
+[aria-checked='true'] > .kit-switch::after {
+  transform: translateX(20px);
+  background: theme('colors.primary.text');
+}
+
+/* ---- HP and MP bars (§ 7.3) --------------------------------------------------------------- */
+
+.kit-bar {
+  position: relative;
+  display: block;
+}
+
+.kit-bar__track {
+  position: relative;
+  display: block;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 1px;
+  background: rgb(0 0 0 / 0.45);
+  box-shadow: 0 0 0 1px theme('colors.gold.DEFAULT / 35%');
+}
+
+.kit-bar--mp .kit-bar__track {
+  height: 5px;
+}
+
+.kit-bar__lag,
+.kit-bar__fill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+}
+
+/* After a hit the pale band waits, then catches up: 300ms fill + 400ms lag */
+.kit-bar__lag {
+  background: theme('colors.hp.lag / 80%');
+  transition: width 400ms var(--ease-out) 300ms;
+}
+
+.kit-bar__lag[data-instant] {
+  transition: none;
+}
+
+.kit-bar__fill {
+  background: linear-gradient(90deg, theme('colors.hp.from'), theme('colors.hp.to'));
+  transition: width 300ms ease;
+}
+
+.kit-bar--low .kit-bar__fill {
+  background: linear-gradient(90deg, theme('colors.hp.lowFrom'), theme('colors.hp.lowTo'));
+}
+
+.kit-bar--crit .kit-bar__fill {
+  background: linear-gradient(90deg, theme('colors.hp.critFrom'), theme('colors.hp.critTo'));
+  animation: kit-pulse 900ms ease-in-out infinite;
+}
+
+.kit-bar--mp .kit-bar__fill {
+  background: linear-gradient(90deg, theme('colors.mp.from'), theme('colors.mp.to'));
+}
+
+/* The sparkle riding the end of a growing bar (a heal) */
+.kit-bar__spark {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  background: theme('colors.gold.diamond');
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  transition: left 300ms ease;
+  animation: kit-spark 650ms var(--ease-out) both;
+  pointer-events: none;
+}
+
+/* ---- Dialogue box with bust portrait (§ 7.5) ---------------------------------------------- */
+
+.kit-scrim {
+  background: linear-gradient(180deg, theme('colors.scrim / 15%') 0%, theme('colors.scrim / 45%') 40%, theme('colors.scrim / 80%') 70%, theme('colors.scrim / 92%'));
+}
+
+.kit-box {
+  padding: 30px 22px 16px;
+  background: linear-gradient(180deg, theme('colors.panel.top'), theme('colors.panel.bottom'));
+}
+
+.kit-nameplate {
+  position: absolute;
+  left: 18px;
+  top: -20px;
+  padding: 6px 26px 7px;
+  font-family: theme('fontFamily.serif');
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: 0.18em;
+  color: theme('colors.primary.text');
+  background: linear-gradient(180deg, theme('colors.gold.diamond'), theme('colors.gold.DEFAULT') 60%, theme('colors.gold.deep'));
+  clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);
+}
+
+.kit-key {
+  color: theme('colors.gold.light');
+  text-shadow: 0 0 10px theme('colors.primary.mid / 55%');
+}
+
+.kit-ghost {
+  opacity: 0.2;
+}
+
+.kit-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  transform: rotate(45deg);
+  border: 1px solid theme('colors.gold.DEFAULT');
+}
+
+.kit-dot--on {
+  background: theme('colors.gold.DEFAULT');
+}
+
+/* The pulsing gold diamond: "tap to go on" */
+.kit-next {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  transform: rotate(45deg);
+  background: linear-gradient(135deg, theme('colors.gold.diamond'), theme('colors.gold.deep'));
+  box-shadow: 0 0 10px theme('colors.gold.light / 90%');
+  animation: kit-next 1.2s ease-in-out infinite;
+}
+
+/* ---- Chapter title card (§ 7.6) ----------------------------------------------------------- */
+
+.kit-star {
+  animation: kit-twinkle 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * -0.37s);
+}
+
+.kit-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: kit-draw 900ms var(--ease-out) 250ms forwards;
+}
+
+.kit-draw-fill {
+  opacity: 0;
+  animation: kit-fill 500ms ease-out 1150ms forwards;
+}
+
+/* Split-flap: each digit flips down into place, 60ms apart */
+.kit-flap {
+  transform-origin: 50% 50%;
+  animation: kit-flap 380ms var(--ease-pop) both;
+  animation-delay: calc(900ms + var(--i, 0) * 60ms);
+}
+
+.kit-card-rise {
+  animation: kit-rise-in 600ms var(--ease-out) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* The 「點一下繼續」 hint shows up once the card has played (2.4s) */
+.kit-card-hint {
+  animation: kit-fade-in 400ms ease-out 2000ms both;
+}
+
+/* ---- Transitions (§ 7.9) ------------------------------------------------------------------ */
+
+/* Dialogue in/out: the box slides 18px plus fade; the bust rises 24px with a little overshoot */
+.kit-box-in {
+  animation: kit-rise-in var(--dur-base) var(--ease-out) both;
+}
+
+.kit-box-out {
+  animation: kit-rise-out var(--dur-base) var(--ease-out) both;
+}
+
+.kit-bust-in {
+  animation: kit-bust-in var(--dur-base) var(--ease-pop) both;
+}
+
+.kit-fade-in {
+  animation: kit-fade-in var(--dur-base) var(--ease-out) both;
+}
+
+.kit-fade-out {
+  animation: kit-fade-out var(--dur-base) var(--ease-out) both;
+}
+
+.kit-sheet-in {
+  animation: kit-sheet-in 300ms var(--ease-out) both;
+}
+
+/* Map → map iris: a hole opening on the arrival tile (--x, --y), navy all around it */
+.kit-iris {
+  position: absolute;
+  left: var(--x, 50%);
+  top: var(--y, 50%);
+  width: 0;
+  height: 0;
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 200vmax theme('colors.panel.deep');
+  animation: kit-iris var(--dur-slow) var(--ease-out) forwards;
+  pointer-events: none;
+}
+
+/* ---- Keyframes ---------------------------------------------------------------------------- */
+
+@keyframes kit-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes kit-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.15) rotate(45deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.6) rotate(90deg);
+  }
+}
+
+@keyframes kit-next {
+  0%,
+  100% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: rotate(45deg) scale(0.82);
+  }
+}
+
+@keyframes kit-twinkle {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes kit-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes kit-fill {
+  to {
+    opacity: 0.25;
+  }
+}
+
+@keyframes kit-flap {
+  0% {
+    transform: perspective(240px) rotateX(-92deg);
+    opacity: 0.2;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(240px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes kit-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kit-rise-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes kit-bust-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kit-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes kit-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes kit-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes kit-iris {
+  from {
+    width: 0;
+    height: 0;
+  }
+  to {
+    width: 300vmax;
+    height: 300vmax;
+  }
+}
+
+/* ---- Reduced motion (§ 7.9): the OS setting, or 「減少動態」 (.reduce-motion on <html>) --------- */
+
+/*
+ * A finished chapter card (`.kit-card--done`, after a tap) lands on the same end state as
+ * reduced motion: everything drawn, nothing moving.
+ */
+.kit-card--done .kit-draw,
+.reduce-motion .kit-draw {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+
+.kit-card--done .kit-draw-fill,
+.reduce-motion .kit-draw-fill {
+  animation: none;
+  opacity: 0.25;
+}
+
+.kit-card--done .kit-flap,
+.kit-card--done .kit-card-rise,
+.kit-card--done .kit-card-hint,
+.reduce-motion .kit-flap,
+.reduce-motion .kit-card-rise,
+.reduce-motion .kit-star,
+.reduce-motion .kit-next,
+.reduce-motion .kit-bar--crit .kit-bar__fill,
+.reduce-motion .kit-bar__spark {
+  animation: none;
+}
+
+.reduce-motion .kit-bar__spark {
+  opacity: 0;
+}
+
+.reduce-motion .kit-card-hint {
+  animation: kit-fade-in 300ms ease-out both;
+}
+
+/* Everything that slides or rises just fades */
+.reduce-motion .kit-box-in,
+.reduce-motion .kit-bust-in,
+.reduce-motion .kit-sheet-in,
+.reduce-motion .kit-fade-in {
+  animation: kit-fade-in 200ms ease-out both;
+}
+
+.reduce-motion .kit-box-out,
+.reduce-motion .kit-fade-out {
+  animation: kit-fade-out 200ms ease-out both;
+}
+
+.reduce-motion .kit-iris {
+  display: none;
+}
+
+.reduce-motion .kit-bar__fill,
+.reduce-motion .kit-bar__lag {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .kit-draw-fill {
+    animation: none;
+    opacity: 0.25;
+  }
+
+  .kit-flap,
+  .kit-card-rise,
+  .kit-star,
+  .kit-next,
+  .kit-bar--crit .kit-bar__fill,
+  .kit-bar__spark {
+    animation: none;
+  }
+
+  .kit-bar__spark {
+    opacity: 0;
+  }
+
+  .kit-card-hint {
+    animation: kit-fade-in 300ms ease-out both;
+  }
+
+  .kit-box-in,
+  .kit-bust-in,
+  .kit-sheet-in,
+  .kit-fade-in {
+    animation: kit-fade-in 200ms ease-out both;
+  }
+
+  .kit-box-out,
+  .kit-fade-out {
+    animation: kit-fade-out 200ms ease-out both;
+  }
+
+  .kit-iris {
+    display: none;
+  }
+
+  .kit-bar__fill,
+  .kit-bar__lag {
+    transition: none;
+  }
+}

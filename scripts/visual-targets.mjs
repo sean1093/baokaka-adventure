@@ -38,6 +38,14 @@ export const TARGETS = [
     fullPage: true,
     artlab: true,
   },
+  {
+    name: 'artlab-ui',
+    // Every UI kit component in each state (#12): panels, buttons, bars, the dialogue box, the clock
+    hash: '#/artlab?section=ui&still=1',
+    waitFor: '[data-artlab-ui] [data-kit-dialogue] [data-dialogue-box]',
+    fullPage: true,
+    artlab: true,
+  },
 ];
 
 /** The screenshot target for one art lab fixture. */
