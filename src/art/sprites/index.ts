@@ -1,7 +1,8 @@
 import type { SpriteName } from '../types';
 import type { SpriteComponent } from '../sprite';
+import { Baokaka } from '../characters/baokaka/Baokaka';
+import { Mocha } from '../characters/mocha/Mocha';
 import * as beach from './beach';
-import * as characters from './characters';
 import * as foesBeach from './foesBeach';
 import * as foesLiving from './foesLiving';
 import * as foesMarket from './foesMarket';
@@ -40,8 +41,8 @@ export const SPRITES: Record<SpriteName, SpriteComponent> = {
   comfortDoll: items.ComfortDoll,
   nightLight: items.NightLight,
 
-  mochaCat: characters.MochaCat,
-  baokaka: characters.Baokaka,
+  mochaCat: Mocha,
+  baokaka: Baokaka,
 
   sofa: living.Sofa,
   coffeeTable: living.CoffeeTable,

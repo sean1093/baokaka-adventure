@@ -61,7 +61,9 @@ const Skeleton = () => (
 /** Black wherever the figure paints: the sprite's own markup as a CSS mask, no filter. */
 const Silhouette = ({ lod, size }: { lod: Lod; size: number }) => {
   const mask = useMemo(() => {
-    const markup = renderToStaticMarkup(<RigDemo lod={lod} />).replace('<svg ', `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" `);
+    // The first <svg> only: the map LOD stacks its two walk frames
+    const svg = /<svg[\s\S]*?<\/svg>/.exec(renderToStaticMarkup(<RigDemo lod={lod} />))?.[0] ?? '<svg></svg>';
+    const markup = svg.replace('<svg ', `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" `);
     return `url("data:image/svg+xml,${encodeURIComponent(markup)}")`;
   }, [lod, size]);
   return <div style={{ width: size, height: size, background: '#000000', WebkitMaskImage: mask, maskImage: mask, WebkitMaskSize: '100% 100%', maskSize: '100% 100%' }} />;

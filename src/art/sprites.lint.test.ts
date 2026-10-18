@@ -51,17 +51,36 @@ describe('sprite lint: elements', () => {
   });
 
   const typed = ALL.filter(([, Art]) => spriteMeta(Art));
-  it.each(typed)('%s is within its § 8.2 budget at every LOD', (_name, Art) => {
+  /** The drawing a budget is about: one frame (at the map LOD a rigged sprite stacks its two walk frames). */
+  const perFrame = (markup: string) => {
+    const frames = Math.max(1, (markup.match(/<svg[\s>]/g) ?? []).length);
+    return { elements: (countElements(markup) - (frames > 1 ? 1 : 0)) / frames, bytes: markupBytes(markup) / frames };
+  };
+  it.each(typed)('%s is within its § 8.2 budget at every LOD (per frame)', (_name, Art) => {
     const budget = SPRITE_BUDGETS[spriteMeta(Art)!.kind];
     for (const lod of LODS) {
-      const markup = render(Art, lod);
-      expect(countElements(markup), `${lod} elements`).toBeLessThanOrEqual(budget.elements);
-      expect(markupBytes(markup), `${lod} bytes`).toBeLessThanOrEqual(budget.bytes);
+      const { elements, bytes } = perFrame(render(Art, lod));
+      expect(elements, `${lod} elements`).toBeLessThanOrEqual(budget.elements);
+      expect(bytes, `${lod} bytes`).toBeLessThanOrEqual(budget.bytes);
+    }
+  });
+
+  it('rigged sprites draw the map LOD as two stacked walk frames, the same figure in each', () => {
+    for (const [name, Art] of typed.filter(([, A]) => !spriteMeta(A)!.placeholder)) {
+      const markup = render(Art, 'map');
+      const frames = markup.match(/<svg[\s\S]*?<\/svg>/g) ?? [];
+      expect(frames.length, name).toBe(2);
+      expect(markup, name).toMatch(/^<span class="rig-flip"/);
+      expect(frames[0], name).toContain('rig--frame-0');
+      expect(frames[1], name).toContain('rig--frame-1');
+      // Same drawing: only the frame class and the unique ids differ
+      const shape = (svg: string) => svg.replace(/rig--frame-\d/, '').replace(/(id="|url\(#|href="#)[^")]+/g, '$1');
+      expect(shape(frames[1] ?? ''), name).toBe(shape(frames[0] ?? ''));
     }
   });
 
   it('the rig demo gets simpler from portrait to map (§ 8.3)', () => {
-    const count = (lod: (typeof LODS)[number]) => countElements(render(RigDemo, lod));
+    const count = (lod: (typeof LODS)[number]) => perFrame(render(RigDemo, lod)).elements;
     expect(count('portrait')).toBeGreaterThan(count('battle'));
     expect(count('battle')).toBeGreaterThan(count('map'));
     // Iris rays are portrait-only; the map draws 4u contours
@@ -99,7 +118,7 @@ describe('sprite lint: colours', () => {
 
   it('reads the art sources', () => {
     expect(art).toContain('Fig.tsx');
-    expect(art).toContain('sprites/characters.tsx');
+    expect(art).toContain('characters/baokaka/Baokaka.tsx');
   });
 
   it('no raw hex outside palette.ts (§ 8.2 rule 7)', () => {

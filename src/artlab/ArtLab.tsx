@@ -9,6 +9,7 @@ import { QuestScreens } from '../quest/QuestScreens';
 import { hashParams } from '../shared/route';
 import { ARTLAB_FIXTURES, type ArtLabFixture } from './fixtures';
 import { FxSection } from './FxSection';
+import { HeroesSection } from './HeroesSection';
 import { MapSection } from './MapSection';
 import { RigSection } from './RigSection';
 import { StageSection } from './StageSection';
@@ -21,7 +22,7 @@ import './artlab.css';
  * ugly but useful. Everything is driven by registries (SPRITES, ARTLAB_FIXTURES, the tables
  * below), so later issues add entries rather than code. URL parameters, all optional:
  *
- *   section  tokens | rig | ui | map | stage | fx | sprites | fixtures     (default: fixtures and sprites)
+ *   section  tokens | rig | heroes | ui | map | stage | fx | sprites | fixtures     (default: fixtures and sprites)
  *   only     comma list: sprite names, or one fixture name to show that screen alone
  *   bg       comma list of BACKGROUNDS keys  (default: all)
  *   size     comma list of pixel sizes       (default: SIZES)
@@ -65,7 +66,8 @@ const list = (value: string | null): string[] => (value ? value.split(',').map((
 
 /**
  * The sprite as a standalone SVG document, for use as a CSS mask. Cached: markup never changes.
- * Only the `<svg>` is kept (a placeholder wraps it in a span with its label).
+ * Only the first `<svg>` is kept (a placeholder wraps it in a span with its label; an option D
+ * sprite at the map LOD stacks its two walk frames, the first being the standing pose).
  */
 const maskCache = new Map<string, string>();
 function spriteMask(name: SpriteName, lod: Lod): string {
@@ -73,7 +75,7 @@ function spriteMask(name: SpriteName, lod: Lod): string {
   let url = maskCache.get(key);
   if (!url) {
     const Art = SPRITES[name];
-    const svg = /<svg[\s\S]*<\/svg>/.exec(renderToStaticMarkup(<Art lod={lod} />))?.[0] ?? '<svg></svg>';
+    const svg = /<svg[\s\S]*?<\/svg>/.exec(renderToStaticMarkup(<Art lod={lod} />))?.[0] ?? '<svg></svg>';
     const markup = svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" ');
     url = `url("data:image/svg+xml,${encodeURIComponent(markup)}")`;
     maskCache.set(key, url);
@@ -222,6 +224,7 @@ const ArtLab = ({ hash }: { hash: string }) => {
         <Link href="#/artlab">all</Link>
         <Link href="#/artlab?section=tokens">tokens</Link>
         <Link href="#/artlab?section=rig">rig</Link>
+        <Link href="#/artlab?section=heroes">heroes</Link>
         <Link href="#/artlab?section=ui">ui kit</Link>
         <Link href="#/artlab?section=map">map</Link>
         <Link href="#/artlab?section=stage">stage</Link>
@@ -237,6 +240,7 @@ const ArtLab = ({ hash }: { hash: string }) => {
       </header>
       {section === 'tokens' && <TokensSection />}
       {section === 'rig' && <RigSection params={params} />}
+      {section === 'heroes' && <HeroesSection params={params} />}
       {section === 'ui' && <UiKitSection />}
       {section === 'map' && <MapSection />}
       {section === 'stage' && <StageSection />}
