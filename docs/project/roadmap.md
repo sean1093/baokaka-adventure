@@ -31,7 +31,7 @@ Work the issues **in numeric order**; an issue may start only when every issue i
 | 6 | Script steps v2: chapter clock, choice, heal ratio, free inn, spending coins, two-phase boss retry | engine | #3 | done (#64) |
 | 7 | Derived flags, quest log data, bestiary tracking and escort followers | engine | #6 | done (#65) |
 | 8 | Item catalogue v2 and hero-only equipment | engine | #5 | done (#66) |
-| 9 | 月亮線 travel: travel step, STATIONS table, @rideTo exits and the 路線圖 screen | engine, ui, mrt | #6, #7 | todo |
+| 9 | 月亮線 travel: travel step, STATIONS table, @rideTo exits and the 路線圖 screen | engine, ui, mrt | #6, #7 | done (#67) |
 | **M2** | | | | |
 | 10 | Art tokens v2: option D palette, per-hour night grades, fonts, Tailwind theme | art, ui | #4 | todo |
 | 11 | Sprite rig contract v4: parts, LOD, shared defs, unique ids, placeholder sprite, sprite lint | art | #10 | todo |
