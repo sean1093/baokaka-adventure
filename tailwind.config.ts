@@ -45,7 +45,7 @@ export default {
         float: '0 24px 48px -16px rgba(59, 42, 32, 0.35)',
         glow: '0 12px 28px -10px rgba(224, 138, 34, 0.75)',
         inset: 'inset 0 2px 6px rgba(59, 42, 32, 0.12)',
-        gold: '0 0 14px rgba(232, 199, 122, 0.45)',
+        gold: `0 0 14px ${UI.gold}73`, // 45 % alpha
       },
       transitionDuration: {
         // § 7.9 motion tokens; the same values are CSS variables in src/index.css
