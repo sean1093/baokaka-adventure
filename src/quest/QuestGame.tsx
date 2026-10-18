@@ -1,17 +1,10 @@
 import { useEffect, useReducer, useState } from 'react';
-import { stopMusic, playMusic, unlockAudio } from '../shared/audio';
+import { stopMusic, playMusic } from '../shared/audio';
 import { MAPS } from './engine/maps';
 import { initialState, questReducer } from './engine/quest';
 import { discardLegacyQuest, loadQuest, saveQuest } from './engine/save';
 import { validateQuestContent } from './engine/validate';
-import { BattleScreen } from './screens/BattleScreen';
-import { DefeatScreen } from './screens/DefeatScreen';
-import { PartySheet } from './screens/PartySheet';
-import { QuestEndingScreen } from './screens/QuestEndingScreen';
-import { QuestTitleScreen } from './screens/QuestTitleScreen';
-import { ShopScreen } from './screens/ShopScreen';
-import { VictoryScreen } from './screens/VictoryScreen';
-import { WorldScreen } from './screens/WorldScreen';
+import { QuestScreens } from './QuestScreens';
 
 // Content mistakes (unknown foe, unreachable chest, missing event) fail loudly in development
 if (import.meta.env.DEV) {
@@ -27,7 +20,6 @@ export const QuestGame = () => {
   const [settings] = useState(loaded.save.settings);
   // The old key is deleted right after mount, so the notice lives in memory only and shows once
   const [legacyNotice, setLegacyNotice] = useState(loaded.legacyReset);
-  const [menuOpen, setMenuOpen] = useState(false);
   const { view, run, sound } = state;
 
   useEffect(() => {
@@ -52,75 +44,7 @@ export const QuestGame = () => {
 
   useEffect(() => () => stopMusic(), []);
 
-  switch (view.screen) {
-    case 'title':
-      return (
-        <QuestTitleScreen
-          run={run}
-          legacyNotice={legacyNotice}
-          onDismissNotice={() => setLegacyNotice(false)}
-          onNew={() => {
-            unlockAudio();
-            dispatch({ type: 'newGame', seed: Date.now() | 0 });
-          }}
-          onContinue={() => {
-            unlockAudio();
-            dispatch({ type: 'continue' });
-          }}
-        />
-      );
-
-    case 'world':
-      return (
-        <>
-          <WorldScreen
-            state={state}
-            onStep={(tile, facing) => dispatch({ type: 'step', tile, facing })}
-            onInteract={(id) => dispatch({ type: 'interact', id })}
-            onAdvance={() => dispatch({ type: 'advance' })}
-            onInn={(yes) => dispatch({ type: 'innAnswer', yes })}
-            onMenu={() => setMenuOpen(true)}
-            onExit={() => dispatch({ type: 'backToTitle' })}
-          />
-          <PartySheet
-            open={menuOpen}
-            run={run}
-            onClose={() => setMenuOpen(false)}
-            onUseItem={(item, hero) => dispatch({ type: 'useItem', item, hero })}
-            onEquip={(item, hero) => dispatch({ type: 'equip', item, hero })}
-          />
-        </>
-      );
-
-    case 'battle':
-      return (
-        <BattleScreen
-          battle={view.battle}
-          palette={MAPS[run.map].palette}
-          soundOn={sound}
-          onAction={(action) => dispatch({ type: 'battle', action })}
-          onEnd={() => dispatch({ type: 'battleEnd' })}
-          onToggleSound={() => dispatch({ type: 'toggleSound' })}
-        />
-      );
-
-    case 'victory':
-      return <VictoryScreen summary={view.summary} soundOn={sound} onContinue={() => dispatch({ type: 'victoryContinue' })} />;
-
-    case 'defeat':
-      return <DefeatScreen soundOn={sound} onRetry={() => dispatch({ type: 'retry' })} />;
-
-    case 'shop':
-      return (
-        <ShopScreen
-          stock={view.stock}
-          run={run}
-          onBuy={(item) => dispatch({ type: 'buy', item })}
-          onClose={() => dispatch({ type: 'closeShop' })}
-        />
-      );
-
-    case 'ending':
-      return <QuestEndingScreen run={run} soundOn={sound} onContinue={() => dispatch({ type: 'endingContinue' })} />;
-  }
+  return (
+    <QuestScreens state={state} dispatch={dispatch} legacyNotice={legacyNotice} onDismissNotice={() => setLegacyNotice(false)} />
+  );
 };
