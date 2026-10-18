@@ -1,6 +1,7 @@
 import { EVENTS } from './events';
 import { ITEMS, MAX_LEVEL, XP_TABLE, addItem, heroStats, spellsFor } from './heroes';
 import { meets } from './path';
+import { addFlags } from './progress';
 import { UI } from './strings';
 import { substitute } from './text';
 import {
@@ -162,7 +163,7 @@ export function runScene(run: Run, scene: Scene): SceneResult {
         break;
 
       case 'flag':
-        if (!draft.flags.includes(step.flag)) draft = { ...draft, flags: [...draft.flags, step.flag] };
+        draft = addFlags(draft, step.flag);
         break;
 
       case 'give':

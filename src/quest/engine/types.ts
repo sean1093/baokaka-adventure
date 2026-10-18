@@ -160,6 +160,12 @@ export type Foe = {
   taunt?: string;
   /** Used in order, looping */
   moves: FoeMove[];
+  /** 圖鑑: the one-line 「冷靜下來以後」 blurb (≤ 40 characters), written with the foe's art */
+  calmed?: string;
+  /** 圖鑑: where it lives, a short place name (≤ 12 characters) */
+  home?: string;
+  /** Only met after the ending (象山): left out of BESTIARY_FOES, so 圖鑑 can be completed in the story */
+  postGame?: boolean;
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -321,6 +327,8 @@ export type Run = {
   items: Inventory;
   coins: number;
   flags: string[];
+  /** 圖鑑: every foe the party has beaten at least once, in the order first beaten (no repeats) */
+  seenFoes: FoeId[];
   /** Steps walked since the last random encounter */
   steps: number;
   /** Rolling seed for encounters and drops, so the reducer stays pure */

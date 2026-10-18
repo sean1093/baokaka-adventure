@@ -1,22 +1,24 @@
 import { browserStorage, loadJson, saveJson, type StorageLike } from '../../shared/storage';
+import { FOES } from './foes';
 import { ITEMS, MAX_ITEM_COUNT, MAX_LEVEL, isEquip } from './heroes';
 import { MAPS } from './maps';
 import { freshRun } from './quest';
-import { HERO_ORDER, type HeroId, type ItemId, type Run } from './types';
+import { HERO_ORDER, type FoeId, type HeroId, type ItemId, type Run } from './types';
 
 /**
  * The save format. Bump the version and the key for any incompatible Run change; never migrate
  * across stories (decisions.md D-12): an older record is discarded and the title says so once.
  */
-export const SAVE_VERSION = 3;
-export const QUEST_KEY = 'baokaka.quest.v3';
+export const SAVE_VERSION = 4;
+export const QUEST_KEY = 'baokaka.quest.v4';
 /** The 寶咖咖奇俠傳 save from before the 抓周 redesign. Any content under it means "reset". */
 export const LEGACY_QUEST_KEY = 'baokaka.quest';
 /**
  * Every key an older save may sit under: the pre-redesign one, then each earlier version
- * (v2 had three heroes, issue #5 made it four). Any content under any of them means "reset".
+ * (v2 had three heroes, issue #5 made it four; v3 had no 圖鑑 `seenFoes`, issue #7 added it).
+ * Any content under any of them means "reset".
  */
-export const LEGACY_QUEST_KEYS: readonly string[] = [LEGACY_QUEST_KEY, 'baokaka.quest.v2'];
+export const LEGACY_QUEST_KEYS: readonly string[] = [LEGACY_QUEST_KEY, 'baokaka.quest.v2', 'baokaka.quest.v3'];
 
 /** Player preferences that live beside the run. */
 export type QuestSettings = {
@@ -36,6 +38,7 @@ type StoredSave = QuestSave & { version: typeof SAVE_VERSION };
 
 const isCount = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
 const isItem = (value: unknown): value is ItemId => typeof value === 'string' && value in ITEMS;
+const isFoe = (value: unknown): value is FoeId => typeof value === 'string' && value in FOES;
 
 function isNumberMap(value: unknown): value is Record<HeroId, number> {
   return typeof value === 'object' && value !== null && HERO_ORDER.every((hero) => isCount((value as Record<string, unknown>)[hero]));
@@ -85,6 +88,9 @@ function isRun(value: unknown): value is Run {
     isCount(run.coins) &&
     Array.isArray(run.flags) &&
     run.flags.every((flag) => typeof flag === 'string') &&
+    Array.isArray(run.seenFoes) &&
+    run.seenFoes.every(isFoe) &&
+    new Set(run.seenFoes).size === run.seenFoes.length &&
     isCount(run.steps) &&
     Number.isFinite(run.seed) &&
     Number.isInteger(run.chapter) &&

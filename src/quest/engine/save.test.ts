@@ -18,9 +18,9 @@ const fakeStorage = (seed: Record<string, string> = {}): StorageLike & { cells: 
   };
 };
 
-/** A current (v3) record as it sits in storage, with one part of the run overridden. */
+/** A current (v4) record as it sits in storage, with one part of the run overridden. */
 const stored = (run: Partial<Run>, extra: Record<string, unknown> = {}): Record<string, string> => ({
-  [QUEST_KEY]: JSON.stringify({ version: 3, run: { ...freshRun(1), ...run }, sound: true, settings: { skipRides: false }, ...extra }),
+  [QUEST_KEY]: JSON.stringify({ version: 4, run: { ...freshRun(1), ...run }, sound: true, settings: { skipRides: false }, ...extra }),
 });
 
 const loadRun = (cells: Record<string, string>): Run => loadQuest(fakeStorage(cells)).save.run;
@@ -31,18 +31,18 @@ const LEGACY_RECORD = JSON.stringify({ run: { map: 'park', stickers: 42, level: 
 describe('loadQuest', () => {
   test('a current save round-trips identically', () => {
     const storage = fakeStorage();
-    const run: Run = { ...freshRun(5), map: 'park', pos: { c: 3, r: 4 }, level: 6, xp: 300, coins: 42, flags: ['mochaJoined'] };
+    const run: Run = { ...freshRun(5), map: 'park', pos: { c: 3, r: 4 }, level: 6, xp: 300, coins: 42, flags: ['mochaJoined'], seenFoes: ['dustBunny', 'blockGolem'] };
     const save: QuestSave = { run, sound: false, settings: { skipRides: true } };
     saveQuest(save, storage);
     expect(loadQuest(storage)).toEqual({ save, legacyReset: false });
   });
 
-  test('writes a versioned record under the v3 key', () => {
+  test('writes a versioned record under the v4 key', () => {
     const storage = fakeStorage();
     saveQuest({ run: freshRun(1), sound: true, settings: DEFAULT_SETTINGS }, storage);
-    expect(SAVE_VERSION).toBe(3);
-    expect(Object.keys(storage.cells)).toEqual(['baokaka.quest.v3']);
-    expect(JSON.parse(storage.cells[QUEST_KEY])).toMatchObject({ version: 3, sound: true, settings: { skipRides: false } });
+    expect(SAVE_VERSION).toBe(4);
+    expect(Object.keys(storage.cells)).toEqual(['baokaka.quest.v4']);
+    expect(JSON.parse(storage.cells[QUEST_KEY])).toMatchObject({ version: 4, sound: true, settings: { skipRides: false } });
   });
 
   test('falls back to a fresh run when nothing is saved', () => {
@@ -71,6 +71,28 @@ describe('loadQuest', () => {
     expect(loaded.save.run.level).toBe(1);
     discardLegacyQuest(storage);
     expect(storage.cells).toEqual({});
+  });
+
+  test('a v3 save (no 圖鑑, before issue #7) also resets with the notice, and is discarded', () => {
+    const { seenFoes: _seen, ...v3run } = freshRun(1);
+    const v3 = JSON.stringify({ version: 3, run: { ...v3run, level: 6 }, sound: true, settings: DEFAULT_SETTINGS });
+    const storage = fakeStorage({ 'baokaka.quest.v3': v3 });
+    expect(LEGACY_QUEST_KEYS).toContain('baokaka.quest.v3');
+    const loaded = loadQuest(storage);
+    expect(loaded.legacyReset).toBe(true);
+    expect(loaded.save.run.level).toBe(1);
+    discardLegacyQuest(storage);
+    expect(storage.cells).toEqual({});
+  });
+
+  test('seenFoes is required, and must hold known foes without repeats', () => {
+    const { seenFoes: _seen, ...noSeen } = freshRun(1);
+    const cells = { [QUEST_KEY]: JSON.stringify({ version: 4, run: { ...noSeen, level: 4 }, sound: true, settings: DEFAULT_SETTINGS }) };
+    expect(loadRun(cells).level).toBe(1);
+    expect(loadRun(stored({ level: 4, seenFoes: 'dustBunny' as never })).level).toBe(1);
+    expect(loadRun(stored({ level: 4, seenFoes: ['dragon' as never] })).level).toBe(1);
+    expect(loadRun(stored({ level: 4, seenFoes: ['dustBunny', 'dustBunny'] })).level).toBe(1);
+    expect(loadRun(stored({ level: 4, seenFoes: ['dustBunny', 'snoreKing'] })).seenFoes).toEqual(['dustBunny', 'snoreKing']);
   });
 
   test('a run missing one of the four heroes is rejected', () => {
@@ -113,7 +135,7 @@ describe('loadQuest', () => {
 
   test('rejects a run that still counts stickers', () => {
     const { coins: _coins, ...old } = freshRun(1);
-    const cells = { [QUEST_KEY]: JSON.stringify({ version: 3, run: { ...old, level: 4, stickers: 10 }, sound: true, settings: DEFAULT_SETTINGS }) };
+    const cells = { [QUEST_KEY]: JSON.stringify({ version: 4, run: { ...old, level: 4, stickers: 10 }, sound: true, settings: DEFAULT_SETTINGS }) };
     expect(loadRun(cells).level).toBe(1);
   });
 
@@ -162,6 +184,7 @@ describe('loadQuest', () => {
       items: { bottle: 3, apple: 1 },
       coins: 210,
       flags: ['mochaJoined', 'magpieJoined', 'bearJoined', 'octopusDone'],
+      seenFoes: ['dustBunny', 'sockMonster', 'octopus'],
       chapter: 7,
       cleared: true,
     };

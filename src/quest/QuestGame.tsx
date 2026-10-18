@@ -3,13 +3,16 @@ import { stopMusic, playMusic } from '../shared/audio';
 import { MAPS } from './engine/maps';
 import { initialState, questReducer } from './engine/quest';
 import { discardLegacyQuest, loadQuest, saveQuest } from './engine/save';
-import { validateQuestContent } from './engine/validate';
+import { progressWarnings, validateQuestContent } from './engine/validate';
 import { QuestScreens } from './QuestScreens';
 
 // Content mistakes (unknown foe, unreachable chest, missing event) fail loudly in development
 if (import.meta.env.DEV) {
   const errors = validateQuestContent();
   if (errors.length > 0) throw new Error(`Invalid quest content:\n${errors.join('\n')}`);
+  // Side quests and collections read flags that later chapters set; listed, but not fatal yet
+  const warnings = progressWarnings();
+  if (warnings.length > 0) console.warn(`Quest content: ${warnings.length} progress flags are not set by any event yet\n${warnings.join('\n')}`);
 }
 
 /** The RPG: the run state machine lives in engine/quest.ts, battles in engine/battle.ts. */

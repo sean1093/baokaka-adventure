@@ -5,6 +5,7 @@ import { FOES } from './foes';
 import { ITEMS, STARTING_ITEMS, addItem, heroStats, isEquip, removeItem } from './heroes';
 import { MAPS } from './maps';
 import { chestOpened, meets } from './path';
+import { addFlags, recordFoes } from './progress';
 import { fullHp, fullMp, gainXp, innLines, runScene, type Scene, type Stop } from './scene';
 import {
   HERO_ORDER,
@@ -108,6 +109,7 @@ export function freshRun(seed = 1, cleared = false): Run {
     items: { ...STARTING_ITEMS },
     coins: 0,
     flags: [],
+    seenFoes: [],
     steps: 0,
     seed,
     chapter: 1,
@@ -183,7 +185,7 @@ function tileEvent(run: Run): { steps: Step[]; run: Run } | null {
       const moved: Run = { ...run, map: exit.to, pos: exit.at, steps: 0 };
       const intro = target.triggers.find((trigger) => trigger.c === exit.at.c && trigger.r === exit.at.r);
       if (intro && meets(moved.flags, intro) && !moved.flags.includes(`trigger:${intro.id}`)) {
-        return { run: { ...moved, flags: [...moved.flags, `trigger:${intro.id}`] }, steps: EVENTS[intro.event] };
+        return { run: addFlags(moved, `trigger:${intro.id}`), steps: EVENTS[intro.event] };
       }
       return { run: moved, steps: [] };
     }
@@ -194,7 +196,7 @@ function tileEvent(run: Run): { steps: Step[]; run: Run } | null {
     if (trigger.c !== c || trigger.r !== r || !meets(run.flags, trigger)) continue;
     const key = `trigger:${trigger.id}`;
     if (trigger.once && run.flags.includes(key)) continue;
-    return { run: trigger.once ? { ...run, flags: [...run.flags, key] } : run, steps: EVENTS[trigger.event] };
+    return { run: trigger.once ? addFlags(run, key) : run, steps: EVENTS[trigger.event] };
   }
   return null;
 }
@@ -214,7 +216,10 @@ function encounter(run: Run): { run: Run; foes: FoeId[] } | null {
   return { run: { ...run, seed: second.seed, steps: 0 }, foes: groups[Math.floor(second.value * groups.length)] };
 }
 
-/** Folds a won battle back into the run: HP, MP, items as they ended, plus XP, coins and drops. */
+/**
+ * Folds a won battle back into the run: HP, MP, items as they ended, plus XP, coins and drops, and
+ * every foe of the fight into the 圖鑑 (a flee or a defeat never records anything).
+ */
 export function applyVictory(run: Run, battle: Battle): { run: Run; summary: VictorySummary } {
   const hp = { ...run.hp };
   const mp = { ...run.mp };
@@ -238,7 +243,7 @@ export function applyVictory(run: Run, battle: Battle): { run: Run; summary: Vic
   }
 
   const coins = battleCoins(battle);
-  const banked: Run = { ...run, hp, mp, items, seed, coins: run.coins + coins };
+  const banked = recordFoes({ ...run, hp, mp, items, seed, coins: run.coins + coins }, battle.foes.map((state) => state.foe));
   const xp = battleXp(battle);
   const { run: levelled, levels, learned } = gainXp(banked, xp);
   return { run: levelled, summary: { xp, coins, drops, levels, learned, level: levelled.level, boss: battleBoss(battle) } };
@@ -282,11 +287,7 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
       if (chest) {
         if (chestOpened(run.flags, chest.id)) return state;
         const count = chest.count ?? 1;
-        const opened: Run = {
-          ...run,
-          flags: [...run.flags, `chest:${chest.id}`],
-          items: addItem(run.items, chest.item, count),
-        };
+        const opened = addFlags({ ...run, items: addItem(run.items, chest.item, count) }, `chest:${chest.id}`);
         const suffix = count > 1 ? ` ×${count}` : '';
         return play(state, [{ who: null, text: `打開玩具箱，拿到 ${ITEMS[chest.item].name}${suffix}！` }], opened);
       }
