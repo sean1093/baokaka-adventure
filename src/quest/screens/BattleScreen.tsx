@@ -7,7 +7,7 @@ import { SoundToggle } from '../../components/Screen';
 import { playTone } from '../../shared/audio';
 import { BattleFx, type Spot } from '../components/BattleFx';
 import { HERO_SPRITE } from '../components/PartyPanel';
-import { aliveFoeSlots, canCast, foeIntent, sameWho } from '../engine/battle';
+import { aliveFoeSlots, battleBoss, canCast, foeIntent, sameWho } from '../engine/battle';
 import { FOES } from '../engine/foes';
 import { HEROES, ITEMS, ITEM_ORDER, SPELLS, spellsFor } from '../engine/heroes';
 import { UI } from '../engine/strings';
@@ -218,8 +218,8 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
     return upcoming ? whoName(upcoming, battle) : '——';
   })();
 
-  const bossFoe = battle.boss ? battle.foes.find((foe) => FOES[foe.foe].boss) : undefined;
-  const bossName = bossFoe ? FOES[bossFoe.foe].name : null;
+  const boss = battleBoss(battle);
+  const bossName = boss ? FOES[boss].name : null;
 
   const headline =
     phase.kind === 'won'

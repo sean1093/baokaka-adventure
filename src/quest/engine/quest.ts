@@ -1,5 +1,5 @@
 import { roll } from '../../shared/random';
-import { battleStep, battleCoins, battleXp, startBattle } from './battle';
+import { battleBoss, battleCoins, battleStep, battleXp, startBattle } from './battle';
 import { EVENTS } from './events';
 import { FOES } from './foes';
 import { ITEMS, STARTING_ITEMS, addItem, heroStats, isEquip, removeItem } from './heroes';
@@ -227,8 +227,7 @@ export function applyVictory(run: Run, battle: Battle): { run: Run; summary: Vic
   const banked: Run = { ...run, hp, mp, items, seed, coins: run.coins + coins };
   const xp = battleXp(battle);
   const { run: levelled, levels, learned } = gainXp(banked, xp);
-  const boss = battle.boss ? (battle.foes.find((foe) => FOES[foe.foe].boss)?.foe ?? battle.foes[0].foe) : null;
-  return { run: levelled, summary: { xp, coins, drops, levels, learned, level: levelled.level, boss } };
+  return { run: levelled, summary: { xp, coins, drops, levels, learned, level: levelled.level, boss: battleBoss(battle) } };
 }
 
 export function questReducer(state: QuestState, action: QuestAction): QuestState {

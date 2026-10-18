@@ -84,10 +84,10 @@ export const QuestTitleScreen = ({ run, legacyNotice, onDismissNotice, onNew, on
 
       <Sheet open={legacyNotice} onClose={onDismissNotice} title={UI.legacyReset[0]}>
         <p className="mb-4 text-center text-copy leading-relaxed text-ink/75">
-          {/* Wrap only between phrases, never mid-phrase */}
-          {UI.legacyReset[1].split(/(?<=，)/).map((phrase) => (
+          {/* Wrap only between phrases, never mid-phrase (no regex lookbehind: older iOS Safari lacks it) */}
+          {UI.legacyReset[1].split('，').map((phrase, index, phrases) => (
             <span key={phrase} className="inline-block">
-              {phrase}
+              {index < phrases.length - 1 ? `${phrase}，` : phrase}
             </span>
           ))}
         </p>

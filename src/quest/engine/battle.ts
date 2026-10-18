@@ -94,6 +94,10 @@ export function foeIntent(battle: Battle, slot: number): string {
 }
 
 export const battleXp = (battle: Battle): number => battle.foes.reduce((sum, foe) => sum + FOES[foe.foe].xp, 0);
+/** The boss of a boss fight (the foe flagged `boss`, else the first one); null for an ordinary fight. */
+export const battleBoss = (battle: Battle): FoeId | null =>
+  battle.boss ? (battle.foes.find((foe) => FOES[foe.foe].boss)?.foe ?? battle.foes[0]?.foe ?? null) : null;
+
 export const battleCoins = (battle: Battle): number => battle.foes.reduce((sum, foe) => sum + FOES[foe.foe].coins, 0);
 
 /**
