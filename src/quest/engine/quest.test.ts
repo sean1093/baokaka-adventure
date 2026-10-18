@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest';
+import { startBattle } from './battle';
 import { EVENTS } from './events';
+import { FOES } from './foes';
 import { ITEMS, heroStats } from './heroes';
 import { MAPS } from './maps';
 import { findPath } from './path';
-import { freshRun, initialState, questReducer, runStarted, type QuestState } from './quest';
-import type { HeroId, Tile } from './types';
+import { applyVictory, freshRun, initialState, questReducer, runStarted, type QuestState } from './quest';
+import type { FoeId, HeroId, Tile } from './types';
 
 const start = (): QuestState => initialState(freshRun(99), true);
 
@@ -125,11 +127,11 @@ describe('talking', () => {
   test('阿嬤 hands over her parcel exactly once', () => {
     const first = readAll(questReducer(opened(), { type: 'interact', id: 'grandma' }));
     expect(first.run.items.cookie).toBe(4);
-    expect(first.run.stickers).toBe(20);
+    expect(first.run.coins).toBe(20);
 
     const second = readAll(questReducer(first, { type: 'interact', id: 'grandma' }));
     expect(second.run.items.cookie).toBe(4);
-    expect(second.run.stickers).toBe(20);
+    expect(second.run.coins).toBe(20);
   });
 
   test('a scripted battle interrupts the script and resumes after the win', () => {
@@ -164,22 +166,22 @@ describe('chests', () => {
 describe('the shop', () => {
   const shopping = (): QuestState => {
     const state = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
-    const rich = { ...state, run: { ...state.run, stickers: 100, map: 'park' as const, pos: MAPS.park.entry } };
+    const rich = { ...state, run: { ...state.run, coins: 100, map: 'park' as const, pos: MAPS.park.entry } };
     return questReducer(rich, { type: 'interact', id: 'uncle' });
   };
 
-  test('opens with stock and charges stickers', () => {
+  test('opens with stock and charges coins', () => {
     let state = readAll(shopping());
     expect(state.view.screen).toBe('shop');
-    const before = state.run.stickers;
+    const before = state.run.coins;
     state = questReducer(state, { type: 'buy', item: 'cookie' });
-    expect(state.run.stickers).toBe(before - ITEMS.cookie.price);
+    expect(state.run.coins).toBe(before - ITEMS.cookie.price);
     expect(state.run.items.cookie).toBe(3);
   });
 
-  test('refuses when the stickers run out', () => {
+  test('refuses when the coins run out', () => {
     let state = readAll(shopping());
-    state = { ...state, run: { ...state.run, stickers: 1 } };
+    state = { ...state, run: { ...state.run, coins: 1 } };
     expect(questReducer(state, { type: 'buy', item: 'bottle' })).toBe(state);
   });
 
@@ -194,7 +196,7 @@ describe('the inn', () => {
     const state = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
     const hurt = {
       ...state,
-      run: { ...state.run, stickers: 30, hp: { ...state.run.hp, baokaka: 3 }, map: 'market' as const, pos: MAPS.market.entry },
+      run: { ...state.run, coins: 30, hp: { ...state.run.hp, baokaka: 3 }, map: 'market' as const, pos: MAPS.market.entry },
     };
     const asked = readAll(questReducer(hurt, { type: 'interact', id: 'uncle' }));
     expect(asked.inn).toBe(10);
@@ -203,13 +205,26 @@ describe('the inn', () => {
 
   test('yes charges and heals', () => {
     const rested = resting(true);
-    expect(rested.run.stickers).toBe(20);
+    expect(rested.run.coins).toBe(20);
     expect(rested.run.hp.baokaka).toBe(heroStats('baokaka', 1).hp);
+  });
+
+  test('yes says so in the new words', () => {
+    expect(resting(true).line?.text).toBe('呼……睡了一覺，體力和元氣都滿了。');
+  });
+
+  test('yes without enough coins says how many are missing', () => {
+    const state = readAll(questReducer(start(), { type: 'newGame', seed: 4 }));
+    const poor = { ...state, run: { ...state.run, coins: 3, map: 'market' as const, pos: MAPS.market.entry } };
+    const asked = readAll(questReducer(poor, { type: 'interact', id: 'uncle' }));
+    const refused = questReducer(asked, { type: 'innAnswer', yes: true });
+    expect(refused.run.coins).toBe(3);
+    expect(refused.line?.text).toBe('銅板不夠，還差 7 個。');
   });
 
   test('no changes nothing', () => {
     const declined = resting(false);
-    expect(declined.run.stickers).toBe(30);
+    expect(declined.run.coins).toBe(30);
     expect(declined.run.hp.baokaka).toBe(3);
   });
 });
@@ -268,14 +283,14 @@ describe('losing', () => {
     state = {
       ...state,
       view: { screen: 'defeat' },
-      run: { ...state.run, party, hp: { ...state.run.hp, baokaka: 0 }, items: { cookie: 3 }, stickers: 15, pos: { c: 10, r: 8 } },
+      run: { ...state.run, party, hp: { ...state.run.hp, baokaka: 0 }, items: { cookie: 3 }, coins: 15, pos: { c: 10, r: 8 } },
     };
     const back = questReducer(state, { type: 'retry' });
     expect(back.view).toEqual({ screen: 'world' });
     expect(back.run.pos).toEqual(MAPS.home.entry);
     expect(back.run.hp.baokaka).toBeGreaterThan(0);
     expect(back.run.items.cookie).toBe(3);
-    expect(back.run.stickers).toBe(15);
+    expect(back.run.coins).toBe(15);
   });
 });
 
@@ -295,5 +310,26 @@ describe('sound', () => {
     const muted = questReducer(state, { type: 'toggleSound' });
     expect(muted.sound).toBe(false);
     expect(muted.run).toBe(state.run);
+  });
+});
+
+describe('applyVictory', () => {
+  const win = (foes: FoeId[], boss: boolean) => {
+    const run = freshRun(7);
+    const battle = startBattle(run, foes, run.seed, boss);
+    return applyVictory(run, { ...battle, phase: { kind: 'won' } });
+  };
+
+  test('banks the coins the foes carried', () => {
+    const { run, summary } = win(['dustBunny', 'sockMonster'], false);
+    expect(summary.coins).toBe(FOES.dustBunny.coins + FOES.sockMonster.coins);
+    expect(run.coins).toBe(summary.coins);
+    expect(summary.boss).toBeNull();
+  });
+
+  test('names the boss for 「〈boss名〉不暈了！」', () => {
+    const boss = (Object.keys(FOES) as FoeId[]).find((foe) => FOES[foe].boss);
+    if (!boss) throw new Error('no boss in the content');
+    expect(win([boss], true).summary.boss).toBe(boss);
   });
 });

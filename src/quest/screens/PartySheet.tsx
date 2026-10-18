@@ -5,6 +5,7 @@ import { Chip } from '../../components/Screen';
 import { Sheet } from '../../components/Sheet';
 import { HERO_SPRITE } from '../components/PartyPanel';
 import { HEROES, ITEMS, ITEM_ORDER, XP_TABLE, heroStats, isEquip, spellsFor } from '../engine/heroes';
+import { UI } from '../engine/strings';
 import type { HeroId, ItemId, Run } from '../engine/types';
 
 type Tab = 'party' | 'bag';
@@ -18,10 +19,10 @@ type Props = {
 };
 
 const STAT_ROWS: { key: 'atk' | 'def' | 'spd' | 'luck'; label: string }[] = [
-  { key: 'atk', label: '武術' },
-  { key: 'def', label: '防禦' },
-  { key: 'spd', label: '身法' },
-  { key: 'luck', label: '幸運' },
+  { key: 'atk', label: UI.atk },
+  { key: 'def', label: UI.def },
+  { key: 'spd', label: UI.spd },
+  { key: 'luck', label: UI.luck },
 ];
 
 /** 隊伍 and 百寶袋: stats, spells learned, what each hero wears, and using or equipping things. */
@@ -87,15 +88,15 @@ export const PartySheet = ({ open, run, onClose, onUseItem, onEquip }: Props) =>
             <p className="mb-3 text-caption leading-relaxed text-muted">{HEROES[hero].blurb}</p>
 
             <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-1">
-              <Row label="體力" value={`${run.hp[hero]} / ${stats.hp}`} />
-              <Row label="真氣" value={`${run.mp[hero]} / ${stats.mp}`} />
+              <Row label={UI.hp} value={`${run.hp[hero]} / ${stats.hp}`} />
+              <Row label={UI.mp} value={`${run.mp[hero]} / ${stats.mp}`} />
               {STAT_ROWS.map((row) => (
                 <Row key={row.key} label={row.label} value={String(stats[row.key])} />
               ))}
               <Row label="經驗" value={next === null ? '已滿' : `${run.xp} / ${next}`} />
             </div>
 
-            <p className="mb-1 text-caption font-bold text-muted">仙術</p>
+            <p className="mb-1 text-caption font-bold text-muted">{UI.skill}</p>
             <div className="mb-3 flex flex-wrap gap-1">
               {spellsFor(hero, run.level).map((spell) => (
                 <span key={spell.id} className="rounded-full bg-sky/20 px-2 py-0.5 text-caption font-bold text-skyDeep">

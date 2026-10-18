@@ -1,4 +1,5 @@
 import { ITEMS, MAX_LEVEL, XP_TABLE, addItem, heroStats, spellsFor } from './heroes';
+import { UI } from './strings';
 import { HERO_ORDER, type FoeId, type HeroId, type ItemId, type Line, type Run, type SpellId, type Step } from './types';
 
 /** Where a script is: the steps it plays and how far it has got. */
@@ -96,8 +97,8 @@ export function runScene(run: Run, scene: Scene): SceneResult {
         draft = { ...draft, items: addItem(draft.items, step.item, step.count ?? 1) };
         break;
 
-      case 'stickers':
-        draft = { ...draft, stickers: Math.max(0, draft.stickers + step.amount) };
+      case 'coins':
+        draft = { ...draft, coins: Math.max(0, draft.coins + step.amount) };
         break;
 
       case 'heal':
@@ -116,11 +117,11 @@ export function runScene(run: Run, scene: Scene): SceneResult {
 
 /** The lines the inn shows for the player's answer; the runner has no way to script these. */
 export function innLines(run: Run, price: number, yes: boolean): { run: Run; lines: Line[] } {
-  if (!yes) return { run, lines: [{ who: null, text: '「那下次再來喔。」' }] };
-  if (run.stickers < price) return { run, lines: [{ who: null, text: `貼紙不夠，還差 ${price - run.stickers} 張。` }] };
+  if (!yes) return { run, lines: [{ who: null, text: UI.innDeclined }] };
+  if (run.coins < price) return { run, lines: [{ who: null, text: UI.innShort(price - run.coins) }] };
   return {
-    run: healParty({ ...run, stickers: run.stickers - price }),
-    lines: [{ who: null, text: '呼……睡了一覺，全隊體力和真氣都滿了。' }],
+    run: healParty({ ...run, coins: run.coins - price }),
+    lines: [{ who: null, text: UI.innRested }],
   };
 }
 

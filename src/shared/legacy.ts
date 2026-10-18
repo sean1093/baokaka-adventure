@@ -2,7 +2,8 @@ import type { StorageLike } from './storage';
 
 /**
  * Storage keys of the mini-games removed in the 2026-10 redesign (decisions.md D-01):
- * 找找看's progress and 圖案數獨's save. The RPG's own key (`baokaka.quest`) is not touched here.
+ * 找找看's progress and 圖案數獨's save. The RPG's old key (`baokaka.quest`) is handled by
+ * `quest/engine/save.ts`, which discards it with a friendly notice (D-12).
  */
 export const LEGACY_KEYS: readonly string[] = ['baokaka.progress', 'baokaka.sudoku'];
 

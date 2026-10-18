@@ -3,6 +3,7 @@ import { SPRITES } from '../../art/sprites';
 import { Button } from '../../components/Button';
 import { Card, Screen } from '../../components/Screen';
 import { playTone } from '../../shared/audio';
+import { UI } from '../engine/strings';
 import type { Run } from '../engine/types';
 
 const Baokaka = SPRITES.baokaka;
@@ -60,7 +61,7 @@ export const QuestEndingScreen = ({ run, soundOn, onContinue }: Props) => {
       </Card>
 
       <p className="text-center text-label font-bold text-muted">
-        等級 {run.level} · 走過 7 個地方 · 收集 {run.stickers} 張貼紙
+        等級 {run.level} · 走過 7 個地方 · 收集 {UI.coinCount(run.coins)}
       </p>
 
       <Button size="lg" full onClick={onContinue}>

@@ -24,7 +24,7 @@ Work the issues **in numeric order**; an issue may start only when every issue i
 | 1 | Epic: 寶咖咖抓周大冒險 — redesign | epic | — | open |
 | **M0** | | | | |
 | 2 | Make the RPG the only game (remove hub, 找找看, 圖案數獨) | chore | — | done (#60) |
-| 3 | Run v2: 銅板 currency, new terminology, save format v2 with a friendly reset | engine | #2 | todo |
+| 3 | Run v2: 銅板 currency, new terminology, save format v2 with a friendly reset | engine | #2 | done (#61) |
 | 4 | Visual QA tooling: dev art lab route and Playwright screenshots at 390×844 | chore, qa, art | #2 | todo |
 | **M1** | | | | |
 | 5 | Four-hero party (寶咖咖, 摩卡貓, 阿藍, 黑糖), new skills, level cap 20 | engine | #3 | todo |

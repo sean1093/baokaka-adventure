@@ -2,7 +2,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { stopMusic, playMusic, unlockAudio } from '../shared/audio';
 import { MAPS } from './engine/maps';
 import { initialState, questReducer } from './engine/quest';
-import { loadQuest, saveQuest } from './engine/save';
+import { discardLegacyQuest, loadQuest, saveQuest } from './engine/save';
 import { validateQuestContent } from './engine/validate';
 import { BattleScreen } from './screens/BattleScreen';
 import { DefeatScreen } from './screens/DefeatScreen';
@@ -19,18 +19,24 @@ if (import.meta.env.DEV) {
   if (errors.length > 0) throw new Error(`Invalid quest content:\n${errors.join('\n')}`);
 }
 
-/** 寶咖咖奇俠傳: the run state machine lives in engine/quest.ts, battles in engine/battle.ts. */
+/** The RPG: the run state machine lives in engine/quest.ts, battles in engine/battle.ts. */
 export const QuestGame = () => {
-  const [state, dispatch] = useReducer(questReducer, undefined, () => {
-    const saved = loadQuest();
-    return initialState(saved.run, saved.sound);
-  });
+  // Read storage once: the reducer, the settings and the old-save notice all start from this load
+  const [loaded] = useState(() => loadQuest());
+  const [state, dispatch] = useReducer(questReducer, undefined, () => initialState(loaded.save.run, loaded.save.sound));
+  const [settings] = useState(loaded.save.settings);
+  // The old key is deleted right after mount, so the notice lives in memory only and shows once
+  const [legacyNotice, setLegacyNotice] = useState(loaded.legacyReset);
   const [menuOpen, setMenuOpen] = useState(false);
   const { view, run, sound } = state;
 
   useEffect(() => {
-    saveQuest({ run, sound });
-  }, [run, sound]);
+    if (loaded.legacyReset) discardLegacyQuest();
+  }, [loaded]);
+
+  useEffect(() => {
+    saveQuest({ run, sound, settings });
+  }, [run, sound, settings]);
 
   // One theme per place; battles get their own. Silence when muted or on the title.
   useEffect(() => {
@@ -51,6 +57,8 @@ export const QuestGame = () => {
       return (
         <QuestTitleScreen
           run={run}
+          legacyNotice={legacyNotice}
+          onDismissNotice={() => setLegacyNotice(false)}
           onNew={() => {
             unlockAudio();
             dispatch({ type: 'newGame', seed: Date.now() | 0 });

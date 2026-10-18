@@ -21,12 +21,12 @@ export const HEROES: Record<HeroId, { name: string; base: Stats; growth: Stats; 
     growth: { hp: 8, mp: 4, atk: 3, def: 1, spd: 2, luck: 1 },
     blurb: '虎斑貓。動作快，爪子利，呼嚕聲能治病。',
   },
-  // Fragile, deep 真氣, the party's storm caller
+  // Fragile, deep 元氣, the party's storm caller
   duck: {
     name: '小鴨鴨',
     base: { hp: 40, mp: 24, atk: 6, def: 5, spd: 8, luck: 6 },
     growth: { hp: 7, mp: 5, atk: 1, def: 1, spd: 1, luck: 1 },
-    blurb: '浴缸島的黃色小鴨。真氣很足，很吵。',
+    blurb: '浴缸島的黃色小鴨。元氣很足，很吵。',
   },
 };
 
@@ -176,15 +176,15 @@ export const ITEMS: Record<ItemId, Item> = {
   cookie: { id: 'cookie', name: '小餅乾', sprite: 'cookie', blurb: '體力恢復 25。', price: 5, use: { kind: 'hp', amount: 25 } },
   bottle: { id: 'bottle', name: '奶瓶', sprite: 'bottle', blurb: '體力恢復 60。', price: 12, use: { kind: 'hp', amount: 60 } },
   banana: { id: 'banana', name: '香蕉', sprite: 'banana', blurb: '全隊體力恢復 40。', price: 25, use: { kind: 'hpAll', amount: 40 } },
-  driedFish: { id: 'driedFish', name: '小魚乾', sprite: 'driedFish', blurb: '真氣恢復 20。', price: 10, use: { kind: 'mp', amount: 20 } },
-  apple: { id: 'apple', name: '蘋果', sprite: 'apple', blurb: '一個人體力和真氣全滿。', price: 40, use: { kind: 'full' } },
+  driedFish: { id: 'driedFish', name: '小魚乾', sprite: 'driedFish', blurb: '元氣恢復 20。', price: 10, use: { kind: 'mp', amount: 20 } },
+  apple: { id: 'apple', name: '蘋果', sprite: 'apple', blurb: '一個人體力和元氣全滿。', price: 40, use: { kind: 'full' } },
   shell: { id: 'shell', name: '貝殼', sprite: 'shell', blurb: '聽聽海的聲音，倒下的人醒過來（一半體力）。', price: 30, use: { kind: 'revive', ratio: 0.5 } },
-  clothBook: { id: 'clothBook', name: '布書', sprite: 'clothBook', blurb: '裝備：真氣 +15。', price: 50, use: { kind: 'equip', bonus: { mp: 15 } } },
+  clothBook: { id: 'clothBook', name: '布書', sprite: 'clothBook', blurb: '裝備：元氣 +15。', price: 50, use: { kind: 'equip', bonus: { mp: 15 } } },
   coinPurse: { id: 'coinPurse', name: '小錢包', sprite: 'coinPurse', blurb: '裝備：幸運 +8。', price: 50, use: { kind: 'equip', bonus: { luck: 8 } } },
   sunHat: { id: 'sunHat', name: '遮陽帽', sprite: 'sunHat', blurb: '裝備：防禦 +4。', price: 45, use: { kind: 'equip', bonus: { def: 4 } } },
   blanket: { id: 'blanket', name: '小被被', sprite: 'blanket', blurb: '裝備：體力 +25。', price: 60, use: { kind: 'equip', bonus: { hp: 25 } } },
-  toyBoat: { id: 'toyBoat', name: '小船', sprite: 'toyBoat', blurb: '裝備：武術 +5。', price: 60, use: { kind: 'equip', bonus: { atk: 5 } } },
-  star: { id: 'star', name: '星星髮夾', sprite: 'star', blurb: '裝備：身法 +6。', price: 60, use: { kind: 'equip', bonus: { spd: 6 } } },
+  toyBoat: { id: 'toyBoat', name: '小船', sprite: 'toyBoat', blurb: '裝備：武力 +5。', price: 60, use: { kind: 'equip', bonus: { atk: 5 } } },
+  star: { id: 'star', name: '星星髮夾', sprite: 'star', blurb: '裝備：身手 +6。', price: 60, use: { kind: 'equip', bonus: { spd: 6 } } },
   nightLight: { id: 'nightLight', name: '小夜燈', sprite: 'nightLight', blurb: '裝備：防禦 +8。', price: 80, use: { kind: 'equip', bonus: { def: 8 } } },
 };
 

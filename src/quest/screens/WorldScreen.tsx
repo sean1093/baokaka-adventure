@@ -240,7 +240,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onMen
   return (
     <main className="screen-in mx-auto flex h-dvh w-full max-w-md flex-col gap-2 px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-[max(env(safe-area-inset-top),10px)]">
       <header className="flex items-center gap-2">
-        <IconButton icon={<Home />} label="回遊戲選單" onClick={onExit} />
+        <IconButton icon={<Home />} label="回到標題" onClick={onExit} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-caption font-bold text-muted">
             第 {map.chapter} 章 · {CHAPTER_TITLES[map.chapter - 1]}
@@ -291,7 +291,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onMen
 
         {card && <ChapterCard n={card.n} title={card.title} onDismiss={onAdvance} />}
         {!card && line && <Dialogue line={line} onAdvance={onAdvance} />}
-        {!card && !line && inn !== null && <InnPrompt price={inn} stickers={run.stickers} onAnswer={onInn} />}
+        {!card && !line && inn !== null && <InnPrompt price={inn} coins={run.coins} onAnswer={onInn} />}
       </div>
 
       <PartyPanel run={run} compact />

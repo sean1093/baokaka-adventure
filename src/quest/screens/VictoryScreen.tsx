@@ -4,8 +4,10 @@ import { Button } from '../../components/Button';
 import { Card, Chip, Screen } from '../../components/Screen';
 import { ChevronRight, Sparkle, Star } from '../../components/icons';
 import { playTone } from '../../shared/audio';
+import { FOES } from '../engine/foes';
 import { HEROES, ITEMS, SPELLS } from '../engine/heroes';
 import type { VictorySummary } from '../engine/quest';
+import { UI } from '../engine/strings';
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
@@ -30,12 +32,12 @@ export const VictoryScreen = ({ summary, soundOn, onContinue }: Props) => {
             <MochaCat />
           </span>
         </div>
-        <h1 className="text-display font-extrabold">打贏了！</h1>
+        <h1 className="text-display font-extrabold leading-tight">{summary.boss ? UI.bossVictory(FOES[summary.boss].name) : UI.victory}</h1>
       </section>
 
       <Card className="flex flex-col gap-2 p-4">
         <Row label="經驗" value={`+${summary.xp}`} tone="sky" />
-        <Row label="貼紙" value={`+${summary.stickers}`} tone="sun" />
+        <Row label={UI.coins} value={`+${summary.coins}`} tone="sun" />
         {summary.drops.length > 0 && (
           <div className="flex items-center justify-between gap-2">
             <span className="text-label font-bold text-muted">掉落</span>
@@ -54,18 +56,18 @@ export const VictoryScreen = ({ summary, soundOn, onContinue }: Props) => {
         <Card tone="accent" className="p-4 text-center">
           <p className="flex items-center justify-center gap-1.5 text-headline font-extrabold">
             <Star size={22} />
-            等級 {summary.level}
+            {UI.levelUp(summary.level)}
           </p>
-          <p className="mt-1 text-label font-bold text-mochaDeep">體力和真氣都補滿了</p>
+          <p className="mt-1 text-label font-bold text-mochaDeep">體力和{UI.mp}都補滿了</p>
           {summary.learned.length > 0 && (
-            <p className="mt-2 flex flex-wrap items-center justify-center gap-1">
-              <Sparkle size={18} className="text-mochaDeep" />
+            <div className="mt-2 flex flex-col items-center gap-1">
               {summary.learned.map((spell) => (
-                <span key={spell} className="rounded-full bg-surface px-2 py-0.5 text-label font-extrabold shadow-card">
-                  學會 {SPELLS[spell].name}
-                </span>
+                <p key={spell} className="flex items-center gap-1 rounded-full bg-surface px-2.5 py-0.5 text-label font-extrabold shadow-card">
+                  <Sparkle size={16} className="shrink-0 text-mochaDeep" />
+                  {UI.newSkill(HEROES[SPELLS[spell].hero].name, SPELLS[spell].name)}
+                </p>
               ))}
-            </p>
+            </div>
           )}
           {summary.learned.length === 0 && <p className="mt-1 text-caption text-mochaDeep">{HEROES.baokaka.name}他們變強了一點。</p>}
         </Card>

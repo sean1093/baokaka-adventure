@@ -7,9 +7,10 @@ import { SoundToggle } from '../../components/Screen';
 import { playTone } from '../../shared/audio';
 import { BattleFx, type Spot } from '../components/BattleFx';
 import { HERO_SPRITE } from '../components/PartyPanel';
-import { aliveFoeSlots, canCast, foeIntent, sameWho } from '../engine/battle';
+import { aliveFoeSlots, battleBoss, canCast, foeIntent, sameWho } from '../engine/battle';
 import { FOES } from '../engine/foes';
 import { HEROES, ITEMS, ITEM_ORDER, SPELLS, spellsFor } from '../engine/heroes';
+import { UI } from '../engine/strings';
 import type { Battle, BattleAction, BattleEvent, HeroId, ItemId, SpellId, Who } from '../engine/types';
 
 /** Pause between foe actions so each one can be read (ms) */
@@ -50,7 +51,7 @@ function logLine(battle: Battle): string {
         parts.push(`${whoName(event.who, battle)} +${event.amount}`);
         break;
       case 'mp':
-        if (event.amount > 0) parts.push(`真氣 +${event.amount}`);
+        if (event.amount > 0) parts.push(`${UI.mp} +${event.amount}`);
         break;
       case 'guard':
         parts.push(`${whoName(event.who, battle)} 防禦`);
@@ -62,14 +63,15 @@ function logLine(battle: Battle): string {
         parts.push(`${whoName(event.who, battle)} 站起來了！`);
         break;
       case 'flee':
-        parts.push(event.ok ? '成功逃走了！' : '逃不掉！');
+        parts.push(event.ok ? UI.fleeOk : UI.fleeFail);
         break;
       case 'ko':
-        parts.push(`${whoName(event.who, battle)} 倒下`);
+        parts.push(event.who.side === 'hero' ? UI.heroKo(whoName(event.who, battle)) : UI.foeKo(whoName(event.who, battle)));
         break;
     }
   }
-  return parts.join('，') || '……';
+  // Lines that already end in their own punctuation (「溜走了！」) don't take another comma
+  return parts.reduce((log, part) => (log === '' ? part : /[！…。]$/.test(log) ? `${log}${part}` : `${log}，${part}`), '') || '……';
 }
 
 /** A number that floats up off whoever it happened to. */
@@ -80,11 +82,11 @@ const floater = (event: BattleEvent): { text: string; tone: string } | null => {
     case 'heal':
       return event.amount > 0 ? { text: `+${event.amount}`, tone: 'bg-leaf text-white' } : null;
     case 'mp':
-      return event.amount > 0 ? { text: `真氣 +${event.amount}`, tone: 'bg-sky text-white' } : null;
+      return event.amount > 0 ? { text: `${UI.mp} +${event.amount}`, tone: 'bg-sky text-white' } : null;
     case 'guard':
       return { text: '防禦', tone: 'bg-ink text-cream' };
     case 'ko':
-      return { text: '倒下', tone: 'bg-ink text-cream' };
+      return { text: event.who.side === 'hero' ? '累倒了' : '頭暈暈', tone: 'bg-ink text-cream' };
     default:
       return null;
   }
@@ -209,20 +211,25 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
     else if (pending.kind === 'spell') send({ type: 'spell', spell: pending.spell, target });
   };
 
-  /** Who moves after the current actor: the reason 身法 is a stat worth reading. */
+  /** Who moves after the current actor: the reason 身手 is a stat worth reading. */
   const nextUp = (() => {
     const isAlive = (who: Who) => (who.side === 'hero' ? battle.heroes[who.hero].hp > 0 : battle.foes[who.slot].hp > 0);
     const upcoming = battle.order.slice(battle.turn + 1).find(isAlive) ?? battle.order.find(isAlive);
     return upcoming ? whoName(upcoming, battle) : '——';
   })();
 
+  const boss = battleBoss(battle);
+  const bossName = boss ? FOES[boss].name : null;
+
   const headline =
     phase.kind === 'won'
-      ? '打贏了！'
+      ? bossName
+        ? UI.bossVictory(bossName)
+        : UI.victory
       : phase.kind === 'lost'
-        ? '大家都倒下了……'
+        ? UI.defeat[0]
         : phase.kind === 'fled'
-          ? '逃走了！'
+          ? UI.fleeOk
           : phase.kind === 'foe'
             ? `${FOES[battle.foes[phase.slot].foe].name} 的回合`
             : needs === 'foe'
@@ -403,11 +410,11 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
 
         {hero && !pending && menu === 'root' && (
           <div className="grid grid-cols-3 gap-1.5">
-            <CommandButton label="攻擊" hint="普通攻擊" onClick={() => choose({ kind: 'attack' })} primary />
-            <CommandButton label="仙術" hint={`${spells.length} 招`} onClick={() => setMenu('spell')} disabled={spells.length === 0} />
-            <CommandButton label="道具" hint={`${carried.length} 種`} onClick={() => setMenu('item')} disabled={carried.length === 0} />
-            <CommandButton label="防禦" hint="傷害減半" onClick={() => send({ type: 'guard' })} />
-            <CommandButton label="逃跑" hint={battle.boss ? '逃不掉' : '離開戰鬥'} onClick={() => send({ type: 'flee' })} disabled={battle.boss} />
+            <CommandButton label={UI.commands.attack} hint="普通攻擊" onClick={() => choose({ kind: 'attack' })} primary />
+            <CommandButton label={UI.commands.skill} hint={`${spells.length} 招`} onClick={() => setMenu('spell')} disabled={spells.length === 0} />
+            <CommandButton label={UI.commands.item} hint={`${carried.length} 種`} onClick={() => setMenu('item')} disabled={carried.length === 0} />
+            <CommandButton label={UI.commands.guard} hint="傷害減半" onClick={() => send({ type: 'guard' })} />
+            <CommandButton label={UI.commands.flee} hint={battle.boss ? '逃不掉' : '離開戰鬥'} onClick={() => send({ type: 'flee' })} disabled={battle.boss} />
             <div className="flex min-h-12 flex-col items-center justify-center rounded-2xl bg-ink/[0.03]">
               <span className="text-caption font-bold text-muted">接下來</span>
               <span className="truncate px-1 text-label font-extrabold leading-tight">{nextUp}</span>
@@ -428,7 +435,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
                   className="flex min-h-11 flex-col justify-center rounded-2xl bg-sky/15 px-3 py-1.5 text-left transition-transform active:scale-[0.97] disabled:opacity-35"
                 >
                   <span className="text-label font-extrabold leading-tight">{spell.name}</span>
-                  <span className="text-caption font-bold text-skyDeep">真氣 {spell.cost}</span>
+                  <span className="text-caption font-bold text-skyDeep">{UI.mp} {spell.cost}</span>
                 </button>
               );
             })}

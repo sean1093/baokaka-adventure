@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { aliveFoeSlots, aliveHeroes, battleStep, battleStickers, battleXp, canCast, foeIntent, startBattle } from './battle';
+import { aliveFoeSlots, aliveHeroes, battleStep, battleCoins, battleXp, canCast, foeIntent, startBattle } from './battle';
 import { FOES } from './foes';
 import { SPELLS, heroStats } from './heroes';
 import { freshRun } from './quest';
@@ -99,7 +99,7 @@ describe('attacking', () => {
 });
 
 describe('spells', () => {
-  test('cost 真氣 and refuse when there is not enough', () => {
+  test('cost 元氣 and refuse when there is not enough', () => {
     let battle = untilHero(fight(3, ['dustBunny']), 'baokaka');
     const before = battle.heroes.baokaka.mp;
     battle = battleStep(battle, { type: 'spell', spell: 'throwBlock', target: 0 });
@@ -162,7 +162,7 @@ describe('items and guarding', () => {
     expect(battleStep(empty, { type: 'item', item: 'bottle', target: 'mocha' })).toBe(empty);
   });
 
-  test('guarding halves the next hit and gives back a little 真氣', () => {
+  test('guarding halves the next hit and gives back a little 元氣', () => {
     let battle = fight(3, ['pigeon'], false, ['baokaka']);
     battle = { ...battle, heroes: { ...battle.heroes, baokaka: { ...battle.heroes.baokaka, mp: 0 } } };
     const guarded = battleStep(battle, { type: 'guard' });
@@ -202,7 +202,7 @@ describe('rewards', () => {
   test('sum over the foes present', () => {
     const battle = fight(4, ['dustBunny', 'sockMonster']);
     expect(battleXp(battle)).toBe(FOES.dustBunny.xp + FOES.sockMonster.xp);
-    expect(battleStickers(battle)).toBe(FOES.dustBunny.stickers + FOES.sockMonster.stickers);
+    expect(battleCoins(battle)).toBe(FOES.dustBunny.coins + FOES.sockMonster.coins);
     expect(aliveFoeSlots(battle)).toEqual([0, 1]);
   });
 });

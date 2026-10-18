@@ -3,6 +3,7 @@ import { SPRITES } from '../../art/sprites';
 import { Button } from '../../components/Button';
 import { HEROES } from '../engine/heroes';
 import { SPEAKERS } from '../engine/events';
+import { UI } from '../engine/strings';
 import { HERO_ORDER, type HeroId, type Line } from '../engine/types';
 
 /** How fast the text types itself out (ms per character) */
@@ -85,11 +86,11 @@ export const ChapterCard = ({ n, title, onDismiss }: { n: number; title: string;
 );
 
 /** The inn question, asked in the same box the NPC was just talking from. */
-export const InnPrompt = ({ price, stickers, onAnswer }: { price: number; stickers: number; onAnswer: (yes: boolean) => void }) => (
+export const InnPrompt = ({ price, coins, onAnswer }: { price: number; coins: number; onAnswer: (yes: boolean) => void }) => (
   <div className="sheet-in absolute inset-x-0 bottom-0 z-20 px-3 pb-3">
     <div className="rounded-3xl border border-ink/10 bg-surface/95 p-4 shadow-float backdrop-blur">
       <p className="mb-3 text-copy font-bold leading-relaxed">
-        睡一下要 {price} 張貼紙。（現在有 {stickers} 張）
+        {UI.innAsk(price, coins)}
       </p>
       <div className="flex gap-2">
         <Button full size="md" onClick={() => onAnswer(true)}>

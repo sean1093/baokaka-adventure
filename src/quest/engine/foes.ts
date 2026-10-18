@@ -13,7 +13,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'dustBunny',
     stats: { hp: 26, mp: 0, atk: 7, def: 1, spd: 4, luck: 2 },
     xp: 6,
-    stickers: 3,
+    coins: 3,
     moves: [
       { kind: 'attack', name: '滾過來', power: 1, target: 'one', fx: 'thud' },
       { kind: 'attack', name: '滾過來', power: 1, target: 'one', fx: 'thud' },
@@ -26,7 +26,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'sockMonster',
     stats: { hp: 40, mp: 0, atk: 9, def: 2, spd: 3, luck: 2 },
     xp: 9,
-    stickers: 5,
+    coins: 5,
     drop: { item: 'cookie', chance: 0.3 },
     moves: [
       { kind: 'attack', name: '甩襪子', power: 1, target: 'one', fx: 'thud' },
@@ -39,7 +39,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'blockGolem',
     stats: { hp: 250, mp: 0, atk: 15, def: 5, spd: 3, luck: 3 },
     xp: 40,
-    stickers: 30,
+    coins: 30,
     boss: true,
     taunt: '誰敢亂動我的積木！',
     moves: [
@@ -57,7 +57,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'mosquito',
     stats: { hp: 28, mp: 0, atk: 11, def: 1, spd: 12, luck: 6 },
     xp: 8,
-    stickers: 4,
+    coins: 4,
     moves: [
       { kind: 'attack', name: '叮一口', power: 1, target: 'one', fx: 'jet' },
       { kind: 'attack', name: '叮一口', power: 1, target: 'one', fx: 'jet' },
@@ -70,7 +70,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'snail',
     stats: { hp: 60, mp: 0, atk: 10, def: 6, spd: 2, luck: 1 },
     xp: 10,
-    stickers: 5,
+    coins: 5,
     drop: { item: 'cookie', chance: 0.3 },
     moves: [
       { kind: 'guard', name: '縮進殼裡' },
@@ -86,7 +86,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'pigeon',
     stats: { hp: 58, mp: 0, atk: 13, def: 3, spd: 8, luck: 4 },
     xp: 12,
-    stickers: 6,
+    coins: 6,
     moves: [
       { kind: 'attack', name: '啄一下', power: 1, target: 'one', fx: 'slash' },
       { kind: 'attack', name: '拍翅膀', power: 0.7, target: 'all', fx: 'dust' },
@@ -99,7 +99,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'kiteGhost',
     stats: { hp: 54, mp: 0, atk: 14, def: 2, spd: 11, luck: 5 },
     xp: 13,
-    stickers: 6,
+    coins: 6,
     drop: { item: 'driedFish', chance: 0.25 },
     moves: [
       { kind: 'attack', name: '飄過來', power: 1, target: 'one', fx: 'dust' },
@@ -112,7 +112,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'moleKing',
     stats: { hp: 130, mp: 0, atk: 17, def: 5, spd: 5, luck: 3 },
     xp: 25,
-    stickers: 14,
+    coins: 14,
     drop: { item: 'bottle', chance: 0.5 },
     moves: [
       { kind: 'attack', name: '挖洞', power: 1, target: 'one', fx: 'dust' },
@@ -126,7 +126,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'crowBoss',
     stats: { hp: 450, mp: 0, atk: 20, def: 6, spd: 9, luck: 5 },
     xp: 60,
-    stickers: 45,
+    coins: 45,
     boss: true,
     taunt: '嘎！亮晶晶的東西都是我的！',
     moves: [
@@ -144,7 +144,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'crab',
     stats: { hp: 90, mp: 0, atk: 18, def: 8, spd: 4, luck: 3 },
     xp: 16,
-    stickers: 8,
+    coins: 8,
     moves: [
       { kind: 'attack', name: '夾一下', power: 1.1, target: 'one', fx: 'slash' },
       { kind: 'guard', name: '舉起大螯' },
@@ -157,7 +157,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'rollingApple',
     stats: { hp: 74, mp: 0, atk: 20, def: 3, spd: 10, luck: 5 },
     xp: 15,
-    stickers: 8,
+    coins: 8,
     drop: { item: 'apple', chance: 0.15 },
     moves: [
       { kind: 'attack', name: '蘋果滾滾', power: 1, target: 'one', fx: 'thud' },
@@ -171,7 +171,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'bigFish',
     stats: { hp: 560, mp: 0, atk: 23, def: 7, spd: 6, luck: 4 },
     xp: 90,
-    stickers: 60,
+    coins: 60,
     boss: true,
     taunt: '噗嚕噗嚕，誰在偷看我的魚攤？',
     moves: [
@@ -189,7 +189,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'greedyGull',
     stats: { hp: 110, mp: 0, atk: 23, def: 4, spd: 12, luck: 6 },
     xp: 22,
-    stickers: 10,
+    coins: 10,
     drop: { item: 'cookie', chance: 0.4 },
     moves: [
       { kind: 'attack', name: '搶食物', power: 1.1, target: 'one', fx: 'slash' },
@@ -203,7 +203,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'jellyfish',
     stats: { hp: 125, mp: 0, atk: 21, def: 6, spd: 5, luck: 4 },
     xp: 20,
-    stickers: 10,
+    coins: 10,
     moves: [
       { kind: 'attack', name: '電一下', power: 1.2, target: 'one', fx: 'bolt' },
       { kind: 'heal', name: '漂一漂', ratio: 0.25 },
@@ -216,7 +216,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'octopus',
     stats: { hp: 980, mp: 0, atk: 30, def: 9, spd: 6, luck: 5 },
     xp: 130,
-    stickers: 80,
+    coins: 80,
     boss: true,
     taunt: '八隻手一起來！',
     moves: [
@@ -234,7 +234,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'sleepySprite',
     stats: { hp: 145, mp: 0, atk: 26, def: 6, spd: 11, luck: 6 },
     xp: 26,
-    stickers: 12,
+    coins: 12,
     drop: { item: 'driedFish', chance: 0.3 },
     moves: [
       { kind: 'attack', name: '撒瞌睡粉', power: 0.8, target: 'all', fx: 'sparkle' },
@@ -247,7 +247,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'nightmareCloud',
     stats: { hp: 168, mp: 0, atk: 28, def: 5, spd: 8, luck: 4 },
     xp: 30,
-    stickers: 14,
+    coins: 14,
     drop: { item: 'bottle', chance: 0.3 },
     moves: [
       { kind: 'attack', name: '雷聲隆隆', power: 1, target: 'all', fx: 'shout' },
@@ -261,7 +261,7 @@ export const FOES: Record<FoeId, Foe> = {
     sprite: 'snoreKing',
     stats: { hp: 1300, mp: 0, atk: 33, def: 10, spd: 5, luck: 5 },
     xp: 200,
-    stickers: 100,
+    coins: 100,
     boss: true,
     taunt: '呼……嚕……誰吵我……',
     moves: [

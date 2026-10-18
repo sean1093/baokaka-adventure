@@ -1,5 +1,6 @@
 import { SPRITES } from '../../art/sprites';
 import { HEROES, XP_TABLE, heroStats } from '../engine/heroes';
+import { UI } from '../engine/strings';
 import type { HeroId, Run } from '../engine/types';
 
 export const HERO_SPRITE: Record<HeroId, keyof typeof SPRITES> = { baokaka: 'baokaka', mocha: 'mochaCat', duck: 'duck' };
@@ -14,7 +15,7 @@ const Meter = ({ value, max, tone }: { value: number; max: number; tone: 'hp' | 
   );
 };
 
-/** The party strip: one row per hero with 體力 and 真氣, plus the shared 等級 and 貼紙 line. */
+/** The party strip: one row per hero with 體力 and 元氣, plus the shared 等級 and 銅板 line. */
 export const PartyPanel = ({ run, compact = false }: { run: Run; compact?: boolean }) => {
   const next = XP_TABLE[run.level] ?? null;
   return (
@@ -25,7 +26,7 @@ export const PartyPanel = ({ run, compact = false }: { run: Run; compact?: boole
           <span className="text-muted">等級</span>
         </span>
         <span className="text-muted">{next === null ? '經驗 已滿' : `經驗 ${run.xp} / ${next}`}</span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-sun/25 px-2 py-0.5 text-mochaDeep">貼紙 {run.stickers}</span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-sun/25 px-2 py-0.5 text-mochaDeep">{UI.coins} {run.coins}</span>
       </div>
 
       <div className={compact ? 'flex gap-2' : 'flex flex-col gap-2'}>
