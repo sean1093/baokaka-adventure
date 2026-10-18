@@ -24,12 +24,14 @@ export type Policy = {
   restBelow: number;
   /** Buys what the shops stock */
   shop: boolean;
+  /** Casts the party shield (鵲橋護盾) when a foe is about to hit everyone */
+  shield: boolean;
 };
 
 export const POLICIES: Record<'careful' | 'casual' | 'reckless', Policy> = {
-  careful: { healBelow: 0.45, guardBelow: 0.25, restBelow: 0.7, shop: true },
-  casual: { healBelow: 0.3, guardBelow: 0, restBelow: 0.4, shop: true },
-  reckless: { healBelow: 0, guardBelow: 0, restBelow: 0, shop: false },
+  careful: { healBelow: 0.45, guardBelow: 0.25, restBelow: 0.7, shop: true, shield: true },
+  casual: { healBelow: 0.3, guardBelow: 0, restBelow: 0.4, shop: true, shield: true },
+  reckless: { healBelow: 0, guardBelow: 0, restBelow: 0, shop: false, shield: false },
 };
 
 const HEAL_ITEMS: readonly ItemId[] = ['cookie', 'bottle', 'banana', 'apple'];
@@ -70,6 +72,15 @@ export function playBattle(run: Run, foes: FoeId[], boss: boolean, seed: number,
       }
     }
 
+    // A party-wide hit is coming and nobody is shielded yet: raise the shield first
+    if (policy.shield && !battle.party.some((ally) => battle.heroes[ally].shield) && partyHitComing(battle)) {
+      const shield = Object.values(SPELLS).find((spell) => spell.effect.kind === 'shield' && canCast(battle, hero, spell));
+      if (shield) {
+        battle = battleStep(battle, { type: 'spell', spell: shield.id });
+        continue;
+      }
+    }
+
     if (state.hp / stats.hp < policy.guardBelow) {
       battle = battleStep(battle, { type: 'guard' });
       continue;
@@ -85,6 +96,15 @@ export function playBattle(run: Run, foes: FoeId[], boss: boolean, seed: number,
     battle = attack ? battleStep(battle, { type: 'spell', spell: attack.id, target }) : battleStep(battle, { type: 'attack', target });
   }
   return battle;
+}
+
+/** True when a living foe's next move hits the whole party (the engine shows it, so a player can read it). */
+function partyHitComing(battle: Battle): boolean {
+  return aliveFoeSlots(battle).some((slot) => {
+    const foe = FOES[battle.foes[slot].foe];
+    const move = foe.moves[battle.foes[slot].move % foe.moves.length];
+    return move.kind === 'attack' && move.target === 'all';
+  });
 }
 
 export type NodeResult = { chapter: number; label: string; lost: boolean; rounds: number; level: number; hpLeft: number };
@@ -134,7 +154,8 @@ export function playStory(seed: number, policy: Policy): { finished: boolean; no
 
     // Heroes join before the fight they are introduced by
     if (fight.key === 'home.dust' && !run.party.includes('mocha')) run = join(run, 'mocha');
-    if (fight.key === 'beach.octo' && !run.party.includes('duck')) run = join(run, 'duck');
+    if (fight.key === 'beach.octo' && !run.party.includes('magpie')) run = join(run, 'magpie');
+    if (fight.key === 'night.boss' && !run.party.includes('bear')) run = join(run, 'bear');
 
     // Wandering fights, the way a player picks up levels crossing a map
     for (let index = 0; index < (map.encounters ? 6 : 0); index += 1) {

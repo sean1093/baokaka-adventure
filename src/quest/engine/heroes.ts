@@ -1,32 +1,42 @@
 import type { HeroId, Inventory, Item, ItemId, Run, Spell, SpellId, Stats } from './types';
 import { HERO_ORDER } from './types';
 
-export const MAX_LEVEL = 12;
+export const MAX_LEVEL = 20;
 
-/** Cumulative XP needed to BE level index+1. Tuned by sim.test.ts against the foe tables. */
-export const XP_TABLE: readonly number[] = [0, 22, 58, 108, 175, 265, 380, 520, 690, 900, 1150, 1450];
+/** Cumulative XP needed to BE level index+1 (story bible § 7). Tuned by sim.test.ts against the foe tables. */
+export const XP_TABLE: readonly number[] = [
+  0, 22, 58, 108, 175, 265, 380, 520, 690, 900, 1150, 1450, 1800, 2200, 2700, 3300, 4000, 4800, 5700, 6700,
+];
 
+/** Stats are the "Suggested stats" of story bible § 2.1; blurbs condense each hero's "Who" line. */
 export const HEROES: Record<HeroId, { name: string; base: Stats; growth: Stats; blurb: string }> = {
-  // Sturdy and even: the one who is always standing
+  // Sturdy all-rounder: the one who is always standing
   baokaka: {
     name: '寶咖咖',
-    base: { hp: 60, mp: 12, atk: 9, def: 4, spd: 6, luck: 5 },
+    base: { hp: 60, mp: 12, atk: 9, def: 5, spd: 6, luck: 6 },
     growth: { hp: 11, mp: 3, atk: 2, def: 1, spd: 1, luck: 1 },
-    blurb: '一歲的勇者。哭聲很大，抱抱很暖。',
+    blurb: '明天就滿一歲。爬得超快，什麼都想抱抱。',
   },
-  // Quick, lucky, hits hard, and the party's healer
+  // Fast striker and the party's medic
   mocha: {
     name: '摩卡貓',
     base: { hp: 46, mp: 16, atk: 11, def: 3, spd: 10, luck: 9 },
     growth: { hp: 8, mp: 4, atk: 3, def: 1, spd: 2, luck: 1 },
-    blurb: '虎斑貓。動作快，爪子利，呼嚕聲能治病。',
+    blurb: '七歲的虎斑貓，嘴巴很壞，心很軟。',
   },
-  // Fragile, deep 元氣, the party's storm caller
-  duck: {
-    name: '小鴨鴨',
-    base: { hp: 40, mp: 24, atk: 6, def: 5, spd: 8, luck: 6 },
-    growth: { hp: 7, mp: 5, atk: 1, def: 1, spd: 1, luck: 1 },
-    blurb: '浴缸島的黃色小鴨。元氣很足，很吵。',
+  // Mage: deep 元氣, fragile, fast; hits everyone and shields the party
+  magpie: {
+    name: '阿藍',
+    base: { hp: 40, mp: 24, atk: 7, def: 4, spd: 11, luck: 6 },
+    growth: { hp: 7, mp: 5, atk: 2, def: 1, spd: 2, luck: 1 },
+    blurb: '戴眼鏡的台灣藍鵲，自稱「藍教授」。',
+  },
+  // Tank and bruiser: huge HP, hard hits, slowest of all
+  bear: {
+    name: '黑糖',
+    base: { hp: 80, mp: 10, atk: 12, def: 8, spd: 3, luck: 3 },
+    growth: { hp: 14, mp: 2, atk: 3, def: 2, spd: 1, luck: 1 },
+    blurb: '動物園的台灣黑熊，好大一隻，什麼都怕。',
   },
 };
 
@@ -44,6 +54,7 @@ export function heroStats(hero: HeroId, level: number, equip: ItemId | null = nu
   return stats;
 }
 
+/** 才藝: names, learn levels, costs, effects and flavour text from story bible § 2.1. */
 export const SPELLS: Record<SpellId, Spell> = {
   throwBlock: {
     id: 'throwBlock',
@@ -63,27 +74,27 @@ export const SPELLS: Record<SpellId, Spell> = {
     level: 3,
     effect: { kind: 'damage', power: 1.0, target: 'all' },
     fx: 'shout',
-    blurb: '哭聲震動整個房間，打到所有敵人。',
+    blurb: '哭聲大到整條街都醒了，打到所有敵人。',
   },
   clapClap: {
     id: 'clapClap',
     name: '拍拍手',
     hero: 'baokaka',
     cost: 6,
-    level: 5,
+    level: 6,
     effect: { kind: 'heal', ratio: 0.25, target: 'party' },
     fx: 'heal',
-    blurb: '拍手鼓勵大家，全隊恢復體力。',
+    blurb: '拍手幫大家加油，全隊恢復體力。',
   },
-  crawlDash: {
-    id: 'crawlDash',
-    name: '爬爬衝刺',
+  firstStep: {
+    id: 'firstStep',
+    name: '勇敢的第一步',
     hero: 'baokaka',
-    cost: 8,
-    level: 7,
-    effect: { kind: 'damage', power: 2.6, target: 'one' },
+    cost: 10,
+    level: 15,
+    effect: { kind: 'damage', power: 3.0, target: 'one' },
     fx: 'impact',
-    blurb: '用最快的速度爬過去撞一下。',
+    blurb: '站起來，往前走一步——然後撞過去。',
   },
   purr: {
     id: 'purr',
@@ -93,77 +104,117 @@ export const SPELLS: Record<SpellId, Spell> = {
     level: 1,
     effect: { kind: 'heal', ratio: 0.4, target: 'ally' },
     fx: 'heal',
-    blurb: '靠著一個人呼嚕，恢復體力。',
+    blurb: '靠在一個人身上呼嚕，恢復體力。',
   },
-  pounce: {
-    id: 'pounce',
-    name: '撲擊',
+  clawCombo: {
+    id: 'clawCombo',
+    name: '喵喵連環爪',
     hero: 'mocha',
     cost: 4,
     level: 2,
     effect: { kind: 'damage', power: 1.8, target: 'one' },
     fx: 'claw',
-    blurb: '壓低身子，撲上去。',
+    blurb: '左一爪、右一爪、再一爪。',
   },
   catnipFury: {
     id: 'catnipFury',
-    name: '貓草狂暴',
+    name: '貓草狂歡',
     hero: 'mocha',
     cost: 7,
     level: 5,
     effect: { kind: 'damage', power: 1.2, target: 'all' },
     fx: 'claw',
-    blurb: '聞了貓草之後亂抓一通，打到所有敵人。',
+    blurb: '聞了一口貓草，在敵人中間打滾亂抓。',
   },
   nineLives: {
     id: 'nineLives',
     name: '九命回春',
     hero: 'mocha',
     cost: 12,
-    level: 8,
+    level: 11,
     effect: { kind: 'heal', ratio: 0.5, target: 'party', revive: true },
     fx: 'sparkle',
-    blurb: '全隊恢復一半體力，倒下的人也站起來。',
+    blurb: '貓有九條命，分你們一條。',
   },
-  splash: {
-    id: 'splash',
-    name: '水花四濺',
-    hero: 'duck',
+  featherRain: {
+    id: 'featherRain',
+    name: '羽毛雨',
+    hero: 'magpie',
     cost: 5,
     level: 1,
     effect: { kind: 'damage', power: 1.1, target: 'all' },
-    fx: 'splash',
-    blurb: '拍打水面，水花潑到所有敵人。',
+    fx: 'dust',
+    blurb: '抖一抖翅膀，藍色羽毛像雨一樣落下。',
   },
-  waterGun: {
-    id: 'waterGun',
-    name: '水槍',
-    hero: 'duck',
+  divePeck: {
+    id: 'divePeck',
+    name: '俯衝啄啄',
+    hero: 'magpie',
     cost: 4,
-    level: 3,
-    effect: { kind: 'damage', power: 1.7, target: 'one' },
+    level: 4,
+    effect: { kind: 'damage', power: 1.9, target: 'one' },
     fx: 'jet',
-    blurb: '對準一個敵人噴一道水柱。',
+    blurb: '從高處俯衝，啄一下就飛走。',
   },
-  bubbleShield: {
-    id: 'bubbleShield',
-    name: '泡泡護盾',
-    hero: 'duck',
+  magpieBridge: {
+    id: 'magpieBridge',
+    name: '鵲橋護盾',
+    hero: 'magpie',
     cost: 6,
-    level: 6,
+    level: 7,
     effect: { kind: 'shield' },
     fx: 'bubble',
-    blurb: '吹出大泡泡包住全隊，這回合受到的傷害減半。',
+    blurb: '七夕的時候，喜鵲搭橋讓人相見；今天，藍鵲搭橋保護大家。',
   },
-  bigWave: {
-    id: 'bigWave',
-    name: '大浪',
-    hero: 'duck',
+  cometTail: {
+    id: 'cometTail',
+    name: '長尾流星',
+    hero: 'magpie',
     cost: 12,
-    level: 8,
+    level: 13,
     effect: { kind: 'damage', power: 2.0, target: 'all' },
-    fx: 'wave',
-    blurb: '整個浴缸的水一起湧過去。',
+    fx: 'bolt',
+    blurb: '長長的尾巴在空中劃出一道藍色流星。',
+  },
+  pawPat: {
+    id: 'pawPat',
+    name: '熊掌拍拍',
+    hero: 'bear',
+    cost: 4,
+    level: 1,
+    effect: { kind: 'damage', power: 2.0, target: 'one' },
+    fx: 'thud',
+    blurb: '很小心、很小心地拍一下。（還是很痛。）',
+  },
+  groundPound: {
+    id: 'groundPound',
+    name: '大地咚咚',
+    hero: 'bear',
+    cost: 7,
+    level: 8,
+    effect: { kind: 'damage', power: 1.3, target: 'all' },
+    fx: 'impact',
+    blurb: '原地跳一下，整片地板都在晃。',
+  },
+  sugarHug: {
+    id: 'sugarHug',
+    name: '黑糖暖暖',
+    hero: 'bear',
+    cost: 6,
+    level: 10,
+    effect: { kind: 'heal', ratio: 0.65, target: 'ally' },
+    fx: 'heal',
+    blurb: '給一個大大的熊抱，又暖又甜。',
+  },
+  moonCharge: {
+    id: 'moonCharge',
+    name: '月牙衝擊',
+    hero: 'bear',
+    cost: 12,
+    level: 17,
+    effect: { kind: 'damage', power: 3.2, target: 'one' },
+    fx: 'bolt',
+    blurb: '胸口的月牙發光，全力衝撞。',
   },
 };
 

@@ -228,7 +228,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onMen
       sprite: HERO_SPRITE[hero],
       c: spot.c,
       r: spot.r,
-      size: hero === 'duck' ? 1.0 : 1.15,
+      size: 1.15,
       flip: spot.flip,
       motion: spot.moving ? 'walk' : 'idle',
     });

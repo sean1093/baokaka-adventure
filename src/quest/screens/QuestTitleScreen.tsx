@@ -11,7 +11,6 @@ import type { Run } from '../engine/types';
 
 const Baokaka = SPRITES.baokaka;
 const MochaCat = SPRITES.mochaCat;
-const Duck = SPRITES.duck;
 
 type Props = {
   run: Run;
@@ -41,9 +40,6 @@ export const QuestTitleScreen = ({ run, legacyNotice, onDismissNotice, onNew, on
           </span>
           <span className="block h-20 w-20">
             <MochaCat />
-          </span>
-          <span className="block h-16 w-16">
-            <Duck />
           </span>
         </div>
         <p className="mt-3 text-copy font-bold leading-relaxed text-ink/75">

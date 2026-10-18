@@ -274,11 +274,11 @@ export const MAPS: Record<MapId, GameMap> = {
       { sprite: 'bucket', c: 2, r: 7, size: 0.9 },
       { sprite: 'toyBoat', c: 9, r: 2, size: 0.8, solid: false },
     ],
-    npcs: [{ id: 'duckNpc', name: '小鴨鴨', sprite: 'duck', c: 8, r: 5, flip: true, not: 'duckJoined', talk: [{ event: 'bath.duck' }] }],
+    npcs: [{ id: 'magpieNpc', name: '阿藍', sprite: 'pigeon', c: 8, r: 5, flip: true, not: 'magpieJoined', talk: [{ event: 'bath.magpie' }] }],
     chests: [{ id: 'bath-boat', c: 2, r: 2, item: 'toyBoat' }],
     exits: [
       { c: 0, r: 5, to: 'home', at: { c: 1, r: 6 } },
-      { c: 11, r: 5, to: 'beach', at: { c: 1, r: 6 }, when: 'duckJoined', blocked: 'bath.notYet' },
+      { c: 11, r: 5, to: 'beach', at: { c: 1, r: 6 }, when: 'magpieJoined', blocked: 'bath.notYet' },
     ],
     triggers: [{ id: 'bath-intro', c: 1, r: 5, event: 'bath.intro', once: true }],
   },

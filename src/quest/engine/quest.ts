@@ -81,7 +81,9 @@ export type QuestAction =
 
 export function freshRun(seed = 1, cleared = false): Run {
   const level = 1;
-  const base = { level, equip: { baokaka: null, mocha: null, duck: null } } as Pick<Run, 'level' | 'equip'>;
+  const equip = {} as Record<HeroId, ItemId | null>;
+  for (const hero of HERO_ORDER) equip[hero] = null;
+  const base = { level, equip };
   const hp = {} as Record<HeroId, number>;
   const mp = {} as Record<HeroId, number>;
   for (const hero of HERO_ORDER) {
@@ -97,7 +99,7 @@ export function freshRun(seed = 1, cleared = false): Run {
     xp: 0,
     hp,
     mp,
-    equip: { baokaka: null, mocha: null, duck: null },
+    equip,
     items: { ...STARTING_ITEMS },
     coins: 0,
     flags: [],

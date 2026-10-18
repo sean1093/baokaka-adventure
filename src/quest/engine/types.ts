@@ -10,27 +10,32 @@ import type { PaletteName, SpriteName } from '../../art/types';
 // ---------------------------------------------------------------------------------------------
 // Party
 
-export type HeroId = 'baokaka' | 'mocha' | 'duck';
+export type HeroId = 'baokaka' | 'mocha' | 'magpie' | 'bear';
 
 /** Every hero, in the order they join and the order they stand in battle. */
-export const HERO_ORDER: readonly HeroId[] = ['baokaka', 'mocha', 'duck'];
+export const HERO_ORDER: readonly HeroId[] = ['baokaka', 'mocha', 'magpie', 'bear'];
 
 /** 體力 / 元氣 / 武力 / 防禦 / 身手 / 幸運: the classic six. */
 export type Stats = { hp: number; mp: number; atk: number; def: number; spd: number; luck: number };
 
+/** 才藝, four per hero (story bible § 2.1) */
 export type SpellId =
   | 'throwBlock'
   | 'bigCry'
   | 'clapClap'
-  | 'crawlDash'
+  | 'firstStep'
   | 'purr'
-  | 'pounce'
+  | 'clawCombo'
   | 'catnipFury'
   | 'nineLives'
-  | 'splash'
-  | 'waterGun'
-  | 'bubbleShield'
-  | 'bigWave';
+  | 'featherRain'
+  | 'divePeck'
+  | 'magpieBridge'
+  | 'cometTail'
+  | 'pawPat'
+  | 'groundPound'
+  | 'sugarHug'
+  | 'moonCharge';
 
 /**
  * What a move looks like when it lands. Content, not layout: the drawings live in

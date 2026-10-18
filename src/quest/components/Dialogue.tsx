@@ -5,6 +5,7 @@ import { HEROES } from '../engine/heroes';
 import { SPEAKERS } from '../engine/events';
 import { UI } from '../engine/strings';
 import { HERO_ORDER, type HeroId, type Line } from '../engine/types';
+import { HERO_SPRITE } from './PartyPanel';
 
 /** How fast the text types itself out (ms per character) */
 const TYPE_MS = 26;
@@ -13,7 +14,7 @@ const isHero = (who: string): who is HeroId => HERO_ORDER.includes(who as HeroId
 
 const speaker = (who: Line['who']): { name: string; sprite: keyof typeof SPRITES } | null => {
   if (who === null) return null;
-  if (isHero(who)) return { name: HEROES[who].name, sprite: who === 'mocha' ? 'mochaCat' : who };
+  if (isHero(who)) return { name: HEROES[who].name, sprite: HERO_SPRITE[who] };
   const entry = SPEAKERS[who];
   return entry ? { name: entry.name, sprite: entry.sprite } : null;
 };

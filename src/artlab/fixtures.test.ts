@@ -17,12 +17,16 @@ describe('art lab fixtures', () => {
     if (state.line || state.card) expect(state.scene).not.toBeNull();
   });
 
-  test('the battle opens on a hero turn, so the screenshot never races a foe timer', () => {
-    const battle = ARTLAB_FIXTURES.find((fixture) => fixture.name === 'battle')!.state();
+  test.each([
+    ['battle', 3],
+    ['battle-4-heroes', 4],
+  ] as const)('%s opens on a hero turn against three foes, so the screenshot never races a foe timer', (name, heroes) => {
+    const battle = ARTLAB_FIXTURES.find((fixture) => fixture.name === name)!.state();
     expect(battle.view.screen).toBe('battle');
     if (battle.view.screen === 'battle') {
       expect(battle.view.battle.phase.kind).toBe('hero');
       expect(battle.view.battle.foes).toHaveLength(3);
+      expect(battle.view.battle.party).toHaveLength(heroes);
     }
   });
 
