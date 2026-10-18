@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { SPRITES } from '../../art/sprites';
 import type { SpriteName } from '../../art/types';
 import { Bar, HP_NUMBER, hpState } from '../../components/Bars';
@@ -30,9 +31,10 @@ export const HeroHead = ({ hero }: { hero: HeroId }) => {
 /**
  * The party strip over the bottom of the map: 等級 and 經驗 on the left, 銅板 on the right, then one
  * mini card per hero with 體力 and 元氣 bars. With four heroes on a phone there is no room for the
- * heads (the map shows everyone), so they drop out.
+ * heads (the map shows everyone), so they drop out. Memoised on the run: the world screen
+ * re-renders every frame while walking, the panel only when the run changes.
  */
-export const PartyPanel = ({ run }: { run: Run }) => {
+export const PartyPanel = memo(function PartyPanel({ run }: { run: Run }) {
   const next = XP_TABLE[run.level] ?? null;
   const heads = run.party.length <= 3;
   return (
@@ -78,4 +80,4 @@ export const PartyPanel = ({ run }: { run: Run }) => {
       </div>
     </section>
   );
-};
+});

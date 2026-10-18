@@ -202,21 +202,50 @@ export type Foe = {
 
 export type MapId = 'home' | 'yard' | 'park' | 'market' | 'bath' | 'beach' | 'night';
 
-export type Terrain =
-  | 'floor'
-  | 'rug'
-  | 'tile'
+/**
+ * Night-painted ground materials (art direction § 4.4 *Tile material list*), drawn by
+ * `src/art/tiles/terrain.ts`. Walkability and wall heights live in `TERRAIN` (iso.ts).
+ */
+export type Material =
   | 'grass'
-  | 'path'
-  | 'sand'
-  | 'cobble'
-  | 'dark'
-  | 'blanket'
-  | 'door'
+  | 'gravel'
+  | 'brickWalk'
+  | 'asphalt'
+  | 'zebra'
   | 'water'
-  | 'wall'
-  | 'fence'
-  | 'void';
+  | 'marble'
+  | 'undergroundTile'
+  | 'wood'
+  | 'rug'
+  | 'playMat'
+  | 'oldBrick'
+  | 'stoneSlab'
+  | 'planks'
+  | 'stallTile'
+  | 'grate'
+  | 'apron'
+  | 'runway'
+  | 'teaSoil'
+  | 'wetStone'
+  | 'deck'
+  | 'jadeWater'
+  | 'seawall'
+  | 'polished'
+  | 'carpet'
+  | 'deckGrate'
+  | 'granite'
+  | 'carFloor';
+
+/** Structure rather than surface: doorways, raised walls and fences, and nothing at all. */
+export type Structure = 'door' | 'wall' | 'fence' | 'void';
+
+/**
+ * The pre-redesign terrain names. They keep working until the old maps go (#21), drawn as the
+ * material `TERRAIN_ALIAS` (iso.ts) names for each.
+ */
+export type LegacyTerrain = 'floor' | 'tile' | 'path' | 'sand' | 'cobble' | 'dark' | 'blanket';
+
+export type Terrain = Material | Structure | LegacyTerrain;
 
 export type Tile = { c: number; r: number };
 
@@ -318,7 +347,48 @@ export type GameMap = {
    * (`mapClock` in clock.ts, decision D-16).
    */
   time?: string;
+  /**
+   * Light sources (art direction § 4.1 *Key light sources*, § 8.4): each draws a bloom, a ground
+   * pool and, on wet ground, a reflection streak in the map's `screen`-blended light layer.
+   */
+  lights?: MapLight[];
+  /** Neon is allowed here (西門町, 士林夜市, the 月亮線 cars; § 4.3 *Neon policy*). */
+  neon?: boolean;
+  /** Ambient life (§ 4.1 *Ambient FX*): at most `MAX_AMBIENT_ELEMENTS` animated elements in all. */
+  ambient?: AmbientKind[];
+  /** Indoors: the sky shows only through windows, so the map floats over a dark room instead. */
+  interior?: boolean;
 };
+
+export type LightKind = 'lamp' | 'window' | 'lantern' | 'neon' | 'screen' | 'moon';
+
+/**
+ * Lights that stand on the ground (a post, a lantern stand, a sign pole): drawn as a fixture and,
+ * placed on a whole tile, solid like decor. Windows, screens and moon glints are only light.
+ */
+export const STANDING_LIGHTS: readonly LightKind[] = ['lamp', 'lantern', 'neon'];
+
+/**
+ * One light source on a map, at a tile (fractions allowed, to sit between tiles). `color`
+ * overrides the kind's colour (`#RRGGBB`; neon signs pick pink or cyan, windows warm or cool).
+ */
+export type MapLight = { c: number; r: number; kind: LightKind; color?: string };
+
+/** Ambient loops (§ 4.1): transform and opacity only, never filters. */
+export type AmbientKind = 'leaves' | 'ripples' | 'fireflies' | 'steam' | 'lanternSway' | 'mist' | 'rain';
+
+/** How many animated elements each ambient kind adds (§ 8.5: ≤ 6 ambient per map). */
+export const AMBIENT_ELEMENTS: Readonly<Record<AmbientKind, number>> = {
+  leaves: 2,
+  ripples: 2,
+  fireflies: 3,
+  steam: 3,
+  lanternSway: 2,
+  mist: 2,
+  rain: 3,
+};
+
+export const MAX_AMBIENT_ELEMENTS = 6;
 
 // ---------------------------------------------------------------------------------------------
 // Scripts: dialogue and cutscenes

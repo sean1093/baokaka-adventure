@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { skyAt } from '../../art/palette';
+import { LIGHTS, UI as UI_TOKENS, withAlpha } from '../../art/palette';
+import { SkyLayer } from '../../art/sky/SkyLayer';
 import { IconButton } from '../../components/Button';
 import { ChapterCard } from '../../components/ChapterCard';
 import { GlassChip, Num } from '../../components/Chip';
 import { Home, Pouch } from '../../components/icons';
-import { usePresence } from '../../components/motion';
+import { usePresence, useReducedMotion } from '../../components/motion';
 import { playTone } from '../../shared/audio';
-import { IsoMap, mapActors, type Actor } from '../components/IsoMap';
+import { ACTOR_SIZE, IsoMap, cameraShift, mapActors, type Actor } from '../components/IsoMap';
 import { TalkBox, linePage, type Talk } from '../components/Dialogue';
 import { HERO_SPRITE, PartyPanel } from '../components/PartyPanel';
 import { mapClock } from '../engine/clock';
@@ -17,6 +18,13 @@ import type { QuestState } from '../engine/quest';
 import { stationAt } from '../engine/mrt';
 import { UI } from '../engine/strings';
 import { RIDE_TO, type Tile } from '../engine/types';
+
+/** The world's vignette and corner bokeh: one static gradient stack, painted once. */
+const VIGNETTE = [
+  `radial-gradient(circle at 6% 74%, ${withAlpha(LIGHTS.lampMid, 0.22)} 0, ${withAlpha(LIGHTS.lampMid, 0)} 34px)`,
+  `radial-gradient(circle at 95% 68%, ${withAlpha(LIGHTS.windowCool, 0.18)} 0, ${withAlpha(LIGHTS.windowCool, 0)} 26px)`,
+  `radial-gradient(ellipse 88% 62% at 50% 48%, ${withAlpha(UI_TOKENS.scrim, 0)} 52%, ${withAlpha(UI_TOKENS.scrim, 0.55)} 100%)`,
+].join(', ');
 
 /** Tiles walked per second */
 const SPEED = 3.4;
@@ -87,8 +95,9 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
   const { run, line, card, choice, inn, sound, scene } = state;
   const map = MAPS[run.map];
   const clock = mapClock(map);
-  const sky = skyAt(clock);
   const follower = activeFollower(run.flags, followers);
+  // No parallax under reduced motion (§ 7.9): the OS setting or 「減少動態」
+  const reducedMotion = useReducedMotion();
 
   const [box, setBox] = useState({ w: 360, h: 420 });
   const frame = useRef<HTMLDivElement>(null);
@@ -277,7 +286,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
     sprite: HERO_SPRITE[run.party[0]],
     c: walk.lead.c,
     r: walk.lead.r,
-    size: 1.3,
+    size: ACTOR_SIZE.hero,
     flip: walk.lead.flip,
     motion: walk.lead.moving ? 'walk' : 'none',
   });
@@ -288,7 +297,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
       sprite: HERO_SPRITE[hero],
       c: spot.c,
       r: spot.r,
-      size: 1.15,
+      size: ACTOR_SIZE.follower,
       flip: spot.flip,
       motion: spot.moving ? 'walk' : 'idle',
     });
@@ -301,7 +310,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
       sprite: follower.sprite,
       c: walk.escort.c,
       r: walk.escort.r,
-      size: 0.95,
+      size: ACTOR_SIZE.escort,
       flip: walk.escort.flip,
       motion: walk.escort.moving ? 'walk' : 'idle',
     });
@@ -312,12 +321,16 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
 
   return (
     <main className="kit-fade-in relative mx-auto h-dvh w-full max-w-md overflow-hidden">
-      {/* The map fills the screen; behind the tiles, the sky of this map's hour (§ 3.2) */}
-      <div
-        ref={frame}
-        className="absolute inset-0"
-        style={{ background: `linear-gradient(180deg, ${sky.top} 0%, ${sky.mid} 62%, ${sky.horizon} 100%)` }}
-      >
+      {/* The map fills the screen; behind it, the sky of this map's hour with parallax (§ 2.7, § 8.4) */}
+      <div ref={frame} className="absolute inset-0">
+        <SkyLayer
+          time={clock}
+          interior={map.interior}
+          width={box.w}
+          height={box.h}
+          shift={cameraShift(map, walk.camera, box)}
+          still={reducedMotion}
+        />
         <IsoMap
           map={map}
           flags={run.flags}
@@ -332,16 +345,8 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
           }}
         />
 
-        {/* One light pool over the whole map: the party stands in the light, the edges fall into
-            the night. Doing this once beats shading every tile, which tiles into visible stripes. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(ellipse 80% 52% at 50% 50%, rgba(255,247,232,0.12) 0%, rgba(255,247,232,0) 55%, rgba(10,8,32,0.5) 100%)',
-          }}
-        />
+        {/* A vignette: the edges fall into the night, with soft foreground bokeh in the lower corners (§ 2.7 Depth) */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: VIGNETTE }} />
       </div>
 
       {/* HUD: home, where and when, the menu (§ 7.2 glass chips) */}

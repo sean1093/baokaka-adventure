@@ -5,8 +5,10 @@
  *   `base` (lit), `cel` (the hard shadow band), `deep` (occlusion) and `line` (the thin interior
  *   line tint). Contours use `LINE.sil`.
  * - `WORLD`: night-painted surfaces (tiles, props, glass). These are graded by the clock.
- * - `LIGHTS`: things that glow (windows, lamps, 101's rim, city glow). Never graded: the city's
- *   lights stay warm all night.
+ * - `LIGHTS`, `GLOW`: things that glow (windows, lamps, lanterns, neon, 101's rim, city glow).
+ *   Never graded: the city's lights stay warm all night.
+ * - `TILES`, `STRUCTURE`, `FIXTURE`, `SKY_ART`: the iso map's ground materials, walls and skirt,
+ *   light fixtures and sky art (§ 2.7, § 4.4), graded per clock by `gradeTiles()`.
  * - `UI`: the navy-glass and gold interface, mirrored into Tailwind (`tailwind.config.ts`).
  * - `MRT`: the five 月亮線 line colours.
  * - `SKY_KEYS` / `skyAt()` / `gradeTokens()` / `gradeCharacter()`: the night clock (§ 3.2).
@@ -172,6 +174,153 @@ export const LIGHTS = {
   rim101: '#8AF0E0',
   cityGlow: '#E88E8A',
   cityGlowWarm: '#FF9A7A',
+} as const;
+
+/**
+ * Extra light colours for `GameMap.lights` kinds (§ 2.7, § 4.2): red lanterns, neon tubes (only
+ * where § 4.3 allows), cool screens and moonlight pools. Emissive, never graded, like `LIGHTS`.
+ */
+export const GLOW = {
+  lanternCore: '#FFD0A0',
+  lantern: '#FF8A5A',
+  neonPink: '#FF5FA2',
+  neonCyan: '#4FD1C5',
+  screen: '#9AE0FF',
+  moonCore: '#FFF8E6',
+  moon: '#DDE6FF',
+  /** A door's warm spill, so the way on reads at a glance */
+  door: '#FFC98A',
+  /** Fireflies (ambient FX): a soft halo and a bright point */
+  firefly: '#C8FF8A',
+  fireflyCore: '#F4FFD0',
+} as const;
+
+/**
+ * One ground material's night ramp (§ 4.4), painted for 00:00 like `WORLD` and graded with it
+ * (`gradeTiles`). `base`/`alt` are the two fills a seeded hash picks between, `lit` the 1px
+ * top-left edge and kerbs, `line` dark marks (joints, seams), `mark`/`accent` light marks (grass
+ * blades, lane paint, ripples), `deep` the band on the diorama skirt under the material.
+ */
+export type TileRamp = {
+  readonly base: string;
+  readonly alt: string;
+  readonly lit: string;
+  readonly line: string;
+  readonly mark: string;
+  readonly accent: string;
+  readonly deep: string;
+};
+
+/**
+ * The § 4.4 tile materials (grass, brick and asphalt are the § 3.1 *World* values; water's base is
+ * `WORLD.water`). Every `Material` in the engine has a ramp here, plus the door threshold.
+ */
+export const TILES = {
+  grass: { base: '#2E5A58', alt: '#2A5452', lit: '#5A9A8A', line: '#1E3E40', mark: '#4E8A7A', accent: '#6AAE92', deep: '#1E3A3A' },
+  gravel: { base: '#4A4664', alt: '#46425F', lit: '#8A86AA', line: '#34304C', mark: '#6A6688', accent: '#5A5678', deep: '#2E2A44' },
+  brickWalk: { base: '#6E3A4E', alt: '#683648', lit: '#B0687A', line: '#4A2638', mark: '#8A4C60', accent: '#5A5470', deep: '#4A2638' },
+  asphalt: { base: '#2A2E58', alt: '#282C54', lit: '#5A6098', line: '#1A1C3E', mark: '#C8CCE8', accent: '#3A4278', deep: '#1A1C3E' },
+  zebra: { base: '#2A2E58', alt: '#2A2E58', lit: '#5A6098', line: '#1A1C3E', mark: '#C8CCE8', accent: '#9EA4CC', deep: '#1A1C3E' },
+  water: { base: '#24407E', alt: '#223C78', lit: '#7AA8E8', line: '#14285A', mark: '#AFCFFF', accent: '#5A88D0', deep: '#14285A' },
+  marble: { base: '#24253C', alt: '#8E90AE', lit: '#C8CCE8', line: '#16172A', mark: '#B8BAD4', accent: '#5E6080', deep: '#1E1E34' },
+  undergroundTile: { base: '#3C4864', alt: '#3A4560', lit: '#7A88A8', line: '#283048', mark: '#56648A', accent: '#4A587A', deep: '#222A40' },
+  wood: { base: '#5E4048', alt: '#5A3C45', lit: '#9A747A', line: '#3E2832', mark: '#74525A', accent: '#4A3038', deep: '#3A2430' },
+  rug: { base: '#6A3A5A', alt: '#663757', lit: '#A86A8A', line: '#4A2440', mark: '#C89A6A', accent: '#8A4E72', deep: '#3E2236' },
+  playMat: { base: '#3E5A7E', alt: '#574A7E', lit: '#8A9ACA', line: '#2A3458', mark: '#6A7AAA', accent: '#7A5A8E', deep: '#262E4E' },
+  oldBrick: { base: '#6A3C42', alt: '#64383E', lit: '#A8686A', line: '#46262C', mark: '#80484E', accent: '#5E5468', deep: '#422428' },
+  stoneSlab: { base: '#4A4A64', alt: '#464660', lit: '#8A8AAA', line: '#30304A', mark: '#5E5E7C', accent: '#3E3E58', deep: '#2C2C44' },
+  planks: { base: '#4E3A46', alt: '#4A3642', lit: '#8A6A76', line: '#2E2028', mark: '#64505A', accent: '#3A2A34', deep: '#2A1E26' },
+  stallTile: { base: '#4A3E5C', alt: '#463A58', lit: '#8A7EA6', line: '#32283E', mark: '#5E5274', accent: '#6A5A3E', deep: '#2C2438' },
+  grate: { base: '#363A56', alt: '#343852', lit: '#7A80A6', line: '#1E2238', mark: '#4E5476', accent: '#262A42', deep: '#1E2238' },
+  apron: { base: '#464A6C', alt: '#44486A', lit: '#868AAE', line: '#30324E', mark: '#C8A84A', accent: '#3A3E5E', deep: '#2C2E48' },
+  runway: { base: '#2A2C4E', alt: '#282A4A', lit: '#5A5E8E', line: '#1A1C36', mark: '#C8CCE8', accent: '#4A6AC8', deep: '#1A1C36' },
+  teaSoil: { base: '#4A3A40', alt: '#46363C', lit: '#84686E', line: '#30242A', mark: '#2E5A48', accent: '#3E7A5A', deep: '#2C2026' },
+  wetStone: { base: '#3E4662', alt: '#3A425E', lit: '#7A88AE', line: '#262C44', mark: '#5A6A8E', accent: '#6A7EA8', deep: '#242A40' },
+  deck: { base: '#5A4450', alt: '#56404C', lit: '#967880', line: '#3A2A32', mark: '#6E5660', accent: '#44323C', deep: '#34262E' },
+  jadeWater: { base: '#1E6A6A', alt: '#1C6464', lit: '#6ACCB8', line: '#0E4448', mark: '#8AE0C8', accent: '#3E9A8E', deep: '#0E3E42' },
+  seawall: { base: '#4E5068', alt: '#4A4C64', lit: '#8C8EA8', line: '#34364C', mark: '#626480', accent: '#3E405A', deep: '#2E3046' },
+  polished: { base: '#4A4A6E', alt: '#48486A', lit: '#9A9AC4', line: '#30304E', mark: '#6A6A96', accent: '#8A8AB8', deep: '#2C2C48' },
+  carpet: { base: '#5A2E4A', alt: '#562C46', lit: '#965A7A', line: '#3E1E32', mark: '#7A3E60', accent: '#C89A6A', deep: '#36182C' },
+  deckGrate: { base: '#3A3E56', alt: '#383C54', lit: '#7E84A6', line: '#22263A', mark: '#50567A', accent: '#2C3046', deep: '#22263A' },
+  granite: { base: '#545670', alt: '#50526C', lit: '#9496B4', line: '#3A3C54', mark: '#6E7090', accent: '#3E4058', deep: '#34364E' },
+  carFloor: { base: '#3E4258', alt: '#3C4056', lit: '#7E84A0', line: '#282C40', mark: '#52566E', accent: '#C8A030', deep: '#262A3E' },
+  /** A doorway's threshold: warm boards with the way-out chevron */
+  door: { base: '#6A4A44', alt: '#66463F', lit: '#B08A6E', line: '#44302C', mark: '#86604E', accent: '#FFC27A', deep: '#3E2A28' },
+} as const satisfies Record<string, TileRamp>;
+
+export type TileName = keyof typeof TILES;
+
+/**
+ * Raised structure (§ 4.4): plaster walls (interiors and courtyards) and fence railings, plus the
+ * diorama skirt under the map's outer edges (§ 4.4 *Tile rules*). Painted for 00:00, graded.
+ */
+export const STRUCTURE = {
+  wallTop: '#574868',
+  wallTopLit: '#A898C8',
+  /** The face toward screen-left catches the key light (upper-left); the right face is in shade */
+  wallLeft: '#40365A',
+  wallRight: '#2C2646',
+  wallTrim: '#5E5080',
+  wallBase: '#241E36',
+  fencePost: '#3A2E42',
+  fenceRail: '#5E4E62',
+  fenceLit: '#A08EA0',
+  skirtLeftTop: '#4A3A5E',
+  skirtLeftBottom: '#2A2040',
+  skirtRightTop: '#2E2444',
+  skirtRightBottom: '#1A1430',
+  skirtLine: '#6A5A86',
+  /** The lit rim along the diorama's top edge */
+  skirtRim: '#AFC0FF',
+  shadow: '#0A0820',
+} as const;
+
+/** Light fixtures that stand on the map (street lamps, lantern posts, neon signs): graded like props. */
+export const FIXTURE = {
+  post: '#20243E',
+  postLit: '#4A5080',
+  head: '#2A2E4E',
+  lanternBody: '#C8383A',
+  lanternDeep: '#8A2028',
+  lanternCap: '#3A2A2E',
+  signBack: '#1A1A36',
+} as const;
+
+/**
+ * The anime-film sky (§ 2.7), beside the clock's gradient (`skyAt`): stars, the moon and sun,
+ * clouds lit from below by the city, the skyline, and the floor of night under the diorama.
+ * `ridge`, `skyline*` and `floor*` are scenery and get the world grade; the rest is light.
+ */
+export const SKY_ART = {
+  star: '#FFFFFF',
+  starHalo: '#CFE0FF',
+  milky: '#C8B8FF',
+  moon: '#FFF8E6',
+  moonCrater: '#EDE2C8',
+  moonHalo: '#DDE6FF',
+  moonHaloOuter: '#9AB0FF',
+  sun: '#FFE09A',
+  sunCore: '#FFF6D8',
+  cloudTop: '#2A3474',
+  cloudMid: '#5A5AA4',
+  cloudUnder: '#E8A8C0',
+  cloudLobe: '#7A84D0',
+  cloudLobeLight: '#A8B4F0',
+  cloudRim: '#FFC8D8',
+  cloudEdge: '#C8D4FF',
+  ridge: '#2A2C66',
+  skyline: '#1E1E4E',
+  skylineNear: '#15153C',
+  haze: '#C87AA0',
+  bokehPink: '#FF9AB0',
+  bokehGold: '#FFE6A0',
+  floorTop: '#3A2A62',
+  floorMid: '#1E1844',
+  floorBottom: '#0E0B26',
+  /** Interiors: the dark room the map floats in, and its faint warm and moon-blue glows */
+  roomTop: '#161838',
+  roomBottom: '#07081A',
+  roomGlow: '#3A2E5E',
 } as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -429,6 +578,37 @@ export function gradeCharacter(time: string): MaterialTokens {
     ),
   ) as MaterialTokens;
   characterCache.set(time, graded);
+  return graded;
+}
+
+type GradedTiles = { tiles: TileTokens; structure: StructureTokens; scenery: SceneryTokens; fixture: FixtureTokens };
+const tileCache = new Map<string, GradedTiles>();
+
+export type TileTokens = { readonly [K in TileName]: { readonly [F in keyof TileRamp]: string } };
+export type StructureTokens = { readonly [K in keyof typeof STRUCTURE]: string };
+export type FixtureTokens = { readonly [K in keyof typeof FIXTURE]: string };
+export type SceneryTokens = { readonly ridge: string; readonly skyline: string; readonly skylineNear: string; readonly floorTop: string; readonly floorMid: string; readonly floorBottom: string };
+
+const gradeRecord = <T extends Record<string, string>>(record: T, by: Rgb): T =>
+  Object.freeze(Object.fromEntries(Object.entries(record).map(([name, hex]) => [name, multiplyHex(hex, by)]))) as T;
+
+/**
+ * The tile materials, structure, light fixtures and sky scenery for a clock time, with the same world grade as
+ * `gradeTokens` baked in (§ 3.2: pre-baked, never a filter). Pure; memoised per time.
+ */
+export function gradeTiles(time: string): GradedTiles {
+  const hit = tileCache.get(time);
+  if (hit) return hit;
+  const by = worldGrade(time);
+  const tiles = Object.freeze(Object.fromEntries(Object.entries(TILES).map(([name, ramp]) => [name, gradeRecord(ramp, by)]))) as TileTokens;
+  const { ridge, skyline, skylineNear, floorTop, floorMid, floorBottom } = SKY_ART;
+  const graded = Object.freeze({
+    tiles,
+    structure: gradeRecord({ ...STRUCTURE }, by),
+    scenery: gradeRecord({ ridge, skyline, skylineNear, floorTop, floorMid, floorBottom }, by),
+    fixture: gradeRecord({ ...FIXTURE }, by),
+  });
+  tileCache.set(time, graded);
   return graded;
 }
 

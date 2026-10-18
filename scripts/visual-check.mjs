@@ -13,6 +13,7 @@
  *   --url      base URL of a server you started yourself (default http://localhost:5173/baokaka-adventure/)
  *   --update   accept the new screenshots as baselines
  *   --perf     also measure frame times on the world fixture at 4x CPU throttle (report only)
+ *   --perf-fixture <name>  walk around another fixture instead (e.g. world-follower, the park)
  *   --only     comma list of target names
  *
  * Needs Playwright's Chromium: preinstalled in the agent environment (PLAYWRIGHT_BROWSERS_PATH=
@@ -50,6 +51,7 @@ const { values: args } = parseArgs({
     url: { type: 'string', default: 'http://localhost:5173/baokaka-adventure/' },
     update: { type: 'boolean', default: false },
     perf: { type: 'boolean', default: false },
+    'perf-fixture': { type: 'string', default: PERF_FIXTURE },
     only: { type: 'string' },
   },
 });
@@ -133,14 +135,18 @@ async function measurePerf(browser, base) {
     hasTouch: true,
   });
   const page = await context.newPage();
-  const target = { ...fixtureTarget(PERF_FIXTURE), hash: `#/artlab?section=fixtures&only=${PERF_FIXTURE}` };
+  const fixture = args['perf-fixture'];
+  const target = { ...fixtureTarget(fixture), hash: `#/artlab?section=fixtures&only=${fixture}` };
   await openTarget(page, base, target);
 
   const cdp = await context.newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+  await cdp.send('Performance.enable');
+  const taskTime = async () => (await cdp.send('Performance.getMetrics')).metrics.find((metric) => metric.name === 'TaskDuration')?.value ?? 0;
+  const tasksBefore = await taskTime();
 
-  // The map frame: the world screen's only `relative` child of <main>
-  const frame = await page.locator('main > div.relative').first().boundingBox();
+  // The map frame: IsoMap's tap layer
+  const frame = await page.locator('[data-iso-map]').first().boundingBox();
   if (!frame) throw new Error('--perf: could not find the world map frame');
 
   const sampling = page.evaluate(
@@ -148,6 +154,13 @@ async function measurePerf(browser, base) {
       new Promise((done) => {
         const frames = [];
         let walking = 0;
+        // The ground must be one SVG that walking never touches (#13): count mutations inside it
+        let groundMutations = 0;
+        const grounds = document.querySelectorAll('svg[data-ground]');
+        const observer = new MutationObserver((records) => {
+          groundMutations += records.length;
+        });
+        grounds.forEach((ground) => observer.observe(ground, { subtree: true, childList: true, attributes: true, characterData: true }));
         let last = performance.now();
         const start = last;
         const tick = (now) => {
@@ -155,7 +168,10 @@ async function measurePerf(browser, base) {
           last = now;
           if (document.querySelector('.walk')) walking += 1;
           if (now - start < ms) requestAnimationFrame(tick);
-          else done({ frames: frames.slice(1), walking, nodes: document.querySelectorAll('*').length });
+          else {
+            observer.disconnect();
+            done({ frames: frames.slice(1), walking, nodes: document.querySelectorAll('*').length, grounds: grounds.length, groundMutations });
+          }
         };
         requestAnimationFrame(tick);
       }),
@@ -180,19 +196,24 @@ async function measurePerf(browser, base) {
     while (Date.now() < deadline && (await page.locator('.walk').count()) > 0) await page.waitForTimeout(100);
   }
 
-  const { frames, walking, nodes } = await sampling;
+  const { frames, walking, nodes, grounds, groundMutations } = await sampling;
+  // Main-thread work per frame (script, style, layout, paint), throttled: what the 12 ms budget is about
+  const busy = ((await taskTime()) - tasksBefore) * 1000;
   await context.close();
   const sorted = [...frames].sort((a, b) => a - b);
   const median = percentile(sorted, 0.5);
   const p95 = percentile(sorted, 0.95);
-  console.log(`\nPerf: '${PERF_FIXTURE}' fixture, ${viewport.name}, 4x CPU throttle, ${PERF_SECONDS}s while walking`);
+  console.log(`\nPerf: '${fixture}' fixture, ${viewport.name}, 4x CPU throttle, ${PERF_SECONDS}s while walking`);
   console.table({
     frames: { value: frames.length },
     'frames while walking': { value: walking },
     'median ms': { value: Number(median.toFixed(2)), budget: `<= ${FRAME_BUDGET_MS} (§ 8.5), <= 16 (§ 8.6)` },
     'p95 ms': { value: Number(p95.toFixed(2)) },
     'max ms': { value: Number(sorted[sorted.length - 1].toFixed(2)) },
+    'main-thread ms / frame': { value: Number((busy / Math.max(1, frames.length)).toFixed(2)), budget: `<= ${FRAME_BUDGET_MS} (§ 8.5)` },
     'DOM nodes': { value: nodes, budget: `<= ${DOM_BUDGET}` },
+    'ground SVGs': { value: grounds, budget: '1' },
+    'ground mutations while walking': { value: groundMutations, budget: '0' },
   });
   console.log('rAF intervals are vsync-bound: 16.7 ms is the floor at 60 Hz, so the § 8.5 12 ms budget needs a trace to verify.');
   if (walking === 0) console.warn('Perf: the party never walked; the taps may have missed the floor.');

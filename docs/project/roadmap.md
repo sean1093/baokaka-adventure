@@ -36,7 +36,7 @@ Work the issues **in numeric order**; an issue may start only when every issue i
 | 10 | Art tokens v2: option D palette, per-hour night grades, fonts, Tailwind theme | art, ui | #4 | done (#69) |
 | 11 | Sprite rig contract v4: parts, LOD, shared defs, unique ids, placeholder sprite, sprite lint | art | #10 | done (#70) |
 | 12 | UI kit v2: panels, buttons, bars, dialogue with bust portrait, chapter card with clock, command panel | ui, art | #6, #11 | done (#71) |
-| 13 | Iso map renderer v2: single-SVG ground, materials, night lighting, sky layer, light sources | art | #11 | todo |
+| 13 | Iso map renderer v2: single-SVG ground, materials, night lighting, sky layer, light sources | art | #11 | done (#73) |
 | 14 | Battle stage v2: backdrop system, four-hero layout, 布袋戲 boss frame | art, ui | #5, #12 | todo |
 | 15 | Battle VFX refresh for the new skills and tone | art | #14 | todo |
 | 16 | Heroes I: 寶咖咖 and 摩卡貓 (map, battle, portrait; expressions; poses) | art | #11 | todo |

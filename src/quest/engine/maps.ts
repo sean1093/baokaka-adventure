@@ -1,3 +1,4 @@
+import { GLOW, LIGHTS } from '../../art/palette';
 import type { GameMap, MapId, Terrain } from './types';
 
 /**
@@ -46,6 +47,13 @@ export const MAPS: Record<MapId, GameMap> = {
       '######D#######',
     ],
     entry: { c: 6, r: 5 },
+    interior: true,
+    // Moonlight through the windows: until #21 draws the 家 of § 4.2, the glows stand in for them
+    lights: [
+      { c: 9, r: 0.7, kind: 'window', color: LIGHTS.windowCool },
+      { c: 0.7, r: 3, kind: 'window', color: LIGHTS.windowCool },
+      { c: 11.6, r: 4.2, kind: 'screen' },
+    ],
     decor: [
       { sprite: 'sofa', c: 3, r: 1, w: 2, size: 1.6 },
       { sprite: 'coffeeTable', c: 5, r: 3, size: 1.1 },
@@ -112,6 +120,11 @@ export const MAPS: Record<MapId, GameMap> = {
       'ffffffffffffffffDf',
     ],
     entry: { c: 8, r: 1 },
+    lights: [
+      { c: 7, r: 2, kind: 'lamp' },
+      { c: 12, r: 7, kind: 'lamp' },
+    ],
+    ambient: ['fireflies', 'leaves'],
     decor: [
       { sprite: 'tree', c: 3, r: 3, size: 2.4 },
       { sprite: 'tree', c: 13, r: 9, size: 2.4 },
@@ -165,6 +178,12 @@ export const MAPS: Record<MapId, GameMap> = {
       'ffffffffffffffffffffff',
     ],
     entry: { c: 1, r: 7 },
+    lights: [
+      { c: 8, r: 5, kind: 'lamp' },
+      { c: 17, r: 9, kind: 'lamp' },
+      { c: 10, r: 12, kind: 'lamp' },
+    ],
+    ambient: ['leaves', 'fireflies'],
     decor: [
       { sprite: 'bench', c: 3, r: 4, w: 2, size: 1.3 },
       { sprite: 'slide', c: 4, r: 10, w: 2, size: 1.8 },
@@ -221,6 +240,11 @@ export const MAPS: Record<MapId, GameMap> = {
       '####################',
     ],
     entry: { c: 1, r: 7 },
+    lights: [
+      { c: 9, r: 1, kind: 'window', color: GLOW.lantern },
+      { c: 14, r: 1, kind: 'window', color: GLOW.lantern },
+      { c: 4, r: 1.4, kind: 'window' },
+    ],
     decor: [
       { sprite: 'awning', c: 3, r: 1, w: 3, size: 1.6 },
       { sprite: 'crate', c: 3, r: 4, size: 1 },
@@ -269,6 +293,8 @@ export const MAPS: Record<MapId, GameMap> = {
       '############',
     ],
     entry: { c: 1, r: 5 },
+    interior: true,
+    lights: [{ c: 6, r: 0.7, kind: 'window', color: LIGHTS.windowCool }],
     decor: [
       { sprite: 'bathtub', c: 5, r: 3, w: 2, h: 2, size: 2.4 },
       { sprite: 'bucket', c: 2, r: 7, size: 0.9 },
@@ -304,6 +330,11 @@ export const MAPS: Record<MapId, GameMap> = {
       '~~~~~~~~~~~~~~~~~~~~~~',
     ],
     entry: { c: 1, r: 6 },
+    lights: [
+      { c: 9, r: 10, kind: 'moon' },
+      { c: 6, r: 4, kind: 'lamp' },
+    ],
+    ambient: ['ripples'],
     decor: [
       { sprite: 'beachUmbrella', c: 4, r: 3, size: 2 },
       { sprite: 'sandcastle', c: 8, r: 7, size: 1.2 },
@@ -351,6 +382,8 @@ export const MAPS: Record<MapId, GameMap> = {
       '#######D########',
     ],
     entry: { c: 7, r: 12 },
+    interior: true,
+    lights: [{ c: 8, r: 0.7, kind: 'window', color: LIGHTS.windowCool }],
     decor: [
       { sprite: 'bed', c: 12, r: 1, w: 2, h: 2, size: 2.4 },
       { sprite: 'moonWindow', c: 4, r: 1, size: 1.6, solid: false },
