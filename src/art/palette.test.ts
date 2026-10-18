@@ -39,6 +39,12 @@ describe('§ 3.1 master tokens', () => {
     expect(EYES).toEqual({ brown: ['#2E1A12', '#7A4628', '#D99A56'], cat: ['#2E4A12', '#86AE2A', '#ECEC72'] });
   });
 
+  test('far-side ramps follow the reference generator, and the pajama far base matches § 3.1', () => {
+    expect(MATERIALS.pajamaFar).toEqual({ base: '#F4C458', cel: '#DE9640', deep: '#C47634', line: '#A0602A' });
+    expect(MATERIALS.pajamaFar.base).toBe(MATERIALS.pajama.far);
+    expect(MATERIALS.tabbyFar).toEqual({ base: '#C4844E', cel: '#9C5E34', deep: '#7A4628', line: '#5E3020' });
+  });
+
   test('world, lights, UI and MRT line colours', () => {
     expect(WORLD).toMatchObject({ grass: '#2E5A58', grassAlt: '#2A5452', brick: '#6E3A4E', brickAlt: '#683648', asphalt: '#2A2E58', water: '#24407E' });
     expect([WORLD.glassLit, WORLD.glassLitLow, WORLD.glassShade, WORLD.glassShadeLow]).toEqual(['#3E5A9A', '#2A3E78', '#1C2858', '#141C44']);
