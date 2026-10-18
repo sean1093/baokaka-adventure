@@ -292,7 +292,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
       <header className="flex items-center gap-2">
         <IconButton icon={<Home />} label="回到標題" onClick={onExit} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-caption font-bold text-muted">
+          <p className="truncate text-caption font-bold opacity-75">
             第 {map.chapter} 章 · {CHAPTER_TITLES[map.chapter - 1]}
           </p>
           <h1 className="truncate text-heading font-extrabold leading-tight">{map.title}</h1>

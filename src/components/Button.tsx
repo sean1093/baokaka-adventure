@@ -16,8 +16,9 @@ type Props = {
 
 const VARIANT: Record<NonNullable<Props['variant']>, string> = {
   primary: 'bg-gradient-to-b from-sun to-sunDeep text-ink shadow-glow',
-  tonal: 'bg-ink/[0.07] text-ink',
-  ghost: 'bg-transparent text-ink/75',
+  // Tonal and ghost take the colour of the surface they sit on (navy page or a light card)
+  tonal: 'tint-current',
+  ghost: 'bg-transparent',
   danger: 'bg-berry text-white shadow-card',
 };
 
@@ -73,7 +74,7 @@ export const IconButton = ({ icon, label, onClick, variant = 'tonal', size = 'md
     className={[
       'grid shrink-0 place-items-center rounded-full transition-[transform,background-color] duration-150 active:scale-90 disabled:pointer-events-none disabled:opacity-40',
       size === 'lg' ? 'h-14 w-14' : 'h-11 w-11',
-      active ? 'bg-ink text-cream' : variant === 'solid' ? 'bg-surface text-ink shadow-card' : variant === 'ghost' ? 'text-ink/75' : 'bg-ink/[0.07] text-ink',
+      active ? 'bg-ink text-cream' : variant === 'solid' ? 'bg-surface text-ink shadow-card' : variant === 'ghost' ? '' : 'tint-current',
       className,
     ].join(' ')}
   >

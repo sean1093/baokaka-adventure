@@ -48,7 +48,7 @@ export const Dialogue = ({ line, onAdvance }: { line: Line; onAdvance: () => voi
       onClick={() => (done ? onAdvance() : setShown(line.text.length))}
       className="absolute inset-x-0 bottom-0 z-20 block w-full px-3 pb-3 text-left"
     >
-      <div className="sheet-in relative rounded-3xl border border-ink/10 bg-surface/95 p-4 pb-5 shadow-float backdrop-blur">
+      <div className="sheet-in relative rounded-3xl border border-ink/10 bg-surface/95 p-4 pb-5 text-ink shadow-float backdrop-blur">
         {who && Art && (
           <span className="absolute -top-12 left-3 flex items-end gap-2">
             <span className="block h-16 w-16 drop-shadow-[0_6px_10px_rgba(59,42,32,0.35)]">
@@ -124,7 +124,7 @@ export const ChoicePrompt = ({
   onChoose: (index: number) => void;
 }) => (
   <div className="sheet-in absolute inset-x-0 bottom-0 z-20 px-3 pb-3">
-    <div role="group" aria-label={prompt ?? '選一個'} className="rounded-3xl border border-ink/10 bg-surface/95 p-4 shadow-float backdrop-blur">
+    <div role="group" aria-label={prompt ?? '選一個'} className="rounded-3xl border border-ink/10 bg-surface/95 p-4 text-ink shadow-float backdrop-blur">
       {prompt && <p className="mb-3 text-copy font-bold leading-relaxed">{prompt}</p>}
       <div className="flex flex-col gap-2">
         {options.map((option, index) => (
@@ -141,7 +141,7 @@ export const ChoicePrompt = ({
 /** The inn question, asked in the same box the NPC was just talking from. */
 export const InnPrompt = ({ price, coins, onAnswer }: { price: number; coins: number; onAnswer: (yes: boolean) => void }) => (
   <div className="sheet-in absolute inset-x-0 bottom-0 z-20 px-3 pb-3">
-    <div className="rounded-3xl border border-ink/10 bg-surface/95 p-4 shadow-float backdrop-blur">
+    <div className="rounded-3xl border border-ink/10 bg-surface/95 p-4 text-ink shadow-float backdrop-blur">
       <p className="mb-3 text-copy font-bold leading-relaxed">
         {UI.innAsk(price, coins)}
       </p>

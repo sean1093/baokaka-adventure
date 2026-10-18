@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { UI as TOKENS, WORLD } from '../../art/palette';
 import { SPRITES } from '../../art/sprites';
 import { ChevronLeft } from '../../components/icons';
 import { Dialogue } from '../components/Dialogue';
@@ -31,16 +32,16 @@ const points = (path: readonly MapPos[], h: number) =>
     })
     .join(' ');
 
-/** UI tokens from art direction § 3.1 (the navy panel and gold); #10/#12 move them into the theme. */
-const NAVY = '#161A4E';
-const NAVY_DEEP = '#0A0B22';
-const GOLD = '#E8C77A';
-const GOLD_LIGHT = '#FFE9B0';
-const GOLD_DEEP = '#C9A04A';
-const INK_ON_DARK = '#F4F2FF';
-const MUTED_ON_DARK = '#BFC2EA';
-const LOCKED = '#5D6190';
-const WATER = '#24407E';
+/** UI tokens (art direction § 3.1): the navy panel and gold. #12 moves the screen onto the UI kit. */
+const NAVY = TOKENS.panelTop;
+const NAVY_DEEP = TOKENS.panelBottom;
+const GOLD = TOKENS.gold;
+const GOLD_LIGHT = TOKENS.goldLight;
+const GOLD_DEEP = TOKENS.goldDeep;
+const INK_ON_DARK = TOKENS.inkOnDark;
+const MUTED_ON_DARK = TOKENS.mutedOnDark;
+const LOCKED = TOKENS.locked;
+const WATER = WORLD.water;
 
 /** Rivers under the lines (淡水河, 基隆河, 新店溪), so the network reads as a city at a glance. */
 const RIVERS: readonly MapPos[][] = [
@@ -231,7 +232,7 @@ const ConfirmSheet = ({ station, onYes, onNo }: { station: Station; onYes: () =>
             disabled={!open}
             onClick={onYes}
             className="h-12 flex-1 rounded-full text-copy font-extrabold shadow-glow transition-transform active:translate-y-0.5 disabled:opacity-40"
-            style={{ background: 'linear-gradient(180deg, #FFEFC0, #F0C060 55%, #D89A3A)', color: '#1A1440' }}
+            style={{ background: `linear-gradient(180deg, ${TOKENS.primaryTop}, ${TOKENS.primaryMid} 55%, ${TOKENS.primaryBottom})`, color: TOKENS.primaryText }}
           >
             {UI.rideYes}
           </button>

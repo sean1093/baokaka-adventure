@@ -21,7 +21,7 @@ export const Sheet = ({ open, onClose, title, children }: Props) => {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="sheet-in relative w-full max-w-md rounded-t-4xl bg-surface px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-3 shadow-float"
+        className="sheet-in relative w-full max-w-md rounded-t-4xl bg-surface text-ink px-5 pb-[max(env(safe-area-inset-bottom),20px)] pt-3 shadow-float"
       >
         <span aria-hidden="true" className="mx-auto mb-4 block h-1.5 w-12 rounded-full bg-ink/15" />
         {title && <h2 className="mb-3 text-center text-headline font-extrabold">{title}</h2>}

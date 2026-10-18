@@ -27,7 +27,7 @@ export const QuestTitleScreen = ({ run, legacyNotice, onDismissNotice, onNew, on
 
   return (
     <Screen center className="gap-5">
-      <section className="relative overflow-hidden rounded-4xl bg-gradient-to-br from-plum/35 via-cream to-sun/35 px-6 pb-5 pt-7 text-center shadow-card">
+      <section className="relative overflow-hidden rounded-4xl bg-gradient-to-br from-plum/35 via-cream to-sun/35 px-6 pb-5 pt-7 text-center text-ink shadow-card">
         <p className="text-label font-bold tracking-[0.35em] text-mochaDeep">奇幻冒險</p>
         <h1 className="mt-1 text-hero font-extrabold leading-none">
           寶咖咖

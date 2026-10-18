@@ -1,3 +1,4 @@
+import { MRT } from '../../art/palette';
 import { MAPS } from './maps';
 import type { GameMap, MapId, Run, Tile } from './types';
 
@@ -50,7 +51,7 @@ export type MrtLine = {
 export const MRT_LINES: Record<MrtLineId, MrtLine> = {
   red: {
     name: '淡水信義線',
-    color: '#E3002C',
+    color: MRT.red,
     paths: [
       [
         { x: 0.16, y: 0.05 },
@@ -71,7 +72,7 @@ export const MRT_LINES: Record<MrtLineId, MrtLine> = {
   },
   blue: {
     name: '板南線',
-    color: '#0070BD',
+    color: MRT.blue,
     paths: [
       [
         { x: 0.02, y: 0.62 },
@@ -85,7 +86,7 @@ export const MRT_LINES: Record<MrtLineId, MrtLine> = {
   },
   brown: {
     name: '文湖線',
-    color: '#C48C31',
+    color: MRT.brown,
     paths: [
       [
         { x: 0.98, y: 0.2 },
@@ -100,7 +101,7 @@ export const MRT_LINES: Record<MrtLineId, MrtLine> = {
   },
   green: {
     name: '松山新店線',
-    color: '#008659',
+    color: MRT.green,
     paths: [
       [
         { x: 0.98, y: 0.4 },
@@ -115,7 +116,7 @@ export const MRT_LINES: Record<MrtLineId, MrtLine> = {
   },
   orange: {
     name: '中和新蘆線',
-    color: '#F8B61C',
+    color: MRT.orange,
     paths: [
       [
         { x: 0.02, y: 0.26 },
