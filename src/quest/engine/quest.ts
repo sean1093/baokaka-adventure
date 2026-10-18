@@ -10,6 +10,7 @@ import {
   HERO_ORDER,
   type Battle,
   type BattleAction,
+  type ChoiceOption,
   type FoeId,
   type HeroId,
   type ItemId,
@@ -50,8 +51,10 @@ export type QuestState = {
   scene: Scene | null;
   /** The line currently on screen */
   line: Line | null;
-  /** The chapter title card, shown until tapped */
-  card: { n: number; title: string } | null;
+  /** The chapter title card, shown until tapped; `time` is its clock, `label` replaces 「第 n 章」 */
+  card: { n: number; title: string; time?: string; label?: string } | null;
+  /** A `choice` step waiting for the player to pick one of its 2–3 options */
+  choice: { prompt?: string; options: ChoiceOption[] } | null;
   /** The inn question, waiting for an answer */
   inn: number | null;
   sound: boolean;
@@ -68,6 +71,8 @@ export type QuestAction =
   /** Advance the dialogue / dismiss the chapter card */
   | { type: 'advance' }
   | { type: 'innAnswer'; yes: boolean }
+  /** Pick option `index` of the choice on screen */
+  | { type: 'choose'; index: number }
   | { type: 'battle'; action: BattleAction }
   | { type: 'battleEnd' }
   | { type: 'victoryContinue' }
@@ -119,20 +124,27 @@ export const initialState = (run: Run, sound: boolean): QuestState => ({
   scene: null,
   line: null,
   card: null,
+  choice: null,
   inn: null,
   sound,
 });
 
-const idle = (state: QuestState): QuestState => ({ ...state, scene: null, line: null, card: null, inn: null });
+const idle = (state: QuestState): QuestState => ({ ...state, scene: null, line: null, card: null, choice: null, inn: null });
 
 /** Folds a scene stop into the state: a line to read, a card, a battle, a shop, or back to walking. */
 function settle(state: QuestState, run: Run, scene: Scene, stop: Stop): QuestState {
-  const base = { ...state, run, scene, line: null, card: null, inn: null };
+  const base = { ...state, run, scene, line: null, card: null, choice: null, inn: null };
   switch (stop.kind) {
     case 'line':
       return { ...base, line: stop.line };
-    case 'chapter':
-      return { ...base, card: { n: stop.n, title: stop.title } };
+    case 'chapter': {
+      const { kind: _kind, ...card } = stop;
+      return { ...base, card };
+    }
+    case 'choice': {
+      const { kind: _kind, ...choice } = stop;
+      return { ...base, choice };
+    }
     case 'battle':
       return { ...base, view: { screen: 'battle', battle: startBattle(run, stop.foes, run.seed, stop.boss) } };
     case 'shop':
@@ -146,8 +158,8 @@ function settle(state: QuestState, run: Run, scene: Scene, stop: Stop): QuestSta
   }
 }
 
-/** Starts a script and plays it up to its first pause. */
-function play(state: QuestState, steps: Step[], run = state.run): QuestState {
+/** Starts a script and plays it up to its first pause. Exported for tests that drive a hand-written script. */
+export function play(state: QuestState, steps: Step[], run = state.run): QuestState {
   const result = runScene(run, { steps, at: 0 });
   return settle(state, result.run, result.scene, result.stop);
 }
@@ -251,7 +263,7 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
       return { ...idle(state), view: { screen: 'title' } };
 
     case 'step': {
-      if (view.screen !== 'world' || state.scene || state.card) return state;
+      if (view.screen !== 'world' || state.scene || state.card || state.choice) return state;
       const walked: Run = { ...run, pos: action.tile, facing: action.facing, steps: run.steps + 1 };
       const event = tileEvent(walked);
       if (event) return event.steps.length === 0 ? { ...state, run: event.run } : play(state, event.steps, event.run);
@@ -263,7 +275,7 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
     }
 
     case 'interact': {
-      if (view.screen !== 'world' || state.scene || state.card) return state;
+      if (view.screen !== 'world' || state.scene || state.card || state.choice) return state;
       const map = MAPS[run.map];
 
       const chest = map.chests.find((entry) => entry.id === action.id);
@@ -298,6 +310,13 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
       if (!action.yes) return resume({ ...state, inn: null });
       const answered = innLines(run, price, true);
       return { ...state, inn: null, run: answered.run, line: answered.lines[0] };
+    }
+
+    case 'choose': {
+      // A choice is a branch: the picked event replaces whatever was left of the scene
+      const option = state.choice?.options[action.index];
+      if (!option || !state.scene) return state;
+      return play({ ...state, choice: null }, EVENTS[option.event]);
     }
 
     case 'battle': {
