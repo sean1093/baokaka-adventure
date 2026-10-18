@@ -158,6 +158,8 @@ export const MAPS: Record<MapId, GameMap> = {
     chapter: 3,
     title: '公園',
     palette: 'park',
+    // Stands in for 大安森林公園 until #21 replaces the old maps: the template battle backdrop
+    backdrop: 'daan',
     legend: LEGEND,
     grid: [
       'ffffffffffffffffffffff',

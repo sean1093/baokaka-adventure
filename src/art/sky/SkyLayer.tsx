@@ -34,7 +34,7 @@ const MARGIN = 120;
 export const HORIZON = 0.4;
 
 /** mulberry32, seeded per time and size so the sky is the same on every render. */
-function rng(seed: number): () => number {
+export function rng(seed: number): () => number {
   let s = seed | 0;
   return () => {
     s = (s + 0x6d2b79f5) | 0;
@@ -44,13 +44,13 @@ function rng(seed: number): () => number {
   };
 }
 
-const n = (value: number) => Math.round(value * 10) / 10;
-const dot = (x: number, y: number, r: number) => `M${n(x - r)},${n(y)}a${n(r)},${n(r)} 0 1,0 ${n(r * 2)},0a${n(r)},${n(r)} 0 1,0 ${n(-r * 2)},0Z`;
-const sparkle = (x: number, y: number, s: number) =>
+export const n = (value: number) => Math.round(value * 10) / 10;
+export const dot = (x: number, y: number, r: number) => `M${n(x - r)},${n(y)}a${n(r)},${n(r)} 0 1,0 ${n(r * 2)},0a${n(r)},${n(r)} 0 1,0 ${n(-r * 2)},0Z`;
+export const sparkle = (x: number, y: number, s: number) =>
   `M${n(x)},${n(y - s)}Q${n(x + 0.5)},${n(y - 0.5)} ${n(x + s)},${n(y)}Q${n(x + 0.5)},${n(y + 0.5)} ${n(x)},${n(y + s)}Q${n(x - 0.5)},${n(y + 0.5)} ${n(x - s)},${n(y)}Q${n(x - 0.5)},${n(y - 0.5)} ${n(x)},${n(y - s)}Z`;
 
 /** One cloud silhouette (the reference generator's), around (cx, cy) at scale sc. */
-const cloudPath = (cx: number, cy: number, sc: number) =>
+export const cloudPath = (cx: number, cy: number, sc: number) =>
   `M${n(cx - 60 * sc)},${n(cy)}C${n(cx - 62 * sc)},${n(cy - 14 * sc)} ${n(cx - 44 * sc)},${n(cy - 22 * sc)} ${n(cx - 32 * sc)},${n(cy - 16 * sc)}` +
   `C${n(cx - 28 * sc)},${n(cy - 34 * sc)} ${n(cx - 4 * sc)},${n(cy - 38 * sc)} ${n(cx + 6 * sc)},${n(cy - 22 * sc)}` +
   `C${n(cx + 16 * sc)},${n(cy - 36 * sc)} ${n(cx + 44 * sc)},${n(cy - 30 * sc)} ${n(cx + 44 * sc)},${n(cy - 12 * sc)}` +

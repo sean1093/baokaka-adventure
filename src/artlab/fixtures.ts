@@ -1,4 +1,4 @@
-import { startBattle } from '../quest/engine/battle';
+import { startBattle, type StageFrame } from '../quest/engine/battle';
 import { EVENTS } from '../quest/engine/events';
 import { SPELLS } from '../quest/engine/heroes';
 import { MAPS } from '../quest/engine/maps';
@@ -26,6 +26,10 @@ export type ArtLabFixture = {
   followers?: readonly Follower[];
   /** The 路線圖's 「你在這裡」 station, standing in until the station maps exist */
   travelHere?: string;
+  /** The battle stage's frame, standing in until a `final` foe exists (咻咻's forms) */
+  battleFrame?: StageFrame;
+  /** Render inside a phone-sized box (CSS px) instead of the viewport: the small-phone layout at any viewport */
+  phone?: { width: number; height: number };
 };
 
 /** Story flags of a run a few fights in: the intro has played and the whole party has joined. */
@@ -135,6 +139,19 @@ function battleWith(party: readonly HeroId[], level = SAMPLE_LEVEL): QuestState 
 }
 
 /**
+ * The battle stage v2 fixtures (#14) stand in 大安森林公園 (the old park map carries the `daan`
+ * backdrop until #21): four heroes at 黑糖's join level against `foes`, on a hero's turn.
+ */
+export const STAGE_FOES: readonly FoeId[] = ['dustBunny', 'sockMonster', 'dustBunny'];
+/** A boss for the frame fixtures: an existing one until the chapter bosses are drawn. */
+export const STAGE_BOSS: FoeId = 'crowBoss';
+
+function stageBattle(foes: readonly FoeId[], boss: boolean): QuestState {
+  const run = { ...sampleRun(HERO_ORDER, 10), map: 'park' as const, pos: MAPS.park.entry };
+  return withView({ screen: 'battle', battle: startBattle(run, [...foes], run.seed, boss) }, run);
+}
+
+/**
  * The 路線圖 just after 月亮票 (Ch3): the four `moonPass` stations are lit, the party stands at
  * 台北車站, 公館 lights up for the first time (its 「叮！」), and the other ten are still locked.
  * The 「叮！」 narration has been read, so the whole map shows.
@@ -165,6 +182,15 @@ export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
   { name: 'battle', label: 'Battle: three heroes, three foes', state: () => battleWith(HERO_ORDER.slice(0, 3)) },
   // 黑糖's expected join level (story bible § 2.1), so every hero has a few 才藝
   { name: 'battle-4-heroes', label: 'Battle: four heroes, three foes', state: () => battleWith(HERO_ORDER, 10) },
+  { name: 'battle-4v3', label: 'Battle stage: 大安 band-shell at 00:20, four heroes v three foes', state: () => stageBattle(STAGE_FOES, false) },
+  { name: 'battle-boss', label: 'Battle stage: boss fight, the 布袋戲 valance', state: () => stageBattle([STAGE_BOSS], true) },
+  { name: 'battle-final', label: 'Battle stage: final fight, the full 布袋戲 proscenium', state: () => stageBattle([STAGE_BOSS], true), battleFrame: 'final' },
+  {
+    name: 'battle-375',
+    label: 'Battle stage: four v three in a 375×667 phone at any viewport',
+    state: () => stageBattle(STAGE_FOES, false),
+    phone: { width: 375, height: 667 },
+  },
   {
     name: 'victory',
     label: 'Victory: level up',

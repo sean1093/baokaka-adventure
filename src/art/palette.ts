@@ -137,6 +137,8 @@ export const RIM = {
   violet: '#D8C8FF',
   dawn: '#FFD0B0',
   gold: '#FFE09A',
+  /** Foes and bosses in battle (§ 6.1 *Foe rim light*) */
+  foe: '#D3A8FF',
 } as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -321,6 +323,119 @@ export const SKY_ART = {
   roomTop: '#161838',
   roomBottom: '#07081A',
   roomGlow: '#3A2E5E',
+} as const;
+
+
+/**
+ * Battle stage scenery (§ 2.7, § 4.1 item 5, § 8.4 *Battle backdrops*), painted for 00:00 like
+ * `WORLD` and graded with it (`gradeStage`): the floors, the generic framers and the chapter
+ * set-pieces (大安's band-shell and banyans are the template). Light on them is `STAGE_LIGHT`.
+ */
+export const STAGE = {
+  /** Paving: wet slabs, top (by the horizon) → bottom (by the camera), joints, the wet sheen */
+  paveTop: '#4A3C70',
+  paveMid: '#2A2452',
+  paveBottom: '#121030',
+  paveJoint: '#16122E',
+  paveLine: '#8C7CB4',
+  paveSheen: '#A898D8',
+  /** Grass verges and the park's tree line on the horizon */
+  lawn: '#1E3C48',
+  lawnDeep: '#122630',
+  treeLine: '#14243A',
+  treeLineRim: '#3E5C88',
+  /** A wooden floor (the generic room) */
+  woodTop: '#5A3A4E',
+  woodMid: '#3A2440',
+  woodBottom: '#1A1026',
+  woodJoint: '#160C1E',
+  woodLine: '#9A7088',
+  /** The room: wall, skirting, window frame, curtains */
+  wallTop: '#1E1C44',
+  wallBottom: '#2E2650',
+  skirting: '#16122C',
+  frame: '#2A2448',
+  frameLit: '#7A72B0',
+  curtain: '#3A2A5E',
+  curtainFold: '#241A42',
+  curtainLit: '#6A5AA0',
+  furniture: '#141230',
+  furnitureRim: '#5A5290',
+  /** Foreground framers: tree silhouettes (near black navy) with a moonlit rim */
+  leaf: '#121A40',
+  leafMid: '#1C2A5C',
+  leafLit: '#2E4282',
+  leafRim: '#7C9AE6',
+  /** Leaf edges catching the warm stage light from below */
+  leafWarm: '#A86A7A',
+  trunk: '#141030',
+  trunkMid: '#221C4A',
+  trunkRim: '#7474BC',
+  root: '#2A2452',
+  rootLit: '#5A5A9E',
+  /** Street furniture: lamp posts, railings, hedges */
+  post: '#1A1C3A',
+  postRim: '#5A5E98',
+  hedge: '#142438',
+  hedgeRim: '#3E6290',
+  /** Distant city and the far ridge */
+  city: '#1C1C4C',
+  cityNear: '#141440',
+  /** 台北101 on the horizon: body, the lit edge, the shaded edge */
+  tower: '#1E2456',
+  towerLit: '#3A4A8E',
+  towerShade: '#12163C',
+  /** 大安's 露天音樂台: the white shell lit from below, its ribs, the stage it stands on */
+  shellRim: '#F4EEFF',
+  shellTop: '#4E4888',
+  shellMid: '#9A90CC',
+  shellLow: '#E8DCF0',
+  shellRib: '#C4B8E8',
+  shellRibShade: '#6A62A0',
+  shellOuter: '#2A2658',
+  stageTop: '#5A5290',
+  stageFace: '#221E48',
+  stageFaceLow: '#14122E',
+  stageLip: '#B8ACE0',
+  step: '#3A3470',
+} as const;
+
+/** Emissive stage light (§ 2.7): uplights, footlights, fireflies, bokeh. Never graded. */
+export const STAGE_LIGHT = {
+  uplight: '#FFE2B0',
+  uplightCore: '#FFF6E0',
+  foot: '#FFD08A',
+  shellGlow: '#FFE8C8',
+  firefly: '#D8FF9A',
+  towerLight: '#FFE6A0',
+  towerTip: '#FF8A8A',
+  moonShaft: '#C8D8FF',
+  vignette: '#05051A',
+  /** The faint violet aura behind every foe, and the gold bloom bosses add (§ 6.1, § 6.3) */
+  aura: '#B88AFF',
+  auraBoss: '#FFD27A',
+} as const;
+
+/**
+ * The 布袋戲 proscenium (§ 7.4 *Boss fights*, borrowed from option B; decision D-08/D-31): the
+ * vermilion frame, its deep and lit edges, the scalloped valance, gold studs and the inner gold
+ * rules. UI art: never graded.
+ */
+export const FRAME = {
+  vermilion: '#B5322F',
+  vermilionDeep: '#7A1A1E',
+  vermilionLit: '#D8504A',
+  valance: '#E8553D',
+  valanceDeep: '#A8302A',
+  valanceLit: '#FF8A6A',
+  stud: '#FFD670',
+  studLit: '#FFF4C8',
+  studDeep: '#B8862A',
+  gold: '#E8C77A',
+  goldLit: '#FFF2C8',
+  goldDeep: '#9A7430',
+  shadow: '#1A0610',
+  tassel: '#FFB84A',
 } as const;
 
 // ---------------------------------------------------------------------------------------------
@@ -583,6 +698,18 @@ export function gradeCharacter(time: string): MaterialTokens {
 
 type GradedTiles = { tiles: TileTokens; structure: StructureTokens; scenery: SceneryTokens; fixture: FixtureTokens };
 const tileCache = new Map<string, GradedTiles>();
+const stageCache = new Map<string, StageTokens>();
+
+export type StageTokens = { readonly [K in keyof typeof STAGE]: string };
+
+/** `STAGE` with the night grade for a clock time baked in (§ 3.2). Pure; memoised per time. */
+export function gradeStage(time: string): StageTokens {
+  const hit = stageCache.get(time);
+  if (hit) return hit;
+  const graded = gradeRecord({ ...STAGE }, worldGrade(time)) as StageTokens;
+  stageCache.set(time, graded);
+  return graded;
+}
 
 export type TileTokens = { readonly [K in TileName]: { readonly [F in keyof TileRamp]: string } };
 export type StructureTokens = { readonly [K in keyof typeof STRUCTURE]: string };

@@ -54,6 +54,14 @@ export const TARGETS = [
     fullPage: true,
     artlab: true,
   },
+  {
+    name: 'artlab-stage',
+    // The battle stage v2 (#14): every backdrop over its painted width, the generic ones at three times, both 布袋戲 frames
+    hash: '#/artlab?section=stage&still=1',
+    waitFor: '[data-artlab-stage] [data-stage-card="daan"][data-stage-ready]',
+    fullPage: true,
+    artlab: true,
+  },
 ];
 
 /** The screenshot target for one art lab fixture. */

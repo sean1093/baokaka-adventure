@@ -773,3 +773,16 @@
     transition: none;
   }
 }
+
+/* A scene-length rise (600ms, § 7.9): the victory result card. A 200ms fade under reduced motion. */
+.kit-sheet-in.kit-scene {
+  animation-duration: var(--dur-scene);
+}
+.reduce-motion .kit-sheet-in.kit-scene {
+  animation-duration: 200ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kit-sheet-in.kit-scene {
+    animation-duration: 200ms;
+  }
+}

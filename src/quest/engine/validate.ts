@@ -1,5 +1,6 @@
 import { spriteMeta, type SpriteComponent } from '../../art/sprite';
 import { SPRITES } from '../../art/sprites';
+import { isBackdrop } from '../../art/backdrops/keys';
 import { BACKLIGHT } from '../../art/palette';
 import { EVENTS, ROLE_BACKLIGHT, SPEAKERS } from './events';
 import { FOES } from './foes';
@@ -247,6 +248,7 @@ export function validateMap(map: GameMap, errors: string[], maps: Readonly<Recor
   const width = map.grid[0]?.length ?? 0;
   const where = `map ${map.id}`;
   if (width === 0) errors.push(`${where}: empty grid`);
+  if (map.backdrop !== undefined && !isBackdrop(map.backdrop)) errors.push(`${where}: unknown battle backdrop "${map.backdrop}" (add it to BACKDROP_CHAPTER)`);
   for (const [index, row] of map.grid.entries()) {
     if (row.length !== width) errors.push(`${where}: row ${index} is ${row.length} wide, expected ${width}`);
     for (const glyph of row) if (!map.legend[glyph]) errors.push(`${where}: row ${index} has unknown glyph "${glyph}"`);
@@ -675,6 +677,7 @@ export function validateQuestContent(): string[] {
     if (!Number.isInteger(foe.coins) || foe.coins < 0) errors.push(`foe ${foe.id}: coins must be a whole number, got ${foe.coins}`);
     if (foe.moves.length === 0) errors.push(`foe ${foe.id} has no moves`);
     if (foe.boss && !foe.taunt) errors.push(`boss ${foe.id} needs a taunt`);
+    if (foe.final && !foe.boss) errors.push(`foe ${foe.id} is final but not a boss`);
     if (foe.drop && !ITEMS[foe.drop.item]) errors.push(`foe ${foe.id} drops unknown item ${foe.drop.item}`);
   }
 
