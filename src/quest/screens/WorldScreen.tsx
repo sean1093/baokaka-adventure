@@ -380,7 +380,7 @@ export const WorldScreen = ({ state, onStep, onInteract, onAdvance, onInn, onCho
       )}
 
       {talk.value && <TalkBox talk={talk.value} leaving={talk.leaving} onAdvance={onAdvance} onChoose={onChoose} onInn={onInn} />}
-      {card && <ChapterCard kicker={card.label ?? `第 ${card.n} 章`} title={card.title} time={card.time} next={card.next} onDismiss={onAdvance} />}
+      {card && <ChapterCard key={`${card.n}${card.label ?? ''}${card.title}`} kicker={card.label ?? `第 ${card.n} 章`} title={card.title} time={card.time} next={card.next} onDismiss={onAdvance} />}
     </main>
   );
 };
