@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { BACKDROPS } from '../../art/backdrops';
 import { SPRITES } from '../../art/sprites';
 import type { PaletteName } from '../../art/types';
-import { Button } from '../../components/Button';
+import { CommandButton } from '../../components/Button';
+import { GlassChip, Num } from '../../components/Chip';
+import { CommandGrid, CommandPanel, PartyCard } from '../../components/CommandPanel';
+import { Cube, Cup, Shield, Talent } from '../../components/icons';
 import { SoundToggle } from '../../components/Screen';
 import { playTone } from '../../shared/audio';
 import { BattleFx, type Spot } from '../components/BattleFx';
-import { HERO_SPRITE } from '../components/PartyPanel';
+import { HERO_SPRITE, HeroHead } from '../components/PartyPanel';
 import { aliveFoeSlots, battleBoss, canCast, foeIntent, sameWho } from '../engine/battle';
 import { FOES } from '../engine/foes';
 import { HEROES, ITEMS, ITEM_ORDER, SPELLS, spellsFor } from '../engine/heroes';
@@ -89,19 +92,26 @@ function logLine(battle: Battle): string {
   return parts.reduce((log, part) => (log === '' ? part : /[！…。]$/.test(log) ? `${log}${part}` : `${log}，${part}`), '') || '……';
 }
 
+/** Damage numbers (§ 7.4): Fredoka italic, white with a deep-pink stroke; heals in green, MP in blue. */
+const NUMBER = 'font-num italic font-bold leading-none [paint-order:stroke_fill]';
+/** Words (防禦, 累倒了): a small glass tag. */
+const WORD = 'kit-glass rounded px-2 py-0.5 font-serif text-label not-italic';
+
 /** A number that floats up off whoever it happened to. */
 const floater = (event: BattleEvent): { text: string; tone: string } | null => {
   switch (event.kind) {
     case 'hit':
-      return event.crit ? { text: `暴擊 ${event.amount}`, tone: 'bg-sun text-ink' } : { text: `${event.amount}`, tone: 'bg-surface text-ink' };
+      return event.crit
+        ? { text: `暴擊 ${event.amount}`, tone: `${NUMBER} text-[30px] text-gold-light [-webkit-text-stroke:5px_theme(colors.damage.stroke)]` }
+        : { text: `${event.amount}`, tone: `${NUMBER} text-[34px] text-damage [-webkit-text-stroke:5px_theme(colors.damage.stroke)]` };
     case 'heal':
-      return event.amount > 0 ? { text: `+${event.amount}`, tone: 'bg-leaf text-white' } : null;
+      return event.amount > 0 ? { text: `+${event.amount}`, tone: `${NUMBER} text-[30px] text-hp-to [-webkit-text-stroke:5px_theme(colors.panel.deep)]` } : null;
     case 'mp':
-      return event.amount > 0 ? { text: `${UI.mp} +${event.amount}`, tone: 'bg-sky text-white' } : null;
+      return event.amount > 0 ? { text: `${UI.mp} +${event.amount}`, tone: `${NUMBER} text-[22px] text-mp-to [-webkit-text-stroke:4px_theme(colors.panel.deep)]` } : null;
     case 'guard':
-      return { text: '防禦', tone: 'bg-ink text-cream' };
+      return { text: '防禦', tone: WORD };
     case 'ko':
-      return { text: event.who.side === 'hero' ? '累倒了' : '頭暈暈', tone: 'bg-ink text-cream' };
+      return { text: event.who.side === 'hero' ? '累倒了' : '頭暈暈', tone: WORD };
     default:
       return null;
   }
@@ -110,13 +120,15 @@ const floater = (event: BattleEvent): { text: string; tone: string } | null => {
 type Props = {
   battle: Battle;
   palette: PaletteName;
+  /** Where and when: the map's name and clock for the stage's glass chip */
+  place?: { title: string; time: string };
   soundOn: boolean;
   onAction: (action: BattleAction) => void;
   onEnd: () => void;
   onToggleSound: () => void;
 };
 
-export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onToggleSound }: Props) => {
+export const BattleScreen = ({ battle, palette, place, soundOn, onAction, onEnd, onToggleSound }: Props) => {
   const { phase } = battle;
   const hero = phase.kind === 'hero' ? phase.hero : null;
   const alive = aliveFoeSlots(battle);
@@ -252,22 +264,38 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
               ? '要打哪一個？'
               : needs === 'hero'
                 ? '要給誰？'
-                : `${HEROES[phase.hero].name}，要做什麼？`;
+                : `${HEROES[phase.hero].name}要做什麼？`;
+
+  const cancel = () => {
+    setPending(null);
+    setMenu('root');
+  };
+  const link =
+    hero && (pending || menu !== 'root')
+      ? { label: '取消', onClick: cancel }
+      : hero
+        ? { label: battle.boss ? '逃不掉' : UI.commands.flee, onClick: () => send({ type: 'flee' }), disabled: battle.boss }
+        : null;
 
   return (
-    <main className="screen-in mx-auto flex h-dvh w-full max-w-md flex-col gap-2 px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-[max(env(safe-area-inset-top),10px)]">
-      <header className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-caption font-bold opacity-75">{battle.boss ? '頭目戰' : '遭遇戰'}</p>
-          <h1 className="text-heading font-extrabold leading-tight">第 {battle.round} 回合</h1>
-        </div>
-        <SoundToggle on={soundOn} onToggle={onToggleSound} />
-      </header>
-
-      {/* The arena: foes on the far side, the party on the near side */}
-      <div className={`relative min-h-0 flex-1 overflow-hidden rounded-3xl shadow-card ${quake ? 'fx-quake' : ''}`} key={`arena${quake ? battle.step : 0}`}>
+    <main className="kit-fade-in mx-auto flex h-dvh w-full max-w-md flex-col">
+      {/* The stage: foes on the far side, the party on the near side (restyled in #14) */}
+      <div className={`relative min-h-0 flex-1 overflow-hidden ${quake ? 'fx-quake' : ''}`} key={`arena${quake ? battle.step : 0}`}>
         <Backdrop />
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/0 via-ink/0 to-ink/25" />
+        <div className="absolute inset-0 bg-gradient-to-b from-scrim/30 via-transparent to-scrim/50" />
+
+        <header className="absolute inset-x-0 top-0 z-10 flex items-center gap-2 px-3 pt-[max(env(safe-area-inset-top),10px)]">
+          <GlassChip className="min-w-0">
+            <span className="truncate">{place ? place.title : battle.boss ? '頭目戰' : '遭遇戰'}</span>
+            {place && <Num className="text-[14px]">{place.time}</Num>}
+          </GlassChip>
+          <span className="flex-1" />
+          <GlassChip>
+            第 <Num className="text-[16px]">{battle.round}</Num> 回合
+          </GlassChip>
+          <SoundToggle on={soundOn} onToggle={onToggleSound} />
+        </header>
+
 
         {battle.foes.map((state, slot) => {
           const foe = FOES[state.foe];
@@ -287,33 +315,29 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
               disabled={dead || !targetable}
               onClick={() => pickFoe(slot)}
               aria-label={foe.name}
-              className="absolute disabled:pointer-events-none"
+              className="absolute min-h-[44px] min-w-[44px] disabled:pointer-events-none"
               style={{ left: `${columns[slot] * 100}%`, top: `${FOE_Y * 100}%`, width: `${size * 100}%`, transform: 'translate(-50%, -50%)' }}
             >
               <span className={`relative block ${dead ? 'opacity-0' : ''} ${acting ? 'lunge-down' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
                 <span className="block aspect-square w-full">
                   <Art lod="battle" />
                 </span>
-                {state.guard && (
-                  <span className="absolute -right-1 top-0 rounded-full bg-sky px-1.5 text-caption font-bold text-white shadow-card">防</span>
-                )}
-                {targetable && !dead && (
-                  <span className="absolute inset-0 rounded-2xl ring-2 ring-sun/80 ring-offset-2 ring-offset-transparent" />
-                )}
+                {state.guard && <span className="absolute -right-1 top-0 rounded-sm bg-mp-from px-1.5 font-serif text-caption text-inkOnDark shadow-gold">防</span>}
+                {targetable && !dead && <span className="absolute inset-0 rounded-panel shadow-[0_0_0_2px_theme(colors.gold.light),0_0_18px_theme(colors.gold.DEFAULT/60%)]" />}
                 {float && (
-                  <span
-                    key={battle.step}
-                    className={`float-up pointer-events-none absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-label font-extrabold shadow-card ${float.tone}`}
-                  >
+                  <span key={battle.step} className={`float-up pointer-events-none absolute left-1/2 top-1 -translate-x-1/2 whitespace-nowrap ${float.tone}`}>
                     {float.text}
                   </span>
                 )}
               </span>
-              <span className="mt-0.5 block">
-                <span className="mx-auto block h-1.5 w-full max-w-[72px] overflow-hidden rounded-full bg-ink/25">
-                  <span className="block h-full rounded-full bg-berry transition-[width] duration-300" style={{ width: `${(state.hp / foe.stats.hp) * 100}%` }} />
+              <span className="mt-1 block">
+                <span className="mx-auto block h-[5px] w-full max-w-[72px] overflow-hidden rounded-[1px] bg-black/50 shadow-[0_0_0_1px_theme(colors.gold.DEFAULT/35%)]">
+                  <span
+                    className="block h-full bg-gradient-to-r from-hp-critFrom to-hp-critTo transition-[width] duration-300"
+                    style={{ width: `${(state.hp / foe.stats.hp) * 100}%` }}
+                  />
                 </span>
-                <span className="mt-0.5 block truncate rounded-full bg-ink/70 px-1.5 text-caption font-bold text-cream">{foe.name}</span>
+                <span className="kit-glass mx-auto mt-1 block w-fit max-w-full truncate rounded px-2 font-serif text-[13px] leading-snug tracking-[0.04em]">{foe.name}</span>
               </span>
             </button>
           );
@@ -343,18 +367,20 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
                 className="absolute disabled:pointer-events-none"
                 style={{ left: `${at.x * 100}%`, top: `${at.y * 100}%`, width: `${rank.width * 100}%`, transform: 'translate(-50%, -50%)' }}
               >
+                {hero === member && (
+                  <span className="absolute -top-7 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-sm bg-gradient-to-b from-gold-diamond to-gold px-2 py-px font-serif text-[12px] tracking-[0.12em] text-primary-text shadow-gold">
+                    輪到你
+                  </span>
+                )}
                 <span className={`relative block ${dead ? 'opacity-35 grayscale' : ''} ${acting ? 'lunge-up' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
                   <span className="block aspect-square w-full">
                     <Art lod="battle" />
                   </span>
-                  {state.shield && <span className="absolute inset-0 rounded-full ring-4 ring-sky/60" />}
-                  {state.guard && <span className="absolute -right-1 top-1 rounded-full bg-sky px-1.5 text-caption font-bold text-white shadow-card">防</span>}
-                  {pickable && <span className="absolute inset-0 rounded-2xl ring-2 ring-leaf" />}
+                  {state.shield && <span className="absolute inset-0 rounded-full shadow-[0_0_0_3px_theme(colors.mp.to/60%),inset_0_0_16px_theme(colors.mp.to/35%)]" />}
+                  {state.guard && <span className="absolute -right-1 top-1 rounded-sm bg-mp-from px-1.5 font-serif text-caption text-inkOnDark shadow-gold">防</span>}
+                  {pickable && <span className="absolute inset-0 rounded-panel shadow-[0_0_0_2px_theme(colors.gold.light),0_0_18px_theme(colors.gold.DEFAULT/60%)]" />}
                   {float && (
-                    <span
-                      key={battle.step}
-                      className={`float-up pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-label font-extrabold shadow-card ${float.tone}`}
-                    >
+                    <span key={battle.step} className={`float-up pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 whitespace-nowrap ${float.tone}`}>
                       {float.text}
                     </span>
                   )}
@@ -365,83 +391,81 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
 
         <BattleFx key={battle.step} battle={battle} spot={spot} />
 
-        {/* Whose turn it is, and what the foe is about to do */}
+        {/* What the foe is about to do */}
         {phase.kind === 'foe' && (
-          <p className="pop absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-ink/85 px-4 py-1.5 text-copy font-extrabold text-cream">
+          <p className="kit-glass pop absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded px-4 py-1.5 font-serif text-body tracking-[0.06em]">
             {foeIntent(battle, phase.slot)}
           </p>
         )}
-      </div>
 
-      {/* Party bars. While a target is wanted these are the big, thumb-friendly way to pick one. */}
-      <div className="flex gap-1.5">
-        {battle.party.map((member) => {
-          const state = battle.heroes[member];
-          const stats = battle.stats[member];
-          const active = hero === member;
-          const pickable = needs === 'hero';
-          return (
-            <button
-              key={member}
-              type="button"
-              disabled={!pickable}
-              onClick={() => pickHero(member)}
-              className={`min-w-0 flex-1 rounded-2xl px-2 py-1.5 text-left transition-transform duration-150 active:scale-[0.97] disabled:pointer-events-none ${
-                pickable ? 'bg-surface text-ink ring-2 ring-leaf' : active ? 'bg-cream text-ink ring-[3px] ring-sun' : 'bg-surface/90 text-ink'
-              }`}
-            >
-              <p className="truncate text-caption font-extrabold">{HEROES[member].name}</p>
-              <p className="text-caption font-bold tabular-nums text-muted">
-                {state.hp}/{stats.hp}
-              </p>
-              <span className="mt-0.5 block h-1.5 overflow-hidden rounded-full bg-ink/10">
-                <span
-                  className={`block h-full rounded-full transition-[width] duration-300 ${state.hp / stats.hp > 0.5 ? 'bg-leaf' : state.hp / stats.hp > 0.22 ? 'bg-sun' : 'bg-berry'}`}
-                  style={{ width: `${(state.hp / stats.hp) * 100}%` }}
-                />
-              </span>
-              <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-ink/10">
-                <span className="block h-full rounded-full bg-sky transition-[width] duration-300" style={{ width: `${(state.mp / stats.mp) * 100}%` }} />
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* The command window */}
-      <div className="rounded-3xl bg-surface p-3 text-ink shadow-card">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <p className="truncate text-copy font-extrabold">{headline}</p>
-          {(pending || menu !== 'root') && hero && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setPending(null);
-                setMenu('root');
-              }}
-            >
-              取消
-            </Button>
-          )}
+        {/* The battle log (what just happened, in words) and who moves next: the reason 身手 is a stat worth reading */}
+        <div className="kit-glass absolute inset-x-3 bottom-2.5 flex items-center gap-3 rounded px-3 py-1 text-caption">
+          <p className="min-w-0 flex-1 truncate text-inkOnDark" aria-live="polite">
+            {logLine(battle)}
+          </p>
+          <p className="shrink-0 text-mutedOnDark">
+            接下來 <span className="font-serif text-gold-light">{nextUp}</span>
+          </p>
         </div>
+      </div>
 
-        {hero && !pending && menu === 'root' && (
-          <div className="grid grid-cols-3 gap-1.5">
-            <CommandButton label={UI.commands.attack} hint="普通攻擊" onClick={() => choose({ kind: 'attack' })} primary />
-            <CommandButton label={UI.commands.skill} hint={`${spells.length} 招`} onClick={() => setMenu('spell')} disabled={spells.length === 0} />
-            <CommandButton label={UI.commands.item} hint={`${carried.length} 種`} onClick={() => setMenu('item')} disabled={carried.length === 0} />
-            <CommandButton label={UI.commands.guard} hint="傷害減半" onClick={() => send({ type: 'guard' })} />
-            <CommandButton label={UI.commands.flee} hint={battle.boss ? '逃不掉' : '離開戰鬥'} onClick={() => send({ type: 'flee' })} disabled={battle.boss} />
-            <div className="flex min-h-12 flex-col items-center justify-center rounded-2xl bg-ink/[0.03]">
-              <span className="text-caption font-bold text-muted">接下來</span>
-              <span className="truncate px-1 text-label font-extrabold leading-tight">{nextUp}</span>
-            </div>
+      <CommandPanel
+        prompt={headline}
+        link={link}
+        party={
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${battle.party.length <= 2 ? 2 : battle.party.length}, minmax(0, 1fr))` }}>
+            {battle.party.map((member) => {
+              const state = battle.heroes[member];
+              const stats = battle.stats[member];
+              return (
+                <PartyCard
+                  key={member}
+                  name={HEROES[member].name}
+                  portrait={<HeroHead hero={member} />}
+                  hp={state.hp}
+                  hpMax={stats.hp}
+                  mp={state.mp}
+                  mpMax={stats.mp}
+                  active={hero === member && !pending}
+                  onPick={needs === 'hero' ? () => pickHero(member) : undefined}
+                  layout={battle.party.length <= 2 ? 'wide' : 'narrow'}
+                  head={battle.party.length <= 3}
+                />
+              );
+            })}
           </div>
+        }
+      >
+        {(!hero || (!pending && menu === 'root') || pending) && (
+          <CommandGrid>
+            <CommandButton
+              primary
+              icon={<Cube size={20} />}
+              label={UI.commands.attack}
+              sub={pending ? '點一下目標' : '普通攻擊'}
+              onClick={() => choose({ kind: 'attack' })}
+              disabled={!hero || Boolean(pending)}
+            />
+            <CommandButton
+              icon={<Talent size={20} />}
+              label={UI.commands.skill}
+              sub={hero ? `${UI.mp} ${battle.heroes[hero].mp}` : '——'}
+              onClick={() => setMenu('spell')}
+              disabled={!hero || Boolean(pending) || spells.length === 0}
+            />
+            <CommandButton
+              icon={<Cup size={20} />}
+              label={UI.commands.item}
+              sub={`${carried.length} 樣`}
+              onClick={() => setMenu('item')}
+              disabled={!hero || Boolean(pending) || carried.length === 0}
+            />
+            <CommandButton icon={<Shield size={20} />} label={UI.commands.guard} sub="減傷一半" onClick={() => send({ type: 'guard' })} disabled={!hero || Boolean(pending)} />
+          </CommandGrid>
         )}
 
         {hero && !pending && menu === 'spell' && (
-          <div className="grid max-h-40 grid-cols-2 gap-1.5 overflow-y-auto">
+          <div className="grid max-h-[150px] grid-cols-2 gap-2 overflow-y-auto">
             {spells.map((spell) => {
               const usable = canCast(battle, hero, spell);
               return (
@@ -450,10 +474,12 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
                   type="button"
                   disabled={!usable}
                   onClick={() => choose({ kind: 'spell', spell: spell.id })}
-                  className="flex min-h-11 flex-col justify-center rounded-2xl bg-sky/15 px-3 py-1.5 text-left transition-transform active:scale-[0.97] disabled:opacity-35"
+                  className="kit-inset kit-press flex min-h-[64px] flex-col justify-center px-3 py-1.5 text-left disabled:opacity-40"
                 >
-                  <span className="text-label font-extrabold leading-tight">{spell.name}</span>
-                  <span className="text-caption font-bold text-skyDeep">{UI.mp} {spell.cost}</span>
+                  <span className="truncate font-serif text-[17px] font-black tracking-[0.06em]">{spell.name}</span>
+                  <span className="text-caption text-mutedOnDark">
+                    {UI.mp} <Num>{spell.cost}</Num>
+                  </span>
                 </button>
               );
             })}
@@ -461,61 +487,31 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
         )}
 
         {hero && !pending && menu === 'item' && (
-          <div className="grid max-h-40 grid-cols-2 gap-1.5 overflow-y-auto">
+          <div className="grid max-h-[150px] grid-cols-2 gap-2 overflow-y-auto">
             {carried.map((item) => (
               <button
                 key={item}
                 type="button"
                 onClick={() => choose({ kind: 'item', item })}
-                className="flex min-h-11 items-center gap-2 rounded-2xl bg-leaf/15 px-2.5 py-1.5 text-left transition-transform active:scale-[0.97]"
+                className="kit-inset kit-press flex min-h-[64px] items-center gap-2 px-2.5 py-1.5 text-left"
               >
-                <span className="block h-7 w-7 shrink-0"><ItemArt item={item} /></span>
+                <span className="block h-9 w-9 shrink-0">
+                  <ItemArt item={item} />
+                </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-label font-extrabold leading-tight">{ITEMS[item].name}</span>
-                  <span className="block text-caption font-bold text-leafDeep">×{battle.items[item]}</span>
+                  <span className="block truncate font-serif text-[16px] font-black tracking-[0.04em]">{ITEMS[item].name}</span>
+                  <span className="block text-caption text-mutedOnDark">
+                    ×<Num>{battle.items[item]}</Num>
+                  </span>
                 </span>
               </button>
             ))}
           </div>
         )}
-
-        {(!hero || pending) && (
-          <p className="py-2 text-center text-label font-bold text-muted">
-            {pending ? '點一下要施展的目標' : phase.kind === 'foe' ? '……' : ''}
-          </p>
-        )}
-
-        <p className="mt-2 h-9 overflow-hidden text-caption font-bold leading-snug text-muted">{logLine(battle)}</p>
-      </div>
+      </CommandPanel>
     </main>
   );
 };
-
-const CommandButton = ({
-  label,
-  hint,
-  onClick,
-  disabled,
-  primary,
-}: {
-  label: string;
-  hint: string;
-  onClick: () => void;
-  disabled?: boolean;
-  primary?: boolean;
-}) => (
-  <button
-    type="button"
-    disabled={disabled}
-    onClick={onClick}
-    className={`flex min-h-12 flex-col items-center justify-center rounded-2xl transition-transform active:scale-[0.96] disabled:opacity-35 ${
-      primary ? 'bg-gradient-to-b from-sun to-sunDeep text-ink shadow-glow' : 'bg-ink/[0.06]'
-    }`}
-  >
-    <span className="text-label font-extrabold leading-tight">{label}</span>
-    <span className={`text-caption font-bold ${primary ? 'text-mochaDeep' : 'text-muted'}`}>{hint}</span>
-  </button>
-);
 
 const ItemArt = ({ item }: { item: ItemId }) => {
   const Art = SPRITES[ITEMS[item].sprite];

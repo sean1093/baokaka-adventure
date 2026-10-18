@@ -62,8 +62,8 @@ export type QuestState = {
   scene: Scene | null;
   /** The line currently on screen */
   line: Line | null;
-  /** The chapter title card, shown until tapped; `time` is its clock, `label` replaces 「第 n 章」 */
-  card: { n: number; title: string; time?: string; label?: string } | null;
+  /** The chapter title card, shown until tapped; `time` is its clock, `label` replaces 「第 n 章」, `next` is its 「下一站」 */
+  card: { n: number; title: string; time?: string; label?: string; next?: string } | null;
   /** A `choice` step waiting for the player to pick one of its 2–3 options */
   choice: { prompt?: string; options: ChoiceOption[] } | null;
   /** The inn question, waiting for an answer */
@@ -72,7 +72,7 @@ export type QuestState = {
   settings: QuestSettings;
 };
 
-export const DEFAULT_SETTINGS: QuestSettings = { skipRides: false };
+export const DEFAULT_SETTINGS: QuestSettings = { skipRides: false, reducedMotion: false };
 
 export type QuestAction =
   | { type: 'newGame'; seed: number }
@@ -102,6 +102,8 @@ export type QuestAction =
   | { type: 'closeTravel' }
   /** The 路線圖's 直接到站 switch */
   | { type: 'setSkipRides'; on: boolean }
+  /** The 減少動態 switch in the menu */
+  | { type: 'setReducedMotion'; on: boolean }
   | { type: 'endingContinue' };
 
 export function freshRun(seed = 1, cleared = false): Run {
@@ -504,6 +506,9 @@ export function questReducer(state: QuestState, action: QuestAction): QuestState
 
     case 'setSkipRides':
       return { ...state, settings: { ...state.settings, skipRides: action.on } };
+
+    case 'setReducedMotion':
+      return { ...state, settings: { ...state.settings, reducedMotion: action.on } };
 
     case 'endingContinue':
       return { ...idle(state), run: { ...run, cleared: true }, view: { screen: 'title' } };

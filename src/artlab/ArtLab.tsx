@@ -10,6 +10,7 @@ import { hashParams } from '../shared/route';
 import { ARTLAB_FIXTURES, type ArtLabFixture } from './fixtures';
 import { RigSection } from './RigSection';
 import { TokensSection } from './TokensSection';
+import { UiKitSection } from './UiKitSection';
 import './artlab.css';
 
 /**
@@ -17,7 +18,7 @@ import './artlab.css';
  * ugly but useful. Everything is driven by registries (SPRITES, ARTLAB_FIXTURES, the tables
  * below), so later issues add entries rather than code. URL parameters, all optional:
  *
- *   section  tokens | rig | sprites | fixtures     (default: fixtures and sprites)
+ *   section  tokens | rig | ui | sprites | fixtures     (default: fixtures and sprites)
  *   only     comma list: sprite names, or one fixture name to show that screen alone
  *   bg       comma list of BACKGROUNDS keys  (default: all)
  *   size     comma list of pixel sizes       (default: SIZES)
@@ -105,7 +106,7 @@ const SpriteCard = ({ name, backgrounds, sizes }: { name: SpriteName; background
   const meta = spriteMeta(Art);
   const tag = meta?.placeholder ? 'placeholder' : meta ? meta.kind : 'legacy';
   return (
-    <section data-sprite={name} data-sprite-kind={tag} className="rounded-xl border border-ink/15 bg-surface p-2 text-ink">
+    <section data-sprite={name} data-sprite-kind={tag} className="rounded-xl border border-gold/30 bg-panel-solid p-2 text-inkOnDark">
       <h3 className="mb-1 w-0 min-w-full truncate font-mono text-[13px] font-bold" title={`${name} (${tag})`}>{name}</h3>
       <div className="flex flex-col gap-1">
         {backgrounds.map((bg) => (
@@ -204,10 +205,11 @@ const ArtLab = ({ hash }: { hash: string }) => {
   return (
     <main data-artlab="index" className="flex flex-col gap-4 p-3 text-inkOnDark">
       <header className="flex flex-wrap items-center gap-2">
-        <h1 className="mr-2 text-headline font-extrabold">Art lab</h1>
+        <h1 className="mr-2 font-serif text-title">Art lab</h1>
         <Link href="#/artlab">all</Link>
         <Link href="#/artlab?section=tokens">tokens</Link>
         <Link href="#/artlab?section=rig">rig</Link>
+        <Link href="#/artlab?section=ui">ui kit</Link>
         <Link href="#/artlab?section=sprites">sprites</Link>
         <Link href="#/artlab?section=fixtures">screens</Link>
         {(Object.keys(BACKGROUNDS) as Background[]).map((bg) => (
@@ -219,6 +221,7 @@ const ArtLab = ({ hash }: { hash: string }) => {
       </header>
       {section === 'tokens' && <TokensSection />}
       {section === 'rig' && <RigSection params={params} />}
+      {section === 'ui' && <UiKitSection />}
       {(section === null || section === 'fixtures') && <FixtureList />}
       {(section === null || section === 'sprites') && <SpritesSection params={params} />}
     </main>

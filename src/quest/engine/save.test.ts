@@ -32,7 +32,7 @@ describe('loadQuest', () => {
   test('a current save round-trips identically', () => {
     const storage = fakeStorage();
     const run: Run = { ...freshRun(5), map: 'park', pos: { c: 3, r: 4 }, level: 6, xp: 300, coins: 42, flags: ['mochaJoined'], seenFoes: ['dustBunny', 'blockGolem'] };
-    const save: QuestSave = { run, sound: false, settings: { skipRides: true } };
+    const save: QuestSave = { run, sound: false, settings: { skipRides: true, reducedMotion: true } };
     saveQuest(save, storage);
     expect(loadQuest(storage)).toEqual({ save, legacyReset: false });
   });
@@ -45,10 +45,22 @@ describe('loadQuest', () => {
     expect(JSON.parse(storage.cells[QUEST_KEY])).toMatchObject({ version: 6, sound: true, settings: { skipRides: false } });
   });
 
+  test('a v6 save from before 減少動態 loads with the toggle off', () => {
+    const storage = fakeStorage();
+    storage.cells[QUEST_KEY] = JSON.stringify({ version: 6, run: freshRun(3), sound: true, settings: { skipRides: true } });
+    expect(loadQuest(storage).save.settings).toEqual({ skipRides: true, reducedMotion: false });
+  });
+
+  test('a reducedMotion that is not a boolean is not a valid save', () => {
+    const storage = fakeStorage();
+    storage.cells[QUEST_KEY] = JSON.stringify({ version: 6, run: { ...freshRun(3), level: 5 }, sound: true, settings: { skipRides: true, reducedMotion: 'yes' } });
+    expect(loadQuest(storage).save.run.level).toBe(1);
+  });
+
   test('falls back to a fresh run when nothing is saved', () => {
     const loaded = loadQuest(fakeStorage());
     expect(loaded.save.run.map).toBe('home');
-    expect(loaded.save.settings).toEqual({ skipRides: false });
+    expect(loaded.save.settings).toEqual({ skipRides: false, reducedMotion: false });
     expect(loaded.legacyReset).toBe(false);
   });
 

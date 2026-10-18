@@ -32,6 +32,13 @@ export type TextPair = { readonly text: keyof typeof UI; readonly on: keyof type
 /** The navy surfaces text sits on: both panel stops and both command-button stops. */
 const NAVY = ['panelTop', 'panelBottom', 'commandTop', 'commandBottom'] as const;
 const PRIMARY = ['primaryTop', 'primaryMid', 'primaryBottom'] as const;
+const PANEL = ['panelTop', 'panelBottom'] as const;
+
+/**
+ * The navy scrim behind the chapter card's text (its alpha over the sky's `mid` colour), so the
+ * title reads at every hour of the night, dawn included. `contrast.test.ts` checks every chapter clock.
+ */
+export const CARD_SCRIM = 0.62;
 
 export const TEXT_PAIRS: readonly TextPair[] = [
   ...NAVY.map((on): TextPair => ({ text: 'inkOnDark', on, level: 'body', use: 'dialogue, labels, numbers' })),
@@ -41,5 +48,15 @@ export const TEXT_PAIRS: readonly TextPair[] = [
   ...PRIMARY.map((on): TextPair => ({ text: 'primaryText', on, level: 'body', use: 'primary button label' })),
   { text: 'primaryText', on: 'gold', level: 'body', use: 'name plate on the gold tab' },
   { text: 'amber', on: 'panelBottom', level: 'body', use: 'chapter-card clock digits' },
+  // UI kit v2 (#12)
+  ...PRIMARY.map((on): TextPair => ({ text: 'primarySub', on, level: 'muted', use: 'primary command sub-label (MP, count)' })),
+  { text: 'primaryText', on: 'diamondLight', level: 'body', use: 'name plate, gold tags (top stop)' },
+  { text: 'primaryText', on: 'goldDeep', level: 'body', use: 'name plate (bottom stop)' },
+  { text: 'amber', on: 'board', level: 'body', use: 'departure board digits and 「下一站」' },
+  { text: 'gold', on: 'board', level: 'body', use: 'departure board header' },
+  // HP numbers sit on party cards over the panel, never on a command button
+  ...PANEL.map((on): TextPair => ({ text: 'hpLowTo', on, level: 'body', use: 'HP number under 40%' })),
+  ...PANEL.map((on): TextPair => ({ text: 'hpCritTo', on, level: 'body', use: 'HP number under 20%, with the ❗ mark' })),
+  { text: 'inkOnDark', on: 'scrim', level: 'body', use: 'chapter title on its scrim, text over the dialogue scrim' },
   { text: 'ink', on: 'parchment', level: 'body', use: '集章本 and sheets on parchment' },
 ];

@@ -81,7 +81,21 @@ function sceneAt(steps: Step[], at: number, where: string): QuestState {
 const worldAt = (event: string, at: number): QuestState => sceneAt(EVENTS[event], at, event);
 
 /** Chapter 1 of the new story with its clock (decision D-16), until the content lands in #21. */
-const CHAPTER_CARD: Step = { do: 'chapter', n: 1, title: '度晬前一晚', time: '00:00' };
+const CHAPTER_CARD: Step = { do: 'chapter', n: 1, title: '度晬前一晚', time: '00:00', next: '大安森林公園' };
+
+/** Chapter 14 at 05:15, the first light of dawn behind the skyline (script `[chapter 14｜…｜05:15]`). */
+const CHAPTER_CARD_DAWN: Step = { do: 'chapter', n: 14, title: '離天空最近的地方', time: '05:15', next: '象山' };
+
+/**
+ * Script `ch1.daan.intro` (until #21 adds it), paused on 摩卡's first line: the bust with its jade
+ * backlight, a 【寶物】 key term in gold, and the page dots (line 3 of 4).
+ */
+const DAAN_INTRO: Step[] = [
+  { who: null, text: '大安森林公園。半夜的樹，好高好高。' },
+  { who: null, text: '落葉自己在地上，轉圈圈。' },
+  { who: 'mocha', text: '「風是往這邊吹的。【寶物】應該掉在附近。」', expr: 'smug' },
+  { who: 'mocha', text: '「草地上會有搗蛋鬼。打不過就『逃跑』。」' },
+];
 
 /**
  * The first question of the post-game quiz (script `post.quiz.q1`). Its branches point at an old
@@ -138,8 +152,15 @@ export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
   { name: 'title-continue', label: 'Title with a run to continue', state: () => withView({ screen: 'title' }) },
   { name: 'world', label: 'World: home map', state: world },
   { name: 'world-follower', label: 'World: an escort behind the party', state: worldFollower, followers: ARTLAB_FOLLOWERS },
-  { name: 'dialogue', label: 'World: dialogue line', state: () => worldAt('home.mom.hug', 0) },
-  { name: 'chapter-card', label: 'World: chapter card with its clock', state: () => sceneAt([CHAPTER_CARD], 0, 'chapter-card') },
+  { name: 'dialogue', label: 'World: dialogue with a bust, a key term and page dots', state: () => sceneAt(DAAN_INTRO, 2, 'dialogue') },
+  { name: 'dialogue-npc', label: 'World: an NPC line (warm backlight)', state: () => worldAt('home.mom.hug', 0) },
+  { name: 'chapter-card', label: 'World: chapter card at 00:00 with its clock', state: () => sceneAt([CHAPTER_CARD], 0, 'chapter-card') },
+  { name: 'chapter-card-0515', label: 'World: chapter card at 05:15 (dawn)', state: () => sceneAt([CHAPTER_CARD_DAWN], 0, 'chapter-card-0515') },
+  {
+    name: 'chapter-card-reduced',
+    label: 'World: chapter card with 減少動態 on (no flip, no draw-on)',
+    state: () => ({ ...sceneAt([CHAPTER_CARD], 0, 'chapter-card-reduced'), settings: { skipRides: false, reducedMotion: true } }),
+  },
   { name: 'dialogue-choice', label: 'World: a choice with three options', state: () => sceneAt([QUIZ_CHOICE], 0, 'dialogue-choice') },
   { name: 'battle', label: 'Battle: three heroes, three foes', state: () => battleWith(HERO_ORDER.slice(0, 3)) },
   // 黑糖's expected join level (story bible § 2.1), so every hero has a few 才藝
@@ -165,6 +186,7 @@ export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
   },
   { name: 'shop', label: 'Shop', state: () => withView({ screen: 'shop', stock: ['teaEgg', 'pineappleCake', 'braisedRice', 'douhua', 'bib'] }) },
   { name: 'menu', label: 'Menu: party sheet', state: world, menu: true },
+  { name: 'menu-settings', label: 'Menu: settings (減少動態 on)', state: () => ({ ...world(), settings: { skipRides: false, reducedMotion: true } }), menu: { tab: 'settings' } },
   {
     name: 'party-sheet-equip',
     label: 'Menu: equipping signature gear',

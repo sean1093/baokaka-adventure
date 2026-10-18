@@ -7,6 +7,15 @@ import { activeFollower } from '../quest/engine/progress';
 import { STATIONS, stationUnlocked } from '../quest/engine/mrt';
 import { ARTLAB_FIXTURES, ARTLAB_FOLLOWERS, SAMPLE_FLAGS, TRAVEL_HERE, sampleRun } from './fixtures';
 
+import type { Step } from '../quest/engine/types';
+
+/** Validator errors for a fixture's own script, as if it were content. */
+const validateFixtureLines = (steps: Step[]): string[] => {
+  const errors: string[] = [];
+  validateSteps('fixture', steps, errors);
+  return errors;
+};
+
 describe('art lab fixtures', () => {
   test('names are unique and file-safe', () => {
     const names = ARTLAB_FIXTURES.map((fixture) => fixture.name);
@@ -52,7 +61,9 @@ describe('art lab fixtures', () => {
 
   test('chapter-card shows the clock and dialogue-choice plays on when an option is picked', () => {
     const card = ARTLAB_FIXTURES.find((fixture) => fixture.name === 'chapter-card')!.state();
-    expect(card.card).toEqual({ n: 1, title: '度晬前一晚', time: '00:00' });
+    expect(card.card).toEqual({ n: 1, title: '度晬前一晚', time: '00:00', next: '大安森林公園' });
+    const dawn = ARTLAB_FIXTURES.find((fixture) => fixture.name === 'chapter-card-0515')!.state();
+    expect(dawn.card).toMatchObject({ n: 14, time: '05:15' });
 
     const asked = ARTLAB_FIXTURES.find((fixture) => fixture.name === 'dialogue-choice')!.state();
     expect(asked.choice?.options).toHaveLength(3);
@@ -87,6 +98,20 @@ describe('art lab fixtures', () => {
     expect(activeFollower(fixture.state().run.flags, fixture.followers)?.name).toBe('小蝸牛');
     // The plain world fixture has no escort
     expect(activeFollower(ARTLAB_FIXTURES.find((entry) => entry.name === 'world')!.state().run.flags, ARTLAB_FOLLOWERS)).toBeNull();
+  });
+
+  test('dialogue pauses on a speaking hero mid-run, with a key term, so the bust and page dots show', () => {
+    const state = ARTLAB_FIXTURES.find((fixture) => fixture.name === 'dialogue')!.state();
+    expect(state.line?.who).toBe('mocha');
+    expect(state.line?.text).toContain('【寶物】');
+    expect(state.scene?.at).toBe(2);
+    expect(validateFixtureLines(state.scene?.steps ?? [])).toEqual([]);
+  });
+
+  test('menu-settings opens the settings tab with 減少動態 on', () => {
+    const fixture = ARTLAB_FIXTURES.find((entry) => entry.name === 'menu-settings')!;
+    expect(fixture.menu).toEqual({ tab: 'settings' });
+    expect(fixture.state().settings.reducedMotion).toBe(true);
   });
 
   test('the sample run starts at the entry of its map (the respawn tile)', () => {

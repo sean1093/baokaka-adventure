@@ -4,6 +4,8 @@ import { App } from './App';
 import { cleanupLegacyStorage } from './shared/legacy';
 import { installRouteRedirect } from './shared/route';
 import { browserStorage } from './shared/storage';
+// The kit first, so Tailwind utilities (in index.css) can adjust a kit class where a screen needs to
+import './components/kit.css';
 import './index.css';
 
 installRouteRedirect();

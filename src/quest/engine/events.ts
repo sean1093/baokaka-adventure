@@ -1,5 +1,17 @@
+import type { Backlight } from '../../art/palette';
 import type { SpriteName } from '../../art/types';
-import type { Step } from './types';
+import type { HeroId, Step } from './types';
+
+/** Who a speaker is, for the default dialogue backlight (art direction § 7.5). */
+export type SpeakerRole = 'family' | 'folk' | 'foe' | 'friend';
+
+/** The backlight colour for each role, used when a speaker doesn't name its own. */
+export const ROLE_BACKLIGHT: Readonly<Record<SpeakerRole, Backlight>> = { family: 'warm', folk: 'warm', foe: 'violet', friend: 'moon' };
+
+/** Each hero's backlight: 寶咖咖's pajama gold, 摩卡's jade eyes, 阿藍's sky, 黑糖's amber. */
+export const HERO_BACKLIGHT: Readonly<Record<HeroId, Backlight>> = { baokaka: 'gold', mocha: 'jade', magpie: 'sky', bear: 'amber' };
+
+export type SpeakerEntry = { name: string; sprite: SpriteName; role: SpeakerRole; /** Overrides the role's backlight */ color?: Backlight };
 
 /**
  * Every line of the story. Keys are referenced from maps.ts (NPC talk rules, triggers and
@@ -7,23 +19,26 @@ import type { Step } from './types';
  *
  * Speaker keys are hero ids, the ids below, or null for narration.
  */
-export const SPEAKERS: Record<string, { name: string; sprite: SpriteName }> = {
-  mom: { name: '媽媽', sprite: 'mom' },
-  dad: { name: '爸爸', sprite: 'dad' },
-  grandma: { name: '阿嬤', sprite: 'grandma' },
-  kid: { name: '小花', sprite: 'kid' },
-  dog: { name: '小狗', sprite: 'dog' },
-  vendor: { name: '老闆娘', sprite: 'vendor' },
-  uncle: { name: '阿伯', sprite: 'uncle' },
-  dust: { name: '灰塵球', sprite: 'dustBunny' },
-  golem: { name: '積木巨人', sprite: 'blockGolem' },
-  crow: { name: '烏鴉老大', sprite: 'crowBoss' },
-  fish: { name: '大魚', sprite: 'bigFish' },
-  magpieNpc: { name: '阿藍', sprite: 'pigeon' },
-  octo: { name: '大章魚', sprite: 'octopus' },
-  snore: { name: '打呼嚕大王', sprite: 'snoreKing' },
-  mochaNpc: { name: '摩卡貓', sprite: 'mochaCat' },
+export const SPEAKERS: Record<string, SpeakerEntry> = {
+  mom: { name: '媽媽', sprite: 'mom', role: 'family' },
+  dad: { name: '爸爸', sprite: 'dad', role: 'family' },
+  grandma: { name: '阿嬤', sprite: 'grandma', role: 'family', color: 'gold' },
+  kid: { name: '小花', sprite: 'kid', role: 'folk', color: 'rose' },
+  dog: { name: '小狗', sprite: 'dog', role: 'friend', color: 'warm' },
+  vendor: { name: '老闆娘', sprite: 'vendor', role: 'folk' },
+  uncle: { name: '阿伯', sprite: 'uncle', role: 'folk' },
+  dust: { name: '灰塵球', sprite: 'dustBunny', role: 'foe' },
+  golem: { name: '積木巨人', sprite: 'blockGolem', role: 'foe' },
+  crow: { name: '烏鴉老大', sprite: 'crowBoss', role: 'foe' },
+  fish: { name: '大魚', sprite: 'bigFish', role: 'foe', color: 'sky' },
+  magpieNpc: { name: '阿藍', sprite: 'pigeon', role: 'friend', color: 'sky' },
+  octo: { name: '大章魚', sprite: 'octopus', role: 'foe' },
+  snore: { name: '打呼嚕大王', sprite: 'snoreKing', role: 'foe' },
+  mochaNpc: { name: '摩卡貓', sprite: 'mochaCat', role: 'friend', color: 'jade' },
 };
+
+/** A speaker's backlight: its own colour, else its role's. */
+export const speakerBacklight = (entry: SpeakerEntry): Backlight => entry.color ?? ROLE_BACKLIGHT[entry.role];
 
 export const EVENTS: Record<string, Step[]> = {
   // ---------------------------------------------------------------- 第一章 客廳

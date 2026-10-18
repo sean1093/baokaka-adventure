@@ -187,7 +187,7 @@ export const IsoMap = ({ map, actors, camera, view, marker, focus, onTapGround }
               height: TILE_H,
             }}
           >
-            <div className="marker h-full w-full rounded-[50%] border-2 border-cream/90 bg-cream/25" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
+            <div className="marker h-full w-full rounded-[50%] border-2 border-gold-light/90 bg-gold-light/25" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
           </div>
         )}
         {blocks}
@@ -258,7 +258,7 @@ export function mapActors(map: GameMap, flags: readonly string[], onTalk: (id: s
       motion: 'idle',
       label: npc.name,
       onClick: () => onTalk(npc.id),
-      badge: <span aria-hidden="true" className="pop-dot absolute left-1/2 top-0 block h-3 w-3 -translate-x-1/2 rounded-full bg-sun ring-2 ring-ink/70" />,
+      badge: <span aria-hidden="true" className="pop-dot absolute left-1/2 top-0 block h-3 w-3 -translate-x-1/2 rounded-full bg-gold-light shadow-[0_0_0_2px_theme(colors.panel.deep),0_0_10px_theme(colors.gold.DEFAULT)]" />,
     });
   }
 

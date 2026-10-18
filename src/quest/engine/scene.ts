@@ -25,7 +25,7 @@ export type Scene = { steps: Step[]; at: number };
 /** Why the runner stopped. Everything except `done` waits for the player. */
 export type Stop =
   | { kind: 'line'; line: Line }
-  | { kind: 'chapter'; n: number; title: string; time?: string; label?: string }
+  | { kind: 'chapter'; n: number; title: string; time?: string; label?: string; next?: string }
   | { kind: 'choice'; prompt?: string; options: ChoiceOption[] }
   | { kind: 'battle'; foes: FoeId[]; boss: boolean }
   | { kind: 'shop'; stock: ItemId[] }
@@ -116,6 +116,7 @@ export function runScene(run: Run, scene: Scene): SceneResult {
         const stop: Stop = { kind: 'chapter', n: step.n, title: step.title };
         if (step.time !== undefined) stop.time = step.time;
         if (step.label !== undefined) stop.label = step.label;
+        if (step.next !== undefined) stop.next = step.next;
         return { run: draft, scene: next, stop };
       }
 

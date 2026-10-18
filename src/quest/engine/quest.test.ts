@@ -6,7 +6,7 @@ import { ITEMS, heroStats, spellsFor } from './heroes';
 import { MAPS } from './maps';
 import { FIXTURE_FLAG, FIXTURE_MAPS, installMrtFixture } from './mrt.fixture';
 import { findPath } from './path';
-import { applyVictory, freshRun, initialState, questReducer, runStarted, type QuestState } from './quest';
+import { DEFAULT_SETTINGS, applyVictory, freshRun, initialState, questReducer, runStarted, type QuestState } from './quest';
 import { runScene } from './scene';
 import { UI } from './strings';
 import type { FoeId, HeroId, MapId, Run, Tile } from './types';
@@ -493,7 +493,7 @@ describe('月亮線 travel (the fixture network: mrtA, mrtB, one car)', () => {
   /** Standing on mrtA's arrival tile, next to the gate, with the stations lit (or not). */
   const atGate = (flags: string[] = [FIXTURE_FLAG], skipRides = false): QuestState => {
     const run: Run = { ...freshRun(5), map: 'mrtA' as MapId, pos: { c: 3, r: 2 }, flags };
-    return { ...initialState(run, false, { skipRides }), view: { screen: 'world' } };
+    return { ...initialState(run, false, { ...DEFAULT_SETTINGS, skipRides }), view: { screen: 'world' } };
   };
 
   /** Talks to the gate and taps through 「嗶——！」 to the 路線圖. */
@@ -593,9 +593,16 @@ describe('月亮線 travel (the fixture network: mrtA, mrtB, one car)', () => {
 
   test('the 直接到站 switch is a setting, kept across a new game', () => {
     const on = questReducer(atGate(), { type: 'setSkipRides', on: true });
-    expect(on.settings).toEqual({ skipRides: true });
-    expect(questReducer(on, { type: 'newGame', seed: 3 }).settings).toEqual({ skipRides: true });
-    expect(questReducer(on, { type: 'setSkipRides', on: false }).settings).toEqual({ skipRides: false });
+    expect(on.settings).toEqual({ skipRides: true, reducedMotion: false });
+    expect(questReducer(on, { type: 'newGame', seed: 3 }).settings).toEqual({ skipRides: true, reducedMotion: false });
+    expect(questReducer(on, { type: 'setSkipRides', on: false }).settings).toEqual({ skipRides: false, reducedMotion: false });
+  });
+
+  test('the 減少動態 switch is a setting too, and leaves the other one alone', () => {
+    const on = questReducer(atGate([FIXTURE_FLAG], true), { type: 'setReducedMotion', on: true });
+    expect(on.settings).toEqual({ skipRides: true, reducedMotion: true });
+    expect(questReducer(on, { type: 'newGame', seed: 3 }).settings.reducedMotion).toBe(true);
+    expect(questReducer(on, { type: 'setReducedMotion', on: false }).settings).toEqual({ skipRides: true, reducedMotion: false });
   });
 
   test('a car door with no ride on record opens the 路線圖 instead of trapping the party', () => {
