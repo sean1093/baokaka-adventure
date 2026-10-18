@@ -37,7 +37,7 @@ If the story bible and the script disagree, **the script wins for wording and th
 
 ### Architecture in one paragraph
 
-`src/quest/engine/` is pure TypeScript with no React: `types.ts` (data contract), `maps.ts` (map data), `events.ts` (scripts), `heroes.ts`/`foes.ts` (stats, skills, items), `scene.ts` (script runner), `quest.ts` (the run reducer), `battle.ts` (battle reducer), `path.ts`/`iso.ts` (movement, projection), `save.ts`, `validate.ts` (content linter, run at dev start and in tests) and `sim.ts` (scripted playthroughs for balance). `src/quest/screens` and `src/quest/components` are dumb React views over that state. `src/art/` holds all drawing code (inline SVG, no bitmaps). Keep that split: **new mechanics go into the engine as pure functions with unit tests first, then the UI renders them.** As the redesign grows, content may be split into per-chapter files (e.g. `src/quest/content/ch01.ts`) so PRs stay reviewable.
+`src/quest/engine/` is pure TypeScript with no React: `types.ts` (data contract), `maps.ts` (map data), `events.ts` (scripts), `heroes.ts`/`foes.ts` (stats, skills, items), `scene.ts` (script runner), `quest.ts` (the run reducer), `battle.ts` (battle reducer), `path.ts`/`iso.ts` (movement, projection), `save.ts`, `validate.ts` (content linter, run at dev start and in tests) and `sim.ts` (scripted playthroughs for balance). `src/quest/screens` and `src/quest/components` are dumb React views over that state; `src/quest/QuestScreens.tsx` picks the screen for the current view, and `QuestGame.tsx` adds storage and music around it. `src/artlab/` is the dev-only art lab (§ 5). `src/art/` holds all drawing code (inline SVG, no bitmaps). Keep that split: **new mechanics go into the engine as pure functions with unit tests first, then the UI renders them.** As the redesign grows, content may be split into per-chapter files (e.g. `src/quest/content/ch01.ts`) so PRs stay reviewable.
 
 ---
 
@@ -49,7 +49,7 @@ Work is tracked as GitHub issues on `sean1093/baokaka-adventure`, ordered in [`r
 2. **Sync** the working branch: `git checkout claude/cool-maxwell-my8tf1 && git fetch origin && git merge --ff-only origin/main`. The branch must equal `main` before starting.
 3. **Read** the issue, every doc section it links, and the code it names. Read the latest `docs/art/art-direction.md` for any art or UI work.
 4. **Implement** on `claude/cool-maxwell-my8tf1`. Commit in small logical steps (see conventions). Push often (`git push -u origin claude/cool-maxwell-my8tf1`) so work survives a disconnect.
-5. **Verify** locally: `npm test`, `npm run build`, `npm run sim` (when balance or content changed), and the visual check (`node scripts/visual-check.mjs`, available after issue #4) for anything visible.
+5. **Verify** locally: `npm test`, `npm run build`, `npm run sim` (when balance or content changed), and the visual check (`npm run visual`, see § 5) for anything visible.
 6. **Open a PR** from `claude/cool-maxwell-my8tf1` to `main`. Title = conventional commit style summary; body = what/why, `Closes #N`, test evidence, screenshots (390×844) for UI/art work, any doc inconsistencies you resolved, and the Claude Code footer.
 7. **Self-review** the diff on GitHub as if reviewing a colleague: correctness, scope creep, tests, leftover debug code, secrets, file size limits, zh-Hant text ≤ 40 characters per dialogue line. Leave a review (a `COMMENT` review is fine; GitHub does not allow approving your own PR). Fix anything found and push.
 8. **Merge** with merge method **"merge"** (not squash or rebase, so the branch stays fast-forwardable). Then `git fetch origin main && git merge --ff-only origin/main && git push` so the branch equals `main` again.
@@ -106,3 +106,36 @@ An issue is done when **all** of these are true:
 
 ### `main` is always playable
 Every merge deploys to the public site. During the rebuild the game must always start and be playable to the end of the latest finished chapter, which ends on a 「未完待續」 card (see `decisions.md`, D-11). Never merge a PR that leaves the title screen broken.
+
+---
+
+## 5. Visual QA
+
+Every UI or art PR attaches screenshots made with this tooling (issue #4; decisions D-13, D-18, D-21; art direction § 8.6 *Visual QA*).
+
+### The art lab: `#/artlab` (dev builds only)
+
+Run `npm run dev` and open `http://localhost:5173/baokaka-adventure/#/artlab`. In a production build the hash shows the game, and the art lab code is not in the bundle at all (`src/App.tsx` drops the lazy import when `import.meta.env.DEV` is false).
+
+- **Sprites:** every `SpriteName` at 48, 64, 124 and 300 px on light, night and brick backgrounds, plus a black silhouette row.
+- **Screens:** named fixtures (`ARTLAB_FIXTURES` in `src/artlab/fixtures.ts`): title, world, dialogue, chapter card, battle, victory, shop, menu, defeat, ending. Each renders the real `QuestScreens` over a live reducer, so you can also play on from it. Add a fixture when you add a screen; the visual check picks it up automatically.
+- **URL parameters:** `section=sprites|fixtures`, `only=<sprite names, comma separated>` or `only=<one fixture>`, `bg=light,night,brick,silhouette`, `size=48,124`, `still=1` (freezes animations). Example: `#/artlab?section=sprites&bg=night&size=124&only=baokaka`, `#/artlab?section=fixtures&only=battle&still=1`.
+
+### Screenshots and baseline diffs: `npm run visual`
+
+```sh
+npm run visual          # start a dev server, screenshot, diff against tests/visual-baseline/
+npm run visual:update   # same, but accept the new screenshots as baselines
+node scripts/visual-check.mjs --serve --only title,battle   # a subset
+node scripts/visual-check.mjs --serve --perf                # also measure frame times (report only)
+node scripts/visual-check.mjs --url http://localhost:5173/baokaka-adventure/   # use a server you started
+```
+
+- Targets are listed in `scripts/visual-targets.mjs` (`title`, `artlab-sprites-night`) plus every art lab fixture. Each is shot at **390×844** and **375×667** (2× pixel ratio, mobile, touch, reduced motion) after `document.fonts.ready` and once the DOM has been still for 0.5 s.
+- PNGs go to `artifacts/visual/<viewport>/<name>.png` (gitignored). Diff mode compares against `tests/visual-baseline/<viewport>/` with pixelmatch (threshold 0.1) and fails when more than 0.5 % of pixels differ, writing `<name>.diff.png` next to the screenshot. It also fails on console errors.
+- **When a PR changes visuals on purpose,** run `npm run visual:update` in the same PR and say so in the PR body. Baselines will churn a lot in M2/M3; that is expected.
+- **Attaching to a PR:** copy the relevant 390×844 PNGs from `artifacts/visual/390x844/` to `docs/screenshots/<issue>/`, commit them, and link them in the PR body.
+- `--serve` starts a Vite **dev** server (not `vite preview`), because the art lab only exists in dev builds; `--url` pointed at a production preview runs only the non-art-lab targets.
+- **Browsers:** the agent environment has Chromium preinstalled (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). Elsewhere run `npx playwright install chromium` once. `npm ci` never downloads browsers (the `playwright` package has no install script), and the deploy workflow never runs this check.
+- **Baselines depend on the machine's fonts.** The committed ones were made in the agent environment (Linux, WenQuanYi Zen Hei for CJK). On another OS, run `npm run visual:update` first and don't commit those baselines; until #10 ships web fonts, compare on the same machine.
+- **`--perf`** walks the party around the `world` fixture at 4× CPU throttle for 3 s and prints the median/p95/max rAF interval and the DOM node count against art direction § 8.5. It runs on the dev build (React development mode), so numbers are pessimistic, and rAF intervals bottom out at the 16.7 ms vsync floor. It reports only; #57 makes it a gate.
