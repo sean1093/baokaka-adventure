@@ -175,7 +175,7 @@ def baokaka_seated(expr='happy',uid='bs'):
     return ''.join(o)
 
 def svg(inner,vb="0 0 200 200",w=400,h=400): return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}" width="{w}" height="{h}">{inner}</svg>'
-if __name__=='__main__':
+if False:  # v1 outputs superseded by anime2.py (do not overwrite d-anime sprites)
     D='/home/user/baokaka-adventure/docs/art/options/d-anime/'
     open(D+'baokaka.svg','w').write(svg(baokaka_seated('happy')))
     open(D+'baokaka-laugh.svg','w').write(svg(baokaka_seated('laugh','bl')))
@@ -285,7 +285,7 @@ def mocha_body(expr='content',uid='mc'):
     o.append(f'<g transform="translate(100 70)">{mocha_head(expr,uid+"h")}</g>')
     return ''.join(o)
 
-if __name__=='__main__':
+if False:  # v1 outputs superseded by anime2.py (do not overwrite d-anime sprites)
     D='/home/user/baokaka-adventure/docs/art/options/d-anime/'
     open(D+'mocha-cat.svg','w').write(svg(mocha_body('content')))
     open(D+'mocha-smug.svg','w').write(svg(mocha_body('smug','ms')))
@@ -327,6 +327,6 @@ def baokaka_crawl(expr='happy',uid='bc'):
     o.append(f'<g transform="translate(140 86) scale(0.86)">{head(expr,uid+"h")}</g>')
     return ''.join(o)
 
-if __name__=='__main__':
+if False:  # v1 outputs superseded by anime2.py (do not overwrite d-anime sprites)
     D='/home/user/baokaka-adventure/docs/art/options/d-anime/'
     open(D+'baokaka-crawl.svg','w').write(svg(baokaka_crawl('happy')))

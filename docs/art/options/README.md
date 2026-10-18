@@ -1,6 +1,6 @@
 # Art Direction Options — 寶咖咖抓周大冒險
 
-**Status:** For discussion · **Date:** 2026-10-18 · Nothing here is committed to code yet.
+**Status:** **Decided: option D** (owner, 2026-10-18), with B's 布袋戲 boss frame and C's neon limited to 西門町/士林/月亮線. `../art-direction.md` is now the single source of truth. A–C are kept for history.
 
 Four style directions (D was added after the owner asked for 「精緻一點，像是日本動漫風格」), each rendered on the **same comparison set**, so the owner can judge them side by side:
 
@@ -36,7 +36,7 @@ Each folder holds the source SVG/HTML next to the PNGs. The generators are in `_
 | **Cost / performance** | ★★★☆☆ The most work per sprite (~80–120 SVG elements, 5–10 gradients, clipPaths). The night grade must ship as pre-baked night colour tokens, not a runtime filter. Fine on mid-range phones within the budget in `../art-direction.md` §10 |
 | **Risks** | Needs discipline (the shading recipe on every new foe), or quality drifts between sprites |
 
-Extra work already done in this direction: the full party (阿藍 the blue magpie, 黑糖 the black bear, a seated battle Baokaka) is in `../reference/` and `a-picture-book-diorama/party-night.png`. `../art-direction.md` is the detailed bible written for this direction (it predates the story bible; see the note there).
+Extra work already done in this direction: the full party (阿藍 the blue magpie, 黑糖 the black bear, a seated battle Baokaka) is in `../archive/v0-picture-book-draft/` and `a-picture-book-diorama/party-night.png`. `../art-direction.md` is the detailed bible written for this direction (it predates the story bible; see the note there).
 
 ## B · 剪紙夜燈 Paper-Cut Night
 
@@ -68,7 +68,9 @@ Extra work already done in this direction: the full party (阿藍 the blue magpi
 | **Cost / performance** | ★★★☆☆ Simple fills, but each glowing line is 3 stacked strokes, so node counts climb fast on maps (every tile edge, every prop). It needs a cap on glowing elements per screen. No filters, so it's still feasible |
 | **Risks** | The 05:00–05:30 dawn chapters and the sunrise ending fight the style (neon loses its point in daylight). Monotony across 10 chapters |
 
-## D · 動漫 Anime Cel (added on owner feedback; now the front-runner)
+## D · 動漫 Anime Cel (CHOSEN)
+
+**Revision 2 (anatomy pass):** the bodies were rebuilt anatomy-first (joint skeleton → tapered limb volumes → clothing → cel → lines) after the owner said the hands, feet and body looked wrong. See `d-anime/anatomy-sheet.png` and the design sheets `d-anime/sheet-baokaka.png` and `d-anime/sheet-mocha.png` (format matches the owner's reference sheets), plus `d-anime/cast-sheet.png`.
 
 **Pitch.** Modern TV-anime character art on anime-film night backgrounds.
 - **Characters:** hard-edged 2–3-tone cel shading (base, cel shadow, occlusion), tinted line art (a thick dark-warm contour plus thin interior lines tinted from each material), big glossy eyes, hair in pointed clumps with an angel-ring highlight band, tapered fold lines and hatched blush.

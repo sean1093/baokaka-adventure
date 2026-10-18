@@ -1,675 +1,586 @@
-# Baokaka Adventure — Art Direction v1
+# 寶咖咖抓周大冒險 — Art Direction (single source of truth)
 
-**Status:** Draft for **Option A** (see `docs/art/options/README.md`); the owner is still choosing between styles · **Date:** 2026-10-18 · **Owner:** Art direction
+**Status:** Approved direction: **Option D 動漫 Anime Cel** (owner decision, 2026-10-18), with three borrowed elements: B's 布袋戲 stage frame for boss fights, C's neon only where the story is literally neon (西門町, 士林夜市, 月亮線 cars), and A's technical rules.
+**Story source:** `docs/story/story-bible.md` (the bible wins on content; this file wins on look).
+**Canonical reference art:** `docs/art/options/d-anime/`. Older drafts are in `docs/art/archive/` (superseded).
 
-> **Note (story bible v1 landed after this draft):** The story is now 《寶咖咖抓周大冒險》, one night from 00:00 to 05:30. Baokaka is a **crawling** 1-year-old in butter footie pajamas (star print, bear patch, red string bracelet). He no longer wears the rain jacket, bubble-tea backpack or pellet drum described in §6.1. The current hero art is `reference/baokaka-crawl.svg` (map) and `reference/baokaka.svg` (seated battle pose), plus 阿藍 (`reference/alan-magpie.svg`) and 黑糖 (`reference/heitang-bear.svg`). The per-location colour scripts in §4.2 are daytime. Once a style is chosen, they'll be replaced by a midnight-to-dawn script per chapter, with per-chapter, character and foe sections added from `docs/story/story-bible.md`. The rendering, lighting, UI, performance and architecture rules below still apply as written.
-**Scope:** The RPG in `src/quest/` (now the only game) and its art code: `src/art/**`, `src/quest/components/IsoMap.tsx`, `BattleFx.tsx`, `src/index.css`, `tailwind.config.js`.
-**Supersedes:** §7–8 of `docs/superpowers/specs/2026-09-07-baokaka-xia-design.md` (the 仙劍 bar) and the art rules of `2026-09-06-design-system.md`. The UI component set from the design system (Screen, AppBar, Button, Sheet) stays. Only its look changes.
-
-Reference implementations live in `docs/art/reference/`, each next to a PNG render (index in §13). Port the recipes. Don't trace the coordinates.
-
----
-
-## 0. TL;DR
-
-- **Style: "Taipei picture-book diorama."** Soft-lit vector art with a warm plum outline (no black ink), gradient-mapped form shading, cool ambient occlusion, a sky-blue rim light, and soft contact shadows. One static paper-grain layer covers the whole screen. Isometric maps are small floating dioramas of real Taipei streets. The finish target is *Monument Valley meets a Taiwanese children's picture book*.
-- **Heroes:** Baokaka is a real 1-year-old: 2 heads tall, a sunflower rain jacket, a bubble-tea backpack, a 波浪鼓 pellet drum. Mocha Cat is a brown mackerel tabby in an MRT-blue bandana. Heroes own the most saturated colours on screen.
-- **Light tells the story.** Every location has a colour script (sky, key, shadow tint, accents). A time-of-day grade (day, golden, dusk, night, rain) re-lights the whole scene and applies at half strength to characters, so they always pop.
-- **Premium means:** consistent light direction, colour-temperature shading (warm light, cool shadow, never "add brown"), AO where forms touch, restraint in line weight, generous type and slow, confident motion.
-- **Readability first:** 21px dialogue, 70px battle buttons, silhouettes tested at 48px, ≥7:1 text contrast, and shape plus colour for every status.
-
----
-
-## 1. Vision and pillars
-
-### 1.1 Vision
-A toddler and his cat wander a loving, slightly magical Taipei. Every screen should feel like a page you want to frame. Grandparents should recognise 台北101, the red-brick sidewalks, the red and green post boxes and the night-market steam at a glance. Kids should laugh at a bubble tea that runs away.
-
-### 1.2 Pillars
-1. **Recognisably Taipei, gently idealised.** Real landmarks and street furniture (red-brick pavers, zebra crossings, scooters, MRT line colours, post boxes, temple lanterns), simplified into clean shapes. Never a postcard copy. Always a toy-diorama version.
-2. **Light is the premium.** One key light direction per scene (upper-left), a colour-scripted time of day, and AO and rim light on every character. Flat fills only on UI.
-3. **Soft, round, safe.** Rounded shapes, no sharp menace. Foes are mischievous objects and animals, not monsters. Nothing bleeds, and KOs are dizzy, not dead.
-4. **Readable from the sofa.** Big type, big targets, high-contrast UI panels, strong silhouettes, colour never the only signal.
-5. **Quiet confidence.** Fewer, better elements. A screen has one focal point, one primary action and one accent colour doing the work.
-
-### 1.3 Mood references (in words)
-- **Monument Valley 1/2:** floating isometric islands with a visible earth "skirt", pastel gradients, one directional light, faces lit and shaded in two clean values.
-- **Alto's Odyssey:** sky gradients as storytelling, layered parallax silhouettes, atmospheric haze between layers, time-of-day shifts.
-- **Sky: Children of the Light:** warm rim light on characters against cool environments, bokeh motes, emotion through light rather than detail.
-- **Octopath Traveler:** dioramic depth, vignette, light pools on the battle floor, dramatic VFX with a restrained palette.
-- **Ni no Kuni:** a warm Ghibli-like palette, charming chunky characters, a friendly UI with parchment warmth.
-- **Taiwanese picture books (e.g. Jimmy Liao's city scenes):** urban melancholy made soft, warm windows at dusk, everyday streets as wonder.
-
-### 1.4 What "premium" means here, concretely
-| Cheap tell | Premium behaviour we require |
+| Look at first | File |
 |---|---|
-| Thick black outlines everywhere | One warm plum line (`line #3A2838`), 1.6–1.9 units on the 100-unit viewBox, thinner and coloured inside |
-| Shadows by darkening toward brown | Shadows shift **cool** (toward violet or blue). Lights shift **warm**. Each material has a hand-tuned ramp |
-| Objects floating on the ground | Every standing thing has a soft contact shadow, and AO where forms meet |
-| Every element the same saturation | Heroes are the most saturated. NPCs sit at about 70%. Environments use lighter or hazier values |
-| Random light directions | Key light always upper-left. Rim light back-right. Cast shadows fall screen lower-right |
-| Flat swatch floors | Materials with drawn texture, lit edges, a single light sweep, a diorama skirt |
-| UI cards that look like a web form | Tactile buttons (lip shadow, top highlight), glass name plates over art, a rounded TC typeface |
-| Linear, fast, jittery motion | Eased, staged motion: anticipation → action → settle, with duration tokens |
+| Character design sheets (format benchmark) | `options/d-anime/sheet-baokaka.png`, `options/d-anime/sheet-mocha.png` |
+| Anatomy and pose sheet (skeleton overlays, silhouette and 60px checks) | `options/d-anime/anatomy-sheet.png` |
+| Cast sheet: 阿藍, 黑糖, 咻咻 ×4 forms, recurring NPCs | `options/d-anime/cast-sheet.png` |
+| Overview: characters, iso patch, battle, dialogue | `options/d-anime/overview.png` |
+| The four options compared | `options/comparison.png` |
 
 ---
 
-## 2. Critique of the current art (as built)
+## 0. TL;DR for engineers
 
-I screenshotted `#/quest` at 390×844 (title, living-room map and dialogue):
-
-1. **Identity mismatch.** Baokaka is drawn as a young wuxia swordsman with an adult face (narrow eyes, defined nose and brows, robes). He doesn't read as a 1-year-old. Mocha Cat's jade mantle and bell belong to the old 仙俠 story.
-2. **Sticker look.** A 4-unit `C.ink` silhouette on every sprite plus cel shading gives "die-cut sticker", not "lit object in a world". At map scale the outlines dominate the fills.
-3. **No shared light.** Sprites are cel-shaded from the upper-left, but the map floor is flat and nothing on it has a contact shadow. Characters hover. The lamp and sofa are line drawings with no volume.
-4. **Scale chaos.** Map actors are 1.3 × 72 ≈ 94px boxes on 72px tiles, so a toddler is taller than a sofa and NPCs crowd the frame. The furniture scale doesn't match the characters.
-5. **Broken walls.** Perimeter walls render as separate per-tile blocks, which shows as a zigzag "comb" along the map edges. That's the most visible technical-art bug.
-6. **Muddy palette.** The ink-brown outline, browns, and `sand`/`paper` fills make the living room monochrome beige. There's no colour script, so every location will look the same temperature.
-7. **Generic UI.** Floating white cards on cream, a dialogue box with no portrait, an off-screen name, and system rounded fonts (fallback chain). The title screen is a card with three stickers. None of it says "adventure".
-8. **Backdrops are diagrams.** Battle stages are two gradient bands, hills, and window rectangles with thick ink strokes. There's depth intent, but no atmosphere (haze, bokeh, rim-lit silhouettes).
-
-What to keep: the layered-backdrop *idea* (sky, far, floor, light pool, vignette), the event-driven FX architecture in `BattleFx.tsx` (spell data owns its FX kind), painter's sort by `c + r`, reduced-motion handling, and the design-system tokens approach.
+1. **Look:** modern TV-anime cel art.
+   - Hard-edged 2–3-tone shading.
+   - Two-pass line art: a thick dark-warm contour (3.2u) under thin interior lines tinted from each material (1.0–1.2u).
+   - Big layered glossy eyes, clumped hair with an angel-ring highlight.
+   - Backgrounds in the anime-film manner (Shinkai/Ghibli): luminous night skies, bloom, wet-ground reflections.
+2. **Anatomy first:** every character is built from a joint skeleton and tapered limb volumes, then clothing, then cel, then lines. The geometry helpers already exist (`limb()`, `blob()`, `hand()`, `footie()`, the `Fig` two-pass renderer in `options/_gen/anime2.py`). Port them to `src/art/geom.ts` and author sprites as joint data.
+3. **One night, 00:00 → 05:30:** every location has a fixed clock time and a colour script. The sky walks deep navy → indigo → violet → gold, and city lights stay warm all night.
+4. **Three levels of detail** per character: portrait (~300px), battle (~160–190px), map (~60px, a simplified variant).
+5. **Performance:** characters use no filters. Blur, bloom and soft clouds are allowed only on static background layers that are rasterised once.
 
 ---
 
-## 3. Style choice: "Taipei picture-book diorama"
+## 1. Pillars
 
-**Definition.** Soft-lit vector illustration:
-- **Shapes:** chunky, rounded, squash-friendly. Circles and soft rounded rectangles for characters; clean prisms for architecture.
-- **Line:** one warm plum line (`#3A2838`) on silhouettes, interior lines in the material's own shade tone, no black.
-- **Shading:** gradient-mapped (light → base → shade), with a soft far-side form shadow and crisp AO accents. The shade tones are colour-shifted cool.
-- **Light:** a warm key from the upper-left, a cool sky bounce from below, and a back-right rim (sky-blue by day, lamp-warm at night, violet on foes).
-- **Texture:** vector marks only (brick courses, grass tufts, tabby stripes) plus **one** global paper-grain layer at 6–8%.
-- **World:** isometric "floating diorama" islands with an earth skirt, a parallax sky and skyline behind, and haze between layers.
+1. **Anime polish, toddler warmth.** The finish of a Kyoto Animation or Ghibli production, scaled to a chibi-leaning toddler and a cat. The anatomy must be believable: owner feedback rejected blob bodies and stick limbs.
+2. **Cozy-magic midnight Taipei.** Night is safe and glowing, never spooky. Every scene has warm light sources: lamps, windows, lanterns, neon, the moon.
+3. **Recognisable and loving.** Real landmarks and street details (red-brick sidewalks, post boxes, the checkered Main Station floor, 紅樓, 101's eight sections, 淡江大橋), simplified, never a photo copy, no real brands.
+4. **Readable from the sofa.** Big faces, thick contours, 21px dialogue, 70px buttons, ≥7:1 text contrast, and shape plus colour for status.
+5. **One recipe.** Every new sprite follows the same construction, shading and line rules, so 40+ foes look like one production.
 
-**Why this style:**
-- It's achievable in hand-written SVG (gradients, clipPaths, strokes) without bitmaps or heavy filters. The reference files prove it.
-- It scales. The same sprite reads as a 48px battle chip, a 64px map actor and a 124px dialogue portrait, because forms carry the read, not lines.
-- Warm light and cool shadow plus rim light is the cheapest way to look expensive.
-- The diorama framing makes small maps feel intentional (a toy world) rather than cropped.
-- Taipei recognisability comes from **materials and street furniture** (bricks, crossings, post boxes, lanterns, line colours), which tile and prop systems handle well.
-
-**Explicitly not:** pixel art, flat colouring-book fills, thick black outlines, photoreal textures, glossy 3D-render look, neon cyberpunk Taipei, or anything sharp or scary.
+**References** (described in words; nothing is traced):
+- **Character construction:** *Yotsuba&!* (Yotsuba), *Spy×Family* (Anya), *My Neighbor Totoro* (Mei), *Bunny Drop* (Rin), *Barakamon* (Naru).
+- **Cats:** Jiji, Moon (*Whisper of the Heart*), *Chi's Sweet Home*, Nyanko-sensei's cat form.
+- **Night backgrounds:** *Your Name* and *Weathering With You* (a weather-spirit story in a big city, close to our theme).
+- **Sheet format:** Japanese 設定資料 / キャラクターデザインシート on parchment, with an outfit breakdown, an expression set, material close-ups and props (owner reference images).
 
 ---
 
-## 4. Colour system
+## 2. Style specification (D)
 
-All colours live in `src/art/palette.ts` as named tokens. Sprites and UI use only tokens. The material ramps (light, base, shade, AO) are the new unit of colour: you pick a **material**, not a hex.
+### 2.1 Construction (mandatory for every character)
 
-### 4.1 Master palette
+The order is gesture line → skeleton → volumes → clothing → cel → lines.
 
-**Neutrals and light**
-| Token | Hex | Use |
+1. **Gesture line:** one curve through head, spine and weight-bearing limb. Decide the pose's weight first: on the bottom when seated, on palms and knees when crawling, on paws.
+2. **Skeleton:** head centre, neck, shoulder girdle (two points, sloping for a toddler), spine, pelvis (two hip points), elbows, wrists, knees, ankles. For cats: shoulder blades, elbows, wrists, hip, knee, **hock** (the backward "heel"), paw.
+3. **Volumes:** limbs are tapered capsules along the joints, with radii per joint (`limb(points, radii)`). Torsos and heads are closed smooth shapes (`blob(points)`). Toddler limbs are chubby but **jointed**: the radius dips at the elbow, wrist, knee and ankle, and bulges at the calf and forearm.
+4. **Clothing:** drapes over the volumes. Put fold marks (`crease()`, tapered) where joints bend: inner elbow, behind the knee, the belly line, shoulder slope, wrist cuffs.
+5. **Validate:** render the skeleton overlay, the silhouette and the 60px view for every new pose (as in `anatomy-sheet.png`).
+
+### 2.2 Proportions
+
+| Character | Heads tall | Notes |
 |---|---|---|
-| `ink` | `#2E2235` | UI text, the darkest value |
-| `line` | `#3A2838` | Every sprite outline (warm plum) |
-| `ao` | `#2A1F3D` | Contact shadows, cast shadows (used with opacity) |
-| `muted` | `#6E5A6A` | Secondary text (≥4.5:1 on paper) |
-| `paper` | `#FBF4E6` | App background |
-| `cream` | `#FFF9EE` | Cards |
-| `surface` | `#FFFDF8` | Panels, dialogue box |
-| `mist` | `#E9E1D3` | Dividers, empty bar tracks |
-| `night` | `#1E2440` | Night UI chrome, dark glass base |
-| `dusk` | `#3B3166` | Dusk sky top, foe plates |
-| `keyWarm` | `#FFE9B8` | Day key-light sweep |
-| `rimSky` | `#D8F0FF` | Day rim light |
-| `bounceSky` | `#9CC8F0` | Ground bounce on lower forms |
-| `rimLamp` | `#FFD9A0` | Night or lantern rim light |
-| `rimFoe` | `#D3A8FF` | Foe rim light (family signature) |
-| `aura` | `#B57BFF` | Foe and boss aura |
+| 寶咖咖 | **3.4** (a real 1-year-old is ~4) | Big cranium; eyes below the head's midline; short neck; sloping shoulders; round belly; arms reach the hips; legs ≈ 1 head; hands ≈ 0.3 head long with short fat fingers |
+| 摩卡貓 | sit ≈ 2.1, walk length ≈ 2.6 heads | The chibi-leaning head is ~0.8 of the body width; real cat skeleton (see 2.6) |
+| 阿藍 | ≈ 2 (body), tail 1.5× body | Head 45% of body height; bird legs short |
+| 黑糖 | ≈ 2.6, 3× Baokaka's height | Heavy, pear-shaped, short legs, big paws |
+| 咻咻 | 1 (it *is* a head) | Pillow-sized cloud; wisps for arms |
+| Adult NPCs | 4–5 | Lighter chibi; simpler eyes (see 5.6) |
 
-**Hero materials** (light / base / shade / AO)
-| Material | Light | Base | Shade | AO / deep |
+### 2.3 Line art (two-pass)
+
+- **Pass 1, contour:** every part's shape filled and stroked in `SIL #5A2C34` at **3.2u** (on a 200u canvas), drawn below all fills. Only the outer half shows, so silhouettes read thick and overlaps read thin.
+- **Pass 2, fills:** each part is drawn with a **1.0–1.2u** stroke in that material's line tint (e.g. skin `#C9786A`, pajama `#B06A28`, fur `#6E3A22`). Interior details use **tapered** fills (pointed ends), never uniform strokes: folds, finger splits, stripes, lashes.
+- **Depth groups:** flush the two passes per depth group (far limbs → body → near limbs → head), so near-limb contours sit on top of the body.
+- **Never** black lines; never a single uniform brown for everything.
+
+### 2.4 Cel shading
+
+- **Automatic form shadow:** clip to the part, fill with the cel-shade colour, then redraw the part's base colour shifted **up-left** by (dx, dy). A hard-edged shadow band remains on the lower-right, following the actual volume. Use dx/dy ≈ 25–35% of the part's radius (torso 4/3.4u, limbs 2/1.8u, fingers 1.3/1.1u).
+- **Third tone (occlusion):** a manual `deep` shape where forms meet: under the chin, under the collar, the inner thigh, under the haunch.
+- **Highlights:** hair gets an angel ring (a band following the skull with a jagged lower edge, plus 3 bright streaks). Cloth gets one light sheen stroke on the lit side. Skin gets a warm rim (`#FFF6EE`) on the lit cheek. All characters get a cool rim (`#CFEAFF`) on the back-right edge.
+- **Light:** key from the upper-left. At night, characters also receive the **local light colour** as a rim: lamp `#FFC890`, neon pink or cyan in 西門町/士林, moon `#CFEAFF` (see 4.1).
+
+### 2.5 Faces
+
+- **Eyes (people):** sclera, a gradient iris (dark top → mid → warm bottom) with a darker ring, 6 fine iris rays, an eyelid shadow crescent, the pupil, a lower reflected-light arc, a big upper speculars plus a small lower one, and a tapered upper lash thicker at the outer corner with a flick. Lower lid: a short thin line.
+- **Eyes (cats):** an almond shape, a green-gold gradient iris, a slit pupil (round when surprised), the same speculars and reflected light.
+- **Blush:** a radial gradient plus 3 hatch strokes. **Mouths:** small; open mouths show a tongue tint.
+- **Expression system:** heads are functions with `expr`. Swap eyes, brows and mouth groups, never whole heads. Baokaka has 開心 / 大笑 / 淚汪汪 / 驚訝 (plus 害羞, 睏 later). Mocha has 平常 / 得意 / 開心 / 驚訝.
+
+### 2.6 Hands, feet, paws
+
+- **Toddler hand:** **one clean contour** with a chubby palm, 4 short fat fingers and a thumb. Finger splits are short tapered creases (`hand()` poses: `open`, `flat` (crawl, palm down), `grab` (holding a block), `fist`).
+- **Footie feet:** a rounded heel, the instep rising to the ankle, a flat sole with a cream grip strip, a toe cap with a big-toe bump. In sole view, a cream sole with orange grip dots.
+- **Cat:** straight front legs with a visible wrist; round paws with 3 toe splits. Sitting: the hind thigh is a big mass behind, with the hind paw tucked in front beside the front paws. Walking: digitigrade, with the hock folding backwards and diagonal legs in sync. The tail grows out of the end of the spine. Pink toe beans show in sole views.
+
+### 2.7 Backgrounds (anime-film night)
+
+- **Sky:** a 4–5-stop gradient (top navy → mid → city-glow horizon). Stars are dots plus 3–4 cross sparkles with a soft halo. There's a faint milky band. The moon has a radial bloom.
+- **Clouds:** dark bodies with a lighter inner lobe (moonlit), a **lit underside rim** in city-glow pink and a bright upper edge. Vary each silhouette (mirror and stretch); never repeat one shape. Softened with a 0.9u blur.
+- **City:** two layers of skyline with lit windows (warm plus a few cool) and blurred bokeh dots along the horizon, over a blurred city-glow band.
+- **Ground:** night-painted tile materials, wet-ground reflections (soft vertical streaks under lamps, neon and 101), puddle and pond moon reflections.
+- **Light sources:** each has a bloom (radial gradient) plus an optional soft cone. Windows are warm. Neon only where allowed (4.3).
+- **Depth:** atmospheric haze toward the horizon; foreground bokeh at the screen corners; a vignette in battle.
+
+---
+
+## 3. Colour system
+
+### 3.1 Master tokens (all in `src/art/palette.ts`; UI tokens mirrored in `tailwind.config.js`)
+
+**Line and neutrals:** `sil #5A2C34` · `ink #2E2235` (UI text on light) · `inkOnDark #F4F2FF` · `mutedOnDark #BFC2EA` · `parchment #F3E6CC` · `contactShadow #1E1430`
+
+**Characters** (base / cel / deep / line):
+| Material | Base | Cel | Deep | Line |
 |---|---|---|---|---|
-| `sunflower` (Baokaka jacket) | `#FFE38A` | `#FFC63F` | `#EE9A2C` | `#C4702A` |
-| `skin` | `#FFF3E8` | `#FFE0CB` | `#F2B7A2` | `#E7A68E` |
-| `cheek` | — | `#FF8A80` (radial, 0.75→0) | — | — |
-| `hair` (Baokaka) | `#A97B63` | `#5E3C30` | `#3E2621` | — |
-| `mrt` (bloomers, bandana) | `#5A9BE6` | `#3D7CC9` | `#2B5BA3` | — |
-| `tomato` (shoes) | `#FF6F5E` | `#E5483E` | `#C8343A` | — |
-| `strawPink` | — | `#FF7F95` | — | — |
-| `milkTea` | `#F6DDBA` | `#E2B888` | `#B98258` | — |
-| `pearl` (boba) | `#7A5A6E` | `#3E2638` | `#22141E` | — |
-| `tabby` (Mocha fur) | `#EDB57C` | `#CC8C52` | `#9A603A` | `#7E4A2C` |
-| `stripe` | — | `#7A4A2E` | — | — |
-| `furCream` | `#FFF8EC` | `#FFF2DE` | `#EBCDB0` | `#D9B898` |
-| `catEye` | `#E4E86A` | `#AFC64A` | `#5F7E2A` | — |
-| `gold` (tag, crowns) | `#FFE27A` | `#F7CF5A` | `#C9962E` | — |
-| `pupil` | — | `#2E1E2C` (never pure black) | — | — |
+| skin | `#FFE7D6` | `#F6C0AA` | `#E89E8C` | `#C9786A` |
+| hair (Baokaka) | `#6A4234` | `#46281F` | `#2E1913` | `#2A1612` · angel ring `#8E5A46` / `#F0C4AC` |
+| pajama | `#FFD86A` | `#EFA846` | `#D6863A` | `#B06A28` · far limbs `#F4C458` |
+| cream (collar, soles) | `#FFF6E6` | `#EBD3B4` | `#D6B48E` | `#A8825E` |
+| bear patch | `#B98058` | `#93603E` | `#744628` | `#5A3420` |
+| red string | `#E5483E` | `#9E2A2A` | — | — |
+| gold (lock, tag) | `#FFD66A` | `#E0A83A` | `#B8822A` | `#8A5E1E` |
+| tabby fur | `#D7975E` | `#AE6C3E` | `#8A5232` | `#6E3A22` · stripes `#7A4628` |
+| fur cream | `#FFF5E8` | `#EAD2B8` | `#D6B898` | `#A8866A` |
+| bandana | `#4A8BDA` | `#2F62B0` | `#234A8A` | `#1E3E78` |
+| eyes | brown iris `#2E1A12→#7A4628→#D99A56` / cat `#2E4A12→#86AE2A→#ECEC72` | | | |
 
-**Taipei world materials**
-| Material | Light | Base / alt | Shade | Notes |
-|---|---|---|---|---|
-| `grass` (公園) | `#C9E9A4` | `#8CC46E` / `#83BC66` | `#5E9A52` | tufts in shade, flowers `#FFF3C4` `#FFB3C1` |
-| `canopy` (榕樹) | `#C4E79A` | `#5FA25A` | `#3A7448` | blob clusters, darker back pass |
-| `brick` (紅磚人行道) | `#F6B49A` | `#D9775F` / `#D2705A` | `#A9503F` | course lines `#B85E4A`, grey accent paver `#CFC6BE` |
-| `asphalt` | `#9A9DB4` | `#6C6F86` / `#676A80` | `#4D4F63` | lane paint `#F4F1EA`, kerb `#E9E2D6` |
-| `water` (池/河) | `#C6F0FF` | `#6FC2DC` / `#68BBD6` | `#3F8FB4` | ripple strokes `#E9FBFF`, rim stone `#F3E6CC` |
-| `glass` (101, offices) | `#BFE4E4` | `#8CC3C8` | `#3B6479` | ledge highlight `#FFF3D6` |
-| `stoneWarm` (temple, podium) | `#F4EBD9` | `#D8CDB8` | `#A99A86` | |
-| `templeRed` | `#F0645A` | `#D23B30` | `#9E2A24` | |
-| `templeGold` | `#FFE08A` | `#E9B949` | `#B8923A` | |
-| `jadeRoof` | `#6FC2A8` | `#3E8F7A` | `#2A6656` | 龍山寺 roof ridges |
-| `lantern` | `#FFD27A` | `#FF9C4A` | `#D9652E` | glow gradient to 0 |
-| `neonPink` / `neonTeal` | — | `#FF5FA2` / `#4FD1C5` | — | 西門町 and night market only |
-| `teaTerrace` (貓空) | `#C8E0B0` | `#7FB069` | `#4E7E46` | |
-| `springJade` (北投) | `#C9F0E6` | `#8CCFC0` | `#4E9A8A` | steam `#FFFFFF` at 0.5 |
-| `mailRed` / `mailGreen` | `#F0645A` / `#55B672` | `#E2483E` / `#3E9A5C` | `#B5322F` / `#2B7444` | 郵筒 pair |
-| `woodDeck` | `#E2B88A` | `#B88A5E` | `#8A5A3E` | |
-| `skirtSoil` | `#C79A6E` | `#9C6E4E` | `#6A4434` | diorama edge, strata `#E7C9A2` `#5A3A2C` |
-| `tactile` (MRT platform strip) | — | `#F2C94C` | `#C9A23A` | |
+**World (night-painted):** grass `#2E5A58`/`#2A5452` · brick `#6E3A4E`/`#683648` · asphalt `#2A2E58` · water `#24407E` · glass `#3E5A9A→#2A3E78` (lit side) / `#1C2858→#141C44` · lit window `#FFD98A`/`#FFE9C0`/`#9AE0FF` · lamp bloom `#FFE6B0→#FFC27A→0` · 101 rim `#8AF0E0` · city glow `#E88E8A` / `#FF9A7A`
 
-**MRT line colours** (accents for station maps and UI wayfinding): red `#E3002C`, blue `#0070BD`, green `#008659`, orange `#F8B61C`, brown `#C48C31`. Use them only as signage accents. They're not hero colours.
+**UI (anime-JRPG):** `panel rgba(22,26,78,.96)→rgba(10,11,34,.99)` · `gold #E8C77A` · `goldLight #FFE9B0` · `goldDeep #C9A04A` · primary button `#FFEFC0→#F0C060→#D89A3A` with text `#1A1440` · HP `#3FC88A→#9AF0B8` · HP low `#F08A3A→#FFC27A` · HP critical `#FF5A8A→#FF9AB8` · MP `#4A8AF0→#9AC8FF` · damage text `#FFFFFF` with a `#C2185B` stroke
 
-### 4.2 Per-location colour scripts
-Each location has a **default** time of day. The rendered board is in `reference/color-script.png`.
+### 3.2 The night clock (sky script by time)
 
-| Location | Default time | Sky top → horizon | Key | Shadow tint | Accents | Signature ambient |
+The sky gradient is defined by the clock time on the chapter card. It interpolates between these keys:
+
+| Time | Sky top | Mid | Horizon | Moon / sun | Grade on env (pre-baked) | Character rim |
 |---|---|---|---|---|---|---|
-| 大安森林公園 | Morning | `#9ED3F0 → #FFF0D2` | `#FFE9B8` | `#4E6E8C` | grass, `#FFB3C1` blossoms | pigeons, morning mist band, squirrels |
-| 台北車站 | Noon | `#7FC0EC → #E6F2F7` | `#FFF6E0` | `#556A9A` | station roof `#C8A35A`, MRT blue | commuters' shadows, departure-board flicker |
-| 西門町 | Afternoon | `#8EC6F0 → #FCE3C4` | `#FFE7B8` | `#5A5E96` | 紅樓 brick `#B5503A`, `#FF5FA2` signs | sign blink (slow), balloons |
-| 台灣大學 | Golden hour | `#F2A672 → #FFE6B0` | `#FFC27A` | `#6A4C7C` | palm `#5E9A52`, azalea `#F08CB4`, brick | bicycles, falling petals |
-| 龍山寺 | Dusk | `#4A3D7A → #F2A07A` | `#FF9C4A` | `#3A2E5C` | templeRed, templeGold, jadeRoof | lantern sway, incense smoke |
-| 士林夜市 | Night | `#1E2350 → #4A3A78` | `#FFD27A` | `#1A1A3A` | `#FF5F7A`, `#4FD1C5`, lantern | steam plumes, string-light twinkle |
-| 象山 · 101 | Blue hour | `#2E2A5E → #FFC89A` | `#FFD9A0` | `#2E2440` | aura violet, window gold `#FFD98A` | fireflies (bokeh), city windows turning on |
-| 淡水 | Sunset | `#FF9E6E → #FFD7A0` | `#FFB06A` | `#5A4A8A` | `#E8743B`, river `#3E5E9A`, bridge white | gull silhouettes, sun glitter on water |
-| 貓空 | Mist | `#B9C9CF → #E4ECE6` | `#F4F1E6` | `#5E7A80` | teaTerrace, gondola MRT blue | drifting fog bands, gondola cable motion |
-| 北投 | Light rain | `#8A9AAE → #C8D2DA` | `#E6ECEF` | `#4A5A7A` | springJade, woodDeck | rising steam, rain streaks, puddle rings |
-| MRT (interior/platform) | Fluorescent | `#EEF3F6` flat | `#FFFFFF` | `#6A7A9A` | line colour band, tactile yellow | door-chime light pulse |
+| 00:00 | `#0A1034` | `#1A2A6A` | `#3A3A86` | moon high, white | ×(0.55, 0.57, 0.72) | moon `#CFEAFF` |
+| 01:00 | `#0B1238` | `#1E2E70` | `#4A4A96` | moon high | same | moon |
+| 02:00 | `#0C1440` | `#26307A` | `#6A5AA4` | moon mid | ×(0.58, 0.58, 0.74) | moon / local |
+| 03:00 | `#101848` | `#2E3684` | `#8A6AB0` (city-glow pink rises) | moon low | ×(0.6, 0.6, 0.75) | local |
+| 04:00 | `#16205A` | `#3A3F92` | `#A878B8` | moon setting | ×(0.64, 0.63, 0.78) | local |
+| 04:30 | `#1E2A66` | `#4A4A9E` | `#C88AB8` | — | ×(0.7, 0.68, 0.8) | violet `#D8C8FF` |
+| 05:00 | `#2A3274` | `#6A5AA8` | `#E8A0A8` | first dawn glow | ×(0.78, 0.74, 0.84) | violet |
+| 05:15 | `#3A3A80` | `#8A6AAE` | `#F4B49A` | — | ×(0.86, 0.8, 0.86) | dawn `#FFD0B0` |
+| 05:29 | `#4A5AA0` | `#E8A0A0` | `#FFD27A` | **sun breaks** (gold) | none | gold `#FFE09A` |
+| 10:00 (party) | daytime interior | — | — | sunlit window | none (day palette) | warm |
 
-Rule: a chapter may move a location to another time (the story writer decides). Then apply the grade from §4.3 and keep the location's accents.
+**Chapter clock** (from the bible): Ch1 00:00 · Ch2 00:40 · Ch3 01:10 · Ch4 01:35 · Ch5 02:00 · Ch6 02:25 · Ch7 02:50 · Ch8 03:15 · Ch9 03:40 · Ch10 04:05 · Ch11 04:25 · Ch12 04:45 · Ch13 05:00 · Ch14 05:10–05:29 · ending 05:30 / 10:00 · post-game sunrise. Sub-maps and MRT rides use their chapter's time. Interpolate the keys above for in-between minutes (e.g. Ch7 02:50 ≈ the 03:00 row; Ch12 04:45 sits between 04:30 and 05:00, plus fog).
 
-### 4.3 Time-of-day grades
-A grade is a set of values that every renderer reads from one context (`useGrade()`; see §11):
+The **grade** is a per-channel multiplier baked into each tile and prop colour token at build time (`gradeTokens(time)`). It is not a runtime CSS filter or blend layer on the map. Characters get **half** the grade, so they always pop.
 
-| Grade | Env overlay (multiply) | Light sweep | Character grade | Rim | Lights on |
-|---|---|---|---|---|---|
-| `day` | none | `keyWarm` at 0.32 | none | `rimSky` | 0 |
-| `golden` | `#FFD2A0` at 0.22 | `#FFC27A` at 0.40 | `#FFD2A0` at 0.10 | `#FFE0B0` | 0 |
-| `dusk` | `#7A5A9C` at 0.32 | `#FF9C4A` at 0.25 | `#7A5A9C` at 0.14 | `rimLamp` | 0.5 |
-| `night` | `#2E3570` at 0.52 | none | `#2E3570` at 0.22 | `rimLamp` | 1.0 |
-| `rain` | `#8090A8` at 0.30 + 15% desaturate (pre-baked tokens, no filter) | none | `#8090A8` at 0.12 | `#E6F2FF` | 0.3 |
+### 3.3 Contrast rules
 
-- **Characters get roughly half the environment grade.** This is the core readability trick: heroes always stay brighter and warmer than their surroundings.
-- **"Lights on"** scales every light source (lamps, windows, lanterns, neon). Each is a radial gradient (`lantern` → transparent) on a layer with `mix-blend-mode: screen`, above the multiply overlay.
-- Implement grades as two full-screen layers (one multiply, one screen), not per-element recolouring. Exception: the `rain` desaturation uses pre-baked "rain" variants of the four floor tokens, because CSS `filter` over the map is too expensive.
-
-### 4.4 UI palette
-| Token | Value | Use |
-|---|---|---|
-| `primary` | gradient `#FFD45C → #FFB834`, lip `#D98A22`, top highlight `#FFF2BF` | One primary action per screen |
-| `onPrimary` | `ink` | Text on primary (11:1) |
-| `tonal` | `#FFFFFF`, lip `#E3D3BA` | Secondary buttons |
-| `glass` | `rgba(30,24,52,.55–.62)` + `backdrop-filter: blur(6px)` | Chips and plates over art (≤2 per screen) |
-| `hp` | `#6AD184 → #3FA35C` | HP bar |
-| `hpLow` (<40%) | `#FFB25A → #E5833A` | Plus HP text turns `#C2582A` |
-| `hpCritical` (<20%) | `#FF7A6A → #D9443C` | Plus a slow 1.2s pulse on the bar |
-| `mp` | `#78AEF0 → #3F78C8` | MP bar |
-| `exp` | `#C99BFF → #8E5AE0` | EXP bar |
-| `foeHp` | `#FF7A6A → #D9443C`, lag bar `#FFE2A8` | Foe plates |
-| `focus` | 3px `sunflower` ring + 1px `ink` outer | Keyboard and selection focus |
-| `speaker colours` | Mocha `mrt`, Baokaka `sunflower`, NPCs from their outfit base | Dialogue name pill and portrait backing |
-
-### 4.5 Contrast rules
-- Dialogue and body text: `ink` on `surface` or `cream` (≈15:1). Minimum 7:1 for anything a player must read.
-- Muted text ≥4.5:1 (`muted` on `paper` passes; never lighter than `muted`).
-- Text over art always sits on a solid or glass plate. No text directly on an illustration.
-- Status never relies on hue alone. HP low/critical also changes the numeric colour, adds a pulse, and from 20% shows a small ❗ icon (an SVG, not an emoji). Element weaknesses show an icon plus a word.
-- Sprites must pass the **48px silhouette test**: filled black at 48px, the character type is identifiable (see `model-sheet.png`).
-- Heroes must keep ≥3:1 luminance contrast against every floor material at the default grade. Check the sunflower jacket against `brick` and `sand`. The plum outline and the contact shadow guarantee the edge.
+- Dialogue and body text: ≥7:1 (white `#F4F2FF` on panel navy ≈ 14:1). Muted text ≥4.5:1 (`#BFC2EA` on the panel).
+- Text over art always sits on a panel or glass plate.
+- Status uses shape plus colour: HP <40% turns orange **and** the number recolours; <20% adds a pulse **and** a ❗ icon (SVG).
+- Heroes must pass the 48px silhouette test and keep ≥3:1 luminance contrast against every floor material at that location's grade. The rim light and contour guarantee the edge.
 
 ---
 
-## 5. Lighting and rendering rules for sprites
+## 4. Locations: per-chapter specs
 
-### 5.1 Shape language
-- **Heroes:** circles and soft ovals, big heads, no sharp corners. Squash-and-stretch friendly.
-- **NPCs (Taipei folk):** soft rounded rectangles, about 2.2–2.6 heads tall, calmer poses. Reads as "grown-up" next to the toddler.
-- **Foes (mischief family):** everyday objects and animals with round eyes. The silhouette is the object (cup, umbrella, helmet, pigeon), plus one exaggerated feature (straw antenna, crown, flapping wing).
-- **Architecture:** clean prisms and frustums, softened by rounded cornices and lit edges.
+### 4.1 Generic recipe (use this to spec any new location)
 
-### 5.2 Outline policy
-- Silhouette: `line #3A2838`, **1.6–1.9 units** on the 100-unit viewBox (≈1.0–1.2px at 64px render). Use 1.9 on heads and 1.7–1.8 on bodies.
-- Interior lines: **1.0–1.4 units** in the material's shade or AO colour (e.g. the zip is `#D27F22` on the jacket). Never `line` for interior folds.
-- Facial features may use `line` at 1.0–1.5 (mouth outline, cat mouth, lids).
-- Thin limbs, tails and straws use the **fat-stroke technique**: a `line` stroke `w + 3.4` under a fill stroke `w`, both with round caps (see the tail in `mocha-cat.svg`).
-- Draw the silhouette outline **last**, as a separate `<use href="#shape">` with `fill="none"`, so shading passes never eat the edge.
-- Environments: **no outlines** on tiles and terrain. Props get outlines only at ≥2 tiles tall when they must separate from the sky (optional, 1.2px). The heroes and foes are the only fully outlined things, which itself makes them pop.
+For each location, fill in these fields:
 
-### 5.3 Shading stack (per form, bottom → top)
-1. **Material gradient fill.** Linear from upper-left: `x1=.15 y1=0 x2=.85 y2=1`, stops `light 0` → `base .42–.5` → `shade 1`. Round forms (heads) use a radial at `cx=.36 cy=.3 r=.8`.
-2. **Far-side form shadow.** Clipped to the form (`clipPath` from the same shape). A crescent on the back-right in `shade` (or the material's red-shifted shade for skin) at **0.35**, plus a second smaller crescent at **0.4**. Two passes fake a soft edge without blur.
-3. **AO accents** wherever forms meet: under the chin on the jacket, under arms, under hats and lids, between the legs. An ellipse in the material's AO colour at **0.45–0.6**, clipped to the receiving form. This is the single most important premium cue.
-4. **Ground bounce.** The bottom ~8% of lower forms gets `bounceSky` at **0.16–0.25** (day). It switches to `rimLamp` at 0.2 under lanterns or at night.
-5. **Rim light.** A 1.4–1.6 stroke along the back-right silhouette, inside the clip. `rimSky` at 0.9 by day, the grade's rim colour otherwise, `rimFoe` on foes. Heads and the far edge of the body only.
-6. **Sheen and specular.** Cloth: one lighter stroke on the lit side (`#FFF4C4` at 0.7 on the jacket). Glossy objects (eyes, drum, pearls, lids): small white ellipses or circles at 0.55–0.85. Eyes always get **two** highlights (big upper-right at 1.0, small lower-left at 0.8).
-7. **Outline** (§5.2).
+1. **Clock time:** this sets the sky via 3.2, the environment grade and the character rim.
+2. **Key light sources:** 2–4 named warm or cool sources (street lamps, windows, lanterns, neon, screens). Each gets a bloom, a ground pool and a wet reflection.
+3. **Signature set-piece:** one landmark as a multi-tile iso prop (anchor at its front-most tile), plus 3–6 supporting props.
+4. **Tile materials:** 3–5 from the material list (4.4), each in its night-painted values.
+5. **Battle backdrop:** sky (by time) → far silhouette (landmark) → mid layer (architecture) → **foreground framers** left and right → perspective floor with a reflection streak → light pool → bokeh → vignette.
+6. **Ambient FX:** at most 6 animated elements (CSS transform/opacity loops).
+7. **Neon allowed?** Only 西門町, 士林夜市 and 月亮線 cars.
+8. **Accuracy notes:** no real brands or liveries; keep sensitive sites generic.
 
-### 5.4 Contact shadow and AO on the ground
-- A `<ellipse>` at the feet, `rx ≈ 0.5 × footprint width`, `ry ≈ 0.18 × rx`, radial gradient `ao` at `0.42 → 0.16 (70%) → 0`.
-- It stays put when the sprite hops. On a jump it scales to 0.75 and lightens (`opacity .7`), which sells height.
-- Cast shadows (environment props only, not characters) fall screen lower-right (+c direction) as flat `ao` polygons at **0.16–0.2** (see `iso-tiles.svg`, `cast()`).
+All 14 chapters, their sub-maps, the MRT cars, the 月亮公車 and the post-game are specced in 4.2. Use this recipe for anything added later.
 
-### 5.5 Texture
-- No per-sprite noise filters.
-- **One global grain layer** per screen: a 160×160 SVG `feTurbulence` data-URI as a CSS `background-image` on a fixed, `pointer-events: none` overlay, `mix-blend-mode: multiply`, `opacity: .06–.08`. Static and never animated, so the browser rasterises it once (snippet in `reference/battle.html`, `.grain`).
-- Material texture is drawn: tabby stripes, brick courses, grass tufts, water ripples, glass window bands. Keep it to 2–6 marks per tile or form.
+### 4.2 Location table (every map in the bible, chapters numbered as in the bible)
 
-### 5.6 Faces (the soul of the style)
-- Toddler and animal eyes sit **below** the head's midline. They're big, vertical ovals (Baokaka) or rounded almonds (Mocha). Pupils use `pupil #2E1E2C` with a warm lower-iris reflection (`#7A4A38` for Baokaka, a radial `catEye` for Mocha).
-- Blush is a **radial gradient**, never a hard circle.
-- Mouths are small. Open mouths show a tongue tint (`#FF8F8F`).
-- Expressions swap `*-eyes` and `*-mouth` groups (§6.4). Avoid redrawing heads.
+| Ch · time | Location (map) | Sky / light | Iso set-pieces & props | Tile materials | Battle backdrop composition | Ambient FX | Notes |
+|---|---|---|---|---|---|---|---|
+| 1 · 00:00 | **家** `home` (living room) | Moonlight through the big window (a cool shaft on the floor), a warm TV-standby glow, a night-light by the crib | The **抓周盤** on the low table (faint gold glow), sofa with 爸爸, crib, shoe rack (藍白拖), wall calendar with a red circle, front door | wood floor, rug, play mat | Living room at night: window with city lights and moon, the tray glowing, a sofa silhouette as a foreground framer | Curtain sway, the tray's twinkle, 咻咻's swirl at the window (cutscene) | Interior; sky only through the window |
+| 1 · 00:15 | **大安森林公園** `daan` | Navy sky, moon high; warm park lamps | **露天音樂台** (white band-shell, boss stage), 生態池 with reeds and a night-heron post, 溜滑梯 playground, jogging loop, the sunken MRT plaza, banyan clusters, convenience-store edge | grass, path gravel, pond water, red-brick sidewalk | Band-shell lit from below, banyan silhouettes framing, wet path reflecting lamps, 101 tiny on the horizon | Spinning leaf whirls, pond ripples, fireflies | Proven in `options/d-anime/iso.png` |
+| 2 · 00:40 | **台灣大學** `ntu` | Navy; lamp-lit **椰林大道** | Palm avenue, **傅鐘** on its pillar, **總圖書館** (brick, arched windows, steps), **文學院** ledge, **醉月湖** with **湖心亭** and bridge, bike racks, toppled bike pile, azalea hedges, 正門 | brick paving, lawn, lake water, asphalt | Library façade with lit windows, palms as framers, the lake reflecting the pavilion | Azalea petals drifting, lake shimmer | Generic university signage |
+| 2 · sub | **總圖閱覽室** `ntuLibrary` (12×10) | Interior: green-shaded reading lamps (warm pools), moon through tall arched windows | Long reading tables with lamps, tall shelves, 3 book piles to re-shelve, 安靜精 (a hush-sprite), back door to the lake | parquet, carpet runner | (no battles) | Lamp glow pulse, dust motes in moonbeams | Quiet: the palette is desaturated warm brown and green |
+| 3 · 01:10 | **台北車站** `station` | Interior: a cool fluorescent wash plus warm shop light | **Black-and-white checkered hall floor** (the identity), departure board (amber dot-matrix glow), 服務台, the 閘門 turnstile row, a 便當 stand, a 「施工中」 barrier | checkered marble, shutter metal | Great hall with ceiling lights in perspective, the departure board glowing, turnstiles as foreground | The departure board flickers, spirit-folk sit on the floor | Generic station signage only |
+| 3 · sub | **地下街** `underground` (20×14) | Low ceilings, cool tubes, **3 lit shop signs** (warm) as the guiding light, everything else shuttered | Corridors of shuttered shops, confusing direction signs, dead-end chests, the **指標大王** dead end | underground tile, shutter metal | Low corridor in perspective, a wall of arrows behind 指標大王, shutters as framers | Sign flicker, a slow ventilation-fan shadow | The "follow the lit signs" puzzle needs a strong warm-vs-cold contrast |
+| — | **月亮線 cars** `carRed/Blue/Green/Orange/Brown` | Car interior: cool white plus the line-colour stripe; windows stream stars | Silver poles, hand-straps, 博愛座, a **路線圖 display**, moon-shaped windows, doors with a station sign. The brown car has a **full front window** | car floor (grey rubber with a yellow edge), seats in the line colour | Side view inside a car: poles as framers, a starfield streaming past, the line-colour stripe | Starfield parallax, hand-straps swaying, door-chime light pulse | **Neon allowed** (subtle line-colour strip). Red `#E3002C`, blue `#0070BD`, green `#008659`, orange `#F8B61C`, brown `#C48C31` |
+| — | **路線圖** travel screen | — | A stylised 5-line network, gold station dots, a blinking "you are here" ring, grey locked dots with "?" | — | — | New-station 「叮！」 light-up | See 7.7 |
+| — | **月亮公車** (bus scene, 北投 → 陽明山) | Cool interior, warm reading lights; mist and city lights sliding past the windows | Bus seats, hanging straps, a fare box that accepts the 月亮票 (「嗶」), a destination sign 「陽明山」 | bus floor | (no battles) | Window fog, a winding-road sway | Generic bus, no operator branding |
+| 4 · 01:35 | **西門町** `ximen` | Indigo; **neon** pink and cyan dominate; warm shop windows | **西門紅樓** (octagonal red-brick hall with cross wing; boss stage), painted pedestrian zone, **6號出口**, Movie Street billboards (generic art), claw-machine booth, scooter row, 麵線 stall | painted pedestrian paving, red brick, asphalt | 紅樓 lit by floodlights, neon signs as framers, wet street reflecting neon streaks | Neon flicker (≤1 element at a time, slow), dancers' sparkle | Neon on; character rim = local pink/cyan |
+| 5 · 02:00 | **龍山寺・艋舺公園・青草巷** `longshan` | Indigo; **red lanterns** dominate, warm temple floodlight, incense haze catching light | 艋舺公園 plaza (benches, sleeping pigeons, MRT exit), **龍山寺 front** (gate, lantern rows, sweeping swallowtail roof with 剪黏 porcelain dragons and jade-green ridges), 玉蘭花 sellers, **青草巷** herb-stall alley, old eaves, 阿花's roof | granite paving, red temple tiles, park lawn, alley stone | Temple roofline with dragons against the night sky, lantern strings as framers, incense haze, warm floor pool (**battles only in the park lawns and alley**) | Lantern sway, incense ribbons, pigeons' head bobs | **Respect:** no deities depicted, no fighting on temple ground. The 擲筊 moon blocks are red crescents |
+| 5 · sub | **剝皮寮** `bopiliao` (18×12) | Indigo; dim warm lamps under arcades | **Red-brick arcades**, old shop signs (generic), wooden shutters, a rooftop at the end with **咕咕's glittering nest** | old red brick, arcade tile, rooftop tiles | Brick arcade in perspective, the rooftop nest catching moonlight, glittering junk (bottle caps, foil) | Shiny-junk twinkles, feathers drifting | Historic street; keep signage invented |
+| 6 · 02:25 | **大稻埕・迪化街** `dadaocheng` | Indigo; warm lantern and shopfront light | **牌樓 façades** (baroque pediments in rows), 南北貨 baskets, 中藥行 百子櫃 wall, 茶行 tins, 布行 bolts, **霞海城隍廟** front (lanterns; no deity shown), **大稻埕碼頭** wharf with river | old red brick, stone slabs, wharf planks, river water | A street of 牌樓 façades in perspective, lanterns strung across, the river and wharf lights at the end | Lantern sway, fabric fluttering, river shimmer | Calm, historic; no neon |
+| 6 · sub | **永樂市場 布市** `yongle` (18×12) | Interior: bare bulbs on cords (warm), deep shadows between stalls | A **fabric maze**: walls of hanging 花布 bolts (peony red, indigo, gingham, pastel florals), cutting tables, rulers, 3 hidden bolts to find | market concrete, cloth-covered tables | Hanging fabric curtains as layered framers, a bulb-lit cutting table | Bulbs swinging gently, fabric rippling | Pattern-heavy: keep patterns at low contrast behind characters |
+| 7 · 02:50 | **士林夜市** `shilin` | Indigo with city-glow pink; **stall lights plus neon** | Night-market gate arch, stall rows (striped awnings, glowing interiors), signs 雞排/珍奶/臭豆腐/大腸包小腸/蚵仔煎, game area (balloons, goldfish, 彈珠台), **劍潭站** boat-shaped roof, massage chairs | wet asphalt, stall tile, steel grates | Proven in `options/d-anime/battle.png`: stall row with bloom, lantern string, signs, steam, reflections | Steam plumes, lantern sway, sign twinkle | Neon on |
+| 7 · sub | **地下美食區** `foodcourt` (18×12) | Interior: warm fluorescent plus steam glow from kitchens | Rows of counters, plastic stools, steamer stacks (蒸籠媽媽), the boss kitchen at the back | food-court tile, kitchen steel | Kitchen pass-through with fryers glowing orange, steamers as framers | Steam columns, a fryer shimmer | The escort 小籠包 is a tiny dumpling NPC with a face |
+| 8 · 03:15 | **松山機場** `airport` | Indigo; **blue runway edge lights**, green threshold lights, the warm terminal, the tower cab glow | Terminal front with MRT entrance, apron with 3 generic white planes (blue stripe, unbranded), **control tower**, runway strip, **windsock** on a pole (boss), 飛機巷 grass verge | apron concrete with painted lines, runway asphalt, grass verge | Runway in perspective with converging blue lights, a sleeping plane silhouette, the tower as framer, the windsock against the sky | Runway lights pulse in sequence, windsock flutter, a slow beacon | **Civilian and generic only**: no military, no real liveries |
+| 8 · sub | **航廈頂樓觀景台** `terminalDeck` (12×8, optional) | Open sky (indigo), the runway lights spread below | Railing, coin binoculars, benches, a plane-spotter's notebook (阿藍's note 3) | deck boards, railing | (no battles) | Runway-light sequence below, a distant beacon | A quiet look-out composition |
+| 9 · 03:40 | **動物園** `zoo` | Moon setting; warm path lamps | Entrance plaza and sign, 台灣動物區 rocks and trees, **empty black-bear enclosure** with a 黑糖 plaque, macaque rock, pangolin burrow, signposts, **纜車動物園站** with a docked gondola, bamboo | path paving, soil, rock, bamboo grove floor | Gondola station with a lit cabin, bamboo framers, rocky habitat silhouette | Bamboo sway, gondola cable glint | — |
+| 9 · 03:55 | **貓空** `maokong` | Violet-indigo; tea-house lanterns; **the city sea of lights below**; 101 wrapped in a swirling cloud | Terraced tea rows, **茶館** veranda with lanterns (boss), 纜車貓空站, view platform with the **storm around 101** (big backdrop decor), stone path | tea-terrace soil and bushes, stone path, wooden deck | Tea terraces stepping down, lantern-lit veranda, the glowing basin below, 101 in a spiral of cloud | Mist bands, lantern sway, the storm swirl rotating slowly | The "first sight of the storm" set-piece |
+| 10 · 04:05 | **碧潭** `bitan` | Violet; still lake **mirroring** the bridge lights and moon; cliff face (和美山) dark against the sky | **碧潭吊橋** (long white suspension bridge with cable catenaries, walkable, sways), riverside steps and promenade, boat dock with a fleet of sleeping **swan boats**, a pavilion under the bridge, a **floating platform** mid-lake with the glowing 「1」 birthday candle (the "lighthouse"), 新店站 exit | promenade stone, wooden dock, lake water (mirror-calm, strong reflections) | Lake at night: the bridge arc across the top as a framer, swan boats in silhouette, the candle's warm glow on the water, perfect reflections | Bridge sway, candle flicker and ripple rings, a slow reflection shimmer | The calmest, most mirror-like scene: reflections are the identity |
+| 11 · 04:25 | **北投溫泉** `beitou` | Violet; steam catches lamp light; light rain optional | **新北投站** (old wooden station), steaming creek, **北投溫泉博物館**, **北投圖書館** (green timber, planted roof), public footbath, **地熱谷** jade pond behind a railing (boss), the **月亮公車** stop | wet stone, wooden deck, jade spring water, creek water | 地熱谷: jade pool glowing, steam columns lit warm, railing framers, the library silhouette | Steam rising (3 blobs), optional rain streaks, ripple rings | Steam is the identity |
+| 12 · 04:45 | **陽明山・竹子湖・小油坑** `yangming` | Pre-dawn violet in **dense cold fog** (low contrast, desaturated); warm farmhouse window; sulphur vents glowing faintly yellow | Bus stop (arrival), **竹子湖 terraced calla-lily fields** (white lilies that *glow* softly), a farmhouse (inn) with a 「自己採」 sign, **小油坑** steaming yellow rocks and vents (the calf hides here), the misty path to 擎天崗 | wet terrace mud, lily-field water, yellow sulphur rock, stone path | Calla fields glowing white in the fog, steaming vents as framers, the farmhouse light | Rolling fog bands (2–3 layers), vent steam, lily glow pulse | Fog lowers contrast, so lean on rim light and glowing lilies for readability |
+| 12 · sub | **擎天崗** `qingtiangang` (18×14) | Fog thinning to violet; the first faint dawn line on the far horizon | Rolling grassland, **silver 芒草**, cattle silhouettes, a stone trail, a wooden marker on a small knoll (黑糖's climb), the summit meadow (boss) | grass, silver pampas, stone trail | Open grass under a wide sky, a buffalo silhouette in fog, pampas as foreground framers, a distant sea glint (咻咻 seen far off) | Pampas waving, fog drifting, a calf bell | Gentle and pastoral; 阿哞 must look sleepy and kind |
+| 13 · 05:00 | **淡水** `tamsui` (3 zones) | Violet → first dawn on the horizon; harbour lights | Zone 1: 淡水站, 老街 (阿給/魚丸/鐵蛋 shops), **紅毛城** on a hill. Zone 2: 河岸步道, banyans, 渡船頭. Zone 3: 漁人碼頭 boardwalk, fishing boats, **情人橋** (white sail bridge; boss), seawall. **Backdrop: 淡江大橋** (one tall pylon on the 八里 side, cable fans, a long curving deck) with 觀音山 behind | old-street stone, boardwalk planks, river water, seawall concrete | River mouth at dawn-violet, 淡江大橋's pylon and cables backlit, 情人橋 as a near framer, gold glints on the water | A small grey swirl circling the pylon (until `metShushu`), sun glitter, gulls | Bridge non-walkable; no light-rail train drawn on it |
+| 14 · 05:10 | **信義廣場** `xinyi` (18×12) | Dawn-blue; 101 towering overhead with ledge lights; plaza lamps | The plaza at the foot of 101: paving grid, planters, an art-installation silhouette (generic), the elevator-lobby doors, wind streaks | plaza granite, planters | Looking up at 101 from its foot (extreme perspective), storm cloud wrapped around the top, wind debris | Wind streaks, flipped umbrellas tumbling | The chapter card plays here; gate fight 旋風小子 ×3 |
+| 14 · 05:15 | **台北101 89F** `tower` | Interior; dawn-blue city through floor-to-ceiling glass | The golden **阻尼器** sphere in its pit behind a railing (mini-boss), souvenir shop, store counter, elevator doors, stairs to 91F, coin telescopes, flipped umbrellas and balloons against the glass | polished stone floor, carpet, glass | The damper ball glowing gold, window walls with the dawn city, railing framers | City lights below twinkle, the damper sways | — |
+| 14 · 05:20→05:29 | **101 91F 戶外** `summit` | Violet → **gold sunrise** at the end | Open deck with high railings, wind streaks, the spire behind, **咻咻's sad party** (crooked 生日快樂 banner, flipped umbrellas, 雞排-bag hat, popped balloons, one candle) | deck grating, railing steel | **Boss frame: 布袋戲 proscenium**; sky filling the stage, storm spiral behind the railing | Wind streaks, the candle flickering out, the sunrise light sweep | The game's emotional peak; the 小白機 waggles its wings past 101 at first light |
+| End · 05:30 | **家** at dawn | First blue-gold light through the window | Tray complete, Mocha asleep on it | (home) | — | Dust motes in the sun shaft | — |
+| End · 10:00 | **度晬 party** | Bright day interior | 紅龜粿, 油飯, 紅蛋, birthday decorations, the family | (home) | — | Candle smoke curling into a tiny swirl (咻咻 cameo) | The only fully daytime scene |
+| Post | **象山 sunrise** `xiangshan` | Gold sunrise; 101 framed | Stone stairs, the **六巨石** boulders, photo platform with 101, 阿嬤 doing morning exercises, lounging former bosses | stone steps, rock, grass | Boulders as framers, 101 against the gold sun, sun rays | Sun rays, birds, 咻咻 (bonus form) bobbing | — |
+| Post | **老朋友擂台** (boss rush, 101 summit at night) | Night (00:00 script) with stage spotlights | The summit deck dressed as a stage; 卡拉OK大王 as MC | deck grating | 布袋戲 frame plus spotlight cones | Spotlight sweep, confetti | Reuses summit art |
 
----
+### 4.3 Neon policy
 
-## 6. Characters
+- Neon (bright pink, cyan or violet tubes with bloom) is allowed only in **西門町**, **士林夜市** and the **月亮線 cars** (the line-colour strip).
+- Elsewhere, light is warm lamps, windows, lanterns or moonlight. Neon light also tints the character rim in those maps.
 
-### 6.1 Baokaka (寶咖咖) — model sheet in words
-Reference: `reference/baokaka.svg`, `reference/model-sheet.png`.
+### 4.4 Tile material list (night-painted, iso 72×36)
 
-- **Age read:** a 1-year-old. A huge round head, chubby cheeks wider at the bottom, sparse soft hair, tiny mitten hands, short bowed legs, a round belly. No neck.
-- **Proportions:** 2 heads tall (head ≈52% of total height). Eyes on the lower half of the face. Head width about 1.6 × body width at the shoulders. The arms just reach the belly bottom.
-- **Silhouette hooks** (must survive at 48px): (1) the curly hair sprout on top, (2) the pink bubble-tea straw rising behind his right shoulder, (3) the round pellet drum (波浪鼓) on a stick.
-- **Outfit (modern Taipei, rain-ready):**
-  - A **sunflower-yellow hooded rain jacket**, hood down and bunched at the neck, white drawstrings with bead tips, centre zip.
-  - **MRT-blue bloomer shorts.**
-  - **Tomato-red squeaky shoes** with cream soles.
-  - A **bubble-tea cup backpack**: milk-tea body, white lid, visible pearls, pink straw.
-  - The pellet drum is his "weapon": red face, gold ring, two gold beads on strings. Attacks are rhythmic drum beats (sound-wave rings).
-- **Key colours:** sunflower, skin, MRT blue, tomato, strawPink. The yellow-blue complement makes him the most visible thing in any scene.
-- **Expressions set** (swap groups `bk-eyes`, `bk-mouth`, optional `bk-fx`):
-  1. `happy` (default): oval eyes, open smile.
-  2. `laugh`: ^^ arc eyes, wide open mouth.
-  3. `surprised`: smaller pupils with big highlights, an "o" mouth.
-  4. `pout`: eyes looking down, a wobbly mouth line, one tear drop (light blue `#9CD3FF`).
-  5. `determined`: brows down at the inner end, a closed smile.
-  6. `hurt`: >< eyes, open mouth.
-  7. `sleepy`: half-lid lines, small mouth, a "z" bubble FX.
-  8. `wow`: sparkle eyes (4-point star highlights).
+grass · path gravel · red-brick sidewalk (running bond plus a grey accent paver) · asphalt (wet; lane paint) · zebra crossing · pond and river water (ripples plus moon reflection) · checkered marble (台北車站) · underground tile · wood floor · tatami-ish play mat · old red brick and stone slab (大稻埕) · wharf planks and boardwalk · stall tile and steel grate · apron concrete with painted lines · runway asphalt with edge-light props · tea-terrace soil · wet stone and wooden deck (北投) · jade spring water · seawall concrete · polished stone and carpet (101 interior) · deck grating (91F) · granite (象山 stairs)
 
-### 6.2 Mocha Cat (摩卡貓) — model sheet in words
-Reference: `reference/mocha-cat.svg`.
-- **Breed read:** a brown mackerel tabby, mid-size, round-faced, slightly chubby.
-- **Proportions:** sitting, ~1.8 heads tall. The head is as wide as the haunches. Big ears, about 0.45 head height.
-- **Identity markers (never drop):** the forehead **M**, cheek stripes, a cream muzzle and bib, white paws, a ringed tail with an S-curve and hooked tip.
-- **Accessories:** an **MRT-blue bandana** with cream polka dots, knotted on the near side, and a **round gold transit-card tag** hanging at the point.
-- **Eyes:** large green-gold almonds, oval (not slit) pupils for warmth, two highlights, a top lid line.
-- **Whiskers:** cream, 0.8 units, allowed to break the silhouette.
-- **Personality in pose:** a confident sit, head tilted toward Baokaka, the tail tip always curling (idle tail flick).
-- **Expressions set** (`mc-eyes`, `mc-mouth`, `mc-ear-l/r`): `content` (default), `smug` (half-lid eyes, one brow), `happy` (^^ eyes, ears up), `alert` (round pupils, ears forward), `annoyed` (flat lids, ears sideways), `hurt` (>< eyes, ears flattened), `sleepy` (closed eyes, loaf pose). **Ears are expression.** Rotate `mc-ear-l/r` ±25–40°.
-- **Map locomotion:** a dedicated side-trot pose sprite (`mochaWalk`, 2 leg frames) is priority P2. Until then the sitting sprite hops.
-
-### 6.3 Companions, NPCs and foes (style families)
-| Family | Line | Saturation | Rim | Heads tall | Notes |
-|---|---|---|---|---|---|
-| **Heroes and companions** | `line` 1.7–1.9 | 100% | `rimSky` / grade rim | 1.8–2.2 | Own sunflower and MRT blue. Companions (if the story adds any) get one signature colour not used by other heroes |
-| **Taipei folk (NPCs)** | `line` 1.6 | ≈70% (use `*Shade`-leaning bases) | `rimSky` at 0.6 | 2.2–2.6 | Everyday outfits: 阿嬤 with a hand fan and floral shirt, MRT staff vest, night-market vendor apron, student backpack, temple volunteer. Faces simpler: dot eyes with one highlight |
-| **Mischief foes** | `line` 1.8–2.0 | 90–100% | **`rimFoe` violet** | object-shaped | Animated city things: runaway bubble tea, umbrella, scooter helmet, pigeon gang, lantern, red envelope, rice dumpling, MRT token. A white-sclera eye with an angled brow, at most one fang, blush. **Boss:** gold crown + `aura` radial behind + nameplate "頭目" |
-| **Wildlife foes** | as mischief | | `rimFoe` | — | Taipei animals with mischief: macaque (壽山-style), crab (淡水), crow, stray dog pack (friendly after defeat) |
-
-A KO is never death. Foes **pop back to a normal object** with dizzy stars and a sparkle, then hop away. Heroes faint by plopping onto their bottoms (Baokaka) or curling into a loaf (Mocha).
-
-### 6.4 Rig and animation (CSS transforms on SVG parts)
-Every hero and foe SVG exposes named groups:
-
-| Baokaka | Mocha | Foe (min) |
-|---|---|---|
-| `bk-shadow`, `bk-backpack`, `bk-arm-back`, `bk-legs`, `bk-body`, `bk-head`, `bk-eyes`, `bk-mouth`, `bk-arm-front`, `bk-drum` | `mc-tail`, `mc-body`, `mc-bandana`, `mc-head`, `mc-ear-l`, `mc-ear-r`, `mc-eyes`, `mc-mouth` | `*-shadow`, `*-body`, `*-face`, `*-extra` |
-
-**Technique** (verified in `model-sheet.html`):
-```css
-.rig [data-part] { transform-box: view-box; }        /* origins in viewBox units */
-.bk-arm-front { transform-origin: 37px 61px; }        /* shoulder */
-.bk-head      { transform-origin: 50px 56px; }        /* chin/neck */
-.bk-body      { transform-origin: 50px 92px; }        /* between the feet */
-.mc-tail      { transform-origin: 68px 88px; }        /* tail root */
-.mc-ear-l     { transform-origin: 36px 26px; }  .mc-ear-r { transform-origin: 66px 26px; }
-```
-The pose is a class on the sprite root (`data-pose="idle|walk|attack|hurt|victory|ko"`). The keyframes live in `src/art/rig.css`. Animate only `transform` and `opacity`.
-
-| Pose | Recipe (Baokaka; Mocha analogous) | Timing |
-|---|---|---|
-| **idle** | body `scaleY(1 → 1.02)` from the feet; head `translateY(0 → -0.6px)`; drum bead swing ±8°; blink: `bk-eyes scaleY(1 → .1 → 1)` around the eye centre, 120ms, every 3.5–5s (random `animation-delay` per instance). Mocha: tail `rotate(0 → -6°)`, ear twitch every ~6s | 2.4s ease-in-out, infinite |
-| **walk** | 2 beats per tile: root `translateY(0 / -2.5px)`, body `rotate(±3°)`, arms counter-swing `±16°`, legs `skewX(±6°)`, backpack follows 60ms late (`animation-delay`) | 360ms per cycle |
-| **attack** | **Anticipation** 120ms: lean back `rotate(-3°)`, arm `translate(-4px,-2px) rotate(40°)` (drum up and back). **Strike** 90ms: root `translateX(+14%)`, arm `rotate(-35°)`, head `rotate(6°)`. **Hold** 80ms (hit-stop). **Recover** 220ms ease-out | 510ms total |
-| **hurt** | 0–100ms: white flash (`filter: brightness(1.8) saturate(.4)` on **this one sprite only**, for ≤2 frames). Squash `scale(1.05,.94)`, knockback `translateX(-6%)`, head `rotate(-10°)`, expression `hurt` for 500ms | 300ms + 500ms face |
-| **victory** | Hop loop: root `translateY(0 → -8% → 0)` with a landing squash `scale(1.06,.94)`; drum arm `translate(-3px,-3px) rotate(25°)`, back arm `rotate(-60°)`, eyes `laugh`, shadow `scale(.75)` at apex | 700ms loop |
-| **ko** | Sit plop: body `translateY(+6%) scale(1.04,.9)`, head `rotate(-8°)`, `pout` face, 3 dizzy stars orbit (`fx-orbit`) | 400ms, then hold |
-
-**Reduced motion:** idle breathing, blink and walk bob are off. Attack and hurt become a 150ms offset plus face swap. Victory is a static pose.
+**Tile rules:**
+- Base and alt colour picked by a hash (no checkerboards except the station floor, which *is* a checkerboard).
+- A 1px lit top-left edge.
+- 2–6 seeded material marks per tile.
+- Material transitions get a lit kerb or rim.
+- Map edges show the diorama skirt.
+- The whole ground is **one memoised SVG per map**.
 
 ---
 
-## 7. Environment
+## 5. Characters
 
-### 7.1 Isometric tiles
-Tile geometry stays 2:1, `TILE_W 72 × TILE_H 36` (`engine/iso.ts`). The look changes:
+Design sheets in the owner's reference format exist for **寶咖咖** and **摩卡貓** (`sheet-baokaka.png`, `sheet-mocha.png`). **阿藍, 黑糖, 咻咻 (4 forms) and the recurring NPCs** have D-style front views and expressions on `cast-sheet.png` (sources in `options/d-anime/cast/`). Produce the same format for every character below before it goes into the game: front view, a 4-expression set, an outfit or accessory breakdown, material swatches and props, annotated in Chinese on parchment.
 
-- **Render the ground as one SVG per map** (memoised on `map.id`). Each tile is a `<polygon>`, or a `<use href="#tile-grass-a">` from a shared tile `<defs>`. That replaces the 1 `div` + `clip-path` per tile. The ground doesn't change while walking, so the browser rasterises it once and the camera only translates it.
-- **Per-tile recipe** (see `iso-tiles.svg`):
-  1. A base or alt fill picked by a hash (`(c*7 + r*3) % 3`). That avoids checkerboards, which read as "game board".
-  2. **Edge light:** the two top edges get a 1px `light` stroke at 0.55, the two bottom edges a 1px `shade` stroke at 0.45. That gives a subtle bevel and lets the grid read without lines.
-  3. **Material marks** (2–6 per tile, seeded so they're stable):
-     - grass: tufts and 0–2 flowers
-     - brick: 3 running-bond courses along the c-axis, staggered joints, one grey accent paver
-     - asphalt: a lane dash on road-centre tiles
-     - zebra crossing: 4 bars parallel to traffic
-     - water: 2 ripple arcs plus one specular streak per pond
-     - temple stone: a big-slab grid
-     - MRT platform: a tactile yellow strip
-  4. **Material transitions** get a lit kerb or rim line, not a hard swatch edge: brick→road `#E9E2D6` 1.6px, grass→water `#F3E6CC` 2px stone rim.
-- **One light sweep** over the whole floor (a linear gradient `keyWarm` 0.32 → 0 from the top corner), never per tile.
-- **Diorama skirt:** where the map ends, draw the island's thickness: front-left face `skirtSoil` light→base, front-right face base→shade, two strata lines, and a soft `ao` ellipse under the island. That replaces perimeter walls and **fixes the zigzag wall bug**.
+### 5.1 寶咖咖 (hero)
 
-### 7.2 Heights, walls and props
-- **Height units:** low (kerb, planter) 12–18px, wall 36px (= `TILE_H`), building facades and landmarks are **props**, not blocks.
-- **Blocks:** left face lit (`light`→base), right face shade, top face base with a 1.4px lit rim on its near edges (planter in `iso-tiles.svg`).
-- **Contiguous walls render as one prism per run** (merge adjacent wall tiles into a single polygon), so there are no seams. The prop budget per map is ~25 decorative props.
-- **Scale:** heroes are ~0.8–0.9 tile wide, with a sprite box of `0.85 × TILE_W ≈ 60–64px` (down from 94px). Furniture and street props are sized to that toddler: a post box ≈ hero height, a bench seat at hero waist.
+- 1 year old (tomorrow), **3.4 heads**.
+- **Outfit:** butter-yellow **star-print footie pajamas** (fleece, front snap placket, cream ribbed collar and cuffs, grip-dot soles), a **bear patch** on the chest, a **red string bracelet** with a gold bead on the right wrist. **口水巾** (bib) is equipment, shown in menus, not on the sprite.
+- **金鎖片:** a story key item, worn only in the ending.
+- **Poses:**
+  - **crawl** (map): palms flat under the shoulders, thighs vertical under the hips, flat back, head lifted, one hand forward.
+  - **sit** (battle idle): weight on the bottom, one leg extended, one knee up, holding up a toy block.
+  - **first steps** (Ch14 finale only): wide stance, arms out for balance, knees soft.
+- **Battle actions:**
+  - 丟積木: arm wind-up, then a block arc FX.
+  - 哇哇大哭: mouth open, sound rings.
+  - 拍拍手: a clap with sparkles.
+  - 勇敢的第一步: stands up, wobbles, charges.
+- **Silhouette hooks:** the hair sprout (ahoge), the big round head, the footie feet.
 
-### 7.3 Landmark set-pieces
-Large multi-tile SVG props with their own `footprint {w,h}` and an **anchor at the front-most footprint tile** (max c+r) for sorting. The current code anchors at the centre, which mis-sorts big props.
+### 5.2 摩卡貓 (hero)
 
-| Landmark | Footprint | Key read | Notes |
-|---|---|---|---|
-| **台北101** | 1×1 to 2×2 | 8 flaring "bamboo" frustum sections, podium, spire, ruyi ledges | Proven in `iso-tiles.svg`: each section has left face `glass` light, right face `glass` shade, a lit ledge rim, window bands. At night the ledges glow `#FFE2A0` |
-| **台北車站** | 4×2 | Palace-style double roof, cream walls, square tower mass, big hall doors | Roof `#C8A35A`/`#9A7A3A`, walls `stoneWarm` |
-| **台灣大學** | 3×2 + palm row | Main library (brick + arched windows), 椰林大道 palms | Golden-hour default. Azalea bushes as props |
-| **大安森林公園** | park map | Bandshell (white shell), pond, banyan clusters | Morning mist band |
-| **淡水** | river map | 情人橋 white sail bridge, red Fort San Domingo, riverside path | Sun-glitter specks animate slowly |
-| **西門町** | street map | 紅樓 octagonal red-brick house, pedestrian zebra crossings, sign towers | Neon only after dusk |
-| **士林夜市** | street map | Stall rows (striped awnings), lantern strings, steaming pots | Night default, steam ambient |
-| **龍山寺** | 3×3 | Swallowtail roof ridges, dragons as simplified curls, red columns, lanterns | jadeRoof ridges, templeGold trim |
-| **象山** | hill map | The Six Giant Rocks as soft boulders, stone steps, 101 view | Battle backdrop proven in `battle.html` |
-| **貓空** | hill map | Tea terraces, gondola cabin on cable, teahouse | Mist bands |
-| **北投** | valley map | Wooden Beitou library, hot-spring stream (jade), steam | Rain default |
-| **MRT** | interior | Platform with tactile strip, glass doors, line-colour band | Used for travel interludes |
+- 7-year-old brown mackerel tabby (male): forehead **M**, cheek stripes, ringed tail, **white socks on all four feet**, cream bib fur.
+- Wears an **MRT-blue polka-dot bandana** knotted on the left, with a **gold fish tag** at its point (silent, not a bell).
+- **Poses:** sit (battle), walk (map), pounce (attack), loaf (KO), and a smug half-lidded "translating" face.
+- **Tail acting:** up and curled = happy; puffed = surprised; low flick = annoyed.
 
-### 7.4 Depth sorting
-- Painter's order is `c + r`, ties broken by `c`. Actors and props share one sorted list.
-- Multi-tile props sort by their front-most tile. Tall props in front of the lead fade to 0.4 (existing `hides()` logic), plus a 6px feathered edge.
-- Characters cast **no** cast-shadows (only the contact ellipse), so walking never needs shadow sorting.
+### 5.3 阿藍 (藍教授, hero, joins Ch2)
 
-### 7.5 Ambient life
-At most 6 animated ambient elements per screen. All CSS keyframes on transform and opacity, paused with `animation-play-state` when the document is hidden.
-- **Day:** pigeons pecking (2-frame head bob), a butterfly loop, leaf sway on canopies (±1.5° from the trunk base), water ripple scale.
-- **Dusk/night:** lantern sway, window lights turning on (staggered opacity), bokeh/fireflies drifting (radial gradient dots), steam plumes (3 blobs rising and fading, 3s).
-- **Rain:** streak layers (below), puddle rings (ellipse scale + fade).
-- **Reduced motion:** ambient is off, with static poses kept.
+- A **台灣藍鵲**: black hood (head and throat), cobalt body, pale blue belly, a **coral-red beak and legs**, a yellow eye ring, and a **very long tail** (1.5× body) with black-and-white tips, carried raised behind.
+- **Props:** round gold reading glasses; a pencil stub tucked under the wing.
+- **Anatomy:** a compact bird body, the wing folded with layered primaries (3 visible feather tips, white-tipped), short legs with 3 front toes and 1 back toe.
+- **Expressions:** 自信 (glasses glint, chest out), 說教 (wing raised like a pointer), 慌張 (glasses askew, feathers puffed), 坦白「我不知道」 (soft eyes, wing over beak).
+- **Battle:** hovers slightly. 羽毛雨: wing spread with blue feather FX. 鵲橋護盾: a bridge-arch shield.
+- D-style art: `options/d-anime/cast/alan-{happy,laugh,teary}.svg`. A full design sheet in the 5.1 format is still to do.
 
-### 7.6 Parallax sky behind the iso map
-The world screen gets a `SkyLayer` behind `IsoMap`:
-1. Sky gradient (from the location script).
-2. Sun or moon glow (a radial gradient).
-3. Clouds (2–3 soft ellipse groups).
-4. Far ridge (陽明山 silhouette, haze colour).
-5. Skyline (2 layers of stepped rectangles, `#B3C4D8`/`#C6D3E0` by day).
-6. A haze gradient to the horizon colour.
+### 5.4 黑糖 (hero, joins Ch9)
 
-Layers translate at 0.1 / 0.2 / 0.35 × the camera offset. Below the map the sky fades into a warm floor colour so the island floats (see `iso-tiles.png`).
+- A young **台灣黑熊**: glossy blue-black fur, a **cream V-moon** on the chest, a tan muzzle, small round ears, and a **red knitted scarf** (ribbing marks plus a fringe tail). 3× Baokaka's height.
+- **Pose language:** shoulders hunched, paws held together at chest height, toes slightly in (shy). In battle: protective, arms spread in front of the party.
+- **Expressions:** 害怕 (sweat drop, brows up, eyes wet), 歹勢 (sheepish, paw behind head), 勇敢 (brows set, moon glowing), 開心 (eyes closed, big smile).
+- **Black-on-night rule:** a strong cool rim `#9CC8FF`, glossy sky-tinted highlights, and a lighter muzzle and moon, so he never disappears at 00:00.
+- D-style art: `options/d-anime/cast/heitang-{scared,brave,laugh}.svg`.
 
-### 7.7 Battle backdrops
-One template, `Stage` v2, in `backdrops.tsx`. The layer stack is in `reference/battle.html`:
-1. Sky gradient (4 stops) and stars at night.
-2. Sun or glow radial.
-3. Far ridge (0.7 opacity).
-4. Skyline with lit windows (lights-on scaled).
-5. **Landmark silhouette** in a tinted gradient with lit ledges.
-6. Horizon haze band.
-7. **Foreground framers** left and right (rocks, palms, stall awnings, temple columns): dark gradient shapes that frame the fight and give depth.
-8. Floor in perspective (vanishing at ~60% height) with step and course lines in light plus dark pairs.
-9. Warm light pool under the combatants.
-10. Bokeh motes.
-11. Vignette (`#1B1530`, 0 → 0.55).
-12. Foe aura radial behind the foe.
+### 5.5 咻咻 (antagonist → friend), four forms
 
-Composition rule: **heroes lower-left facing right, foes upper-right.** The diagonal reads naturally, keeps faces visible, and leaves the top-left for the location chip and the top-right for the foe plate.
+D-style art: `options/d-anime/cast/shushu-{normal,storm,cry,bonus}.svg`.
 
-### 7.8 Weather and time FX
-- **Rain:** two full-screen layers of `repeating-linear-gradient` streaks (angle 100°, 1px white at 0.25 and 0.15), translated with CSS animation at different speeds. Puddle rings on the ground. The `rain` grade.
-- **Mist (貓空):** 2–3 wide horizontal gradient bands (`#FFFFFF` 0 → 0.5 → 0) drifting ±20px over 12s.
-- **Steam (北投, night market):** blobs rising and fading.
-- **Fireworks** (finale at 101): radial burst of 12 lines with stroke-dashoffset, `mix-blend-mode: screen`, at most 2 at once.
-- **Sun glitter (淡水):** 6 tiny diamonds twinkling.
-
----
-
-## 8. UI/UX visual system
-
-### 8.1 Typography
-- **Family:** **Chiron GoRound TC** (Google Fonts, OFL). A rounded Traditional Chinese face with real weights 400–900. It's friendly and highly legible for older eyes, and Google serves it as `unicode-range` slices, so only the glyphs used are downloaded.
-- **Numerals and Latin:** **Fredoka** 500–700 (HP, damage numbers, round counters). Rounded and tabular-friendly.
-- **Load:** `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` + `css2?family=Chiron+GoRound+TC:wght@500;700;900&family=Fredoka:wght@500;600;700&display=swap`.
-- **Fallback:** `'Chiron GoRound TC', 'PingFang TC', 'Noto Sans TC', system-ui, sans-serif`.
-- **Scale** (replaces `tailwind.config.js` fontSize; px / line-height / weight):
-
-| Token | Size | LH | Weight | Use |
+| Form | Where | Shape | Colours | Key features |
 |---|---|---|---|---|
-| `caption` | 14 | 1.4 | 700 | meta, bar labels (floor for grandparents) |
-| `label` | 16 | 1.4 | 700 | chips, small buttons |
-| `body` | 18 | 1.6 | 700 | menus, descriptions |
-| `dialogue` | 21 | 1.62 | 700 | dialogue text |
-| `button` | 21 | 1.2 | 900 | battle commands, primary CTA |
-| `heading` | 22 | 1.3 | 900 | panel titles |
-| `title` | 28 | 1.2 | 900 | screen titles, victory |
-| `display` | 36 | 1.1 | 900 | chapter cards |
-| `hero` | 52 | 1.0 | 900 | logo lockup |
-| `number-xl` | 40 Fredoka | 1 | 700 | damage numbers (with 6px `line` stroke, `paint-order: stroke`) |
+| **咻咻** (normal) | cutscenes, Ch13 meeting, ending | A pillow-sized cloud swirl, round, with 2–3 wisp "arms"; a darker eye-hollow holding two huge glossy eyes | `#C8D4E8` body, `#8A9AC0` swirl lines, eye-hollow `#5A6A9A` | The **金鎖片** tangled in the swirl (a gold glint with a tiny bloom); teary speculars |
+| **暴風咻咻** (final phase 1) | 101 91F | Fills the sky behind the railing: a spiral storm with a dark eye | `#3A4A7A→#1E2A4E`, lightning `#FFE27A` | Glaring watery eyes, cute zigzag lightning, debris (umbrellas, leaves) orbiting, the gold lock glinting in the eye. The **布袋戲 frame** goes around the battle |
+| **哭哭咻咻** (final phase 2) | 101 91F | Smaller and softer; drooping wisps | `#9AB8E8` light blue, rain streaks `#CFEAFF` | Rain falling from the eyes, a flickering rainbow fragment, sniffle bubbles |
+| **生日加碼・咻咻** (superboss) | 象山 post-game | Fluffy, cumulus-white, bouncy | `#FFFFFF` / `#E8EEFF`, confetti in all colours | A **雞排-bag party hat**, confetti swirl, a happy face |
 
-### 8.2 Dialogue box (reference: `dialogue.html`)
-- **Layout:** a bottom sheet with 12px side margins, `surface → #FFF7EA` gradient, radius 28, min height 178, an inner 1px highlight and a soft deep shadow.
-- **Speaker portrait:** a 124px rounded square (radius 34) overlapping the top-left. The backing is a radial gradient in the speaker colour with a 3px white inner ring. The portrait is the **same sprite** cropped (`width 190%`, offset) with no separate portrait art. Swap expression via props.
-- **Listener portrait:** 78px at top-right, desaturated (`saturate(.55) brightness(.92)`). A static filter is fine.
-- **Name pill:** speaker colour, 18px/900, white text, lip shadow in the deep tone.
-- **Text:** 21px/700, typed at 30ms per char with +120ms pauses at `，。！？`. Untyped text shows at 0.18 opacity, so the line length is known and nothing reflows. Key terms (places, items) are `em`: persimmon `#C9601F` with a sunflower highlighter underlay.
-- **Footer:** page dots (current = pill), "點一下繼續", a sunflower ▼ button that bounces 6px at 1.2s. A tap anywhere finishes the line, then advances (existing behaviour).
-- **Choices** (if the writer adds any): up to 3 full-width tonal buttons, 60px tall, above the box. The selected one becomes primary.
+### 5.6 Recurring NPCs
 
-### 8.3 Battle screen and command panel (reference: `battle.html`)
-- **Stage** is the top ~520px, the **panel** the bottom ~344px (radius 30 top, cream gradient, upward shadow).
-- **Top chips** are glass: the location and time on the left, the round counter on the right.
-- **Foe plate** is glass at top-right: a 頭目 tag for bosses, name 19px/900, Fredoka HP numbers, a 12px bar with a lag bar (`#FFE2A8`) that catches up 400ms after damage.
-- **Party strip:** one card per hero with a 46px circular portrait, name, HP bar (9px), MP bar (6px), and numbers. The active hero's card gets a sunflower 2.5px inset ring and `#FFF1C9` fill. On stage, a "輪到你" pill plus a sunflower ellipse ring under the active hero.
-- **Prompt line:** "寶咖咖要做什麼？" (18px/700).
-- **Commands:** a 2×2 grid, buttons 70px tall, radius 22, 38px icon tile with tinted backing, label 21px/900 plus a sub-label (12px Fredoka/TC) with live info (MP cost, item count). 攻擊 is the only primary. Pressed state: `translateY(3px)`, lip shadow reduced to 1px, 80ms.
-- **Targeting:** foes get a pulsing sunflower ring and a bobbing ▼. Tap the foe directly, never a list.
+Adults use the lighter chibi (4–5 heads), simpler eyes (iris + one highlight) and ~70% saturation, so heroes pop. One shared template (`adult(cfg)` in `options/_gen/cast_d.py`) sets the skeleton, torso and limbs; each NPC is a config for hair, outfit, eyes and props. Art: `options/d-anime/cast/npc-*.svg`.
 
-### 8.4 HP/MP bars
-- Rounded track `rgba(58,40,56,.12)` (light) or `rgba(0,0,0,.35)` (glass).
-- The fill is a vertical gradient with a **3px inner highlight stripe** (`rgba(255,255,255,.45)`, inset 6px). That one detail makes bars look premium.
-- Damage: the fill eases down in 300ms and the lag bar follows after 400ms.
-- Heal: the fill grows with a brief sparkle at the bar end.
-- Thresholds: <40% orange, <20% red + pulse + icon.
+| NPC | Design |
+|---|---|
+| **阿伯 → 土地公** | Small and round. **White eyebrows that hide his eyes**, a white beard, a gnarled walking stick. The same face and stick every time; only the hat and outfit change per chapter (table below). Revealed as 土地公 in the post-credits: the same face in a gold-trimmed robe and official's hat, with a soft golden halo; the statue has stamp ink on one finger |
+| **店員小哥** | Lanky young man, **green-and-orange striped vest** (unbranded), name badge, tired half-lidded eyes with a perfect smile, a scanner gun. Variants: a portable cart (貓空), delivery cap with a cake box (ending) |
+| **廣播姊姊** | A soft, glowing translucent figure (light-blue to white gradient, bloom) in a **conductor's cap made of light**, holding a small microphone. Only appears in the MRT, the station and the ending |
+| **迷路的背包客** | Tall foreign traveller, huge backpack, a big map held **upside down**, sun hat, hiking sandals. Friendly, confused. Ending: on the roof with the map the right way up |
+| **媽媽** | Gentle, tired; long hair in a loose bun; pastel pajamas; asleep for most of the game (eyes closed, soft smile) |
+| **爸爸** | Glasses, stubble, T-shirt and shorts, asleep on the sofa with the TV remote on his belly; in the ending, a crushed expression (comic despair lines) |
+| **阿嬤** | Short perm, grey hair, floral blouse and cardigan, reading glasses on a chain, a hand fan. Snoring behind her door at night; at 05:30, awake, warm and twinkly |
+| Chapter-local NPCs | 夜跑大哥, 池塘烏龜, 爆肝大學生, 清潔阿姨, 便當阿姨, 街舞少年, 麵線阿姨, 布行阿姨, 廟口阿姨, 南北貨老闆娘, 中藥行阿公, 撈金魚小妹, 雞排阿姨, 塔台 (talks from the tower base), 地勤姊姊 (light wands), 小白機 (sleepy plane face), 狐獴哨兵, 茶館老闆娘, 書蟲, 溫泉阿嬤, 街頭畫家, 阿給阿婆, 貓頭鷹奶奶. Light-chibi rules, one signature prop each |
 
-### 8.5 Menus and sheets
-Keep `Screen`, `AppBar`, `Button`, `Sheet` and restyle them:
-- AppBar back button: a 46px cream circle with shadow.
-- The title block becomes a cream rounded plate over art (see `dialogue.html`).
-- Cards use `cream` with the `card` shadow. Lists get 64px rows.
-- Sheets: radius 30, backdrop `rgba(27,24,48,.45)` without blur (blur over the map is expensive).
+**阿伯's disguises (×14):** 掃地阿伯 (straw hat, bamboo broom) · 校工阿伯 (cap, tool belt) · 站務阿伯 (station cap, vest) · 算命阿伯 (round sunglasses, a folding table with a lamp) · 擲筊阿伯 (temple-volunteer vest, red 筊 blocks) · 茶行阿伯 (apron, teacup) · 彈珠台阿伯 (visor, coin pouch) · 推車阿伯 (hi-vis vest, luggage cart) · 管理員阿伯 (zookeeper hat, bucket) · 租船阿伯 (life vest, oar) · 澡堂阿伯 (towel on his head, wooden pail) · 海芋田阿伯 (rain boots, a bunch of calla lilies) · 渡輪阿伯 (sailor cap, rope) · 清潔阿伯 (cleaner's cap, mop)
 
-### 8.6 Title screen
-- **Full-bleed living scene:** a dawn Taipei skyline (101 centre, 陽明山 ridge), a slow parallax drift (0.5px/s), and Baokaka and Mocha on a small brick-and-grass diorama island in the lower third. Mocha's tail flicks and Baokaka blinks.
-- **Logo lockup:** the game title (final name from the writer) in Chiron GoRound TC 900 at 52px. Sunflower fill with a 7px `line` stroke (`paint-order: stroke`), a soft drop shadow `0 6px 0 rgba(46,34,53,.25)`, two lines with a slight –3° tilt on line 2. The kicker above is in Fredoka caps ("A TAIPEI ADVENTURE").
-- **Actions:** the primary "開始冒險" or a save card ("繼續冒險 · 第3章 西門町" with chapter thumbnail colours), and a ghost "設定".
+---
 
-### 8.7 Chapter title cards
-- Full screen in the chapter's sky gradient.
-- The landmark silhouette **draws itself** in cream line art (`stroke-dashoffset`, 900ms), then fills with a 30% tint.
-- Text: kicker "第 3 章" (Fredoka/TC 16px, tracking .3em), title (36px/900), location line (18px) with a tiny MRT line-colour bullet.
-- Holds 2.2s total, a tap skips. Reduced motion: no draw-on, a 300ms fade.
+## 6. Foes and bosses
 
-### 8.8 Transitions
-| From → to | Transition | Duration |
+### 6.1 Family rules
+
+- **Mischief objects and animals:** the object's real silhouette plus one exaggerated feature. Anime eyes have white sclera, a gradient iris (magenta-violet for "dizzy from the wind") and an angled brow; at most one fang; hatched blush.
+- **Foe rim light:** violet `#D3A8FF`, plus a faint violet aura in battle. Bosses add a gold accent and an **aura bloom**.
+- **Calmed state:** on defeat, swirl-eyes → a soft smile, then they hop away or give the item back (FX: dizzy stars, then a sparkle). Nothing dies.
+- **Sizes:** regular foe 90–110px on the battle stage (up to 3); boss 170–220px; final 320px+.
+
+### 6.2 Regular foes (34)
+
+| # | Foe | Where | Silhouette | Palette | Key features / animation |
+|---|---|---|---|---|---|
+| 1 | 灰塵球 | home | Round fuzzball with a jagged fur edge | grey `#B8B4C4`/`#8A869A` | Dot eyes, one stray hair; rolls (rotate), squashes on guard |
+| 2 | 落葉精 | daan | Pinwheel of three leaves around an acorn | green `#6AAE72`, gold `#E8B84A`, acorn `#9A6A48` | Smiling acorn face; constant spin |
+| 3 | 暗光鳥 | daan, ntu | Hunched night heron, an egg-shaped body | grey `#8A90A8`, black cap, red eyes `#E5483E` | Two white head plumes, a coffee cup in one wing, cartoon stare (not scary) |
+| 4 | 暴衝腳踏車 | ntu | Side-view campus bike, front wheel raised | rust red `#B8584A`, chrome | Handlebar eyes, bell mouth, a basket of textbooks; wheelie bounce |
+| 5 | 杜鵑花精 | ntu | Five-petal blossom with leaf arms | pink `#F08CB4`, leaf `#5E9A52` | Rosy cheeks, pollen puff cloud on sneeze |
+| 6 | 指標小鬼 | station, underground, ximen, bopiliao | Rectangular sign on stick legs | green `#2E8A5A`, white | Arrow arms pointing opposite ways, a grinning panel face |
+| 7 | 滾滾行李箱 | station, airport | Hard-shell case, handle up like an antenna | teal `#3E8F88`, travel stickers | Wheel feet, the lid opens as a mouth (guard) |
+| 8 | 霓虹招牌精 | ximen | Cat-face neon sign | neon pink `#FF5FA2` / cyan `#4FD1C5` | **Neon tube** rendering; one letter flickers |
+| 9 | 夾娃娃爪 | ximen | Three-prong claw on a short cable | silver `#C8CCE0`, plush in its grip | Hopeful face on the hub; swings |
+| 10 | 中藥抽屜怪 | dadaocheng | Cabinet of small drawers | wood `#9A6A48`, brass pulls | Drawers labelled 當歸/枸杞/紅棗 pop open as mouths; spectacles |
+| 11 | 布匹蛇 | dadaocheng | Long S-curve of unrolled fabric | red peony 花布 `#D23B30` with pink/green print | Button eyes, a pinking-shear tongue |
+| 12 | 珍珠粉圓 | shilin | Glossy sphere | black-plum `#2A1630` with white highlights, pink straw | A straw stub as its "hat"; bounce squash; groups of 3 (proven in the battle mock) |
+| 13 | 臭豆腐精 | shilin | Golden cube | fried gold `#E8B04A`, cabbage `#B8D88A` | Pickled-cabbage hair, wavy green stink lines |
+| 14 | 大腸包小腸 | shilin | A bun hugging a small sausage | sausage red-brown `#A8483A`, rice bun cream | Two faces; the small one talks |
+| 15 | 台灣獼猴 | zoo, maokong | Crouching macaque | brown-grey `#8A7A6A`, pink face | Stuffed cheeks, stolen 鳳梨酥; jumpy |
+| 16 | 穿山甲 | zoo, maokong | Half-rolled pangolin | bronze scales `#B8864A` | Pinecone-plate scales, a small nose; rolls into a ball on guard |
+| 17 | 山嵐 | maokong, bitan | Wispy fog cloud | pale green `#D8F0E0` | Sleepy face, a tea-leaf cowlick; soft blur edge (static bloom ok) |
+| 18 | 硫磺煙 | beitou, yangming (小油坑) | Steam puff | yellow-white `#F4F0C8` | Egg-shaped face, smell lines, apologetic brows |
+| 19 | 啪噠木屐 | beitou | A pair of geta | wood `#C89A6A`, red straps | Faces on the toes; hop out of step |
+| 20 | 鐵蛋 | tamsui | Small dark glossy egg | `#4A2E22` with gloss | Stern face, a tiny headband; rock-solid guard |
+| 21 | 招潮蟹小兵 | tamsui | Small crab, one huge claw raised | blue `#3A6AB8`, orange claw `#F08A3A` | Paper helmet; salute |
+| 22 | 翻花雨傘 | tower, summit | Transparent umbrella flipped inside out | clear `#DDE6FF` at 0.6 opacity, metal ribs | Pouty eyes on the canopy; the classic typhoon image |
+| 23 | 天價高麗菜 | tower | Plump cabbage | green `#8AC86A`/`#5E9A52` | A **$150** price tag, an outer-leaf crown; smug |
+| 24 | 旋風小子 | tower, summit | Small white whirlwind | white `#F4F6FF`, speed lines | A candy wrapper caught in it; giggly spin |
+| 25 | 跑道燈精 | airport, brown car | Blue glass dome on a metal stub | blue glass `#5A9AFF`, steel | Face in the glass, light rays; blink loop |
+| 26 | 行李拖車 | airport | Tiny baggage tractor with two empty carts | yellow `#F2C24A`, grey carts | Headlight eyes, honking horn (sound marks) |
+| 27 | 迷路的交通卡 | ride cars | Flat card, floating | generic pastel card with a moon sticker | A cute face, 「嗶」 marks; **not** a real card design |
+| 28 | 鴿子 | longshan, bopiliao | Plump round city pigeon, chest out | grey `#9A9EB4`, iridescent neck `#5AC8A0`/`#B87AD8` (hard-edged cel bands), coral feet | A bottle-cap "badge" on the chest, orange eye; head-bob loop; gang of 3 |
+| 29 | 青草精 | longshan, bopiliao | Bundle of fresh herbs tied with a red string | herb greens `#5E9A52`/`#8AC86A`, red string `#E5483E` | Leafy face, a tiny teacup hat; sways like a bouquet |
+| 30 | 小天鵝船 | bitan | Small white swan pedal boat (side 3/4) | white `#F4F6FF`, red beak `#E5483E`, pastel hull trim | A cute face on the swan head; bobs on ripple rings; groups of 3 |
+| 31 | 水漂石 | bitan | Flat oval pebble mid-hop | slate grey `#8A90A0` with a wet highlight | Grin, speed lines, ripple rings under it; skips across the stage |
+| 32 | 芒草精 | qingtiangang | Tuft of silver 芒草 with a feathery plume | silver `#DCD8E8`, straw stems `#C8B47A` | Plume "hairdo", sleepy face; waves in the wind |
+| 33 | 濃霧團 | yangming, qingtiangang | Big soft fog blob | white `#F0F2F8` at 0.85 opacity, soft edge (static blur ok in backdrop, not on the sprite: use a feathered gradient edge instead) | Only two round eyes show; drifts |
+| 34 | 海芋精 | yangming | White calla lily standing on its stem | white spathe `#FFFFFF` with green shading, yellow spadix `#FFD25A` | The spadix is a "nose", leaf skirt; glows softly in fog |
+
+### 6.3 Bosses
+
+All bosses get a gold accent, an aura bloom and a name plate with a 「頭目」 tag. Chapter bosses use the standard stage; the **final fights use the 布袋戲 proscenium**.
+
+| Boss | Ch / where | Silhouette | Palette | Key features / staging |
+|---|---|---|---|---|
+| 松鼠大王 | 1 · 大安 band-shell | Chubby squirrel, a tail bigger than his body | red belly `#C8583A`, grey-brown back | Bottle-cap crown, the **scallion** held like a sceptre; on the band-shell stage |
+| 鵝霸 | 2 · 醉月湖 | Big white goose, long S-neck | white `#F4F2EA`, orange beak `#F08A3A` | Tiny graduation cap, the **book upside down** under its wing; lake-pavilion backdrop |
+| 閘門巨人「嗶嗶」 | 3 · 台北車站 | Robot made of 3 fused turnstiles | steel `#B8BCC8`, red/green LEDs | Flap-gate arms, a card-reader face with a red ✕ that turns green when calmed, an LED mouth |
+| 指標大王 (optional mini) | 3 · 地下街 dead end | A giant signpost bristling with ~30 arrows in every direction | sign green `#2E8A5A`, white arrows, yellow "you are here" dot | Arrows rotate independently (CSS), a big panel face; the arrow-wall backdrop |
+| 卡拉OK大王 | 4 · 紅樓 | Karaoke cabinet body, disco-ball head | wood grain `#8A5A3A`, mirror ball, red bow tie | Speaker cheeks, a lyrics screen with original lyrics, the **gold mic**; neon stage light |
+| 鴿子老大「咕咕」 | 5 · 剝皮寮 rooftop | A huge round pigeon on a nest of glittering junk | grey `#9A9EB4`, iridescent neck bands, gold bottle-cap crown | The **月亮票** tucked under one wing (gold glint), puffed chest, a nest of foil, caps and buttons; moonlit rooftop |
+| 舞布龍 | 6 · 大稻埕碼頭 | Long dragon of patchwork 花布 | peony red, indigo `#2E4A8A`, gingham | Lion-dance head, pom-pom whiskers, the **abacus** in its jaws; flowing S-curve across the stage |
+| 超級大雞排 | 7 · 士林 (地下美食區 kitchen) | Huge irregular golden slab | fried gold `#E8A848` with a crumb texture | Paper-bag cape, a pepper-shaker hat, the **drumstick** as a sword; kitchen backdrop with fryer glow |
+| 風向袋小姐 | 8 · 松山機場 runway end | Orange-and-white windsock on a tall pole | `#F08A3A` / `#FFFFFF` stripes | A sweet face at the sock's mouth, swirl eyes, the **red string** wound round her; spins like a top |
+| 茶壺爺 | 9 · 貓空 茶館 | Huge round clay teapot | clay `#8A4A32`, steam white | A scholar's-hat lid, steam beard and eyebrows, teacup hands, **celery** in the spout |
+| 天鵝船大姊 | 10 · 碧潭 floating platform | A large white swan pedal boat, regal S-neck | white `#F8F8FF`, red beak, pink heart canopy `#F4A0B8`, warm candle glow | A heart-shaped canopy, the **「1」 birthday candle** glowing on her head like a lighthouse lamp; mirror-lake backdrop with the suspension bridge |
+| 溫泉蛋爺爺 | 11 · 地熱谷 | Giant cracked egg | shell `#F4E6C8`, crack lines | Folded towel on his head, a bushy white moustache, the **stethoscope**; steam |
+| 大水牛「阿哞」 | 12 · 擎天崗 summit meadow | A big gentle water buffalo, wide curved horns | slate `#5A5A6A` with a blue sheen, cream muzzle, brass bell | Sleepy, kind eyes (never menacing), mist curling round the horns, the **red invitation card** on one horn; fog backdrop with pampas framers |
+| 招潮蟹將軍 | 13 · 情人橋 | Large fiddler crab, one huge claw | orange claw `#F07A3A`, blue body | Beret, paint-splattered cape, an easel on his back, the **paintbrush** in his claw; 淡江大橋 behind |
+| 定心球「阿穩」 | 14 · 101 89F (mini) | Giant golden sphere on cables | gold `#F2C24A` with metallic bands | A gentle face, swirl eyes when dizzy; rocking pendulum motion |
+| 暴風咻咻 / 哭哭咻咻 / 生日加碼・咻咻 | 14 · 91F / post-game | See 5.5 | — | 布袋戲 frame (final); a sunrise lighting change between phases |
+
+---
+
+## 7. UI and UX system (anime-JRPG, grandparent-readable)
+
+### 7.1 Typography and font loading
+
+- **Body and dialogue:** **Chiron GoRound TC** 500/700/900 (rounded Traditional Chinese). **Names, titles and command labels:** **Noto Serif TC** 700/900 (elegant anime-JRPG feel). **Numbers and Latin:** **Fredoka** 500/600/700. All three are on Google Fonts with zh-Hant coverage. Do not use Zen Maru Gothic or M PLUS Rounded: they lack many Traditional characters (咖, 寶 forms).
+- **Loading:** `<link rel="preconnect" href="https://fonts.googleapis.com">` + `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` + one `css2?family=Chiron+GoRound+TC:wght@500;700;900&family=Noto+Serif+TC:wght@700;900&family=Fredoka:wght@500;600;700&display=swap`. Google's unicode-range slicing downloads only the glyphs used. Budget ≤250KB on first paint. Fallback stack: `'PingFang TC','Noto Sans TC',system-ui`.
+- **Scale (px / weight):** caption 14/700 · label 16/700 · body 18/700 · **dialogue 21/700, line-height 1.7** · button 21/900 serif · heading 22/900 serif · title 28/900 serif · chapter title 36/900 serif · logo 52/900 serif.
+
+### 7.2 Panels and buttons
+
+- **Panel:** vertical gradient `rgba(22,26,78,.96)→rgba(10,11,34,.99)`, a **1px gold border** `#E8C77A`, an inner 1px gold line at 30% inset by 4px, radius 6. Corners on major panels get **gold diamond ornaments** (10px, rotated 45°, gradient `#FFF2C8→#C9A04A`, glow).
+- **Command button:** 70px tall, navy gradient `#262E74→#161B4C`, gold hairline border plus an inner hairline, a 36px icon in a gold-ring circle, serif 21px label with 0.1em tracking, and a 12px sub-label with live info (MP cost, item count).
+- **Primary button** (one per screen): gold gradient `#FFEFC0→#F0C060→#D89A3A`, navy text, soft gold glow.
+- **Pressed state:** translateY(2px), glow off, 80ms.
+- **Glass chips** (location / time, round): navy translucent, gold hairline, serif text, Fredoka numbers in gold.
+
+### 7.3 HP and MP bars
+
+- 7px HP bar and 5px MP bar, square ends, dark track with a 1px gold-at-35% frame, horizontal gradient fills (3.1).
+- On damage: the fill eases down over 300ms and a pale lag bar catches up after 400ms. On heal: it grows with a sparkle at the end.
+- Numbers in Fredoka 12px on one line ("體力 84/100  元氣 9", with a 6px gap).
+
+### 7.4 Battle screen (portrait, 4 heroes)
+
+- **Stage:** top 500px. **Panel:** bottom 346px.
+- **Heroes** lower-left facing right, staggered on a diagonal. With 4 heroes, use two rows, 黑糖 at the back. **Foes** upper-right, up to 3.
+- **Party strip:** 2×2 cards, each with a 48px gold-ringed **head portrait** (from the head-expression assets), a serif name and two bars.
+- **Active hero:** a gold-bordered card with glow, a 「輪到你」 gold tag above the sprite, and a blurred gold light ring under the sprite.
+- **Foe plate:** a slanted ribbon at top-right with gold top and bottom rules, an "ENEMY" or "頭目" kicker, a serif name and ×count. Per-foe mini HP bars sit under the sprites.
+- **Damage numbers:** Fredoka 44 italic, white with a deep-pink stroke and pink glow, plus a serif sub-line (好痛！／效果絕佳！). Rise 24px and fade over 600ms.
+- **Boss fights:** a **布袋戲 proscenium** around the stage (vermilion `#B5322F` frame, scalloped valance with gold studs, gold inner rules). It slides down on boss intro (400ms).
+- Commands: 攻擊（primary）/ 才藝 / 道具 / 防禦, with 逃跑 as a text link on the prompt row.
+
+### 7.5 Dialogue box with bust portrait
+
+- Bottom box: 12px margins, min height 172px, panel style plus 4 corner diamonds.
+- **Bust portrait:** ~300×300, rising from behind the box's top-left (head and shoulders above the box edge), with a soft radial backlight in the speaker's colour.
+- **Name plate:** a slanted gold tab, serif 19px, 0.18em tracking.
+- **Text:** 21px, typed at 30ms per character (+120ms after `，。！？`). Untyped text is ghosted at 20% so nothing reflows. Key terms in gold with a soft glow.
+- **Footer:** diamond page dots, 「點一下繼續」, a pulsing gold diamond. Tap finishes the line, then advances.
+- **Background:** the map with a dark gradient scrim. Use a cheap pre-blurred snapshot on high-end devices only.
+- **Expressions:** the script line can specify `expr`; portraits swap face groups.
+
+### 7.6 Chapter title card with clock
+
+- Full screen in the chapter's sky colours (3.2), with a slow star twinkle.
+- The landmark silhouette **draws itself** in gold line art (stroke-dashoffset, 900ms), then fills to 25%.
+- **Departure-board clock:** a dark board with gold frame and amber dot-matrix digits (`#FFB84A`, Fredoka or a drawn segment font). The time flips in with split-flap animation (each digit rotateX, 60ms stagger). Station-board style line: 「下一站：台灣大學」.
+- **Text:** kicker 「第 2 章」 (serif 16px, tracking .3em) · title (serif 36px) · location plus an MRT line-colour dot.
+- 2.4s total; tap skips. Reduced motion: no flip, no draw-on, 300ms fade.
+
+### 7.7 路線圖 (MRT travel screen)
+
+- Navy panel, full screen. Five line colours drawn as 6px rounded paths in a stylised (not official) layout. Station dots are gold rings.
+  - **Unlocked:** filled gold with a glow.
+  - **Current:** a blinking double ring plus a mini Baokaka head icon.
+  - **Locked:** grey with 「?」.
+  - **New:** a 「叮！」 gold burst (500ms).
+- Tap a dot → a confirm sheet (panel plus primary 「搭乘」) → the door-close transition.
+- Labels in serif 16px with English below in Fredoka 11px. Dots and labels have a ≥44px hit area.
+
+### 7.8 Menus, 集章本, 抓周盤
+
+- **集章本:** a parchment book spread with **14 stamp circles**. Each stamp is the location's landmark in vermilion ink (an ink-stamp texture: a slightly rough edge from a static mask).
+- **抓周盤 screen:** a red lacquer round tray (as drawn on the Mocha sheet), 9 slots around a centre 金鎖片 slot. Obtained items appear with a gold sparkle; missing ones are faint outlines.
+- **Lists:** 64px rows; selection uses a gold border plus glow.
+
+### 7.9 Transitions and motion
+
+| Event | Transition | Duration |
 |---|---|---|
-| Map → battle | **MRT doors:** two MRT-blue panels with window strips slide in from the sides (ease-in), a chime-light flash, then slide out over the battle stage | 280 + 120 hold + 320ms |
-| Battle → victory | Foe pops to an object + sparkle, a sunflower radial wash, the victory card slides up | 600ms |
-| Map → map (exit) | Iris wipe toward the exit tile (circle `clip-path`) | 400ms |
-| Any → chapter card | Crossfade via the sky colour | 300ms |
-| Dialogue in/out | Sheet up 18px + fade; portrait pops with overshoot | 240ms |
-| **Reduced motion** | Everything becomes a 200ms crossfade | — |
+| Map → battle | **MRT doors close** (two navy panels with line-colour stripe and window), chime-light flash, doors open on the battle | 280 + 120 + 320ms |
+| Boss intro | 布袋戲 curtain frame drops in, name plate slides | 400ms |
+| Battle → victory | Foe calms (swirl → smile, sparkle), gold radial wash, result card slides up | 600ms |
+| Map → map | Iris wipe toward the exit | 400ms |
+| Ride car → station | Door chime, doors open to white, then fade into the map | 500ms |
+| Dialogue in/out | Box slides up 18px plus fade; bust rises 24px with slight overshoot | 240ms |
 
-### 8.9 Iconography
-- 24px grid, 2.2px stroke, round caps and joins, `currentColor`. Extend the existing `icons.tsx`; no emoji, no icon font.
-- In battle commands icons sit in a 38px tinted tile (attack sunflower, skill violet `#EDE2FF`/`#6B47B8`, item green, defend blue).
-- Taipei-flavoured glyphs where they fit: items as a bubble tea, a 刈包, a pineapple cake; a map pin as a tiny 101.
+- **Tokens:** instant 80 · quick 160 · base 240 · slow 400 · scene 600ms. **Easings:** out `cubic-bezier(.2,.8,.2,1)`, pop `cubic-bezier(.34,1.56,.64,1)`.
+- **Character motion:** CSS transforms on rig parts (`transform-box: view-box`, origins at joints).
+  - idle: breathe 2.4s, blink every 3.5–5s.
+  - crawl cycle: 2 beats per tile, alternating diagonal limbs.
+  - cat walk: 4-beat diagonal gait, tail sway.
+  - attack: anticipation 120ms → strike 90ms → hit-stop 60ms → recover 220ms.
+  - hurt: squash plus a 2-frame flash.
+  - victory: hop loop.
+- **Reduced motion** (OS setting or the in-game 「減少動態」 toggle): no loops, parallax, shake or flashes; everything becomes a 200ms fade.
 
-### 8.10 Motion principles
-- **Tokens:** `instant 80ms`, `quick 160ms`, `base 240ms`, `slow 400ms`, `scene 600ms`.
-- **Easings:** `out` = `cubic-bezier(.2,.8,.2,1)`, `in` = `cubic-bezier(.4,0,1,1)`, `pop` = `cubic-bezier(.34,1.56,.64,1)` (overshoot), `sway` = `ease-in-out`.
-- Stage every action: **anticipation → action → follow-through**. Never move more than two things at once in UI.
-- Loops (idle, ambient) are slow (≥2s) and offset per instance so nothing pulses in sync.
-- **`prefers-reduced-motion: reduce`:** no loops, no parallax, no camera shake, no flashes. Pops become fades; flying FX become in-place fades (existing `fx-hold` behaviour). Also offer an in-game "減少動態" toggle that sets the same class, because grandparents may not know the OS setting.
+### 7.10 Battle VFX
 
----
+Keep the 3-layer architecture in `BattleFx.tsx`:
+1. **Anticipation:** a glyph circle under the caster.
+2. **Impact:** hit-stop, an element impact shape, a ring, 6–10 particles.
+3. **Resolution:** the damage number.
 
-## 9. Battle VFX language
+| Element | Shapes |
+|---|---|
+| 積木 | toy-block arc and bounce |
+| 哭聲 | sound rings |
+| 貓爪 | 3 slash arcs |
+| 羽毛 | blue feathers |
+| 熊掌 | ground shock ring with dust |
+| 治療 | gold 4-point stars |
+| 護盾 | magpie-bridge arch |
+| 颱風 | spiral and rain |
 
-Keep the 3-layer architecture of `BattleFx.tsx` (circle, wash, hit) and restyle it:
-
-1. **Anticipation (0–120ms).** The caster's attack pose, and for skills a **glyph circle** under the caster. It's no longer a wuxia rune: an iso-flattened ring with Taipei motifs (a drum-beat ring for Baokaka, paw-print ring for Mocha), drawn with stroke-dashoffset in the element colour.
-2. **Impact (at hit).**
-   - **Hit-stop:** 60ms freeze on both sprites.
-   - **Impact shape** per element (below), 0.9 → 1.15 → 0 scale with the `pop` easing over 260ms.
-   - **Shockwave ring** (stroke scales 0.6 → 1.6, opacity 0.7 → 0).
-   - **6–10 particles** (SVG shapes on transform paths).
-   - The target plays `hurt`.
-   - **Screen shake** only on crits, boss moves or KOs (≤4px, 180ms).
-3. **Resolution.** The damage number pops (Fredoka 40, cream fill, 6px `line` stroke, a gold sub-label like "好痛!" or "效果絕佳!"). It rises 24px on an arc over 600ms and fades. Heals use green numbers with a "+".
-
-**Element families.** Shape differs as well as colour, for colour-blind safety.
-| Element | Colour | Impact shape | Particles |
-|---|---|---|---|
-| 鼓聲 Sound (Baokaka) | sunflower `#FFE27A` + cream | concentric rings + 12-point star | music notes, small rings |
-| 貓爪 Claw (Mocha) | cream → peach `#FFC9A8` | 3 curved slash arcs | tufts of fur (soft ovals) |
-| 水 Water | water `#6FC2DC` | splash crown | droplets |
-| 光 Sparkle / heal | gold `#FFE27A` + white | 4-point stars | twinkles rising |
-| 風 Wind | mint `#A8E6CF` | spiral swoosh | leaves |
-| 雷 Thunder | `#FFF27A` + violet edge | zig-zag bolt | sparks |
-| 甜 Sticky (boba foes) | milkTea + pearl | goo splat | pearls bouncing |
-| 夜 Mischief (foe default) | aura `#B57BFF` | swirl | violet motes |
-
-**Rules:**
-- An element wash (full-screen `mix-blend-mode: screen`) is ≤0.35 opacity and ≤200ms.
-- At most **2 flashes per second** (photosensitivity).
-- Damage numbers never overlap a face. Offset them up-left of the target's head.
-- All FX nodes are SVG (no canvas), at most 40 FX elements alive at once, and removed on `animationend`.
+A full-screen wash is ≤0.35 opacity and ≤200ms; at most 2 flashes per second.
 
 ---
 
-## 10. Performance budget (mid-range phone, e.g. a 2020 Android at 60Hz)
+## 8. Implementation (for engineers)
+
+### 8.1 File organisation
+
+```
+src/art/
+  palette.ts        tokens (3.1) + gradeTokens(time) (3.2)
+  geom.ts           port of limb(), blob(), crs(), crease(), hand(), footie() from options/_gen/anime2.py
+  Fig.tsx           two-pass renderer: collects <Part> contours (pass 1) and fills/cel/lines (pass 2) per depth group
+  defs.tsx          <ArtDefs/>: shared gradients (iris, blush, contact shadow, bloom), mounted once
+  rig.css           pose keyframes + joint origins
+  characters/       baokaka/{skeleton.ts, Baokaka.tsx, Head.tsx}, mocha/…, magpie/…, bear/…, shushu/…
+  npcs/  foes/  props/  landmarks/  tiles/  sky/  backdrops/  fx/  ui/
+```
+
+The Python generators in `docs/art/options/_gen/` (`anime.py`, `anime2.py`, `iso_d.py`, `ui_d.py`, `sheet_assets.py`, `sheet_page.py`, `anat.py`) are the **reference implementation**. They show the exact numbers. Port the logic; don't ship SVG strings.
+
+### 8.2 Sprite contract (D)
+
+1. **Skeleton data:** each pose is a `Record<Joint, [x, y]>` on a 200u canvas, plus per-joint radii. Volumes come from `limb()` and `blob()`.
+2. **Parts and rig:** named groups `{char}-{part}` (head, hair-back, hair-front, torso, arm-near, arm-far, hand-near, leg-near, foot-near, tail…). Animation transforms parts around joint origins.
+3. **Faces:** `Head` takes `expr`. Eyes, brows and mouth are separate groups.
+4. **Line system:** the two-pass contour (3.2u `sil`) plus thin material-tinted lines (2.3). Tapered detail marks via `crease()`.
+5. **Cel:** the clip + offset recipe (2.4); deep tones manual; the rim colour from a CSS variable `--rim` (set per location) via `style={{stroke:'var(--rim)'}}`.
+6. **Unique ids:** every clipPath and gradient id comes from `useSvgIds(prefix)` (React `useId`, colons replaced). Shared gradients live in `<ArtDefs>`, a 0×0 absolutely positioned SVG (**not** `display:none`).
+7. **No filters and no `<text>` in character sprites.** No raw hex outside `palette.ts` (lint).
+8. **Budgets:** hero ≤220 elements and ≤20KB serialised; foe ≤160; NPC ≤120; tile ≤12.
+
+### 8.3 Levels of detail
+
+| LOD | Size | Use | Keep | Drop or simplify |
+|---|---|---|---|---|
+| **portrait** | 260–320px | dialogue bust, sheets | everything: iris rays, hair strands, blush hatching, fold creases | — |
+| **battle** | 150–200px | battle stage | eyes with 2 speculars, angel ring, main folds, finger splits | iris rays (optional), star print reduced to 4 stars |
+| **map** | 56–66px | iso map actors | silhouette, eyes (iris + 1 highlight), hair clumps (3 max), limb joints | iris rays, hatching, finger splits (mitten contour OK at this size), star print, creases; contour width 4u so lines survive |
+| **icon** | 46–48px | party cards, menus | head-only crop from the expression heads | body |
+
+Implement as `lod` props on the same components (not separate art). The skeleton and volumes stay identical; only detail layers toggle.
+
+### 8.4 Backgrounds and layers
+
+- **Map stack** (back → front): `SkyLayer` (time-driven gradient, stars, moon, clouds, skyline, bokeh; parallax 0.1/0.2/0.35×) → ground SVG (memoised, graded tokens) → cast shadows → actors (painter's sort `c+r`; multi-tile props anchor at the front-most tile) → light sources (bloom gradients, `mix-blend-mode: screen`) → weather → UI.
+- **Filters:** `feGaussianBlur` is allowed for bloom, cloud softening and reflections **only inside static layers** (sky, skyline, backdrop, iso ground). Those layers never animate; the camera translates them. ≤8 blurred elements per layer. Characters, FX and moving things never use filters.
+- **Battle backdrops:** one `Stage` component per location config (4.2 columns), lazy-loaded per chapter (≈30–80KB each).
+
+### 8.5 Performance budget (mid-range phone)
 
 | Item | Budget |
 |---|---|
-| Frame time while walking the map | ≤12ms scripting + paint at 4× CPU throttle (Playwright CDP `Emulation.setCPUThrottlingRate`) |
-| Ground layer | **1** SVG per map, memoised. No per-tile DOM nodes. ≤1,500 SVG elements for a 20×20 map with marks |
-| Sprite complexity | heroes ≤120 elements, foes ≤90, NPCs ≤70, props ≤40, tiles ≤12 |
-| Gradients | ≤10 per sprite, shared material gradients defined once (§11.2) |
-| SVG filters | **0 at runtime inside sprites.** One static grain overlay (data-URI background). The `hurt` brightness flash is ≤2 frames on one sprite |
-| `backdrop-filter` | ≤2 small elements per screen, never over animating content larger than the element |
-| `mix-blend-mode` | ≤3 full-screen layers (grade multiply, lights screen, grain multiply) |
-| Animated properties | `transform`, `opacity` only. `will-change: transform` only on the camera layer and FX in flight |
-| Concurrent animations | ≤6 ambient + the party + ≤40 FX nodes |
-| Fonts | 2 families via Google Fonts slices, ≤150KB first paint, `display=swap` |
-| Total DOM on world screen | ≤3,000 nodes |
-| JS bundle (art) | sprites tree-shaken per chapter if they exceed 120KB gzip (lazy-load chapter sprite packs) |
+| Map frame time | ≤12ms at 4× CPU throttle while walking |
+| DOM (world screen) | ≤3,000 nodes; ground is 1 SVG |
+| Animated elements | ≤6 ambient + party + ≤40 FX nodes; transform and opacity only |
+| Blend layers | ≤3 full-screen (`screen` light layer, optional weather, grain) |
+| `backdrop-filter` | ≤2 small elements, never over animating content |
+| Fonts | ≤250KB first paint |
+| Per-chapter art chunk | ≤120KB gzip (backdrop + chapter foes + props) |
+
+### 8.6 Visual QA
+
+- **`#/artlab` dev route:** every character at every LOD on light, night and the location's floor; silhouettes; skeleton overlays; every expression; every tile material at 3 clock times; every backdrop; FX frozen at impact.
+- **Playwright** (`scripts/visual-check.mjs`, global Playwright with `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`): screenshot the art lab and the key screens (title, chapter card, map, dialogue, battle, boss battle, travel screen, 集章本, 抓周盤) at 390×844 and 375×667. Diff against baselines (pixelmatch, threshold). Run in CI for art PRs.
+- **Perf:** the same script with `Emulation.setCPUThrottlingRate(4)`; walk 10 tiles and assert the median frame ≤16ms.
+- **Lint tests (vitest):** no duplicate ids across two mounted copies; no raw hex in sprites; element counts within budget; text-token contrast ratios.
+- **Human review:** every character PR includes its skeleton overlay and its sheet.
+
+### 8.7 Build order
+
+1. **Foundations:** `palette.ts` tokens and `gradeTokens`, fonts, `geom.ts` + `Fig.tsx` port, `<ArtDefs>`, `useSvgIds`, art lab route.
+2. **Heroes:** 寶咖咖 (crawl / sit / first-steps, 4 expressions) and 摩卡貓 (sit / walk, 4 expressions) at all LODs, plus rig animations.
+3. **UI kit:** panels, buttons, bars, dialogue with bust, chapter card with clock, battle layout (4 heroes), MRT door transition.
+4. **Ch1–2 environments:** home, 大安 (sky layer, tiles, band-shell, banyans), NTU (palms, library, lake); foes 1–5; bosses 松鼠大王 and 鵝霸; 阿藍 sheet and sprite.
+5. **MRT and Ch3–5:** ride cars (5 palettes), 路線圖 screen, 台北車站 (checkered hall) + 地下街, 嗶嗶, 指標大王, 迷路的交通卡, 廣播姊姊; 西門町 (neon); 龍山寺/剝皮寮 with 鴿子 and 咕咕.
+6. **Chapters 6–8:** 大稻埕 + 永樂市場, 士林 + 地下美食區, 松山機場 (+ deck), with their foes and bosses.
+7. **Chapters 9–13:** 黑糖 (sheet and sprite), 動物園/貓空 storm view, 碧潭 (mirror lake, suspension bridge, swan boats), 北投 steam, 月亮公車, 陽明山 fog + 擎天崗, 淡水 with 淡江大橋.
+8. **Finale:** 信義 plaza, 101 interior and summit, 咻咻 four forms, 布袋戲 frame, sunrise lighting, ending scenes; post-game 象山.
+9. **Polish:** ambient life, VFX pass, reduced-motion audit, Playwright baselines.
 
 ---
 
-## 11. Implementation architecture
+## 9. Reference index
 
-### 11.1 File organisation
-```
-src/art/
-  palette.ts          tokens + MATERIALS ramps (light/base/shade/ao) + GRADES
-  grade.tsx           <GradeProvider>, useGrade(): rim/key/bounce colours as CSS variables
-  defs.tsx            <ArtDefs/>: one hidden <svg> with shared material gradients + contact shadow
-  rig.css             transform-box/origins + pose keyframes (idle/walk/attack/hurt/victory/ko)
-  sprite.ts           Sprite contract v3 (below)
-  useSvgIds.ts        per-instance id prefixing for clipPaths
-  characters/         baokaka.tsx, mochaCat.tsx (+ expressions), companions
-  folk/               Taipei NPCs
-  foes/               one file per family (mischief.tsx, wildlife.tsx, bosses.tsx)
-  tiles/              tileDefs.tsx (<symbol>s per material variant), terrain.ts (material table)
-  props/              street.tsx (post boxes, lamps, benches, scooters), nature.tsx, landmarks/*.tsx
-  sky/                SkyLayer.tsx + per-location sky configs
-  backdrops/          Stage.tsx + one config per landmark
-  fx/                 shapes.tsx (impact shapes, particles), rings.tsx
-  ui/                 grain.css, bars.tsx, portrait.tsx
-```
-Old sprites for the hidden-object and sudoku games can be removed once those games are gone. Keep `SpriteName` stable for map data where possible.
-
-### 11.2 Shared defs and filters
-- `<ArtDefs/>` is mounted once at the App root. It's an `<svg width="0" height="0" style="position:absolute">`. **Not `display:none`**, because gradients inside a `display:none` SVG fail to resolve in Chrome and Firefox.
-- It defines `m-skin`, `m-sunflower`, `m-tabby`, `m-mrt`, `m-contact`, ... using `objectBoundingBox` units, so any shape can reference `fill="url(#m-skin)"`.
-- Sprite-specific gradients (the 101 glass, the foe cup) stay local but use instance-prefixed ids.
-- Colours that change with the grade (rim, bounce) are applied through `style={{ stroke: 'var(--rim)' }}`. CSS variables don't work in presentation attributes, only in `style`.
-
-### 11.3 Unique ids
-- Every local `id` in a sprite comes from `const id = useSvgIds('bk')` (wrapping React `useId()`, sanitised: `:` is invalid in `url(#…)` in some browsers, so replace it with `-`). Then `id('headClip')` gives `bk-r1-headClip`.
-- That makes N copies (map + portrait + party card) safe on one page. The model sheet shows the string-level equivalent (`mount()` prefixes ids, `url(#)` and `href="#"`).
-- A lint test (vitest) renders every sprite twice into one document and asserts no duplicate ids and no dangling `url(#…)`.
-
-### 11.4 Sprite contract v3 (replaces `sprite.ts` comment)
-1. Root `<svg viewBox="0 0 100 100">`. The subject's feet or base sit at y≈92–95, with the contact shadow drawn first.
-2. Only `palette.ts` tokens or `MATERIALS` gradients. No raw hex in sprite files (lint: regex `#[0-9a-f]{3,6}` outside palette.ts fails).
-3. Outline: `line`, 1.6–1.9 silhouette, interior in the material shade (§5.2).
-4. Shading stack per §5.3. Every standing sprite has a contact shadow.
-5. Rig groups named `{prefix}-{part}`, with pose and expression via props (`pose`, `expression`). No animation logic inside the sprite beyond class names.
-6. No filters, no `<text>`, no bitmaps, ids via `useSvgIds`, no interactive attributes.
-7. Element-count budget per §10, checked by a test.
-
-### 11.5 IsoMap changes
-1. **Ground** becomes one memoised `<svg>` (tiles via `<use>` of `tileDefs` symbols plus seeded marks) and a light sweep. The diorama skirt is drawn on the map's outer edges.
-2. **Walls** are merged runs drawn as single prisms.
-3. **Actors and props** keep the absolutely positioned boxes, sorted by `c + r` with the multi-tile anchor fix. Size drops to ≈0.85 tile width. The contact shadow is part of the sprite.
-4. **Layers** (back → front): `SkyLayer` (parallax) → ground SVG → cast shadows → actors → lights (screen) → grade (multiply) → weather → grain. UI goes above.
-5. The tap marker becomes a soft sunflower diamond ring with a 1.2s pulse (reduced motion: static).
-
-### 11.6 Visual QA
-- **Art lab route** (`#/artlab`, dev builds only): a grid of every sprite at 48/64/124px on day/night/brick backgrounds, a silhouette row, every tile material, every backdrop at every grade, and every FX kind frozen at its impact frame.
-- **Playwright screenshot checks** (the repo already uses headless Chromium with `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`): a `scripts/visual-check.mjs` that loads the art lab and the key screens (title, world, dialogue, battle, victory, chapter card) at 390×844 and 375×667, writes PNGs, and diffs them against committed baselines with a tolerance (pixelmatch). Run it in CI on art changes.
-- **Perf check:** the same script with `Emulation.setCPUThrottlingRate(4)`, walk 10 tiles, and assert the median frame time ≤16ms from `PerformanceObserver` long-task and rAF sampling.
-- **Contrast check:** a vitest unit that computes WCAG ratios for every text-token pair used in UI (§4.5).
-- **Human review:** every new sprite PR includes its art-lab crop at 48px and 124px.
-
----
-
-## 12. Prioritised implementation plan (biggest perceived-quality jump first)
-
-| # | Work | Why first | Size |
-|---|---|---|---|
-| **P0-1** | **New Baokaka and Mocha Cat** (port `reference/*.svg` to TSX with `useSvgIds`, rig groups, expressions, `rig.css` idle/blink) | The heroes are on every screen; the identity change is mandatory for the new story | M |
-| **P0-2** | **Tokens and fonts:** `palette.ts` materials + grades, the Tailwind colour and type scale, Chiron GoRound TC + Fredoka, the grain overlay | Instantly lifts every screen, and it's the foundation for all other work | S |
-| **P0-3** | **Dialogue box v2** (portrait from the sprite, name pill, typed text with ghosting, footer) | The story-heavy game spends most of its time here | S |
-| **P0-4** | **Battle screen v2:** command panel, bars with highlight stripe, foe glass plate with lag bar, hero lower-left / foe upper-right layout, `Stage` v2 template with one landmark backdrop (象山·101) | The second most-seen screen; the mock is ready | M |
-| **P1-1** | **IsoMap v2:** single-SVG ground with material tiles, edge light, light sweep, diorama skirt (fixes the wall zigzag), sprite size 0.85 tile, contact shadows | Big quality jump on exploration; also a perf win | M |
-| **P1-2** | **SkyLayer + grades** (day/dusk/night/rain overlays, lights-on) | Gives each chapter its mood cheaply | S |
-| **P1-3** | **Landmark props:** 101 (port `iso-tiles` generator logic to a TSX component), 台北車站, 龍山寺, 紅樓; street props (post boxes, lamp, bench, scooter, palm, banyan) | Recognisable Taipei | L |
-| **P1-4** | **Foe family restyle:** mischief rules (violet rim, white-sclera eyes, crown + aura for bosses), starting with the per-chapter boss | Foes appear in every battle | M per chapter |
-| **P2-1** | VFX language (element impact shapes, hit-stop, damage-number style, MRT-door battle transition) | Polish that sells "premium" in motion | M |
-| **P2-2** | Title screen and chapter cards (draw-on landmark line art) | First impression, chapter rhythm | S |
-| **P2-3** | Ambient life and weather (pigeons, steam, lanterns, rain streaks, mist) | Liveliness | S–M |
-| **P2-4** | Mocha side-trot sprite, Baokaka walk legs, NPC folk set | Animation quality | M |
-| **P3** | Art lab route, Playwright visual and perf checks in CI, sprite lint tests | Keeps quality from regressing as content grows | S |
-
-When the writer delivers `docs/story/story-bible.md`, I'll add per-location and per-foe specs (colour script confirmations, foe roster designs, boss set-pieces) as an appendix to this document.
-
----
-
-## 13. Reference files (`docs/art/reference/`)
-
-| File | What it proves | Render |
-|---|---|---|
-| `baokaka.svg` / `baokaka-crawl.svg` | Hero recipe (seated battle pose / crawling map pose): plum line, gradient-mapped materials, AO under chin, rim light, radial blush, toddler proportions, rig groups `bk-*` | `baokaka.png`, `baokaka-crawl.png` |
-| `alan-magpie.svg`, `heitang-bear.svg` | 阿藍 (blue magpie, glasses, long raised tail) and 黑糖 (black bear; black-on-night rule: strong cool rim + glossy highlights) | `alan-magpie.png`, `heitang-bear.png`, `party-night.png` |
-| `mocha-cat.svg` | Tabby markers, fat-stroke tail with dashed rings, bandana and tag, whiskers breaking the silhouette, rig groups `mc-*` | `mocha-cat.png` |
-| `model-sheet.html` (pre-bible standing design; the rig and pose technique still applies) | Proportion guides, 5 poses driven **only by CSS transforms on rig groups** + expression swaps, 48px day/night/silhouette tests, per-instance id prefixing | `model-sheet.png` |
-| `iso-tiles.svg` (generator: `docs/art/options/_gen/tiles.py`; `NIGHT=1` renders the midnight grade) | Tile materials (grass, brick, asphalt + zebra, water, planter block), edge light, light sweep, cast shadows, diorama skirt, Taipei 101 frustum stack, banyan, post boxes, lamp, pigeons, parallax sky, hero scale on the map | `iso-tiles.png` |
-| `battle.html` | Stage v2 backdrop (象山 blue hour + 101), foe family look (珍珠大王 bubble-tea boss with violet rim, crown, aura), impact + damage number style, active-hero ring, command panel, bars | `battle.png` |
-| `dialogue.html` | Dialogue v2 over the iso map: portrait crop of the live sprite, listener portrait, name pill, ghosted typing, key-term highlight, AppBar plate | `dialogue.png` |
-| `color-script.html` | The 10 location colour scripts as mini skies + swatches | `color-script.png` |
-
-Note: `iso-tiles.svg` and `dialogue.html` load `baokaka.svg` and `mocha-cat.svg` relatively. Open them from this folder (an `<img>` tag blocks nested images, so `dialogue.html` uses `<object>`).
+| File (under `docs/art/options/`) | What it shows |
+|---|---|
+| `d-anime/sheet-baokaka.png`, `sheet-mocha.png` (+ `.html`) | **Character design sheets** in the target format |
+| `d-anime/anatomy-sheet.png` | Pose construction with skeleton overlays, silhouettes and 60px checks |
+| `d-anime/cast-sheet.png` (`cast/*.svg`) | 阿藍, 黑糖, 咻咻 ×4, 阿伯/土地公, 店員小哥, 廣播姊姊, 背包客, 媽媽, 爸爸, 阿嬤 |
+| `d-anime/characters.png` | Expressions, LOD tests, palette |
+| `d-anime/iso.png` (`iso.svg`) | Midnight iso patch: 大安-style street, 101 with lit windows, bloom, reflections |
+| `d-anime/battle.png`, `dialogue.png` | Battle (士林夜市 03:40) and dialogue with bust portrait |
+| `d-anime/overview.png` | All of the above on one board |
+| `d-anime/*.svg` | Sprites: `baokaka` (sit), `baokaka-crawl`, `baokaka-stand`, expression variants, `mocha-cat` (sit), `mocha-walk`, expression variants; `sheet/` holds heads, garments, props and swatches |
+| `_gen/*.py` | Reference generators (the exact geometry and colour numbers) |
+| `comparison.png`, `README.md` | Options A–D as presented to the owner |
+| `../archive/` | Superseded v0 drafts (option A, pre-bible) |

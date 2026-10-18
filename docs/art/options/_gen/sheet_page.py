@@ -40,7 +40,7 @@ def baokaka():
     b=[]
     b.append('<h1>寶咖咖<small>角色設定・BAOKAKA</small></h1><div class="sub">明天就滿一歲｜動漫化 3.4 頭身（真人約 4 頭身）｜主角・全隊前排｜還不會走路，用爬的</div>')
     # height ruler: head = 54*2.1 = 113px
-    b.append('<div class="ruler" style="left:300px;top:150px;height:383px">'+''.join(f'<div style="top:{int(i*113)}px"></div><span style="top:{int(i*113)-7}px">{i}</span>' for i in range(4))+'<div style="top:383px"></div><span style="top:372px;left:-64px">3.4 頭身</span></div>')
+    b.append('<div class="ruler" style="left:300px;top:150px;height:383px">'+''.join(f'<div style="top:{int(i*113)}px"></div><span style="top:{int(i*113)-7}px">{i}</span>' for i in range(4))+'<div style="top:383px"></div><span style="top:368px;left:12px">3.4 頭身</span></div>')
     b.append(f'<div class="a" style="left:300px;top:112px">{fig(bk_stand("happy","sp1"),420,420)}</div>')
     b.append('<div class="lb" style="left:388px;top:528px;width:240px">正面全身・學步（終章第一次站起來）</div>')
     b.append('<h2 style="left:30px;top:118px">服裝分層</h2>')
@@ -68,14 +68,14 @@ def baokaka():
 ・真人一歲比例再動漫化：大頭、短脖子、溜肩、圓肚子<br>・四肢肉肉但有關節：手肘、手腕褶、膝蓋、腳踝<br>・手：短胖四指＋拇指，一筆輪廓<br>・包腳睡衣要看得出腳跟、腳背、腳趾<br>・線：外框粗 3.2、內線細 1.2，線色取自固有色<br>・陰影：硬邊二階賽璐璐，光源左上<br>・地圖用 60px 簡化版：省略星星與手指縫</div>''')
     b.append('<div class="lb" style="left:740px;top:740px;width:236px;text-align:left;font-size:13px;line-height:1.6"><b style="font:900 15px Noto Serif TC;letter-spacing:.1em">口頭禪</b><br>「要！」「不要！」「抱抱」「ㄋㄟㄋㄟ」<br>勝利時：「哇！」</div>')
     b.append(pal([('#FFD86A','睡衣'),('#EFA846','睡衣影'),('#FFE7D6','膚色'),('#F6C0AA','膚影'),('#6A4234','髮色'),('#B98058','小熊'),('#E5483E','紅線'),('#F2C24A','金'),('#5A2C34','線稿')],300,1100))
-    b.append(arrows(['M236,300 C300,280 360,300 418,330','M262,588 C330,560 360,420 426,368','M604,322 C690,330 712,420 744,498','M528,352 C640,450 820,430 900,498','M150,756 C360,850 760,820 900,694']))
+    b.append(arrows(['M236,300 C300,280 360,300 418,330','M214,552 C228,480 320,410 424,370','M604,326 C660,340 680,520 724,540']))
     open(OUT+'sheet-baokaka.html','w').write(page('Baokaka Design Sheet',''.join(b)))
 
 def mocha():
     b=[]
     b.append('<h1>摩卡貓<small>角色設定・MOCHA</small></h1><div class="sub">七歲棕色虎斑公貓｜寶咖咖的「大哥」｜快攻＋單體治療｜口頭禪「……好啦。」</div>')
     b.append(f'<div class="a" style="left:290px;top:104px">{fig(mc_sit("content","ms1"),430,430)}</div>')
-    b.append('<div class="lb" style="left:600px;top:500px;width:130px;text-align:left">正面坐姿<i>戰鬥待機</i></div>')
+    b.append('<div class="lb" style="left:296px;top:516px;width:110px;text-align:left">正面坐姿<i>戰鬥待機</i></div>')
     b.append('<h2 style="left:30px;top:118px">配件分解</h2>')
     b.append(f'<div class="a" style="left:28px;top:166px">{inline("bandana",240,120)}</div><div class="lb" style="left:20px;top:290px;width:250px">捷運藍點點領巾<i>棉布・左側打結・尾端兩角</i></div>')
     b.append(f'<div class="a" style="left:110px;top:350px">{inline("tag",72,86)}</div><div class="lb" style="left:40px;top:440px;width:210px">小魚金牌<i>掛在領巾尖端（不是鈴鐺，安靜派）</i></div>')
@@ -99,6 +99,6 @@ def mocha():
         b.append(f'<div class="a" style="left:{x}px;top:{1010-h}px">{inline(n,w,h)}</div><div class="lb" style="left:{x-10}px;top:1018px;width:{w+20}px">{t}<i>{s}</i></div>'); x+=w+44
     b.append('<div class="lb" style="left:740px;top:740px;width:236px;text-align:left;font-size:13px;line-height:1.6"><b style="font:900 15px Noto Serif TC;letter-spacing:.1em">個性</b><br>嘴硬心軟、討厭水、會「翻譯」寶咖咖的一個字。尾巴說的比嘴巴誠實。</div>')
     b.append(pal([('#D7975E','毛色'),('#AE6C3E','毛影'),('#7A4628','條紋'),('#FFF5E8','白毛'),('#86AE2A','眼睛'),('#4A8BDA','領巾'),('#FFD66A','金牌'),('#F4A0A8','肉球'),('#5A2C34','線稿')],300,1100))
-    b.append(arrows(['M268,226 C320,226 380,268 440,300','M182,392 C260,400 400,360 488,352','M570,250 C680,270 712,400 744,478','M600,470 C700,490 760,560 790,590','M520,520 C640,600 820,640 900,590']))
+    b.append(arrows(['M268,226 C320,226 380,268 440,300','M182,392 C260,400 400,360 488,352','M572,252 C650,280 670,500 724,520','M604,500 C650,560 690,640 724,632']))
     open(OUT+'sheet-mocha.html','w').write(page('Mocha Design Sheet',''.join(b)))
 baokaka(); mocha()
