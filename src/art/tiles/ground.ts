@@ -26,9 +26,9 @@ const seg = (a: Pt, b: Pt) => `M${n(a[0])},${n(a[1])}L${n(b[0])},${n(b[1])}`;
 
 export type GroundTile = { key: string; material: Material | 'door'; variant: number; x: number; y: number };
 
-/** One raised group (full walls, fences, cut walls), each painted faces first, then tops. */
+/** One raised group (full walls, cut walls), each painted faces first, then tops. Fences are `Fence`. */
 export type WallGroup = {
-  kind: 'wall' | 'cut' | 'fence';
+  kind: 'wall' | 'cut';
   left: string;
   right: string;
   top: string;
@@ -208,7 +208,6 @@ function buildRaised(map: GameMap): { walls: WallGroup[]; fence: Fence } {
   const full = TERRAIN.wall.height ?? 0;
   const groups: Record<WallGroup['kind'], WallGroup> = {
     wall: { kind: 'wall', left: '', right: '', top: '', lit: '', base: '', trim: '' },
-    fence: { kind: 'fence', left: '', right: '', top: '', lit: '', base: '', trim: '' },
     cut: { kind: 'cut', left: '', right: '', top: '', lit: '', base: '', trim: '' },
   };
   const fence: Fence = { posts: '', caps: '', rails: '', railsLit: '' };
@@ -296,5 +295,5 @@ function buildRaised(map: GameMap): { walls: WallGroup[]; fence: Fence } {
     if (height(c - 1, r) < h) group.lit += seg(cap.left, cap.top);
   }
 
-  return { walls: [groups.wall, groups.fence, groups.cut].filter((group) => group.top !== ''), fence };
+  return { walls: [groups.wall, groups.cut].filter((group) => group.top !== ''), fence };
 }
