@@ -15,7 +15,7 @@ Work the issues **in numeric order**; an issue may start only when every issue i
 | **M2 · Art & UI foundations** | Option D look: tokens, rig, UI kit, iso renderer, battle stage, VFX, the heroes and recurring cast, menus and collections | #10–#20 | Art lab shows all heroes/cast at map, battle and portrait LOD; screens restyled; screenshots attached |
 | **M3 · Story chapters** | The 14 chapters, the MRT ride cars and the ending, one reviewable PR at a time (content, then art, per chapter) | #21–#50 | The game is playable from the prologue to the ending; every chapter's sim fights pass |
 | **M4 · Completion** | Post-game, cross-chapter side quests, balance and audio | #51–#55 | All side quests completable (tested), sim targets met, music per hour and MRT audio |
-| **M5 · Polish & launch** | Title/ending polish, accessibility & performance, final QA | #56–#58 | Perf and a11y budgets met, zero placeholder sprites, full playthrough checklist signed off |
+| **M5 · Polish & launch** | Title/ending polish, font payload, accessibility & performance, final QA | #56–#58, #68 | Perf and a11y budgets met, zero placeholder sprites, full playthrough checklist signed off |
 
 ## Ordered issue list
 
@@ -33,7 +33,7 @@ Work the issues **in numeric order**; an issue may start only when every issue i
 | 8 | Item catalogue v2 and hero-only equipment | engine | #5 | done (#66) |
 | 9 | 月亮線 travel: travel step, STATIONS table, @rideTo exits and the 路線圖 screen | engine, ui, mrt | #6, #7 | done (#67) |
 | **M2** | | | | |
-| 10 | Art tokens v2: option D palette, per-hour night grades, fonts, Tailwind theme | art, ui | #4 | todo |
+| 10 | Art tokens v2: option D palette, per-hour night grades, fonts, Tailwind theme | art, ui | #4 | done (#69) |
 | 11 | Sprite rig contract v4: parts, LOD, shared defs, unique ids, placeholder sprite, sprite lint | art | #10 | todo |
 | 12 | UI kit v2: panels, buttons, bars, dialogue with bust portrait, chapter card with clock, command panel | ui, art | #6, #11 | todo |
 | 13 | Iso map renderer v2: single-SVG ground, materials, night lighting, sky layer, light sources | art | #11 | todo |
@@ -83,7 +83,8 @@ Work the issues **in numeric order**; an issue may start only when every issue i
 | 55 | Audio refresh: music per hour, boss stage, MRT chimes and jingles | audio | #50 | todo |
 | **M5** | | | | |
 | 56 | Title screen, transitions and ending polish | ui, art | #52, #55 | todo |
-| 57 | Accessibility and performance pass | qa, ui | #56 | todo |
+| 68 | Font payload: cut the CJK web-font download (self-hosted subset or text= subsetting) | qa, ui | #10 | todo |
+| 57 | Accessibility and performance pass | qa, ui | #56, #68 | todo |
 | 58 | Final QA, docs and launch | qa, docs | #54, #57 | todo |
 
 ## Dependency graph
@@ -137,6 +138,7 @@ graph TD
   POSTART --> POL["#56 Title/ending polish"]
   AUD --> POL
   POL --> A11Y["#57 A11y + perf"]
+  I10 --> FONT["#68 Font payload"] --> A11Y
   BAL --> QA["#58 Final QA"]
   A11Y --> QA
 ```
