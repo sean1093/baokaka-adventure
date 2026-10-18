@@ -138,7 +138,7 @@ const StationDot = ({ station, state, fresh, h, onTap }: DotProps) => {
           </g>
           <foreignObject x={side === 'above' ? x + 40 : x + away * 58 - 33} y={y - 100} width={66} height={90} aria-hidden="true">
             <div style={{ width: '100%', height: '100%' }}>
-              <Head />
+              <Head lod="icon" />
             </div>
           </foreignObject>
         </>

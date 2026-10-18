@@ -30,6 +30,14 @@ export const TARGETS = [
     fullPage: true,
     artlab: true,
   },
+  {
+    name: 'artlab-rig',
+    // The rig test figure at every LOD with its skeleton, the shared defs and the placeholders
+    hash: '#/artlab?section=rig&skeleton=1&still=1',
+    waitFor: '[data-artlab-rig] [data-budget="icon"]',
+    fullPage: true,
+    artlab: true,
+  },
 ];
 
 /** The screenshot target for one art lab fixture. */

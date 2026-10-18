@@ -292,7 +292,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
             >
               <span className={`relative block ${dead ? 'opacity-0' : ''} ${acting ? 'lunge-down' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
                 <span className="block aspect-square w-full">
-                  <Art />
+                  <Art lod="battle" />
                 </span>
                 {state.guard && (
                   <span className="absolute -right-1 top-0 rounded-full bg-sky px-1.5 text-caption font-bold text-white shadow-card">防</span>
@@ -345,7 +345,7 @@ export const BattleScreen = ({ battle, palette, soundOn, onAction, onEnd, onTogg
               >
                 <span className={`relative block ${dead ? 'opacity-35 grayscale' : ''} ${acting ? 'lunge-up' : ''} ${struck ? 'fx-hurt' : ''}`} key={`s${battle.step}`}>
                   <span className="block aspect-square w-full">
-                    <Art />
+                    <Art lod="battle" />
                   </span>
                   {state.shield && <span className="absolute inset-0 rounded-full ring-4 ring-sky/60" />}
                   {state.guard && <span className="absolute -right-1 top-1 rounded-full bg-sky px-1.5 text-caption font-bold text-white shadow-card">防</span>}
@@ -519,5 +519,5 @@ const CommandButton = ({
 
 const ItemArt = ({ item }: { item: ItemId }) => {
   const Art = SPRITES[ITEMS[item].sprite];
-  return <Art />;
+  return <Art lod="icon" />;
 };

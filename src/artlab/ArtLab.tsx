@@ -3,10 +3,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { C, skyAt } from '../art/palette';
 import { SPRITES } from '../art/sprites';
 import type { SpriteName } from '../art/types';
+import { spriteMeta, type Lod } from '../art/sprite';
 import { questReducer } from '../quest/engine/quest';
 import { QuestScreens } from '../quest/QuestScreens';
 import { hashParams } from '../shared/route';
 import { ARTLAB_FIXTURES, type ArtLabFixture } from './fixtures';
+import { RigSection } from './RigSection';
 import { TokensSection } from './TokensSection';
 import './artlab.css';
 
@@ -15,7 +17,7 @@ import './artlab.css';
  * ugly but useful. Everything is driven by registries (SPRITES, ARTLAB_FIXTURES, the tables
  * below), so later issues add entries rather than code. URL parameters, all optional:
  *
- *   section  tokens | sprites | fixtures     (default: fixtures and sprites)
+ *   section  tokens | rig | sprites | fixtures     (default: fixtures and sprites)
  *   only     comma list: sprite names, or one fixture name to show that screen alone
  *   bg       comma list of BACKGROUNDS keys  (default: all)
  *   size     comma list of pixel sizes       (default: SIZES)
@@ -26,6 +28,9 @@ import './artlab.css';
 
 /** Map, battle-small, battle and portrait sizes. */
 export const SIZES: readonly number[] = [48, 64, 124, 300];
+
+/** The LOD an option D sprite is drawn at for a cell size (§ 8.3); legacy sprites ignore it. */
+export const lodForSize = (size: number): Lod => (size <= 50 ? 'icon' : size <= 90 ? 'map' : size <= 220 ? 'battle' : 'portrait');
 
 /**
  * What a sprite is checked against: light (the old cream), the 01:00 night sky, and a busy warm
@@ -54,15 +59,20 @@ const SPRITE_NAMES = Object.keys(SPRITES) as SpriteName[];
 
 const list = (value: string | null): string[] => (value ? value.split(',').map((entry) => entry.trim()).filter(Boolean) : []);
 
-/** The sprite as a standalone SVG document, for use as a CSS mask. Cached: markup never changes. */
-const maskCache = new Map<SpriteName, string>();
-function spriteMask(name: SpriteName): string {
-  let url = maskCache.get(name);
+/**
+ * The sprite as a standalone SVG document, for use as a CSS mask. Cached: markup never changes.
+ * Only the `<svg>` is kept (a placeholder wraps it in a span with its label).
+ */
+const maskCache = new Map<string, string>();
+function spriteMask(name: SpriteName, lod: Lod): string {
+  const key = `${name}@${lod}`;
+  let url = maskCache.get(key);
   if (!url) {
     const Art = SPRITES[name];
-    const markup = renderToStaticMarkup(<Art />).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" ');
+    const svg = /<svg[\s\S]*<\/svg>/.exec(renderToStaticMarkup(<Art lod={lod} />))?.[0] ?? '<svg></svg>';
+    const markup = svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" ');
     url = `url("data:image/svg+xml,${encodeURIComponent(markup)}")`;
-    maskCache.set(name, url);
+    maskCache.set(key, url);
   }
   return url;
 }
@@ -72,7 +82,7 @@ function spriteMask(name: SpriteName): string {
  * A black box masked by the sprite's own alpha, so no filter is involved.
  */
 const Silhouette = ({ name, size }: { name: SpriteName; size: number }) => {
-  const mask = spriteMask(name);
+  const mask = spriteMask(name, lodForSize(size));
   return (
     <div
       style={{
@@ -92,9 +102,11 @@ const Silhouette = ({ name, size }: { name: SpriteName; size: number }) => {
 
 const SpriteCard = ({ name, backgrounds, sizes }: { name: SpriteName; backgrounds: Background[]; sizes: number[] }) => {
   const Art = SPRITES[name];
+  const meta = spriteMeta(Art);
+  const tag = meta?.placeholder ? 'placeholder' : meta ? meta.kind : 'legacy';
   return (
-    <section data-sprite={name} className="rounded-xl border border-ink/15 bg-surface p-2 text-ink">
-      <h3 className="mb-1 w-0 min-w-full truncate font-mono text-[13px] font-bold" title={name}>{name}</h3>
+    <section data-sprite={name} data-sprite-kind={tag} className="rounded-xl border border-ink/15 bg-surface p-2 text-ink">
+      <h3 className="mb-1 w-0 min-w-full truncate font-mono text-[13px] font-bold" title={`${name} (${tag})`}>{name}</h3>
       <div className="flex flex-col gap-1">
         {backgrounds.map((bg) => (
           <div key={bg} className="flex flex-wrap items-end gap-2 rounded-lg p-2" style={BACKGROUNDS[bg].style} title={bg}>
@@ -103,7 +115,7 @@ const SpriteCard = ({ name, backgrounds, sizes }: { name: SpriteName; background
                 <Silhouette key={size} name={name} size={size} />
               ) : (
                 <div key={size} style={{ width: size, height: size }}>
-                  <Art />
+                  <Art lod={lodForSize(size)} />
                 </div>
               ),
             )}
@@ -195,6 +207,7 @@ const ArtLab = ({ hash }: { hash: string }) => {
         <h1 className="mr-2 text-headline font-extrabold">Art lab</h1>
         <Link href="#/artlab">all</Link>
         <Link href="#/artlab?section=tokens">tokens</Link>
+        <Link href="#/artlab?section=rig">rig</Link>
         <Link href="#/artlab?section=sprites">sprites</Link>
         <Link href="#/artlab?section=fixtures">screens</Link>
         {(Object.keys(BACKGROUNDS) as Background[]).map((bg) => (
@@ -205,6 +218,7 @@ const ArtLab = ({ hash }: { hash: string }) => {
         <Link href="#/">game</Link>
       </header>
       {section === 'tokens' && <TokensSection />}
+      {section === 'rig' && <RigSection params={params} />}
       {(section === null || section === 'fixtures') && <FixtureList />}
       {(section === null || section === 'sprites') && <SpritesSection params={params} />}
     </main>

@@ -201,7 +201,7 @@ export const IsoMap = ({ map, actors, camera, view, marker, focus, onTapGround }
             <>
               <span className={`block h-full w-full transition-opacity duration-200 ${motion} ${faded ? 'opacity-40' : ''}`}>
                 <span className="block h-full w-full" style={actor.flip ? { transform: 'scaleX(-1)' } : undefined}>
-                  <Art />
+                  <Art lod="map" />
                 </span>
               </span>
               {actor.badge}

@@ -55,6 +55,13 @@ export const MATERIALS = {
   tabby: { base: '#D7975E', cel: '#AE6C3E', deep: '#8A5232', line: '#6E3A22', stripe: '#7A4628' },
   furCream: { base: '#FFF5E8', cel: '#EAD2B8', deep: '#D6B898', line: '#A8866A' },
   bandana: { base: '#4A8BDA', cel: '#2F62B0', deep: '#234A8A', line: '#1E3E78' },
+  /**
+   * Far-side ramps (§ 2.3 depth groups): limbs behind the body, a step darker so depth reads. The
+   * § 3.1 table lists only the pajama's far base; the rest of both ramps come from the reference
+   * generator (`_gen/anime2.py`, `pj2` and `fur2`).
+   */
+  pajamaFar: { base: '#F4C458', cel: '#DE9640', deep: '#C47634', line: '#A0602A' },
+  tabbyFar: { base: '#C4844E', cel: '#9C5E34', deep: '#7A4628', line: '#5E3020' },
 } as const satisfies Record<string, Material>;
 
 export type MaterialName = keyof typeof MATERIALS;
@@ -66,6 +73,55 @@ export type MaterialTokens = { readonly [K in MaterialName]: { readonly [F in ke
 export const EYES = {
   brown: ['#2E1A12', '#7A4628', '#D99A56'],
   cat: ['#2E4A12', '#86AE2A', '#ECEC72'],
+} as const;
+
+/**
+ * Small character details that are not a whole material ramp (§ 2.4–2.6), with the values the
+ * reference generators use (`_gen/anime.py`, `_gen/anime2.py`).
+ */
+export const ACCENTS = {
+  /** Sclera and speculars */
+  white: '#FFFFFF',
+  pupil: '#140A06',
+  irisRing: '#2A140E',
+  /** The eyelid shadow crescent (drawn at ~55% opacity) */
+  lidShadow: '#1A0C08',
+  /** Iris rays and the lower reflected-light arc in brown eyes */
+  irisLight: '#F7D49A',
+  lash: '#2E1A12',
+  brow: '#8A5040',
+  nose: '#D98A7A',
+  mouth: '#A83E48',
+  mouthLine: '#7A2A32',
+  tongue: '#FF8F98',
+  /** Blush: the radial gradient's colour and its three hatch strokes */
+  blush: '#FF7F86',
+  blushHatch: '#F06A74',
+  /** The pajama's star print */
+  star: '#FFF6DA',
+  /** Footie soles: the grip strip in side view, the grip dots in sole view */
+  soleStrip: '#FFF2DC',
+  gripDot: '#F09A3A',
+} as const;
+
+/**
+ * The stand-in sprite for art that isn't drawn yet (decision D-14): a neutral lavender-grey
+ * silhouette with a navy label plate. Deliberately off-palette for characters, so a placeholder
+ * can't be mistaken for finished art.
+ */
+export const PLACEHOLDER = {
+  body: '#8E91BE',
+  cel: '#6E71A0',
+  line: '#4A4D7C',
+  plate: '#161A4E',
+  plateEdge: '#E8C77A',
+  glyph: '#FFE9B0',
+} as const;
+
+/** Art lab overlays (dev only): the skeleton's bones and joints. */
+export const DEV = {
+  bone: '#FF2E7A',
+  joint: '#FFFFFF',
 } as const;
 
 /**

@@ -76,7 +76,7 @@ export const PartySheet = ({ open, start, run, onClose, onUseItem, onEquip }: Pr
                   className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-2xl py-2 transition-colors ${member === hero ? 'bg-sun/25 ring-2 ring-sun' : 'bg-ink/[0.05]'}`}
                 >
                   <span className={`block h-10 w-10 ${run.hp[member] === 0 ? 'opacity-30 grayscale' : ''}`}>
-                    <Art />
+                    <Art lod="icon" />
                   </span>
                   <span className="truncate px-1 text-caption font-extrabold">{HEROES[member].name}</span>
                 </button>
@@ -201,5 +201,5 @@ const Row = ({ label, value }: { label: string; value: string }) => (
 
 function art(item: ItemId) {
   const Art = SPRITES[ITEMS[item].sprite];
-  return <Art />;
+  return <Art lod="icon" />;
 }

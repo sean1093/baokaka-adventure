@@ -1,5 +1,5 @@
 import type { SpriteName } from '../types';
-import type { Sprite } from '../sprite';
+import type { SpriteComponent } from '../sprite';
 import * as beach from './beach';
 import * as characters from './characters';
 import * as foesBeach from './foesBeach';
@@ -18,10 +18,15 @@ import * as park from './park';
 import * as yard from './yard';
 
 /**
- * sprite key -> drawing. Typed as Record<SpriteName, Sprite>, so a missing or extra
+ * sprite key -> drawing. Typed as Record<SpriteName, SpriteComponent>, so a missing or extra
  * entry fails the build: game content and art cannot drift apart.
+ *
+ * Registry v2 (art direction § 8.2): entries are option D sprites (`defineSprite`, taking
+ * `SpriteProps` and carrying `meta`), placeholders (`registerPlaceholder`, decision D-14), or
+ * legacy drawings (no props, no `meta`) until #16–#19 and the chapter art replace them. Callers
+ * always pass `lod`; legacy sprites ignore it.
  */
-export const SPRITES: Record<SpriteName, Sprite> = {
+export const SPRITES: Record<SpriteName, SpriteComponent> = {
   bottle: items.Bottle,
   clothBook: items.ClothBook,
   bucket: items.Bucket,

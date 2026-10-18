@@ -132,3 +132,14 @@ Format:
 - Tests: `palette.test.ts`, `contrast.test.ts`, `clock.test.ts`. 314 tests in all.
 - Follow-ups: #68 (font payload); #12 drops the legacy Tailwind colours/sizes; #11/#13 use `gradeTokens(mapClock(map))`.
 
+
+### 2026-10-18 · Staff engineer · #11 Sprite rig contract v4 (PR #70)
+- `src/art/geom.ts`: `limb`, `blob`, `crs`, `crease`, `hand` (open/flat/grab/fist), `footie` (side/sole) and `star4` ported from `anime2.py` as pure path-data functions; `geom.test.ts` compares them with the Python output (`geom.reference.json`, generated once from the bk_stand joints) command for command within 0.01. `compactPath()` writes 0.1u relative path data for the DOM (round-trip tested).
+- `Fig.tsx`: the two-pass renderer over one data array of (nestable) rig/depth groups, with the § 2.4 clip + offset cel, `deep`/`extra`/rim (`var(--rim)`) layers and LOD gating; `SpriteSvg` (root, LOD context, facing mirror, state classes, gait), `SkeletonOverlay`. `defs.tsx` `<ArtDefs/>` (iris brown/cat, blush, contact, bloom) mounted once in `App`. `useSvgIds`, `lod.ts`, `rig.css` (breathe, blink, attack 120/90/60/220, hurt + 2-frame flash, ko, victory hop, crawl and cat gaits, reduced motion).
+- `sprite.ts` is the v4 contract (`SpriteProps`, `defineSprite`, budgets); `SPRITES` accepts new-style and legacy components; every call site passes `lod`. Legacy sprites now take their ids from `useSvgIds`.
+- `src/art/demo/RigDemo.tsx` (測試寶寶): the anatomy sheet's standing pose with the reference head (iris gradient, rays, speculars, lash, blush, angel ring, three-clump map fringe), three expressions. Portrait 205 elements / 18.3 KB, battle 193, map 168.
+- `placeholder.tsx` (`registerPlaceholder`, four footprints), `spriteWarnings()` in `validate.ts`, printed in dev.
+- `sprites.lint.test.ts`: every sprite (75 legacy + demo + 4 placeholders) twice in one document at each LOD with `<ArtDefs/>` → no duplicate ids, no dangling refs; no filter/text/image/foreignObject; budgets for typed sprites; no raw hex under `src/art` outside `palette.ts` (empty allow-list that may only shrink); demo LOD and rig-naming checks.
+- Art lab `section=rig` (LODs with `skeleton=1`, parchment, silhouettes, expressions, states, shared defs, placeholders, budget table); sprite cards draw new-style sprites at the LOD for their size. New visual target `artlab-rig`; `artlab-tokens` (new ramps) and `artlab-sprites-night` (header link) baselines regenerated, all other targets 0 px. Screenshots in `docs/screenshots/11/`.
+- Verified: `npm test` (430 tests), `npm run build`, `npm run visual` twice (0 px), Chrome check that the shared gradients resolve and nested rig origins (blink, head turn) pivot correctly.
+- Decisions in D-28. Follow-ups: none new beyond D-28's consequences (#16–#18 author on `Fig`, the reduced-motion toggle sets `.reduce-motion`, #58 errors on placeholders).
