@@ -446,6 +446,6 @@
 <ellipse cx="277" cy="429" rx="36" ry="13" fill="url(#d-bloom)" opacity=".55"/>
 <circle cx="278" cy="381" r="22" fill="url(#d-bloom)"/><ellipse cx="278" cy="381" rx="3.4" ry="1.4" fill="#FFF8E6"/>
 <image href="baokaka-crawl.svg" x="144" y="328.6" width="66" height="66"/>
-<image href="mocha-cat.svg" x="202.4" y="357.9" width="50" height="50"/>
+<image href="mocha-walk.svg" x="203" y="352.3" width="56" height="56"/>
 <g filter="url(#d-blur4)" opacity=".55"><circle cx="20" cy="560" r="16" fill="#FFC27A"/><circle cx="372" cy="520" r="12" fill="#9AE0FF"/><circle cx="340" cy="585" r="9" fill="#FF9AB0"/></g>
 </svg>

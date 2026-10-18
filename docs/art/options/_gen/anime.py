@@ -28,9 +28,10 @@ def eye(cx,cy,flip=False,expr='happy',iris=('#2E1A12','#7A4628','#D99A56','#F7D4
     g=f'<defs><linearGradient id="{uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{iris[0]}"/><stop offset=".45" stop-color="{iris[1]}"/><stop offset="1" stop-color="{iris[2]}"/></linearGradient></defs>'
     o=[g]
     o.append(f'<path d="M{cx-9.6},{cy} C{cx-9.6},{cy-10} {cx+9.6},{cy-10} {cx+9.6},{cy} C{cx+9.6},{cy+10.6} {cx-9.6},{cy+10.6} {cx-9.6},{cy} Z" fill="#FFFFFF"/>')
-    o.append(f'<ellipse cx="{cx+0.6*sx}" cy="{cy+1}" rx="8.2" ry="9.6" fill="url(#{uid})" stroke="#2A140E" stroke-width="0.9"/>')
+    irx,iry=(6.0,7.2) if expr=='surprised' else (8.2,9.6)
+    o.append(f'<ellipse cx="{cx+0.6*sx}" cy="{cy+1}" rx="{irx}" ry="{iry}" fill="url(#{uid})" stroke="#2A140E" stroke-width="0.9"/>')
     o.append(f'<path d="M{cx-8},{cy-3} C{cx-6},{cy-9} {cx+7},{cy-9} {cx+9},{cy-3} C{cx+5},{cy-6} {cx-4},{cy-6} {cx-8},{cy-3} Z" fill="#1A0C08" opacity=".55"/>')
-    o.append(f'<ellipse cx="{cx+0.6*sx}" cy="{cy+1.6}" rx="3.4" ry="4.6" fill="#140A06"/>')
+    o.append(f'<ellipse cx="{cx+0.6*sx}" cy="{cy+1.6}" rx="{2.2 if expr=="surprised" else 3.4}" ry="{3 if expr=="surprised" else 4.6}" fill="#140A06"/>')
     o.append(''.join(f'<path d="M{cx+0.6*sx+3.6*__import__("math").cos(a)},{cy+1.6+4.6*__import__("math").sin(a)} L{cx+0.6*sx+7.4*__import__("math").cos(a)},{cy+1+9*__import__("math").sin(a)}" stroke="{iris[3]}" stroke-width=".7" opacity=".55"/>' for a in [0.35,0.9,1.4,1.9,2.4,2.8]))
     o.append(f'<path d="M{cx-5.6},{cy+6.4} C{cx-3},{cy+9.4} {cx+4},{cy+9.4} {cx+6.6},{cy+6.2} C{cx+3},{cy+7.6} {cx-2.4},{cy+7.8} {cx-5.6},{cy+6.4} Z" fill="{iris[3]}" opacity=".95"/>')
     if expr=='teary':
@@ -75,6 +76,8 @@ def head(expr='happy',uid='h'):
     # brows
     if expr=='teary':
         o.append('<path d="M-28,-10 C-24,-14 -18,-15 -13,-14 M15,-14 C20,-15 26,-14 30,-10" stroke="#8A5040" stroke-width="1.6" stroke-linecap="round" fill="none"/>')
+    elif expr=='surprised':
+        o.append('<path d="M-29,-17 C-25,-21 -18,-22 -12,-20 M14,-20 C20,-22 27,-21 31,-17" stroke="#8A5040" stroke-width="1.6" stroke-linecap="round" fill="none"/>')
     else:
         o.append('<path d="M-28,-13 C-24,-16 -18,-17 -13,-16 M15,-16 C20,-17 26,-16 30,-13" stroke="#8A5040" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".85"/>')
     o.append('<path d="M1,20 C2,21.4 3.6,21.4 4.4,20.4" stroke="#D98A7A" stroke-width="1.2" stroke-linecap="round" fill="none"/>')
@@ -84,6 +87,9 @@ def head(expr='happy',uid='h'):
     elif expr=='laugh':
         o.append('<path d="M-10,25 C-9,40 13,40 14,25 C8,28 -4,28 -10,25 Z" fill="#A83E48" stroke="#7A2A32" stroke-width="1" stroke-linejoin="round"/><path d="M-5,33 C-1,38 8,38 10,33 C6,31 -1,31 -5,33 Z" fill="#FF8F98"/>')
         o.append('<path d="M-34,8 l-6,-3 M-34,12 l-7,1 M38,8 l6,-3 M38,12 l7,1" stroke="#F06A74" stroke-width="1.2" stroke-linecap="round"/>')
+    elif expr=='surprised':
+        o.append('<ellipse cx="2" cy="31" rx="4.6" ry="5.6" fill="#A83E48" stroke="#7A2A32" stroke-width="1"/><ellipse cx="2" cy="33.4" rx="2.6" ry="2" fill="#FF8F98"/>')
+        o.append('<path d="M-44,-28 l-4,-6 M-48,-20 l-7,-2 M48,-28 l4,-6 M52,-20 l7,-2" stroke="#7A2A32" stroke-width="1.4" stroke-linecap="round"/>')
     else:
         o.append('<path d="M-6,30 C-3,27 0,28 2,30 C4,28 7,27 10,30" stroke="#7A2A32" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>')
         o.append('<path d="M-38,20 C-39,26 -36,30 -33,28 C-31,26 -34,22 -38,20 Z" fill="#BFE8FF" stroke="#7AB8E0" stroke-width=".8"/>')
@@ -192,7 +198,7 @@ def cat_eye(cx,cy,flip,expr,uid):
     o.append(f'<circle cx="{cx+0.6*sx}" cy="{cy}" r="9.6" fill="url(#{uid})" stroke="#24380E" stroke-width=".9"/>')
     import math
     o.append(''.join(f'<path d="M{cx+3*math.cos(a)},{cy+5*math.sin(a)} L{cx+8.4*math.cos(a)},{cy+8.4*math.sin(a)}" stroke="#F4F49A" stroke-width=".7" opacity=".5"/>' for a in [0.3,0.8,1.3,1.8,2.3,2.8]))
-    o.append(f'<ellipse cx="{cx+0.6*sx}" cy="{cy}" rx="2.6" ry="7.4" fill="#120A06"/>')
+    o.append(f'<ellipse cx="{cx+0.6*sx}" cy="{cy}" rx="{6 if expr=="surprised" else 2.6}" ry="{6.6 if expr=="surprised" else 7.4}" fill="#120A06"/>')
     o.append(f'<path d="M{cx-12},{cy-12} L{cx+12},{cy-12} L{cx+12},{cy-3} C{cx+5},{cy-7} {cx-5},{cy-7} {cx-12},{cy-3} Z" fill="#1A2A08" opacity=".45"/>')
     if expr=='smug':
         o.append(f'<path d="M{cx-13},{cy-14} L{cx+13},{cy-14} L{cx+13},{cy-1} C{cx+6},{cy-3} {cx-6},{cy-3} {cx-13},{cy-1} Z" fill="#D7975E"/>')
@@ -232,7 +238,10 @@ def mocha_head(expr='content',uid='mh'):
     o.append(f'<path d="{MZ}" fill="#FFF5E8"/><path d="M14,8 C22,14 22,26 14,31 C18,24 18,16 14,8 Z" fill="#EFD8C0"/>')
     o.append('<g transform="translate(-19 -5) scale(1.25) translate(19 5)">'+cat_eye(-19,-5,False,expr,uid+'L')+'</g><g transform="translate(21 -5) scale(1.25) translate(-21 5)">'+cat_eye(21,-5,True,expr,uid+'R')+'</g>')
     o.append('<path d="M-2,12 C0,10 6,10 8,12 C7,15 4,17 3,17 C2,17 -1,15 -2,12 Z" fill="#F0848C" stroke="#A84A54" stroke-width=".8" stroke-linejoin="round"/><path d="M0,12 C1.4,11.4 3.4,11.4 4.4,11.8" stroke="#fff" stroke-width=".8" stroke-linecap="round"/>')
-    if expr=='happy':
+    if expr=='surprised':
+        o.append('<path d="M3,17 L3,19" stroke="#6E2A2A" stroke-width="1.2"/><ellipse cx="3" cy="23" rx="3.6" ry="4.2" fill="#A83E48" stroke="#6E2A2A" stroke-width="1"/>')
+        o.append('<path d="M-40,-40 l-3,-6 M-44,-32 l-6,-2 M44,-40 l3,-6 M48,-32 l6,-2" stroke="#6E2A2A" stroke-width="1.4" stroke-linecap="round"/>')
+    elif expr=='happy':
         o.append('<path d="M3,17 L3,20 M-4,20 C-2,25 2,25 3,20 C4,25 8,25 10,20 C8,27 -2,27 -4,20 Z" fill="#A83E48" stroke="#6E2A2A" stroke-width="1" stroke-linejoin="round"/>')
     else:
         o.append('<path d="M3,17 L3,20 M-3,20 C-1,23.4 2,23.4 3,20 C4,23.4 7,23.4 9,20" stroke="#6E2A2A" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>')

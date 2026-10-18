@@ -117,13 +117,13 @@ def battle():
 <div class="plate"><div class="t">ENEMY</div><div class="n">珍珠粉圓<small>×3</small></div></div>
 {foes}{pips}{hit}<div class="dmg" style="left:170px;top:252px">18<span>好痛！</span></div>
 <svg class="sp" style="left:2px;top:420px;width:170px;height:40px" viewBox="0 0 170 40"><defs><filter id="rg" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="3"/></filter></defs><ellipse cx="85" cy="20" rx="72" ry="12" fill="#FFD98A" opacity=".55" filter="url(#rg)"/><ellipse cx="85" cy="20" rx="72" ry="12" fill="none" stroke="#FFF2C8" stroke-width="1.4"/></svg>
-<div class="sp" style="left:124px;top:352px;width:100px;height:100px"><img src="mocha-cat.svg"></div>
-<div class="sp" style="left:8px;top:300px;width:156px;height:156px"><img src="baokaka.svg"></div>
-<span class="turn" style="left:52px;top:286px">輪到你</span>
+<div class="sp" style="left:150px;top:330px;width:120px;height:120px"><img src="mocha-cat.svg"></div>
+<div class="sp" style="left:-8px;top:268px;width:190px;height:190px"><img src="baokaka.svg"></div>
+<span class="turn" style="left:40px;top:262px">輪到你</span>
 <div class="panel"><span class="orn"></span>
 <div class="party">
-<div class="mem on"><span class="ava"><img src="baokaka.svg"></span><div style="flex:1;min-width:0"><div class="nm">寶咖咖</div><div class="bar"><i style="width:84%;background:linear-gradient(90deg,#3FC88A,#9AF0B8)"></i></div><div class="bar" style="height:5px"><i style="width:60%;background:linear-gradient(90deg,#4A8AF0,#9AC8FF)"></i></div><div class="st"><span>體力 84/100</span><span>元氣 9</span></div></div></div>
-<div class="mem"><span class="ava"><img src="mocha-cat.svg" style="width:180%;left:-40%;top:-8%"></span><div style="flex:1;min-width:0"><div class="nm">摩卡貓</div><div class="bar"><i style="width:34%;background:linear-gradient(90deg,#F08A3A,#FFC27A)"></i></div><div class="bar" style="height:5px"><i style="width:88%;background:linear-gradient(90deg,#4A8AF0,#9AC8FF)"></i></div><div class="st"><span style="color:#FFC27A">體力 31/90</span><span>元氣 14</span></div></div></div>
+<div class="mem on"><span class="ava"><img src="sheet/head-happy.svg" style="width:100%;left:0;top:4%"></span><div style="flex:1;min-width:0"><div class="nm">寶咖咖</div><div class="bar"><i style="width:84%;background:linear-gradient(90deg,#3FC88A,#9AF0B8)"></i></div><div class="bar" style="height:5px"><i style="width:60%;background:linear-gradient(90deg,#4A8AF0,#9AC8FF)"></i></div><div class="st"><span>體力 84/100</span><span>元氣 9</span></div></div></div>
+<div class="mem"><span class="ava"><img src="sheet/mhead-content.svg" style="width:100%;left:0;top:10%"></span><div style="flex:1;min-width:0"><div class="nm">摩卡貓</div><div class="bar"><i style="width:34%;background:linear-gradient(90deg,#F08A3A,#FFC27A)"></i></div><div class="bar" style="height:5px"><i style="width:88%;background:linear-gradient(90deg,#4A8AF0,#9AC8FF)"></i></div><div class="st"><span style="color:#FFC27A">體力 31/90</span><span>元氣 14</span></div></div></div>
 </div>
 <p class="prompt"><span>寶咖咖要做什麼？</span><a>逃跑 ›</a></p>
 <div class="cmds">
@@ -139,7 +139,7 @@ def dialogue():
 .map{{position:absolute;left:-95px;top:-60px;width:580px;height:892px;border:0;filter:blur(1.2px) brightness(.9)}}
 .scrim{{position:absolute;inset:0;background:linear-gradient(rgba(10,8,32,0) 45%,rgba(10,8,32,.75))}}
 .bust{{position:absolute;left:-14px;top:318px;width:340px;height:310px;overflow:hidden}}
-.bust img{{position:absolute;width:340px;left:0;top:0}}
+.bust img{{position:absolute;width:420px;left:-44px;top:-14px}}
 .glow{{position:absolute;left:-20px;top:300px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(160,190,255,.45),rgba(160,190,255,0) 65%)}}
 .box{{position:absolute;left:12px;right:12px;bottom:22px;min-height:172px;padding:30px 22px 18px;border-radius:6px;color:var(--ink);background:linear-gradient(rgba(24,28,84,.94),rgba(12,13,40,.97));border:1px solid var(--gold);box-shadow:0 18px 40px -12px #000,inset 0 0 0 4px rgba(12,13,40,.9),inset 0 0 0 5px rgba(232,199,122,.3)}}
 .box .c{{position:absolute;width:10px;height:10px;transform:rotate(45deg);background:linear-gradient(135deg,#FFF2C8,#C9A04A)}}

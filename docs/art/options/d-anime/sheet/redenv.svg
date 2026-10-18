@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="6 2 68 96" width="68" height="96"><rect x="10" y="6" width="60" height="88" rx="5" fill="#D9342E" stroke="#5A2C34" stroke-width="2.2"/>
+<path d="M10,26 C30,40 50,40 70,26 L70,11 C70,8 68,6 65,6 L15,6 C12,6 10,8 10,11 Z" fill="#B82824"/>
+<circle cx="40" cy="36" r="8" fill="#F2C24A" stroke="#8A5E1E" stroke-width="1"/>
+<text x="40" y="70" text-anchor="middle" font-family="Noto Serif TC" font-weight="900" font-size="20" fill="#F2C24A">福</text>
+<path d="M16,46 L16,84" stroke="#fff" stroke-width="1.6" opacity=".3" stroke-linecap="round"/></svg>

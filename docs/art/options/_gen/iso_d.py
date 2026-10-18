@@ -146,7 +146,7 @@ def build():
     # heroes
     def hero(href,c,r,size):
         x,y=scr(c,r); A(f'<image href="{href}" x="{f(x-size/2)}" y="{f(y-size*0.93)}" width="{size}" height="{size}"/>')
-    hero('baokaka-crawl.svg',1.75,2.25,66); hero('mocha-cat.svg',2.85,1.95,50)
+    hero('baokaka-crawl.svg',1.75,2.25,66); hero('mocha-walk.svg',2.9,1.9,56)
     # foreground bokeh + light grain
     A('<g filter="url(#d-blur4)" opacity=".55"><circle cx="20" cy="560" r="16" fill="#FFC27A"/><circle cx="372" cy="520" r="12" fill="#9AE0FF"/><circle cx="340" cy="585" r="9" fill="#FF9AB0"/></g>')
     A('</svg>'); return '\n'.join(o)
