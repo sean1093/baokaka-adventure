@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { EVENTS } from './events';
 import { FOES } from './foes';
-import { ITEMS, MAX_LEVEL, SPELLS, spellsFor } from './heroes';
+import { ITEMS, ITEM_ORDER, MAX_LEVEL, SPELLS, spellsFor } from './heroes';
 import { CHAPTER_TITLES, MAPS, MAP_ORDER } from './maps';
 import { findPath } from './path';
-import { validateQuestContent } from './validate';
+import { obtainableItems, progressWarnings, validateQuestContent } from './validate';
 import { HERO_ORDER, type FoeId, type MapId, type Step } from './types';
 
 const allSteps = (): Step[] => Object.values(EVENTS).flat();
@@ -28,16 +28,20 @@ describe('the shipped quest content', () => {
     expect([...Object.keys(FOES)].filter((foe) => !used.has(foe as FoeId))).toEqual([]);
   });
 
-  test('every item can be obtained: a chest, a shop, a gift or a drop', () => {
-    const available = new Set<string>();
-    for (const map of Object.values(MAPS)) for (const chest of map.chests) available.add(chest.item);
-    for (const foe of Object.values(FOES)) if (foe.drop) available.add(foe.drop.item);
+  test('every item the content hands out is real, and the rest are listed as progress warnings', () => {
+    const available = obtainableItems();
+    for (const item of available) expect(ITEMS[item], item).toBeDefined();
+    const warned = progressWarnings().filter((warning) => warning.startsWith('item '));
+    const missing = ITEM_ORDER.filter((item) => !available.has(item));
+    expect(warned).toEqual(missing.map((item) => `item ${item} cannot be obtained yet`));
+    // The old story (until #21) still hands out the basics
+    for (const item of ['teaEgg', 'pineappleCake', 'douhua', 'redTurtleCake', 'bib'] as const) expect(available.has(item), item).toBe(true);
+  });
+
+  test('no shop sells a gift item (price 0)', () => {
     for (const step of allSteps()) {
-      if (!('do' in step)) continue;
-      if (step.do === 'give') available.add(step.item);
-      if (step.do === 'shop') for (const item of step.stock) available.add(item);
+      if ('do' in step && step.do === 'shop') for (const item of step.stock) expect(ITEMS[item].price, item).toBeGreaterThan(0);
     }
-    expect(Object.keys(ITEMS).filter((item) => !available.has(item))).toEqual([]);
   });
 
   test('every hero learns something at level 1 and again later', () => {

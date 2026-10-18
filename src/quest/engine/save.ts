@@ -1,6 +1,6 @@
 import { browserStorage, loadJson, saveJson, type StorageLike } from '../../shared/storage';
 import { FOES } from './foes';
-import { ITEMS, MAX_ITEM_COUNT, MAX_LEVEL, isEquip } from './heroes';
+import { ITEMS, MAX_ITEM_COUNT, MAX_LEVEL, canWear } from './heroes';
 import { MAPS } from './maps';
 import { freshRun } from './quest';
 import { HERO_ORDER, type FoeId, type HeroId, type ItemId, type Run } from './types';
@@ -9,16 +9,17 @@ import { HERO_ORDER, type FoeId, type HeroId, type ItemId, type Run } from './ty
  * The save format. Bump the version and the key for any incompatible Run change; never migrate
  * across stories (decisions.md D-12): an older record is discarded and the title says so once.
  */
-export const SAVE_VERSION = 4;
-export const QUEST_KEY = 'baokaka.quest.v4';
+export const SAVE_VERSION = 5;
+export const QUEST_KEY = 'baokaka.quest.v5';
 /** The 寶咖咖奇俠傳 save from before the 抓周 redesign. Any content under it means "reset". */
 export const LEGACY_QUEST_KEY = 'baokaka.quest';
 /**
  * Every key an older save may sit under: the pre-redesign one, then each earlier version
- * (v2 had three heroes, issue #5 made it four; v3 had no 圖鑑 `seenFoes`, issue #7 added it).
+ * (v2 had three heroes, issue #5 made it four; v3 had no 圖鑑 `seenFoes`, issue #7 added it;
+ * v4 held the old story's item ids, issue #8 replaced the catalogue).
  * Any content under any of them means "reset".
  */
-export const LEGACY_QUEST_KEYS: readonly string[] = [LEGACY_QUEST_KEY, 'baokaka.quest.v2', 'baokaka.quest.v3'];
+export const LEGACY_QUEST_KEYS: readonly string[] = [LEGACY_QUEST_KEY, 'baokaka.quest.v2', 'baokaka.quest.v3', 'baokaka.quest.v4'];
 
 /** Player preferences that live beside the run. */
 export type QuestSettings = {
@@ -37,7 +38,7 @@ export type LoadedQuest = { save: QuestSave; legacyReset: boolean };
 type StoredSave = QuestSave & { version: typeof SAVE_VERSION };
 
 const isCount = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
-const isItem = (value: unknown): value is ItemId => typeof value === 'string' && value in ITEMS;
+const isItem = (value: unknown): value is ItemId => typeof value === 'string' && Object.prototype.hasOwnProperty.call(ITEMS, value);
 const isFoe = (value: unknown): value is FoeId => typeof value === 'string' && Object.prototype.hasOwnProperty.call(FOES, value);
 
 function isNumberMap(value: unknown): value is Record<HeroId, number> {
@@ -63,7 +64,7 @@ function isRun(value: unknown): value is Run {
     run.equip !== null &&
     HERO_ORDER.every((hero) => {
       const worn = (run.equip as Record<string, unknown>)[hero];
-      return worn === null || (isItem(worn) && isEquip(worn));
+      return worn === null || (isItem(worn) && canWear(hero, worn));
     });
 
   const itemsOk =

@@ -296,12 +296,12 @@ describe('spending coins in an event', () => {
   test('`coins -20` with 5 coins always succeeds and leaves 0 (玉蘭花, claw machine, 海芋)', () => {
     const { lines, result } = linesOf({ ...run0(), coins: 5 }, [
       { do: 'coins', amount: -20 },
-      { do: 'give', item: 'cookie' },
+      { do: 'give', item: 'teaEgg' },
       { who: null, text: '買到了！' },
     ]);
     expect(lines).toEqual(['買到了！']);
     expect(result.run.coins).toBe(0);
-    expect(result.run.items.cookie).toBe((run0().items.cookie ?? 0) + 1);
+    expect(result.run.items.teaEgg).toBe((run0().items.teaEgg ?? 0) + 1);
   });
 });
 

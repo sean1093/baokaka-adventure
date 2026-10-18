@@ -27,7 +27,7 @@ export const FOES: Record<FoeId, Foe> = {
     stats: { hp: 40, mp: 0, atk: 9, def: 2, spd: 3, luck: 2 },
     xp: 9,
     coins: 5,
-    drop: { item: 'cookie', chance: 0.3 },
+    drop: { item: 'teaEgg', chance: 0.3 },
     moves: [
       { kind: 'attack', name: '甩襪子', power: 1, target: 'one', fx: 'thud' },
       { kind: 'attack', name: '臭臭攻擊', power: 0.7, target: 'all', fx: 'dust' },
@@ -71,7 +71,7 @@ export const FOES: Record<FoeId, Foe> = {
     stats: { hp: 60, mp: 0, atk: 10, def: 6, spd: 2, luck: 1 },
     xp: 10,
     coins: 5,
-    drop: { item: 'cookie', chance: 0.3 },
+    drop: { item: 'teaEgg', chance: 0.3 },
     moves: [
       { kind: 'guard', name: '縮進殼裡' },
       { kind: 'attack', name: '黏液攻擊', power: 1.3, target: 'one', fx: 'splash' },
@@ -100,7 +100,7 @@ export const FOES: Record<FoeId, Foe> = {
     stats: { hp: 54, mp: 0, atk: 14, def: 2, spd: 11, luck: 5 },
     xp: 13,
     coins: 6,
-    drop: { item: 'driedFish', chance: 0.25 },
+    drop: { item: 'douhua', chance: 0.25 },
     moves: [
       { kind: 'attack', name: '飄過來', power: 1, target: 'one', fx: 'dust' },
       { kind: 'attack', name: '線線纏繞', power: 1.4, target: 'one', fx: 'slash' },
@@ -113,7 +113,7 @@ export const FOES: Record<FoeId, Foe> = {
     stats: { hp: 130, mp: 0, atk: 17, def: 5, spd: 5, luck: 3 },
     xp: 25,
     coins: 14,
-    drop: { item: 'bottle', chance: 0.5 },
+    drop: { item: 'pineappleCake', chance: 0.5 },
     moves: [
       { kind: 'attack', name: '挖洞', power: 1, target: 'one', fx: 'dust' },
       { kind: 'guard', name: '躲進土裡' },
@@ -158,7 +158,7 @@ export const FOES: Record<FoeId, Foe> = {
     stats: { hp: 74, mp: 0, atk: 20, def: 3, spd: 10, luck: 5 },
     xp: 15,
     coins: 8,
-    drop: { item: 'apple', chance: 0.15 },
+    drop: { item: 'railBento', chance: 0.15 },
     moves: [
       { kind: 'attack', name: '蘋果滾滾', power: 1, target: 'one', fx: 'thud' },
       { kind: 'attack', name: '蘋果滾滾', power: 1, target: 'one', fx: 'thud' },
@@ -190,7 +190,7 @@ export const FOES: Record<FoeId, Foe> = {
     stats: { hp: 110, mp: 0, atk: 23, def: 4, spd: 12, luck: 6 },
     xp: 22,
     coins: 10,
-    drop: { item: 'cookie', chance: 0.4 },
+    drop: { item: 'teaEgg', chance: 0.4 },
     moves: [
       { kind: 'attack', name: '搶食物', power: 1.1, target: 'one', fx: 'slash' },
       { kind: 'attack', name: '俯衝', power: 1.4, target: 'one', fx: 'impact' },
@@ -235,7 +235,7 @@ export const FOES: Record<FoeId, Foe> = {
     stats: { hp: 145, mp: 0, atk: 26, def: 6, spd: 11, luck: 6 },
     xp: 26,
     coins: 12,
-    drop: { item: 'driedFish', chance: 0.3 },
+    drop: { item: 'douhua', chance: 0.3 },
     moves: [
       { kind: 'attack', name: '撒瞌睡粉', power: 0.8, target: 'all', fx: 'sparkle' },
       { kind: 'attack', name: '枕頭砸', power: 1.3, target: 'one', fx: 'thud' },
@@ -248,7 +248,7 @@ export const FOES: Record<FoeId, Foe> = {
     stats: { hp: 168, mp: 0, atk: 28, def: 5, spd: 8, luck: 4 },
     xp: 30,
     coins: 14,
-    drop: { item: 'bottle', chance: 0.3 },
+    drop: { item: 'pineappleCake', chance: 0.3 },
     moves: [
       { kind: 'attack', name: '雷聲隆隆', power: 1, target: 'all', fx: 'shout' },
       { kind: 'attack', name: '閃電', power: 1.5, target: 'one', fx: 'bolt' },

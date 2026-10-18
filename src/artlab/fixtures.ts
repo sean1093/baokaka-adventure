@@ -4,6 +4,7 @@ import { SPELLS } from '../quest/engine/heroes';
 import { MAPS } from '../quest/engine/maps';
 import { freshRun, initialState, type QuestState, type QuestView } from '../quest/engine/quest';
 import type { Follower } from '../quest/engine/progress';
+import type { SheetStart } from '../quest/screens/PartySheet';
 import { fullHp, fullMp } from '../quest/engine/scene';
 import { HERO_ORDER, type FoeId, type HeroId, type Line, type Run, type Step } from '../quest/engine/types';
 
@@ -19,8 +20,8 @@ export type ArtLabFixture = {
   name: string;
   label: string;
   state: () => QuestState;
-  /** Open the party sheet on mount */
-  menu?: boolean;
+  /** Open the party sheet on mount, optionally on a tab with an item picked */
+  menu?: boolean | SheetStart;
   /** Escort table for the world screen, standing in for the content's (empty until the chapters) */
   followers?: readonly Follower[];
 };
@@ -39,8 +40,8 @@ export function sampleRun(party: readonly HeroId[] = HERO_ORDER, level = SAMPLE_
     level,
     xp: 120,
     coins: 46,
-    items: { cookie: 3, bottle: 1, banana: 2, sunHat: 1 },
-    equip: { ...base.equip, baokaka: 'sunHat' },
+    items: { teaEgg: 3, pineappleCake: 1, braisedRice: 2, bib: 1 },
+    equip: { ...base.equip, baokaka: 'bib' },
     flags: [...SAMPLE_FLAGS],
     chapter: 2,
   };
@@ -136,7 +137,7 @@ export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
         summary: {
           xp: 31,
           coins: 14,
-          drops: ['cookie'],
+          drops: ['teaEgg'],
           levels: 1,
           learned: Object.values(SPELLS)
             .filter((spell) => spell.level === SAMPLE_LEVEL + 1)
@@ -146,8 +147,15 @@ export const ARTLAB_FIXTURES: readonly ArtLabFixture[] = [
         },
       }),
   },
-  { name: 'shop', label: 'Shop', state: () => withView({ screen: 'shop', stock: ['cookie', 'bottle', 'banana', 'driedFish', 'sunHat'] }) },
+  { name: 'shop', label: 'Shop', state: () => withView({ screen: 'shop', stock: ['teaEgg', 'pineappleCake', 'braisedRice', 'douhua', 'bib'] }) },
   { name: 'menu', label: 'Menu: party sheet', state: world, menu: true },
+  {
+    name: 'party-sheet-equip',
+    label: 'Menu: equipping signature gear',
+    // 摩卡's collar picked in the bag: only 摩卡貓 can wear it, the other three are greyed out
+    state: () => withView({ screen: 'world' }, { ...sampleRun(), items: { teaEgg: 3, redTurtleCake: 1, bib: 1, bellCollar: 1, tigerHat: 1 } }),
+    menu: { tab: 'bag', picking: 'bellCollar' },
+  },
   { name: 'defeat', label: 'Defeat', state: () => withView({ screen: 'defeat' }) },
   { name: 'ending', label: 'Ending', state: () => withView({ screen: 'ending' }) },
 ];

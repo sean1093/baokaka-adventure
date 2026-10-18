@@ -18,9 +18,9 @@ const fakeStorage = (seed: Record<string, string> = {}): StorageLike & { cells: 
   };
 };
 
-/** A current (v4) record as it sits in storage, with one part of the run overridden. */
+/** A current (v5) record as it sits in storage, with one part of the run overridden. */
 const stored = (run: Partial<Run>, extra: Record<string, unknown> = {}): Record<string, string> => ({
-  [QUEST_KEY]: JSON.stringify({ version: 4, run: { ...freshRun(1), ...run }, sound: true, settings: { skipRides: false }, ...extra }),
+  [QUEST_KEY]: JSON.stringify({ version: 5, run: { ...freshRun(1), ...run }, sound: true, settings: { skipRides: false }, ...extra }),
 });
 
 const loadRun = (cells: Record<string, string>): Run => loadQuest(fakeStorage(cells)).save.run;
@@ -37,12 +37,12 @@ describe('loadQuest', () => {
     expect(loadQuest(storage)).toEqual({ save, legacyReset: false });
   });
 
-  test('writes a versioned record under the v4 key', () => {
+  test('writes a versioned record under the v5 key', () => {
     const storage = fakeStorage();
     saveQuest({ run: freshRun(1), sound: true, settings: DEFAULT_SETTINGS }, storage);
-    expect(SAVE_VERSION).toBe(4);
-    expect(Object.keys(storage.cells)).toEqual(['baokaka.quest.v4']);
-    expect(JSON.parse(storage.cells[QUEST_KEY])).toMatchObject({ version: 4, sound: true, settings: { skipRides: false } });
+    expect(SAVE_VERSION).toBe(5);
+    expect(Object.keys(storage.cells)).toEqual(['baokaka.quest.v5']);
+    expect(JSON.parse(storage.cells[QUEST_KEY])).toMatchObject({ version: 5, sound: true, settings: { skipRides: false } });
   });
 
   test('falls back to a fresh run when nothing is saved', () => {
@@ -85,9 +85,29 @@ describe('loadQuest', () => {
     expect(storage.cells).toEqual({});
   });
 
+  test('a v4 save (the old story\'s item ids, before issue #8) also resets with the notice, and is discarded', () => {
+    const v4 = JSON.stringify({ version: 4, run: { ...freshRun(1), level: 6, items: { cookie: 2 } }, sound: true, settings: DEFAULT_SETTINGS });
+    const storage = fakeStorage({ 'baokaka.quest.v4': v4 });
+    expect(LEGACY_QUEST_KEYS).toContain('baokaka.quest.v4');
+    const loaded = loadQuest(storage);
+    expect(loaded.legacyReset).toBe(true);
+    expect(loaded.save.run.level).toBe(1);
+    discardLegacyQuest(storage);
+    expect(storage.cells).toEqual({});
+  });
+
+  test('items and equipment follow the catalogue, including who may wear signature gear', () => {
+    expect(loadRun(stored({ level: 4, items: { cookie: 1 } as never })).level).toBe(1);
+    expect(loadRun(stored({ level: 4, items: { toString: 1 } as never })).level).toBe(1);
+    expect(loadRun(stored({ level: 4, items: { mysteryFood: 1, bellCollar: 1 } })).items).toEqual({ mysteryFood: 1, bellCollar: 1 });
+    const owners = { baokaka: 'tigerHat', mocha: 'bellCollar', magpie: 'profGlasses', bear: 'courageScarf' } as const;
+    expect(loadRun(stored({ level: 4, equip: owners })).equip).toEqual(owners);
+    expect(loadRun(stored({ level: 4, equip: { ...owners, baokaka: 'bellCollar' } })).level).toBe(1);
+  });
+
   test('seenFoes is required, and must hold known foes without repeats', () => {
     const { seenFoes: _seen, ...noSeen } = freshRun(1);
-    const cells = { [QUEST_KEY]: JSON.stringify({ version: 4, run: { ...noSeen, level: 4 }, sound: true, settings: DEFAULT_SETTINGS }) };
+    const cells = { [QUEST_KEY]: JSON.stringify({ version: 5, run: { ...noSeen, level: 4 }, sound: true, settings: DEFAULT_SETTINGS }) };
     expect(loadRun(cells).level).toBe(1);
     expect(loadRun(stored({ level: 4, seenFoes: 'dustBunny' as never })).level).toBe(1);
     expect(loadRun(stored({ level: 4, seenFoes: ['dragon' as never] })).level).toBe(1);
@@ -136,7 +156,7 @@ describe('loadQuest', () => {
 
   test('rejects a run that still counts stickers', () => {
     const { coins: _coins, ...old } = freshRun(1);
-    const cells = { [QUEST_KEY]: JSON.stringify({ version: 4, run: { ...old, level: 4, stickers: 10 }, sound: true, settings: DEFAULT_SETTINGS }) };
+    const cells = { [QUEST_KEY]: JSON.stringify({ version: 5, run: { ...old, level: 4, stickers: 10 }, sound: true, settings: DEFAULT_SETTINGS }) };
     expect(loadRun(cells).level).toBe(1);
   });
 
@@ -162,15 +182,15 @@ describe('loadQuest', () => {
   });
 
   test('rejects a consumable in an equipment slot', () => {
-    expect(loadRun(stored({ equip: { baokaka: 'cookie', mocha: null, magpie: null, bear: null } as never })).equip.baokaka).toBeNull();
+    expect(loadRun(stored({ equip: { baokaka: 'teaEgg', mocha: null, magpie: null, bear: null } as never })).equip.baokaka).toBeNull();
   });
 
   test('rejects an item count past the carry limit', () => {
-    expect(loadRun(stored({ items: { cookie: 99 } })).items).toEqual({ cookie: 2 });
+    expect(loadRun(stored({ items: { teaEgg: 99 } })).items).toEqual({ teaEgg: 2 });
   });
 
   test('rejects an unknown item id', () => {
-    expect(loadRun(stored({ items: { moonRock: 1 } as never })).items).toEqual({ cookie: 2 });
+    expect(loadRun(stored({ items: { moonRock: 1 } as never })).items).toEqual({ teaEgg: 2 });
   });
 
   test('keeps a run that is legitimately far along', () => {
@@ -181,8 +201,8 @@ describe('loadQuest', () => {
       party: ['baokaka', 'mocha', 'magpie', 'bear'],
       level: 18,
       xp: 5000,
-      equip: { baokaka: 'blanket', mocha: 'star', magpie: 'nightLight', bear: null },
-      items: { bottle: 3, apple: 1 },
+      equip: { baokaka: 'flowerVest', mocha: 'tigerShoes', magpie: 'helmet', bear: null },
+      items: { pineappleCake: 3, railBento: 1 },
       coins: 210,
       flags: ['mochaJoined', 'magpieJoined', 'bearJoined', 'octopusDone'],
       seenFoes: ['dustBunny', 'sockMonster', 'octopus'],

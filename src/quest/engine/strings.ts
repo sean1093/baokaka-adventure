@@ -1,3 +1,8 @@
+import type { HeroId } from './types';
+
+/** How the party calls each hero in short UI text (摩卡貓 is just 摩卡). */
+const HERO_CALL: Record<HeroId, string> = { baokaka: '寶咖咖', mocha: '摩卡', magpie: '阿藍', bear: '黑糖' };
+
 /**
  * Player-facing system and battle strings, in one place so later issues edit one file.
  * Wording comes from docs/story/script.md § *Battle UI strings* and `### system.defeat`.
@@ -39,6 +44,13 @@ export const UI = {
   innDeclined: '「那下次再來喔。」',
   /** A free inn (`inn 0`): benches, slides and floors heal without asking */
   innFree: '休息了一下，大家的體力和元氣都滿了。',
+
+  /**
+   * Signature gear (`Item.only`) in the equip picker: the short tag beside the item's name, and
+   * the reason the other heroes' buttons are greyed out. Heroes go by what the party calls them.
+   */
+  onlyTag: (hero: HeroId) => `${HERO_CALL[hero]}專用`,
+  onlyWear: (hero: HeroId) => `只有${HERO_CALL[hero]}能戴`,
 
   /** The one-time title notice after an old-story save was discarded (decisions.md D-12) */
   legacyReset: ['冒險重新開始囉！', '舊的存檔是上一個故事的，已經收進回憶裡了。'] as const,

@@ -1,7 +1,7 @@
 import { SPRITES } from '../../art/sprites';
 import { EVENTS, SPEAKERS } from './events';
 import { FOES } from './foes';
-import { ITEMS, MAX_LEVEL, SPELLS, XP_TABLE } from './heroes';
+import { ITEMS, ITEM_ORDER, MAX_LEVEL, SPELLS, XP_TABLE } from './heroes';
 import { TERRAIN, covers, terrainAt } from './iso';
 import { MAPS, MAP_ORDER } from './maps';
 import { findPath, isSolid } from './path';
@@ -19,7 +19,7 @@ import {
   type Follower,
   type SideQuest,
 } from './progress';
-import { HERO_ORDER, type GameMap, type Step, type Tile } from './types';
+import { HERO_ORDER, type GameMap, type Item, type ItemId, type Step, type Tile } from './types';
 
 /** At most three foes fit across the battle box. */
 export const MAX_FOES_PER_BATTLE = 3;
@@ -55,7 +55,12 @@ export function validateSteps(where: string, steps: Step[], errors: string[]): v
         break;
       case 'shop':
         if (step.stock.length === 0) errors.push(`${at}: empty shop`);
-        for (const item of step.stock) if (!ITEMS[item]) errors.push(`${at}: unknown item ${item}`);
+        for (const item of step.stock) {
+          if (!ITEMS[item]) errors.push(`${at}: unknown item ${item}`);
+          // price 0 marks a gift or quest reward (bible § 6 "—"): it must never be on sale
+          else if (ITEMS[item].price <= 0) errors.push(`${at}: shop sells ${item}, which has no price (a gift item)`);
+        }
+        if (new Set(step.stock).size !== step.stock.length) errors.push(`${at}: shop lists an item twice`);
         break;
       case 'goto':
         if (!MAPS[step.map]) errors.push(`${at}: unknown map ${step.map}`);
@@ -353,6 +358,43 @@ function validateProgress(errors: string[]): void {
   }
 }
 
+/**
+ * The item table on its own: art, a whole price (0 = a gift, never sold), sane effects, and
+ * signature gear (`only`) that is equipment belonging to a real hero.
+ */
+export function validateItems(items: Record<string, Item>, errors: string[]): void {
+  for (const [id, item] of Object.entries(items)) {
+    const where = `item ${id}`;
+    if (item.id !== id) errors.push(`${where}: id field says ${item.id}`);
+    if (item.name.length === 0 || item.blurb.length === 0) errors.push(`${where}: needs a name and a blurb`);
+    if (!SPRITES[item.sprite]) errors.push(`${where} has unknown sprite ${item.sprite}`);
+    if (!Number.isInteger(item.price) || item.price < 0) errors.push(`${where}: price must be a whole number ≥ 0 (0 = gift), got ${item.price}`);
+    const use = item.use;
+    if ((use.kind === 'hp' || use.kind === 'hpAll' || use.kind === 'mp') && use.amount <= 0) errors.push(`${where}: restores nothing`);
+    if (use.kind === 'revive' && !(use.ratio > 0 && use.ratio <= 1)) errors.push(`${where}: revive ratio must be in (0, 1]`);
+    if (use.kind === 'equip' && Object.values(use.bonus).every((bonus) => !bonus)) errors.push(`${where}: equipment with no bonus`);
+    if (item.only !== undefined) {
+      if (!HERO_ORDER.includes(item.only)) errors.push(`${where}: only for unknown hero ${item.only}`);
+      if (use.kind !== 'equip') errors.push(`${where}: only equipment can be hero-only`);
+    }
+  }
+}
+
+/** Every item some chest, shop, gift or drop hands out. */
+export function obtainableItems(): Set<ItemId> {
+  const available = new Set<ItemId>();
+  for (const map of Object.values(MAPS)) for (const chest of map.chests) available.add(chest.item);
+  for (const foe of Object.values(FOES)) if (foe.drop) available.add(foe.drop.item);
+  for (const steps of Object.values(EVENTS)) {
+    for (const step of steps) {
+      if (!('do' in step)) continue;
+      if (step.do === 'give') available.add(step.item);
+      if (step.do === 'shop') for (const item of step.stock) available.add(item);
+    }
+  }
+  return available;
+}
+
 /** Every flag some script, derived entry or the 圖鑑 can set. */
 export function settableFlags(): Set<string> {
   const flags = new Set<string>([BESTIARY_FLAG]);
@@ -362,8 +404,9 @@ export function settableFlags(): Set<string> {
 }
 
 /**
- * Flags the progress tables read that no content sets yet. Warnings, not errors, while chapters
- * land one by one (each chapter issue sets its own); the final QA issue (#58) makes them errors.
+ * Flags the progress tables read that no content sets yet, and items nothing hands out yet.
+ * Warnings, not errors, while chapters land one by one (each chapter issue places its own); the
+ * final QA issue (#58) makes them errors.
  */
 export function progressWarnings(): string[] {
   const settable = settableFlags();
@@ -376,7 +419,10 @@ export function progressWarnings(): string[] {
     read.add(follower.flag);
     read.add(follower.until);
   }
-  return [...read].filter((flag) => !settable.has(flag)).map((flag) => `progress flag ${flag} is never set by any event`);
+  const flags = [...read].filter((flag) => !settable.has(flag)).map((flag) => `progress flag ${flag} is never set by any event`);
+  const available = obtainableItems();
+  const items = ITEM_ORDER.filter((item) => !available.has(item)).map((item) => `item ${item} cannot be obtained yet`);
+  return [...flags, ...items];
 }
 
 /** Pure content checks; run at dev start-up and in content.test.ts so mistakes never ship. */
@@ -408,10 +454,7 @@ export function validateQuestContent(): string[] {
     if (foe.drop && !ITEMS[foe.drop.item]) errors.push(`foe ${foe.id} drops unknown item ${foe.drop.item}`);
   }
 
-  for (const item of Object.values(ITEMS)) {
-    if (!SPRITES[item.sprite]) errors.push(`item ${item.id} has unknown sprite ${item.sprite}`);
-    if (item.price <= 0) errors.push(`item ${item.id} is free`);
-  }
+  validateItems(ITEMS, errors);
 
   if (XP_TABLE.length !== MAX_LEVEL) errors.push(`XP_TABLE has ${XP_TABLE.length} entries, expected ${MAX_LEVEL}`);
   for (let level = 1; level < XP_TABLE.length; level += 1) {

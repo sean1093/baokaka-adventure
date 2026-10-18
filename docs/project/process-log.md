@@ -104,3 +104,12 @@ Format:
 - Decisions in D-24 (the `…Any` flags, `lfAll` seeded early, what each collection stores, the escort's placement).
 - Follow-ups for later issues are in D-24's consequences (chapter DERIVED/FOLLOWERS entries, `calmed`/`home` per foe, `postGame` on `shushuBonus`).
 
+
+### 2026-10-18 · Staff engineer · #8 Item catalogue v2 and hero-only equipment (PR #66)
+- `ItemId`/`ITEMS` are the 36 items of bible § 6 (13 consumables, 23 pieces of equipment) in table order, which is also `ITEM_ORDER`. Blurbs come from the script, the bible, or a new short line (D-25). `STARTING_ITEMS = { teaEgg: 2 }`. Borrowed icons are listed in the `TEMP icons until #19` block.
+- `price: 0` = gift. `validateItems()` replaces the "item is free" check, a shop stock may not hold a gift (or the same item twice), and `buy` refuses price 0. `Item.only` + `canWear()` limit the four signature pieces in the `equip` action and in saves.
+- Old content is remapped by effect (cookie→teaEgg, bottle→pineappleCake, …, full list in D-25), and the four 「拿到 …」 lines that named old items were updated. `npm run sim` is unchanged within noise (careful 200, casual 198, reckless 119 of 200). Items nothing hands out yet are listed by `progressWarnings()`.
+- Save v5 (`baokaka.quest.v5`); v4 is legacy. Item ids are checked with `hasOwnProperty`.
+- Party sheet: signature gear shows a 「摩卡專用」 tag, and picking it greys out the other heroes with 「只有摩卡能戴」. Blurbs wrap to two lines in the bag and the shop, and hero picker buttons are 44 px. New art lab fixture `party-sheet-equip`. Baselines were updated for menu/shop/victory and added for the new fixture. Screenshots are in `docs/screenshots/8/`.
+- Tests: new `items.test.ts` (the bible table, order, `canWear`, `validateItems`, gift-in-shop validator). `quest.test.ts` uses every `ItemUse` kind with new ids, tests signature gear on all four heroes, and checks a gift can't be bought. `save.test.ts` covers v4 legacy and `only` in saves. `content.test.ts` covers no gifts in shops and the unplaced-item warnings. 239 tests in all.
+- Follow-ups: none new. #19 replaces the TEMP icons; #21+ place the items (clearing the warnings); #54 may rebalance prices.
