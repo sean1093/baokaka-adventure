@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" width="120" height="80"><defs><linearGradient id="tk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2A3A8A"/><stop offset="1" stop-color="#141A4A"/></linearGradient></defs>
+<rect x="4" y="4" width="112" height="72" rx="9" fill="url(#tk)" stroke="#5A2C34" stroke-width="2.2"/>
+<rect x="4" y="54" width="112" height="9" fill="#0B1030"/>
+<circle cx="92" cy="26" r="13" fill="#FFF1C9"/><circle cx="98" cy="22" r="11" fill="#22307A"/>
+<path d="M18,20 l1.6,3.4 3.6,.5 -2.6,2.4 .6,3.6 -3.2,-1.8 -3.2,1.8 .6,-3.6 -2.6,-2.4 3.6,-.5 Z M66,14 l1,2 2,.4 -1.5,1.4 .4,2 -1.9,-1 -1.9,1 .4,-2 -1.5,-1.4 2,-.4 Z" fill="#FFE9A0"/>
+<text x="14" y="46" font-family="Noto Serif TC" font-weight="900" font-size="15" fill="#FFE9B0">月亮票</text>
+<text x="66" y="46" font-family="Fredoka" font-weight="600" font-size="7" fill="#BFC8FF">MOON LINE</text>
+<path d="M10,10 C30,8 60,8 80,9" stroke="#fff" stroke-width="1.6" opacity=".3" fill="none" stroke-linecap="round"/></svg>

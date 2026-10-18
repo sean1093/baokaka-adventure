@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 96" width="150" height="96"><defs><filter id="sfeltn"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" seed="9"/><feColorMatrix values="0 0 0 0 .35  0 0 0 0 .2  0 0 0 0 .1  0 0 0 .6 0"/></filter></defs>
+<rect width="150" height="96" fill="#B98058"/><rect width="150" height="96" filter="url(#sfeltn)" opacity=".6"/>
+<path d="M0,20 Q75,4 150,20" stroke="#F6E2C6" stroke-width="2" stroke-dasharray="5 4" fill="none"/></svg>

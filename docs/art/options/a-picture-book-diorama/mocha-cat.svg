@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400">
+  <!--
+    Mocha Cat (摩卡貓) - reference model, "Taipei picture-book" style.
+    Brown mackerel tabby, sitting, 3/4 view facing screen-right. ~1.6 heads tall.
+    Identity markers (never drop): forehead M, cream muzzle + bib, ringed tail, MRT-blue bandana.
+    Rig parts: mc-tail, mc-body, mc-head, mc-ear-l, mc-ear-r, mc-eyes, mc-bandana.
+  -->
+  <defs>
+    <linearGradient id="mc-fur" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#EDB57C"/>
+      <stop offset="0.45" stop-color="#CC8C52"/>
+      <stop offset="1" stop-color="#9A603A"/>
+    </linearGradient>
+    <radialGradient id="mc-head" cx="0.38" cy="0.3" r="0.82">
+      <stop offset="0" stop-color="#F2C08A"/>
+      <stop offset="0.5" stop-color="#CF8F55"/>
+      <stop offset="1" stop-color="#9C623B"/>
+    </radialGradient>
+    <linearGradient id="mc-cream" x1="0.3" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#FFF8EC"/>
+      <stop offset="1" stop-color="#EBCDB0"/>
+    </linearGradient>
+    <linearGradient id="mc-blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5A9BE6"/>
+      <stop offset="1" stop-color="#2B5BA3"/>
+    </linearGradient>
+    <radialGradient id="mc-iris" cx="0.5" cy="0.65" r="0.6">
+      <stop offset="0" stop-color="#E4E86A"/>
+      <stop offset="0.6" stop-color="#AFC64A"/>
+      <stop offset="1" stop-color="#5F7E2A"/>
+    </radialGradient>
+    <radialGradient id="mc-contact" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#2A1F3D" stop-opacity="0.42"/>
+      <stop offset="0.7" stop-color="#2A1F3D" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#2A1F3D" stop-opacity="0"/>
+    </radialGradient>
+    <path id="mc-bodyShape" d="M29,90.5 C25.5,77 29.5,63.5 41,58 C49,54.4 60,55 67,60.5 C75.5,67 78,80 73.5,90.5 C62,92.2 40,92.2 29,90.5 Z"/>
+    <path id="mc-headShape" d="M50,17 C63,17 72.5,24 74.5,34 C77.5,36.5 78,41 75.2,43 C73.5,52 63.5,58 50,58 C36.5,58 26.5,52 24.8,43.4 C22,41.4 22.4,37 25.4,34.4 C27.4,24 37,17 50,17 Z"/>
+    <clipPath id="mc-bodyClip"><use href="#mc-bodyShape"/></clipPath>
+    <clipPath id="mc-headClip"><use href="#mc-headShape"/></clipPath>
+  </defs>
+
+  <ellipse cx="51" cy="92.5" rx="28" ry="4.6" fill="url(#mc-contact)"/>
+
+  <!-- tail: fat outline stroke, fur stroke, then ring bands clipped by stroking the same path dashed -->
+  <g id="mc-tail">
+    <path d="M68,88 C82,89 89,81 88,70 C87,62 82,58 84,50 C85.5,45 89,42.5 92,43.5" fill="none" stroke="#3A2838" stroke-width="10.6" stroke-linecap="round"/>
+    <path d="M68,88 C82,89 89,81 88,70 C87,62 82,58 84,50 C85.5,45 89,42.5 92,43.5" fill="none" stroke="#C98A52" stroke-width="7.2" stroke-linecap="round"/>
+    <path d="M68,88 C82,89 89,81 88,70 C87,62 82,58 84,50 C85.5,45 89,42.5 92,43.5" fill="none" stroke="#7A4A2E" stroke-width="7.2" stroke-dasharray="3.2 5.4" stroke-dashoffset="-6"/>
+    <path d="M71,86 C81,86.4 86,80 85.4,70.4 C85,63 80.6,58.6 82,50.6" fill="none" stroke="#F4C894" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/>
+  </g>
+
+  <!-- body -->
+  <g id="mc-body">
+    <use href="#mc-bodyShape" fill="url(#mc-fur)"/>
+    <g clip-path="url(#mc-bodyClip)">
+      <!-- haunch on the far side -->
+      <path d="M58,68 C70,64 79,74 76,92 L58,92 Z" fill="#A86A40" opacity="0.6"/>
+      <path d="M62,72 C66,70 71,74 72,80" stroke="#E2A56C" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.8"/>
+      <!-- mackerel stripes on the flank -->
+      <g stroke="#7A4A2E" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0.85">
+        <path d="M66,63 C69,67 70,71 69.4,75"/><path d="M72,69 C74,73 74.6,77 73.8,81"/><path d="M31.4,72 C30.4,76 30.6,80 31.6,84"/>
+      </g>
+      <!-- AO under the head -->
+      <ellipse cx="50" cy="58" rx="20" ry="6" fill="#7E4A2C" opacity="0.45"/>
+      <!-- ground bounce -->
+      <path d="M26,87 C40,89.4 62,89.4 76,87 L76,93 L26,93 Z" fill="#9CC8F0" opacity="0.16"/>
+      <path d="M59.6,89 C59.4,79 63.6,71.4 71.4,70.6" stroke="#7A4A2E" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.7"/>
+    </g>
+    <use href="#mc-bodyShape" fill="none" stroke="#3A2838" stroke-width="1.8" stroke-linejoin="round"/>
+    <!-- cream bib + front legs -->
+    <path d="M40,62 C44,60 54,60 58,62.5 C59.5,70 58.5,78 57,90.4 L41.6,90.4 C39.6,79 38.8,70 40,62 Z" fill="url(#mc-cream)"/>
+    <path d="M49.4,80 L49.4,86" stroke="#D9B898" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- paws -->
+    <path d="M38.6,90.6 C38.6,86.6 41.4,85.6 44.4,85.6 C47.6,85.6 49.4,87 49.4,90.6 Z" fill="#FFF6EA" stroke="#3A2838" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M49.6,90.6 C49.6,86.8 52.2,85.8 55,85.8 C58,85.8 59.8,87.2 59.8,90.6 Z" fill="#F1DDC6" stroke="#3A2838" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M42,88 L42,90.4 M45.6,87.8 L45.6,90.4 M53,88 L53,90.4 M56.4,88 L56.4,90.4" stroke="#C8A58A" stroke-width="0.9" stroke-linecap="round"/>
+  </g>
+
+  <!-- bandana: MRT blue with cream dots, knot on the near side -->
+  <g id="mc-bandana">
+    <path d="M33,55 C42,60.4 58,60.4 67.4,55 L66,60 C60,62.4 55,63 50,70.5 C45,63 40,62.4 34.4,60 Z" fill="url(#mc-blue)" stroke="#3A2838" stroke-width="1.7" stroke-linejoin="round"/>
+    <g fill="#FFF6E4"><circle cx="42" cy="60.6" r="1"/><circle cx="50" cy="64.6" r="1"/><circle cx="57.6" cy="60.8" r="1"/><circle cx="46" cy="61.6" r="0.7"/><circle cx="54" cy="61.8" r="0.7"/></g>
+    <path d="M36,57.4 C42,60.4 56,60.6 64.4,57.6" stroke="#9CC8FF" stroke-width="1" fill="none" opacity="0.8"/>
+    <path d="M33.6,56 C29.4,55 26.8,57.4 27.4,60.6 C30.4,60.6 32.6,59.4 34.4,58 Z" fill="#3D74C2" stroke="#3A2838" stroke-width="1.5" stroke-linejoin="round"/>
+    <!-- round transit-card tag -->
+    <circle cx="50" cy="70.6" r="3" fill="#F7CF5A" stroke="#3A2838" stroke-width="1.3"/>
+    <path d="M48.6,69.6 C49.2,68.8 50.2,68.6 51,68.9" stroke="#FFFFFF" stroke-width="0.8" stroke-linecap="round"/>
+  </g>
+
+  <!-- head -->
+  <g id="mc-head">
+    <g id="mc-ear-l">
+      <path d="M27.6,30 C26.4,21 27.4,13 30.4,9.6 C35.4,11.4 41,16.4 43.4,21.4 Z" fill="url(#mc-fur)" stroke="#3A2838" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M30.4,26 C30,20 30.4,15.6 31.8,13.4 C35,15 38,18 39.6,21.4 Z" fill="#F4A9A0"/>
+      <path d="M32,23 L30.6,19.4 M34,22.4 L33.4,18.8" stroke="#FFF2E4" stroke-width="0.6" stroke-linecap="round" opacity="0.6"/>
+    </g>
+    <g id="mc-ear-r">
+      <path d="M58.4,20.6 C62,15.6 67.4,11.4 72,10 C74.4,13.6 75,21 73.4,29.4 Z" fill="#B7774A" stroke="#3A2838" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M62.4,20.6 C64.8,17.6 67.8,15.2 70.4,14 C71.6,17 71.8,21 71,25 Z" fill="#E59A94"/>
+    </g>
+    <use href="#mc-headShape" fill="url(#mc-head)"/>
+    <g clip-path="url(#mc-headClip)">
+      <!-- forehead M and crown stripes -->
+      <g stroke="#7A4A2E" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <path d="M43.4,27.6 L46.4,21.4 L50.8,26.4 L55.2,21.2 L58.2,27.4" stroke-width="2.4"/>
+        <path d="M50.8,17.6 L50.8,22 M45.4,17.6 L46.4,20.6 M56.2,17.6 L55.4,20.4" stroke-width="2"/>
+        <path d="M24.4,38 C27.4,38.4 30,39.6 31.4,41.4 M25.6,44 C28,43.6 30.6,44.2 32,45.4" stroke-width="2"/>
+        <path d="M76,37.6 C73.4,38 71.4,39.2 70.2,40.8 M75,43.4 C73,43.2 71,43.8 69.8,45" stroke-width="1.8"/>
+      </g>
+      <!-- far side form shadow -->
+      <path d="M70,26 C79,36 76,52 60,59 L82,62 L82,22 Z" fill="#8E5634" opacity="0.32"/>
+      <!-- rim light -->
+      <path d="M74.4,35.2 C76.6,38.4 76.4,41.4 74.6,43.6 C73.8,49 70,53 65,55.4" stroke="#D8F0FF" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.9"/>
+    </g>
+    <use href="#mc-headShape" fill="none" stroke="#3A2838" stroke-width="1.9" stroke-linejoin="round"/>
+
+    <!-- muzzle -->
+    <path d="M52.4,40 C58.8,40 64,44 63.4,49 C62.8,54 57.6,56 52.4,56 C47.2,56 41.6,54 41.2,49 C40.8,44 46,40 52.4,40 Z" fill="url(#mc-cream)"/>
+    <path d="M49.8,44.6 C50.6,43.4 54.2,43.4 55,44.6 C54.6,46.2 53.2,47.2 52.4,47.2 C51.6,47.2 50.2,46.2 49.8,44.6 Z" fill="#F08A8C" stroke="#3A2838" stroke-width="1" stroke-linejoin="round"/>
+    <path d="M51,44.6 C51.6,44.2 52.6,44.2 53,44.5" stroke="#FFFFFF" stroke-width="0.6" stroke-linecap="round" opacity="0.8"/>
+    <path d="M52.4,47.2 L52.4,49 M48.8,49.2 C50,51 51.8,50.8 52.4,49 C53,50.8 54.8,51 56,49.2" stroke="#3A2838" stroke-width="1.1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- whiskers: light lines that may leave the silhouette -->
+    <g stroke="#FFF6EA" stroke-width="0.8" stroke-linecap="round" opacity="0.95">
+      <path d="M42,48 C35,46.6 28,46.8 20.6,48.6"/><path d="M42.4,50.4 C35,50.4 28.4,51.6 22.2,54"/>
+      <path d="M62.6,47.6 C68.6,46.4 74.4,46.6 80,48"/><path d="M62.4,50 C68.4,50.2 73.6,51.2 78.6,53.2"/>
+    </g>
+    <!-- cheek blush, faint -->
+    <ellipse cx="38" cy="48.6" rx="4" ry="2.4" fill="#FF8A80" opacity="0.3"/>
+    <ellipse cx="66.4" cy="48.4" rx="3.4" ry="2.2" fill="#FF8A80" opacity="0.3"/>
+
+    <!-- eyes: big rounded almonds, green-gold, slit pupils softened to ovals for warmth -->
+    <g id="mc-eyes">
+      <path d="M35,37.6 C35.6,32.4 39.6,30.4 43,30.8 C46.6,31.4 48.6,34.6 48,38.6 C47.4,42.6 44.2,44.4 41.2,44 C37.6,43.4 34.6,41 35,37.6 Z" fill="url(#mc-iris)" stroke="#3A2838" stroke-width="1.5"/>
+      <path d="M56.4,38.6 C55.8,34.6 57.8,31.4 61.2,30.8 C64.4,30.4 67.8,32.4 68.2,37.4 C68.6,40.8 66,43.4 62.6,44 C59.4,44.4 56.8,42.4 56.4,38.6 Z" fill="url(#mc-iris)" stroke="#3A2838" stroke-width="1.5"/>
+      <ellipse cx="42" cy="37.6" rx="2.4" ry="4.4" fill="#2A1C28"/>
+      <ellipse cx="62.4" cy="37.6" rx="2.3" ry="4.3" fill="#2A1C28"/>
+      <circle cx="43.8" cy="34.6" r="1.6" fill="#FFFFFF"/>
+      <circle cx="64" cy="34.6" r="1.5" fill="#FFFFFF"/>
+      <circle cx="40.2" cy="41" r="0.7" fill="#FFFFFF" opacity="0.8"/>
+      <circle cx="60.6" cy="41" r="0.65" fill="#FFFFFF" opacity="0.8"/>
+      <path d="M35.6,35 C36.8,32 39.6,30.8 42.6,31" stroke="#3A2838" stroke-width="1.7" stroke-linecap="round" fill="none"/>
+      <path d="M67.6,35 C66.6,32 64,30.8 61.4,31" stroke="#3A2838" stroke-width="1.7" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+</svg>
