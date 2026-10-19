@@ -8,7 +8,6 @@ import { compilePart } from '../core/presets';
 import { NO_GESTURE, targetsOf, type GestureFlags } from './gestures';
 import { ANIMATED_LAYERS, ANIMATED_NODE_BUDGET, LAYERS, type LayerId } from './layers';
 import { PageView } from './PageView';
-import { labPageById } from '../dev/labPages';
 
 /**
  * The page renderer, rendered to static markup (#89; GDD § 3.9): the layers in order, node counts
@@ -175,28 +174,38 @@ describe('PageView motion', () => {
 });
 
 describe('PageView thought bubble change of mind (#98, GDD § 2.2.6)', () => {
-  const def = labPageById('lab-lamp')!;
+  const def = pageById('c0p2')!;
   let s = initialState(def);
   for (let i = 0; i < 2; i++) s = step(def, s, { t: 'none' }).state;
   const watching = s;
-  const r = step(def, watching, { t: 'tap', id: 'mobile' });
+  const r = step(def, watching, { t: 'tap', id: 'cushion' });
   const wants = r.state;
   const renderK = (prev: SimState, state: SimState, opts: { reduced?: boolean; still?: boolean } = {}) =>
     layers(renderToStaticMarkup(createElement(PageView, { def, prev, state, ms: 50, tickMs: 500, reduced: opts.reduced ?? false, still: opts.still, events: r.events }))).fx;
 
-  test('the lab stage: watching the night light, then the bead appears and he wants it', () => {
+  test('0-2: watching the TV, then the cushion shows the bead and he wants it', () => {
     expect(watching.baby.mode).toBe('watching');
     expect(wants.baby.target).toBe('bead');
   });
 
-  test('the old icon pops, the new one inflates late, the spring wobbles, 「要！」 pulses, he barks', () => {
+  test('the old icon pops, the new one inflates late, the spring wobbles, he barks', () => {
     const fx = renderK(watching, wants);
     expect(fx).toContain('data-bubble="want"');
     expect(fx).toContain('class="tb-pop"');
     expect(fx).toContain('class="tb-inflate tb-late"');
     expect(fx).toContain('class="tb-wobble"');
-    expect(fx).toContain('class="tb-pulse"');
+    // He turns back for it at once: wanting (moving), not reaching, so 「要！」 doesn't pulse
+    expect(fx).not.toContain('class="tb-pulse"');
     expect(fx).toMatch(/data-bark="baby"[\s\S]*要！/);
+  });
+
+  test("0-2's tutorial spotlight (#106): a breathing glow round the bubble, still under reduced motion", () => {
+    const lit = (reduced: boolean) =>
+      layers(renderToStaticMarkup(createElement(PageView, { def, prev: watching, state: watching, ms: 50, tickMs: 500, reduced, affordance: { bubble: true } }))).fx;
+    expect(lit(false)).toMatch(/data-bubble-spotlight=""><g class="tb-spot">/);
+    expect(lit(true)).toContain('data-bubble-spotlight');
+    expect(lit(true)).not.toContain('tb-spot');
+    expect(renderK(watching, watching)).not.toContain('data-bubble-spotlight');
   });
 
   test('reduced motion: the same beats as fades, no wobble or pulse', () => {
@@ -303,11 +312,11 @@ describe('PageView character animations (#95)', () => {
   });
 
   test('the eye-contact tick faces the camera from the landing on; the next tick pushes', () => {
-    const lab = labPageById('lab-push')!;
+    const lab = pageById('c0p3')!;
     const a = initialState(lab);
-    const b = step(lab, a, { t: 'mocha', perch: 'pillar' }).state;
+    const b = step(lab, a, { t: 'mocha', perch: 'table' }).state;
     const c = step(lab, b, { t: 'none' }).state;
-    expect(b.mocha.stare).toBe('cup');
+    expect(b.mocha.stare).toBe('bead');
     expect(pose(render(lab, a, b, 100), 'mocha')).toBe('hop');
     expect(pose(render(lab, a, b, 450), 'mocha')).toBe('eyeContact');
     expect(render(lab, b, b)).toMatch(/data-sprite="mocha\.push" data-frame="0"/);
@@ -315,13 +324,13 @@ describe('PageView character animations (#95)', () => {
   });
 
   test('crying loops cry; a lit light nearby glows behind him', () => {
-    const lab = labPageById('lab-cry')!;
-    let s = initialState(lab);
-    for (let i = 0; i < 3; i++) s = step(lab, s, { t: 'none' }).state;
+    const lab = pageById('c0p4')!;
+    let s = step(lab, initialState(lab), { t: 'mocha', perch: 'basket' }).state;
+    for (let i = 0; i < 2; i++) s = step(lab, s, { t: 'none' }).state;
     expect(s.baby.mode).toBe('crying');
     expect(pose(render(lab, s, s), 'baby')).toBe('cry');
     expect(render(lab, s, s)).not.toContain('data-lamp-glow');
-    const lit: PageDef = { ...lab, attractors: [...lab.attractors, { id: 'lamp', kind: 'light', node: 'crib2' }] };
+    const lit: PageDef = { ...lab, attractors: [...lab.attractors, { id: 'lamp', kind: 'light', node: 'rug1' }] };
     const near = initialState(lit);
     expect(render(lit, near, near)).toMatch(/data-lamp-glow="" [^>]*fill="url\(#/);
   });

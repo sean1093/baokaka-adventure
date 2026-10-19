@@ -1083,6 +1083,11 @@ The chapter opens with the intro card and lines (§5.2 P). There is no Mocha on 
 | 土地公 | Outside on the street, visible when the curtain is open |
 | Notes | The hint ladder's first real use (auto-nudge at 30 s). Dead-end check: every action is reversible. Leaving the door open is harmless. |
 
+**For engineers (#106, D-69).** The four prologue pages are `src/popup/pages/c0/p1.ts`–`p4.ts`, as specified above; `npm run solve` proves each (no dead ends; 淘氣 and 土地公 reachable). 0-3 keeps par 1 at difficulty 2 as written (the solver warns that par 1 is under difficulty 2's band; the difficulty is the push's novelty, not its length). Additions:
+- 0-2's newspaper plays Dad's 「叫……爸爸……」 (`c0p2.dad.1`) and 0-3's 紅包 landing plays 寶咖咖's 「這個！」 (`c0p3.envelope.1`), both through `lines.onEvent`.
+- The scripted tutorials (`game/tutorial.ts`) run until the save marks the page solved. 0-1: the ghost hand pulls the tab after 4 s of reaching with the rail up. 0-2: a moonlight spotlight (not marigold, because the bubble isn't a touchable) circles his thought bubble once he watches the TV, and stays through the flip until he has the bead. 0-3: the ghost hand taps `table` after 4 s of reaching, after Mocha's join lines.
+- Indoors, a perch up on the standing page is drawn as a wall shelf, and a box perch is drawn as a laundry basket whose rim is the perch node. Until #108 these are the placeholder stage's furniture.
+
 #### Chapter 1 「便當的味道」 (台北車站, 00:20)
 
 Chapter card and lines: §5.2 ch1.

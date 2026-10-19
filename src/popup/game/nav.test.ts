@@ -7,7 +7,7 @@ import { completePage, freshSave, openPage, type SaveV1 } from './progress';
 /** The navigation state machine (#97; GDD § 2.13): cover → page → menu → contents, and the resume target. */
 
 const fresh = freshSave(registry);
-const played = completePage(fresh, 'c0p1'); // 0-1 solved, 1-2 current
+const played = ['c0p1', 'c0p2', 'c0p3', 'c0p4'].reduce((s, id) => completePage(s, id), fresh); // the prologue solved, 1-2 current
 
 const run = (save: SaveV1, ...actions: NavAction[]): NavState => actions.reduce((s, a) => navigate(s, a, save), COVER);
 

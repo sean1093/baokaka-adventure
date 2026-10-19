@@ -12,6 +12,7 @@ import { loadLines, type TalkLine } from '../content/script';
 import type { LearnKey } from '../content/words';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
 import { EMPTY_TALK, MAX_PER_BEAT, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
+import { cueKey, tutorialCue, type TutorialShow } from '../game/tutorial';
 import { WORD_MOTIF, firstUseLine, learnLines, learnedNow, ringWords, tutorialShow, tutorialWord } from '../game/words';
 import { FRESH_ATTEMPT, attemptResult, earnInAttempt, mischiefFired, type Attempt } from '../game/stickers';
 import type { PageResult, Sticker } from '../game/progress';
@@ -126,6 +127,24 @@ const subscribeResize = (onChange: () => void) => {
 };
 const readSize = () => `${window.innerWidth}x${window.innerHeight}`;
 
+/**
+ * The page's scripted tutorial (#106, `game/tutorial.ts`): what to show once its cue has held for
+ * its delay while `live`; anything that changes the cue (or stops the page being live) restarts it.
+ */
+function useScriptedTutorial(def: PageDef, state: SimState, live: boolean): TutorialShow | null {
+  const cue = tutorialCue(def, state);
+  const key = live ? cueKey(cue) : '';
+  const delay = cue?.afterMs ?? 0;
+  const [shown, setShown] = useState<string>('');
+  useEffect(() => {
+    setShown('');
+    if (key === '') return undefined;
+    const t = window.setTimeout(() => setShown(key), delay);
+    return () => window.clearTimeout(t);
+  }, [key, delay]);
+  return shown !== '' && shown === key && cue !== null ? cue.show : null;
+}
+
 /** The viewport, as a layout. */
 function useBookLayout(): BookLayout {
   const size = useSyncExternalStore(subscribeResize, readSize, () => '390x844');
@@ -219,9 +238,14 @@ export interface PagePlayerProps {
   readonly tilt?: boolean;
   /** Low power (bible § 9.3, #104): half the sparkles */
   readonly lowPower?: boolean;
+  /**
+   * The page's scripted tutorial runs (0-1, 0-2, 0-3; #106, `game/tutorial.ts`): the shell passes
+   * true until the save marks the page solved (first play only). Off by default (PageLab, stills).
+   */
+  readonly tutorials?: boolean;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay, onSticker, showSticker, onPhoto, showPhoto, vibrate = false, tilt = false, lowPower = false }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay, onSticker, showSticker, onPhoto, showPhoto, vibrate = false, tilt = false, lowPower = false, tutorials = false }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
   const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev, events }), [def, speed, from, prev, still, events]);
@@ -548,12 +572,16 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     busy: learning !== null,
     ringOpen,
   });
-  // What the page shows: a fixture's own flags, else the ladder's hint, else the tutorial's hand
-  const hintShow = affordance?.hint ?? hintShown.show ?? (tutorial.baby ? { level: 2 as const, key: 'baby:baby' } : null);
+  // The prologue's scripted tutorial (#106): its cue must hold for its delay, live, with nothing said
+  const scripted = useScriptedTutorial(def, frame.state, tutorials && !still && !paused && !hold && !ringOpen && learning === null && moment === null && currentBeat(talk) === null);
+  const scriptedHand = scripted?.kind === 'hand' ? { level: 2 as const, key: scripted.key, stop: scripted.stop } : null;
+  // What the page shows: a fixture's own flags, else the ladder's hint, else a tutorial's hand
+  const hintShow = affordance?.hint ?? hintShown.show ?? scriptedHand ?? (tutorial.baby ? { level: 2 as const, key: 'baby:baby' } : null);
   const mochaCue = affordance?.mocha ?? hintShown.mocha;
+  const bubble = affordance?.bubble ?? scripted?.kind === 'bubble';
   const pageAffordance = useMemo(
-    () => ({ ...affordance, wiggle: idle.wiggle, hint: hintShow, mocha: mochaCue }),
-    [affordance, idle.wiggle, hintShow, mochaCue],
+    () => ({ ...affordance, wiggle: idle.wiggle, hint: hintShow, mocha: mochaCue, bubble }),
+    [affordance, idle.wiggle, hintShow, mochaCue, bubble],
   );
 
   // The page's character frames (#94) and environment bitmaps (#96): preloaded and decoded as it

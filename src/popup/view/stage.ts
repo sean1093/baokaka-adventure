@@ -66,10 +66,15 @@ export interface Crossing {
   readonly part?: Id;
 }
 
-/** Perch furniture (bible § 4 perches): a pillar for a high perch, a bench for a seat. */
+/**
+ * Perch furniture (bible § 4 perches): a pillar for a high perch, a bench for a seat; indoors (the
+ * prologue, page E) a perch up on the standing page is a wall shelf instead of a pillar or a bench,
+ * and a box perch (C9, `hidesMocha`) is a laundry basket whose rim is the perch node (#106: Mocha's
+ * in-box frame is his head and paws, cut flat at the rim).
+ */
 export interface PerchPost {
   readonly perch: Id;
-  readonly kind: 'pillar' | 'bench';
+  readonly kind: 'pillar' | 'bench' | 'shelf' | 'basket';
   readonly x: number;
   /** The perch node's y (where Mocha sits) */
   readonly top: number;
@@ -131,13 +136,17 @@ export function stageOf(def: PageDef): Stage {
 function buildStage(def: PageDef): Stage {
   const byId = new Map<Id, NodeDef>(def.nodes.map((n) => [n.id, n]));
   const perchNodes = new Set(def.perches.map((p) => p.node));
+  // A node attached to a gate is a doorway: it never moves (lint L04), so it is floor like any other
+  const gates = new Set(def.parts.filter((p) => p.preset === 'gate').map((p) => p.id));
   const isStatic = (id: Id) => {
     const n = byId.get(id);
-    return n !== undefined && n.attach === undefined && n.height < 2 && !perchNodes.has(id);
+    return n !== undefined && (n.attach === undefined || gates.has(n.attach.part)) && n.height < 2 && !perchNodes.has(id);
   };
   const pos = (id: Id): Pt => {
     const n = byId.get(id)!;
-    return [n.x, n.y];
+    // A doorway's one position (the same in every state of its gate)
+    const at = n.attach === undefined ? undefined : Object.values(n.attach.pos)[0];
+    return at ?? [n.x, n.y];
   };
 
   // Union-find over level, unconditional, static baby edges
@@ -201,20 +210,22 @@ function buildStage(def: PageDef): Stage {
     return { a: e.a, b: e.b, from, to, when: e.when!, rail: [railX, from[1]] as Pt, part: condPart(e.when!) };
   });
 
+  const indoors = def.chapter === 0 || def.chapter === 11;
   const posts: PerchPost[] = def.perches
     .map((p: PerchDef) => {
       const n = byId.get(p.node);
       if (n === undefined) return null;
       const below = runs.filter((r) => r.y > n.y && n.x >= r.x0 && n.x <= r.x1).sort((a, b) => a.y - b.y)[0];
       const foot = below ? below.y - 6 : Math.max(n.y + 30, GUTTER_Y + 40);
-      return { perch: p.id, kind: n.height >= 2 ? 'pillar' : 'bench', x: n.x, top: n.y, foot } as PerchPost;
+      const kind: PerchPost['kind'] = p.hidesMocha ? 'basket' : indoors && n.y < GUTTER_Y ? 'shelf' : n.height >= 2 ? 'pillar' : 'bench';
+      return { perch: p.id, kind, x: n.x, top: n.y, foot } as PerchPost;
     })
     .filter((p): p is PerchPost => p !== null);
 
   const carriages: Carriage[] = [];
   for (const part of def.parts) {
     const riders = def.nodes.filter((n) => n.attach?.part === part.id);
-    if (riders.length === 0 || part.preset === 'lift' || part.preset === 'carrier') continue;
+    if (riders.length === 0 || part.preset === 'lift' || part.preset === 'carrier' || part.preset === 'gate') continue;
     const all = riders.flatMap((n) => Object.values(n.attach!.pos));
     const ys = new Set(all.map(([, y]) => y));
     if (ys.size !== 1) continue; // only level carriages (trains, carts) for now

@@ -45,6 +45,49 @@ const SCENARIOS = {
     // Pull the crib-rail tab down along its track (150,480 → 150,540)
     { drag: [[150, 480], [150, 545]] },
   ],
+  // 0-2 「沙發山」 (#106): he watches the TV until the cushion shows the bead, then crawls back for it
+  c0p2: [
+    { wait: 'watching' },
+    { tap: [63, 447] },
+  ],
+  // 0-3 「摩卡起床」: Mocha's join lines, then the table's paw print — he pushes the bead off
+  c0p3: [
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [262, 366] },
+  ],
+  // 0-4 「窗外的月亮線」: Mocha into the laundry basket, nothing to want, he cries — the door opens,
+  // the train wakes (廣播姊姊) — then the curtain open and he crawls out to the train's step
+  c0p4: [
+    { wait: 'cuddling' },
+    { tap: [34, 414] },
+    { wait: 'crying' },
+    { expect: '[data-subtitle]', timeout: 6_000 },
+    { readTalk: true },
+    { tap: [300, 263] },
+  ],
+  // The prologue's scripted tutorials (#106, first play; `tutorial=1`): 0-1's ghost hand pulls the
+  // rail after 4 s of reaching, 0-2's bubble wears its spotlight, 0-3's hand taps the table
+  'tutorial-c0p1': [
+    { readTalk: true },
+    { wait: 'reaching' },
+    { absent: '[data-hint-hand]' },
+    { expect: '[data-hint-hand="drag"]', timeout: 9_000 },
+    { drag: [[150, 480], [150, 545]] },
+  ],
+  'tutorial-c0p2': [
+    { wait: 'watching' },
+    { expect: '[data-bubble-spotlight]', timeout: 5_000 },
+    { tap: [63, 447] },
+    { expect: '[data-bubble-spotlight]', timeout: 3_000 },
+  ],
+  'tutorial-c0p3': [
+    { readTalk: true },
+    { wait: 'reaching' },
+    { absent: '[data-hint-hand]' },
+    { expect: '[data-hint-hand="tap"]', timeout: 9_000 },
+    { tap: [262, 366] },
+  ],
   c1p2: [
     { wait: 'reaching' },
     // The train tab out → half (stops at x 80 / 140 / 200 on y 610)
@@ -173,6 +216,9 @@ const SCENARIO_URLS = {
   'stickers-c1p2': '#/pagelab?fixture=page-hud',
   'photo-spread': '#/pagelab?fixture=spread-shell',
   'prologue-card': '#/popup',
+  'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',
+  'tutorial-c0p2': '#/popup?page=c0p2&tutorial=1',
+  'tutorial-c0p3': '#/popup?page=c0p3&tutorial=1',
 };
 
 const VIEWPORTS = [

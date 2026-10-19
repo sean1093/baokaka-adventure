@@ -785,3 +785,32 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #111 prunes the RPG's tones and tracks.
 - The "record the parents' voices" stretch idea stays with the owner.
 - The bundle grew ≈ 4.5 KB gzip (all JS chunks), under the 6 KB budget.
+
+### D-69 · 2026-10-19 · The prologue pages and their scripted tutorials (#106)
+
+**Context.** #106 builds 0-2, 0-3 and 0-4 from GDD § 4.3 and the prologue's scripted tutorials. The docs leave open:
+- what "first play only (flag in the save)" reads;
+- how a tutorial is told apart from the hint ladder, and when its clock runs;
+- what "the tutorial highlights the bubble" looks like;
+- where the pages' unscripted lines come from (Dad's sleep-talk on 0-2, 寶咖咖's pat on 0-3's 紅包);
+- how the placeholder stage draws a curtain rod, a shelf and a laundry basket before #108 bakes the art;
+- the lab stages #95, #141 and #98 left for these pages.
+
+**Decision.**
+1. **First play = not solved yet.** The shell passes `tutorials` to `PagePlayer` while `save.pages[id].solved` is unset, so the save's existing record is the flag and the save format doesn't change. A player who leaves or retries before solving the page sees the tutorial again, which is what a grandparent needs. `#/popup?page=…&tutorial=1` turns it on outside the shell; PageLab and stills never run it.
+2. **Tutorials are scripts, not hints.** `game/tutorial.ts` is a table by page id: a situation predicate on the state, what to show, and a delay. `PagePlayer` keeps the clock. The cue must hold for its delay while the page is live: not paused, not held by a layer or a turn, no word ring, card or photo up, and no subtitle on screen (0-3's join lines come first). Any change restarts the clock. A tutorial uses the ladder's visuals (`affordance.hint` level 2: the ghost hand with its halo). The ladder's own hint wins when one is showing.
+   - 0-1: `crib-rail` (drag to `down`) after 4 s of reaching with the rail up.
+   - 0-2: the bubble spotlight 1.2 s after he starts watching the TV, kept through the flip until he has the bead.
+   - 0-3: `perch:table` after 4 s of reaching for the bead while Mocha is neither on the table nor on his way there. The hand stays if he is sent to the shelf instead.
+3. **The bubble spotlight is moonlight, not marigold.** The marigold halo means "touch this" (bible § 4), and the bubble isn't a touchable. The spotlight is a soft lamp glow and a dotted chalk ring round the cloud. It breathes at 0.5 Hz (opacity only) and holds still under reduced motion. It is `affordance.bubble`.
+4. **Two lines added to the script:** `c0p2.dad.1` 爸爸 「叫……爸爸……」 (the newspaper opened, § 4.3's 淘氣) and `c0p3.envelope.1` 寶咖咖 「這個！」 (the 紅包 lands). The 紅包 is flavour only: it is no attractor, so he keeps wanting the bead. Mocha's join lines are 0-3's `lines.intro`. 廣播姊姊's three lines are 0-4's `lines.onEvent` on `partEnter train on`.
+5. **Prologue 土地公 wear no hat** (as 0-1), though the engine fixture's 0-4 gave him a 斗笠.
+6. **The placeholder stage indoors.** A perch on the standing page (above the gutter) is a wall shelf (a plank on two brackets), not a floor pillar or a bench. A `hidesMocha` perch is a woven laundry basket with its rim at the perch node, so Mocha's in-box frame sits on it (#141's note), with a towel over the front edge. A node attached to a gate is floor (a doorway never moves, L04), not a carriage. Backdrops: `c0/living-room` (0-2, 0-3) and `c0/home-window` (0-4) bake the chapter's placeholder stage until #108 draws them.
+7. **The lab stages are gone.** `lab-push`, `lab-cry`, `lab-lamp` and `lab-box` are replaced by real fixtures: `c0p2-watching`, `c0p2-change-of-mind`, `c0p3-eye-contact`, `c0p4-mocha-inbox` (looking too) and `c0p4-crying`, plus `c0p2-start`, `c0p2-bubble-tutorial`, `c0p3-join`, `c0p3-tutorial`, `c0p3-envelope`, `c0p4-start` and `c0p4-train`.
+
+**Why.** The flag the save already has says exactly "has this player solved it", so a new field would only duplicate it. Scripts keep the tutorials exactly as the GDD writes them and separate from the solver-driven ladder. A delay on a held situation gives the player the moment to find it alone, which is the point of a tutorial.
+
+**Consequences.**
+- 1-3's word tutorial (#99) stays where it is (`game/words.ts`). A later page that needs a scripted beat adds a row to `SCRIPTS`.
+- The screen fixtures' "played" save now solves the whole prologue before 1-2, since 1-2 unlocks only after 0-4.
+- #108 replaces the placeholder backdrops and the shelf and basket furniture with the prologue's art. Place the basket's rim at the `basket` perch node (0-4: (34, 420)).

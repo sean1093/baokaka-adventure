@@ -1,5 +1,8 @@
 import type { Growth, Id, PageDef, Word } from '../core/types';
 import c0p1 from './c0/p1';
+import c0p2 from './c0/p2';
+import c0p3 from './c0/p3';
+import c0p4 from './c0/p4';
 import c1p2 from './c1/p2';
 
 /**
@@ -21,7 +24,7 @@ import c1p2 from './c1/p2';
 export { definePage } from '../core/define';
 
 /** The pages in play order, as authored. */
-const AUTHORED: readonly PageDef[] = [c0p1, c1p2];
+const AUTHORED: readonly PageDef[] = [c0p1, c0p2, c0p3, c0p4, c1p2];
 
 export interface PageRegistry {
   /** Every page in play order, with the order-dependent defaults filled in. */

@@ -180,7 +180,7 @@ describe('parseArgs and selectPages', () => {
   test('filters by page id and chapter', () => {
     expect(selectPages(PAGES, {}).map((p) => p.id)).toEqual(PAGES.map((p) => p.id));
     expect(selectPages(PAGES, { page: 'c1p2' }).map((p) => p.id)).toEqual(['c1p2']);
-    expect(selectPages(PAGES, { chapter: 0 }).map((p) => p.id)).toEqual(['c0p1']);
+    expect(selectPages(PAGES, { chapter: 0 }).map((p) => p.id)).toEqual(['c0p1', 'c0p2', 'c0p3', 'c0p4']);
     expect(selectPages(PAGES, { page: 'c1p2', chapter: 0 })).toEqual([]);
     expect(selectPages(PAGES, { page: 'nope' })).toEqual([]);
   });

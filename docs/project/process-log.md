@@ -612,3 +612,29 @@ Format:
   - New creatures / pushables: check `creatureCue` / `dropCue` keywords.
   - #110 playtest: listen on a phone; check 「要！要！」 every 4 ticks while he reaches isn't tiring.
   - #111: prune the RPG's tones and tracks (and the RPG's `TODO(#55)` notes go with it).
+
+### 2026-10-19 · Staff engineer · #106 Prologue pages 0-2, 0-3, 0-4 and the scripted tutorials (PR #175)
+- **Pages (`pages/c0/p2.ts`–`p4.ts`)**, registered in play order (0-1 → 0-4 → 1-2), exactly as GDD § 4.3 describes them:
+  - 0-2 「沙發山」: the TV's standby light wins until the cushion shows the bead. Dad's newspaper is the 淘氣, and he sleep-talks 「叫……爸爸……」 (`c0p2.dad.1`).
+  - 0-3 「摩卡起床」: Mocha's ten join lines are the page's intro. The bead `followsPushable` from the table to the rug. The 紅包 on the shelf is the 淘氣, and it lands with 「這個！」 (`c0p3.envelope.1`).
+  - 0-4 「窗外的月亮線」: the basket box perch, the cry opens the door and wakes the train, and 廣播姊姊's lines play on `train on`.
+  - `npm run solve`: all green, no dead ends. 0-3's par 1 at difficulty 2 is a warning only, as the GDD has it.
+- **Scripted tutorials (`game/tutorial.ts`, D-69).** Run on first play (until the save marks the page solved), after their cue has held for its delay while the page is live and nothing is said:
+  - 0-1: the ghost hand pulls the rail after 4 s of reaching.
+  - 0-2: a moonlight spotlight on his thought bubble (`affordance.bubble`; not marigold).
+  - 0-3: the hand taps `table` after 4 s of reaching.
+  - `#/popup?page=…&tutorial=1` turns them on outside the shell.
+- **Placeholder stage.**
+  - A gate's doorway node is floor, not a carriage. This also fixes the lab 1-3, whose gates were drawn as trains.
+  - Indoors, a perch above the gutter is a wall shelf.
+  - A box perch is a woven laundry basket whose rim is the perch node, with Mocha's in-box frame on it.
+  - New backdrop keys `c0/living-room` and `c0/home-window` bake the placeholder until #108.
+- **QA.**
+  - The lab stages `lab-push`, `lab-cry`, `lab-lamp` and `lab-box` and their six fixtures are gone. They are replaced by 12 real prologue fixtures (`c0p2-*`, `c0p3-*`, `c0p4-*`).
+  - Baselines changed: word-* (the gate fix), contents-* (the "played" saves now solve the prologue before 1-2).
+  - `check:play` has c0p2, c0p3 and c0p4, plus `tutorial-c0p1`…`tutorial-c0p3`: all pass, mouse and touch, 390 and 375.
+  - New tests: `tutorial.test.ts`, and the spotlight in `PageView.test.ts`. Registry, nav, sticker and screen tests now go through the whole prologue.
+- **Follow-ups.**
+  - #108: the prologue art (living room with the sleeping Dad, the sofa, the family photo, the calendar; the balcony window, the curtain and the paper train; the basket rim at 0-4's `basket` node (34, 420)).
+  - #107: 1-2 is now reached after 0-4.
+  - #110: watch whether 4 s is right for grandparents.

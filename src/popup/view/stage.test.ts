@@ -30,6 +30,21 @@ describe('stage from the walk graph', () => {
     expect(s.runs[0].x1).toBe(206);
   });
 
+  test('0-4 (#106): the doorway is floor, not a carriage; the sill, rod and roof are wall shelves, the basket a basket', () => {
+    const s = stageOf(pageById('c0p4')!);
+    expect(s.runs.map((r) => r.nodes)).toEqual([['rug1', 'rug2', 'rug3', 'door', 'trainStep']]);
+    expect(s.carriages).toEqual([]);
+    expect(Object.fromEntries(s.posts.map((p) => [p.perch, p.kind]))).toEqual({ sill: 'shelf', basket: 'basket', rod: 'shelf', trainRoof: 'shelf' });
+    // The basket's rim is the perch node; it stands on the rug
+    expect(s.posts.find((p) => p.perch === 'basket')).toMatchObject({ x: 34, top: 420, foot: 480 });
+  });
+
+  test('0-3: the table is a bench on the rug; outdoors a high perch is still a pillar', () => {
+    const s = stageOf(pageById('c0p3')!);
+    expect(Object.fromEntries(s.posts.map((p) => [p.perch, p.kind]))).toEqual({ sofaArm: 'bench', table: 'bench', shelf: 'shelf' });
+    expect(stageOf(c1p2).posts.find((p) => p.perch === 'pillar')?.kind).toBe('pillar');
+  });
+
   test('unconnected nodes and cat-only edges draw no ledge', () => {
     const s = stageOf(page({ nodes: [n('A', 0), n('B', 100), n('C', 200, 0, 2), n('lone', 300)], edges: [e('A', 'B'), e('B', 'C', { kind: 'jump' })] }));
     expect(s.runs.flatMap((r) => r.nodes)).toEqual(['A', 'B']);
