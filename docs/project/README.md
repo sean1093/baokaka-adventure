@@ -155,8 +155,25 @@ npm run sync:sprites -- --force   # re-bake everything
 - `src/popup/sprites/config.ts` holds the game's readings of the poses: lazy-load group (chapter), play mode, held key frame, events, easel tab, `noMirror`, hand-placed head/hand points.
 - `src/popup/sprites/sprites.test.ts` fails when an animation references a frame missing at either scale, when the committed files and `sprites.gen.ts` disagree (names, bytes, pixel sizes), when they drift from the artist's manifests, or when the core set passes 400 KB @3x.
 - In code: `<SpriteAnim sprite="baokaka.crawl" facing="l" playing reduced x y />` (`src/popup/sprites/`), positioned by its foot anchor; `spriteHead()` gives the bubble anchor; `usePagePreload(chapter)` preloads a page's frames (`PagePlayer` marks the page `data-sprites="ready"`, which the screenshot targets wait for).
+- **Half grade (#96, D-59):** gameplay poses carry a baked variant per character grade a registered chapter shows (`g/<grade key>/…`, `SpriteManifest.grades`); a page draws its chapter's variant through the `SpriteGrade` context, and a sync bakes the variants for any newly registered chapter.
 - PageLab: the fixture `sprites-anchors` shows the sprites at map scale with their box, foot anchor, head and footprint; the lab's `anchors` overlay marks the actors on a page.
 - **Animations (#95, D-57):** `src/popup/view/actors/animMap.ts` maps every sim mode and Mocha state to a pose and how its frame is chosen (clock, held, stride-synced, step sequence), with a fallback for any GDD frame not drawn (none since #141, D-58); `standee.ts` holds the card motion. When the artist adds a frame, sync, then wire it in `animMap.ts` (and give it a preload group in `sprites/config.ts`: `0` only if the prologue shows it, else the first chapter that does). **`#/pagelab?section=sprites`** is the missing-frame report: every GDD § 3.9 frame ✓ / ✗ / later (visual target `pagelab-sprites`).
+
+### Environment art: `npm run bake:popup` and `npm run art:report` (#96, D-59)
+
+Backdrops, part art and standing cut-outs reach the game as baked WebP bitmaps (bible § 9.1), never as live filtered SVG:
+
+```
+npm run bake:popup             # bake what changed into src/popup/assets/env/ + src/popup/env/env.gen.ts, then print the payload report
+npm run bake:popup -- --force  # re-bake everything
+npm run art:report             # the per-page payload report from the committed manifests (exits 1 over budget)
+```
+
+- **Sources** live in `src/popup/env/sources.ts` (kit-style SVG drawn with filters on): `BACKDROP_ART` (a key without one bakes its chapter's placeholder stage, so every page ships a baked backdrop), `PART_SOURCES` (one drawing per state, local origin at the part's hit centre, `pivot` for rotary parts, `hinge` for flaps), `CUTOUT_SOURCES` (placed by a page's `cutouts`). Chapter art goes in `src/popup/env/art/cN.ts`. Touchables without a source keep their live kit art.
+- The bake grades backdrops and cut-outs with the chapter's environment grade (`src/popup/env/grade.ts`; lights, foil, touchables and the sky are never graded), crops parts to what was drawn, adds a lifted variant for dragged presets, encodes with Pillow and is **idempotent** (a source whose SVG is unchanged is skipped; a forced re-bake of unchanged sources is byte-identical).
+- `src/popup/env/env.test.ts` fails when files and `env.gen.ts` disagree, when a source changed without a re-bake (the source hashes), when a page's art passes **350 KB**, or when the first load passes **2.5 MB**.
+- The characters' half grade is baked by `npm run sync:sprites` per graded chapter (`g/<grade>/` variants); re-run it when a page in a new chapter is registered.
+- Needs Playwright's Chromium and Python 3 with Pillow, like `sync:sprites`; CI needs neither.
 
 ### PageLab sections (dev builds only)
 
