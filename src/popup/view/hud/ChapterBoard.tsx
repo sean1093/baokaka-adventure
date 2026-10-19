@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { chapterInfo, chapterName, UI } from '../../content';
 import type { TalkLine } from '../../content/script';
 import { labelTab, speechCard, stripCard } from '../talk/art';
 import { textEm, wrapText } from '../talk/place';
 import { SPEAKER_INK } from '../talk/Talk';
+import { useTextScale } from '../textSize';
 import './chapterBoard.css';
 
 /**
@@ -90,16 +91,33 @@ function cardArt(): string {
     + strings + eyelets;
 }
 
+/**
+ * The board's scale with 大字 (#104): 25 % larger, or as large as the screen's width allows (8 px
+ * either side); the words that would still be under 24 px are held at 24 (`--min-text`). 1 without.
+ */
+export function boardScale(textScale: number, vw: number): number {
+  if (textScale <= 1) return 1;
+  return Math.max(1, Math.min(textScale, (vw - 16) / BOARD_W));
+}
+
+/** The smallest word on the board with 大字 (R5). */
+const BIG_MIN_PX = 24;
+
 export interface ChapterBoardProps {
   readonly chapter: number;
+  /** The board's scale (`boardScale`); 1 by default */
+  readonly scale?: number;
   /** Hidden until the turn drops it (the turn shows it); a still draws it shown */
   readonly hidden?: boolean;
   /** How far below the screen's top the box hangs (the safe area, a little air) */
   readonly top?: number;
 }
 
-export function ChapterBoard({ chapter, hidden = false, top = 0 }: ChapterBoardProps) {
+export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1 }: ChapterBoardProps) {
   const info = chapterInfo(chapter);
+  const big = s > 1;
+  const u = (n: number) => n * s;
+  const vars = { '--s': s, '--min-text': big ? `${BIG_MIN_PX}px` : '0px' } as CSSProperties;
   const name = chapterName(chapter);
   const art = useMemo(() => cardArt(), []);
   const tiles = flapTiles(info.next);
@@ -107,36 +125,39 @@ export function ChapterBoard({ chapter, hidden = false, top = 0 }: ChapterBoardP
   return (
     <div
       className="cb-card"
-      style={{ top: `calc(${top}px + env(safe-area-inset-top))`, width: BOARD_W, height: BOARD_H, marginLeft: -BOARD_W / 2, visibility: hidden ? 'hidden' : undefined }}
+      style={{ ...vars, top: `calc(${top}px + env(safe-area-inset-top))`, width: u(BOARD_W), height: u(BOARD_H), marginLeft: -u(BOARD_W) / 2, visibility: hidden ? 'hidden' : undefined }}
       role="status"
       aria-label={`${name} ${info.title}，${info.time}，${info.landmark}，${UI.chapterCard.next} ${info.next}`}
       data-chapter-board={chapter}
     >
       <div className="cb-tilt" aria-hidden="true">
-        <svg width={BOARD_W} height={BOARD_H + STRING_TOP} viewBox={`0 ${-STRING_TOP} ${BOARD_W} ${BOARD_H + STRING_TOP}`} style={{ top: -STRING_TOP }} className="absolute left-0 top-0 block overflow-visible" dangerouslySetInnerHTML={{ __html: art }} />
+        <svg width={u(BOARD_W)} height={u(BOARD_H + STRING_TOP)} viewBox={`0 ${-STRING_TOP} ${BOARD_W} ${BOARD_H + STRING_TOP}`} style={{ top: -u(STRING_TOP) }} className="absolute left-0 top-0 block overflow-visible" dangerouslySetInnerHTML={{ __html: art }} />
         {/* The spine: the chapter, set vertically */}
-        <span className="cb-spine" style={{ left: CARD.x, top: CARD.y, width: SPINE_W - 5, height: CARD.h, fontFamily: SERIF, color: C.sealGlyph }}>
+        <span className="cb-spine" style={{ left: u(CARD.x), top: u(CARD.y), width: u(SPINE_W - 5), height: u(CARD.h), fontFamily: SERIF, color: C.sealGlyph }}>
           <span className="cb-run">{name}</span>
         </span>
-        <span className="cb-text" style={{ left: IN_X, top: CARD.y + 12, fontFamily: SERIF, fontSize: 22, fontWeight: 900, color: C.sealInk, letterSpacing: 1 }} data-card-title="">
+        <span className="cb-text" style={{ left: u(IN_X), top: u(CARD.y + 12), fontFamily: SERIF, fontSize: big ? Math.max(BIG_MIN_PX, u(22)) : 22, fontWeight: 900, color: C.sealInk, letterSpacing: 1 }} data-card-title="">
           {info.title}
         </span>
-        <span className="cb-chip" style={{ right: BOARD_W - CARD.x - CARD.w + 24, top: CARD.y + 12, background: C.cover, color: C.goldLight }} data-card-time="">
+        <span className="cb-chip" style={{ right: u(BOARD_W - CARD.x - CARD.w + 24), top: u(CARD.y + 12), background: C.cover, color: C.goldLight }} data-card-time="">
           <span className="cb-run">{info.time}</span>
         </span>
-        <span className="cb-text" style={{ left: IN_X - 2, top: CARD.y + 52, fontFamily: SERIF, fontSize: lm, lineHeight: '50px', fontWeight: 900, color: C.ink, letterSpacing: 2 }} data-card-landmark="">
+        <span className="cb-text" style={{ left: u(IN_X - 2), top: u(CARD.y + 52), fontFamily: SERIF, fontSize: u(lm), lineHeight: `${u(50)}px`, fontWeight: 900, color: C.ink, letterSpacing: 2 }} data-card-landmark="">
           {info.landmark}
         </span>
-        <span className="cb-seal" style={{ right: BOARD_W - CARD.x - CARD.w + 14, top: CARD.y + 60, background: C.sealDark, color: C.sealGlyph, fontFamily: SERIF, boxShadow: `inset 0 0 0 2.5px ${C.seal}, 0 1.5px 0 ${C.sealInk}` }}>
-          <span className="cb-run">翻</span>
+        <span className="cb-seal" style={{ right: u(BOARD_W - CARD.x - CARD.w + 14), top: u(CARD.y + 60), background: C.sealDark, color: C.sealGlyph, fontFamily: SERIF, boxShadow: `inset 0 0 0 2.5px ${C.seal}, 0 1.5px 0 ${C.sealInk}` }}>
+          {/* The 翻 seal is a stamp in the picture (bible § 4), not words to read */}
+          <span className="cb-run" data-art-text="">
+            翻
+          </span>
         </span>
         {/* The departure board's row: 「下一站」 and one split-flap tile per character */}
-        <span className="cb-row" style={{ left: IN_X, top: BOARD_Y, width: IN_W, height: BOARD_ROW_H }} data-card-next={info.next}>
-          <span className="cb-label" style={{ width: FLAP_LABEL_W, fontFamily: ROUND, color: C.sealGlyph }}>
+        <span className="cb-row" style={{ left: u(IN_X), top: u(BOARD_Y), width: u(IN_W), height: u(BOARD_ROW_H) }} data-card-next={info.next}>
+          <span className="cb-label" style={{ width: u(FLAP_LABEL_W), fontFamily: ROUND, color: C.sealGlyph }}>
             {UI.chapterCard.next}
           </span>
           {tiles.chars.map((ch, i) => (
-            <span key={i} className="cb-tile" style={{ width: tiles.w, height: TILE_H }}>
+            <span key={i} className="cb-tile" style={{ width: u(tiles.w), height: u(TILE_H) }}>
               <span className="cb-half cb-top" style={{ background: C.coverLight }}>
                 <span className="cb-glyph" style={{ color: C.goldLight, fontFamily: ROUND }}>{ch}</span>
               </span>
@@ -159,22 +180,23 @@ export function ChapterBoard({ chapter, hidden = false, top = 0 }: ChapterBoardP
 const TALK_F = 21;
 const PAD = 12;
 const LH = 1.32;
-/** Tall enough that the label's whole text box (the CJK serif's ascent and descent) sits on the tab (R5 contrast) */
-const LABEL_H = TALK_F + 14;
 /** The names 寶咖咖 and 摩卡 wear here: on the card they hang from no one (on the page their bubbles hang from them) */
 const OFF_PAGE_LABEL: Partial<Record<TalkLine['who'], string>> = { baby: '寶咖咖', mocha: '摩卡' };
 
-/** One line laid out: narration on a washi strip, speech on a die-cut card with its speaker's tab. */
-export function cardLineLayout(line: TalkLine, maxW: number): { rows: string[]; label: string | null; w: number; h: number } {
+/** One line laid out: narration on a washi strip, speech on a die-cut card with its speaker's tab. `f`: the text size (大字: × 1.25, #104). */
+export function cardLineLayout(line: TalkLine, maxW: number, f = TALK_F): { rows: string[]; label: string | null; w: number; h: number } {
   const label = line.who === 'nar' ? null : (line.label ?? OFF_PAGE_LABEL[line.who] ?? null);
-  const rows = wrapText(line.text, (maxW - 2 * PAD - 8) / TALK_F);
-  const textW = Math.max(...rows.map(textEm)) * TALK_F;
-  const labelW = label === null ? 0 : textEm(label) * TALK_F + 24 + 18;
+  const rows = wrapText(line.text, (maxW - 2 * PAD - 8) / f);
+  const textW = Math.max(...rows.map(textEm)) * f;
+  const labelW = label === null ? 0 : textEm(label) * f + 24 + 18;
   const w = Math.min(maxW, Math.max(textW + 2 * PAD + 8, labelW, 96));
   // The tab rises over the card's top edge and hangs into it: room for both, so it never sits on the text
-  const tab = label === null ? 0 : LABEL_H;
-  return { rows, label, w, h: rows.length * TALK_F * LH + 2 * PAD + tab };
+  const tab = label === null ? 0 : labelH(f);
+  return { rows, label, w, h: rows.length * f * LH + 2 * PAD + tab };
 }
+
+/** The speaker's tab: tall enough for its name's whole text box. */
+const labelH = (f: number) => f + 14;
 
 export interface CardTalkProps {
   /** The beat on the card (≤ 3 lines), or null */
@@ -205,16 +227,19 @@ export function CardTalk({ beat, serial, width, reduced }: CardTalkProps) {
 const M = 10;
 
 function CardLine({ line, maxW, delay, reduced }: { line: TalkLine; maxW: number; delay: number; reduced: boolean }) {
-  const { rows, label, w, h } = useMemo(() => cardLineLayout(line, maxW - 2 * M), [line, maxW]);
+  // 大字 (#104): the lines' text grows 25 %
+  const f = TALK_F * useTextScale();
+  const LABEL_H = labelH(f);
+  const { rows, label, w, h } = useMemo(() => cardLineLayout(line, maxW - 2 * M, f), [line, maxW, f]);
   // The card starts under the tab's rise; the text sits below the part of the tab hanging inside it
   const rise = label === null ? 0 : LABEL_H * 0.55;
   const inside = label === null ? 0 : LABEL_H - rise;
   const box = { x: M, y: M + rise, w, h: h - rise };
   const art = useMemo(() => {
     if (label === null) return stripCard(box);
-    return speechCard(box, 12) + labelTab(M + 12, M, textEm(label) * TALK_F + 24, LABEL_H, SPEAKER_INK[line.who]);
-  }, [label, w, h, line.who]);
-  const lh = TALK_F * LH;
+    return speechCard(box, 12) + labelTab(M + 12, M, textEm(label) * f + 24, LABEL_H, SPEAKER_INK[line.who]);
+  }, [label, w, h, line.who, f]);
+  const lh = f * LH;
   const top = box.y + inside + (box.h - inside - rows.length * lh) / 2;
   return (
     <svg
@@ -227,7 +252,7 @@ function CardLine({ line, maxW, delay, reduced }: { line: TalkLine; maxW: number
       <g className={reduced ? 'cb-line-fade' : label === null ? 'cb-line-strip' : 'cb-line'} style={{ animationDelay: `${delay}ms` }}>
         <g dangerouslySetInnerHTML={{ __html: art }} />
         {label !== null && (
-          <text x={M + 24} y={M + LABEL_H / 2 + TALK_F * 0.36} fontFamily={SERIF} fontWeight={900} fontSize={TALK_F} fill={C.sealGlyph}>
+          <text x={M + 24} y={M + LABEL_H / 2 + f * 0.36} fontFamily={SERIF} fontWeight={900} fontSize={f} fill={C.sealGlyph}>
             {label}
           </text>
         )}
@@ -235,12 +260,12 @@ function CardLine({ line, maxW, delay, reduced }: { line: TalkLine; maxW: number
           <text
             key={i}
             x={box.x + box.w / 2}
-            y={top + lh * i + lh * 0.5 + TALK_F * 0.36}
+            y={top + lh * i + lh * 0.5 + f * 0.36}
             textAnchor="middle"
             fontFamily={SERIF}
             fontStyle={label === null ? 'italic' : undefined}
             fontWeight={label === null ? 600 : 700}
-            fontSize={TALK_F}
+            fontSize={f}
             fill={C.ink}
           >
             {row}

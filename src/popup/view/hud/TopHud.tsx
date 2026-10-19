@@ -18,7 +18,7 @@ import { HUD_H } from '../geometry';
  *
  * Drawn in a 390 × 96 box, scaled to the screen's width on narrow phones (the caller's `scale`).
  * With 大字 (`textScale` 1.25, #104) every word is 25 % larger (the landmark 31 px, the rest 25 px);
- * the chapter line and the clock are condensed to keep clear of the tray and the moon.
+ * the clock chip grows with its digits, and the chapter line is condensed to keep clear of the tray.
  */
 
 export interface TopHudProps {
@@ -74,12 +74,13 @@ export function TopHud({ landmark, title, chapter, index, time, coins, moon = tr
   const landmarkPx = LANDMARK_PX * k;
   const titlePx = TITLE_PX * k;
   const subPx = 20 * k;
+  // With 大字 the clock chip is drawn 25 % larger too (its digits stay on the navy), so row 1 ends sooner
+  const rowEnd = k > 1 ? ROW_END - 14 : ROW_END;
   const row = runWidth(landmark, landmarkPx, 1) + 4 + runWidth(`「${title}」`, titlePx);
-  const fit = row > ROW_END - ROW_X ? ROW_END - ROW_X : undefined;
+  const fit = row > rowEnd - ROW_X ? rowEnd - ROW_X : undefined;
   const subW = runWidth(sub, subPx);
   const subFit = subW > SUB_END - ROW_X - 1 ? SUB_END - ROW_X - 1 : undefined;
-  // The clock's digits: 20 px fit beside the moon; at 25 px they are condensed into the same room
-  const timeFit = k > 1 ? 54 : undefined;
+  const chipAt = k > 1 ? `translate(${376 - 96 * k} ${17 - 17 * (k - 1)}) scale(${k})` : 'translate(268 17)';
   return (
     <svg
       className="absolute left-1/2 top-0 font-body"
@@ -105,9 +106,9 @@ export function TopHud({ landmark, title, chapter, index, time, coins, moon = tr
         <text x={ROW_X + 1} y={k > 1 ? 80 : 77} fontSize={subPx} fontWeight={700} fill={C.inkSoft} textLength={subFit} lengthAdjust={subFit ? 'spacingAndGlyphs' : undefined}>
           {sub}
         </text>
-        <g transform="translate(268 17)">
+        <g transform={chipAt}>
           <g dangerouslySetInnerHTML={{ __html: art.chip }} />
-          <text x={k > 1 ? 65 : 62} y={k > 1 ? 26.5 : 24.5} textAnchor="middle" fontFamily="Fredoka" fontWeight={600} fontSize={20 * k} fill={C.goldLight} textLength={timeFit} lengthAdjust={timeFit ? 'spacingAndGlyphs' : undefined}>
+          <text x={62} y={24.5} textAnchor="middle" fontFamily="Fredoka" fontWeight={600} fontSize={20} fill={C.goldLight}>
             {time}
           </text>
         </g>

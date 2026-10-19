@@ -4,6 +4,7 @@ import { useSvgIds } from '../../../art/useSvgIds';
 import { kitCtx, kitDefs, ref, type KitCtx } from '../../art';
 import { UI } from '../../content';
 import { STICKER_ICON, STICKER_KINDS, STICKER_NAME } from './stickerArt';
+import { useTextScale } from '../textSize';
 import './stickers.css';
 
 /**
@@ -100,6 +101,10 @@ export function StickerCard({ title, stickers, reduced = false, leaving = false,
   const slots = useMemo(() => STICKER_KINDS.map((_, i) => dimple(i, stickers[i])).join(''), [stickers]);
   const discs = useMemo(() => STICKER_KINDS.map((_, i) => foil(ctx, i)), [ctx]);
   const got = STICKER_KINDS.filter((_, i) => stickers[i]).map((k) => STICKER_NAME[k]);
+  // 大字 (#104): the names and 「下一頁！」 grow 25 % on wider cream tags
+  const k = useTextScale();
+  const tagW = k > 1 ? 82 : 76;
+  const nextW = k > 1 ? 146 : 118;
   return (
     <div
       className={`${reduced ? 'stk-card-fade' : 'stk-card'}${leaving ? ' stk-leaving' : ''}`}
@@ -125,15 +130,15 @@ export function StickerCard({ title, stickers, reduced = false, leaving = false,
           )}
           {STICKER_KINDS.map((kind, i) => (
             <g key={`${kind}-name`} transform={`translate(${SLOT_X[i]} ${SLOT_Y + 52})`}>
-              <rect x={-38} y={-15} width={76} height={30} rx={3} fill={C.page} />
-              <text y={7} textAnchor="middle" fontFamily="'Chiron GoRound TC', sans-serif" fontWeight={700} fontSize={20} fill={stickers[i] ? C.ink : C.inkSoft}>
+              <rect x={-tagW / 2} y={-15 * k} width={tagW} height={30 * k} rx={3} fill={C.page} />
+              <text y={7 * k} textAnchor="middle" fontFamily="'Chiron GoRound TC', sans-serif" fontWeight={700} fontSize={20 * k} fill={stickers[i] ? C.ink : C.inkSoft}>
                 {STICKER_NAME[kind]}
               </text>
             </g>
           ))}
           <g transform={`translate(${W - 26} ${H - 30})`}>
-            <rect x={-118} y={-17} width={118} height={32} rx={3} fill={C.page} />
-            <text x={-26} y={7} textAnchor="end" fontFamily="'Noto Serif TC', serif" fontWeight={900} fontSize={20} fill={C.ink}>
+            <rect x={-nextW} y={-17 * k} width={nextW} height={32 * k} rx={3} fill={C.page} />
+            <text x={-26} y={7 * k} textAnchor="end" fontFamily="'Noto Serif TC', serif" fontWeight={900} fontSize={20 * k} fill={C.ink}>
               {UI.card.next}
             </text>
             <path d="M-18 -7l10 7l-10 7z" fill={C.sealInk} />

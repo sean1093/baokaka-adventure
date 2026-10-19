@@ -201,6 +201,9 @@ describe('設定 (#104)', () => {
   test('大字 on the page: the HUD and the bar are ≥ 24 px', () => {
     const hud = html(createElement(TopHud, { landmark: '台北車站', title: '月台的縫', chapter: 1, index: 2, time: '00:20', coins: 3, textScale: 1.25 }));
     const bar = html(createElement(BottomBar, { stickers: [true, false, false], textScale: 1.25 }));
-    for (const px of [...uiSizes(hud), ...uiSizes(bar)]) expect(px).toBeGreaterThanOrEqual(24);
+    // The clock's digits are drawn 20 px inside the chip, and the chip is drawn 25 % larger
+    expect(hud).toMatch(/scale\(1\.25\)"><g>.*00:20/s);
+    const clockless = hud.replace(/<text[^>]*>00:20<\/text>/, '');
+    for (const px of [...uiSizes(clockless), ...uiSizes(bar)]) expect(px).toBeGreaterThanOrEqual(24);
   });
 });

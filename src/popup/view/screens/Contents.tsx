@@ -11,6 +11,7 @@ import type { PageRegistry } from '../../pages';
 import { deviceScale, frameUrl, spriteDef } from '../../sprites';
 import { BackIcon, LockIcon } from './icons';
 import { CREAM_CARD, cardShadow, useScreenReady } from './paper';
+import { useTextScale } from '../textSize';
 
 /**
  * The 目錄 (GDD § 2.13 item 2; popup art bible § 7; #97): the 月亮線 as a folded paper map.
@@ -136,6 +137,7 @@ export function Contents({ save, registry: reg, chapter, locked, resumeId, backL
   const info = chapterInfo(shown);
   const cards = useMemo(() => pageCards(save, reg, chapter), [save, reg, chapter]);
   const total = routeLength(STATIONS.length - 1) + 119;
+  const big = useTextScale() > 1;
 
   return (
     <main
@@ -157,10 +159,11 @@ export function Contents({ save, registry: reg, chapter, locked, resumeId, backL
             style={{ ...CREAM_CARD, WebkitTapHighlightColor: 'transparent' }}
           >
             <BackIcon />
-            <span className="text-[20px] font-black tracking-[0.1em]">{backLabel}</span>
+            <span className="whitespace-nowrap text-[20px] font-black tracking-[0.1em]">{backLabel}</span>
           </button>
           <h1
-            className="ml-auto mr-auto -rotate-[0.8deg] rounded-[3px] px-7 py-1 font-serif text-[30px] font-black tracking-[0.4em]"
+            // 大字 (#104): a little less tracking, so the title stays on one line
+            className={`ml-auto mr-auto -rotate-[0.8deg] whitespace-nowrap rounded-[3px] py-1 font-serif text-[30px] font-black ${big ? 'px-5 tracking-[0.25em]' : 'px-7 tracking-[0.4em]'}`}
             style={{ ...CREAM_CARD, boxShadow: cardShadow(0.8) }}
           >
             {UI.contents.title}

@@ -306,11 +306,11 @@ export function Settings({ settings: s, osReduced, onChange, onReset, onBack, st
             style={{ ...CREAM_CARD, WebkitTapHighlightColor: 'transparent' }}
           >
             <BackIcon />
-            <span className="font-black tracking-[0.1em]" style={{ fontSize: 20 * k }}>
+            <span className="whitespace-nowrap font-black tracking-[0.1em]" style={{ fontSize: 20 * k }}>
               {UI.settings.back}
             </span>
           </button>
-          <h1 className="ml-auto mr-auto -rotate-[0.8deg] rounded-[3px] px-7 py-1 font-serif font-black tracking-[0.4em]" style={{ ...CREAM_CARD, boxShadow: cardShadow(0.8), fontSize: 30 * k }}>
+          <h1 className={`ml-auto mr-auto -rotate-[0.8deg] whitespace-nowrap rounded-[3px] py-1 font-serif font-black ${k > 1 ? 'px-5 tracking-[0.25em]' : 'px-7 tracking-[0.4em]'}`} style={{ ...CREAM_CARD, boxShadow: cardShadow(0.8), fontSize: 30 * k }}>
             {UI.settings.title}
           </h1>
           <span className="w-[56px]" aria-hidden="true" />

@@ -7,13 +7,13 @@ import { backdropImage } from '../../env/loader';
 import { COVER, chapterStickers, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
 import { ProgressStore, type PageResult } from '../../game/progress';
 import type { TickSpeed } from '../../game/session';
-import { EMPTY_TALK, advance, currentBeat, enqueue, type TalkQueue } from '../../game/talk';
+import { EMPTY_TALK, MAX_PER_BEAT, advance, currentBeat, enqueue, type TalkQueue } from '../../game/talk';
 import { registry as gameRegistry, type PageRegistry } from '../../pages';
 import { autoHintMs } from '../affordance/ladder';
 import { bookLayout } from '../geometry';
 import { PagePlayer } from '../PagePlayer';
 import { PAGE_VIEW_BOX } from '../geometry';
-import { BOARD_H, CardTalk, ChapterBoard } from '../hud/ChapterBoard';
+import { BOARD_H, CardTalk, ChapterBoard, boardScale } from '../hud/ChapterBoard';
 import { CARD_OUT_MS, StickerCard, cardMs } from '../hud/StickerCard';
 import { CAMERA_ORIGIN, cameraTransform, playTurn, turnPlan, type TurnInterlude, type TurnKind, type TurnRun } from '../transitions/pageTurn';
 import { Contents } from './Contents';
@@ -205,7 +205,11 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
 
   // ——— The chapter card (#102): the board hanging in a chapter turn, and its lines ———
   const [board, setBoard] = useState<number | null>(chapterCard ?? null);
-  const [cardTalk, setCardTalk] = useState<TalkQueue>(() => (chapterCard === undefined ? EMPTY_TALK : enqueue(EMPTY_TALK, loadLines(cardLines(chapterCard)))));
+  // 大字 (#104): the card's lines are bigger, so a beat holds 2 of them under the card
+  const cardPerBeat = settings.textScale > 1 ? 2 : MAX_PER_BEAT;
+  const cardPerBeatRef = useRef(cardPerBeat);
+  cardPerBeatRef.current = cardPerBeat;
+  const [cardTalk, setCardTalk] = useState<TalkQueue>(() => (chapterCard === undefined ? EMPTY_TALK : enqueue(EMPTY_TALK, loadLines(cardLines(chapterCard)), cardPerBeat)));
   const cardTalkRef = useRef(cardTalk);
   cardTalkRef.current = cardTalk;
   /** Resolves the turn's hold once the last beat is tapped away */
@@ -223,7 +227,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
           const lines = loadLines(cardLines(chapter));
           if (lines.length === 0) return resolve();
           linesDone.current = resolve;
-          setCardTalk(enqueue(EMPTY_TALK, lines));
+          setCardTalk(enqueue(EMPTY_TALK, lines, cardPerBeatRef.current));
         }),
     }),
     [],
@@ -355,6 +359,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
     [def, save, go],
   );
 
+  // 大字 (#104): the chapter card as large as the screen allows
+  const boardK = boardScale(settings.textScale, Number(size.split('x')[0]));
   /** The chapter card's lines are up (#102) */
   const reading = board !== null && currentBeat(cardTalk) !== null;
   const resumeId = resumeTarget(save, reg);
@@ -424,8 +430,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                 aria-modal={reading ? true : undefined}
                 aria-label={reading && board !== null ? chapterName(board) : undefined}
               >
-                {board !== null && <ChapterBoard key={board} chapter={board} hidden={chapterCard === undefined} top={BOARD_TOP} />}
-                <div className="absolute inset-x-0 flex justify-center" style={{ top: `calc(${BOARD_TOP + BOARD_H + 4}px + env(safe-area-inset-top))` }}>
+                {board !== null && <ChapterBoard key={board} chapter={board} hidden={chapterCard === undefined} top={BOARD_TOP} scale={boardK} />}
+                <div className="absolute inset-x-0 flex justify-center" style={{ top: `calc(${BOARD_TOP + BOARD_H * boardK + 4}px + env(safe-area-inset-top))` }}>
                   <CardTalk beat={currentBeat(cardTalk)} serial={cardTalk.serial} width={Math.min(Number(size.split('x')[0]) - 24, 366)} reduced={reduced} />
                 </div>
                 {reading && <button type="button" className="pointer-events-auto absolute inset-0 cursor-default opacity-0" aria-label={UI.chapterCard.more} onClick={onSkip} data-card-next="" />}

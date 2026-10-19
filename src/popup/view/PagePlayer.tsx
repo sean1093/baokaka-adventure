@@ -11,7 +11,7 @@ import type { Input, LineKey, PageDef, SimState, Word } from '../core/types';
 import { loadLines, type TalkLine } from '../content/script';
 import type { LearnKey } from '../content/words';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
-import { EMPTY_TALK, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
+import { EMPTY_TALK, MAX_PER_BEAT, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
 import { WORD_MOTIF, firstUseLine, learnLines, learnedNow, ringWords, tutorialShow, tutorialWord } from '../game/words';
 import { FRESH_ATTEMPT, attemptResult, earnInAttempt, mischiefFired, type Attempt } from '../game/stickers';
 import type { PageResult, Sticker } from '../game/progress';
@@ -33,7 +33,7 @@ import './gestures.css';
 import { PART_SETTLE_MS } from './interp';
 import { PageView, VIEW_BOX } from './PageView';
 import { useGestures } from './useGestures';
-import { barkLog, barksOf, type BarkShow } from './talk';
+import { barkLog, barksOf, talkScale, type BarkShow } from './talk';
 import { sayingWord } from './actors';
 import { WordCard, WordRing, ringSafeArea, wantPoke } from './words';
 import { mochaInFrame, photoReady, type Shot } from '../game/photo';
@@ -102,6 +102,9 @@ import { useTilt } from './useTilt';
  * the `photoRect`) resumes it and he grabs the treasure. Should he reach it first (it came into
  * reach on the spot), the moment plays after the grab. A spread's `onDone` waits for its photo.
  */
+
+/** Bubbles grown past this (大字 on a short phone, ≈ 1.6×) have room for one line a beat (#104). */
+const BIG_BEAT_K = 1.4;
 
 /** Chapters where Mocha squints at the 土地公 on the first tap (GDD § 5.3: 4-x, 7-x, 10-x). */
 const SQUINT_CHAPTERS: ReadonlySet<number> = new Set([4, 7, 10]);
@@ -316,6 +319,10 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   // What is said (#98): the subtitle queue (the intro, then lines the page's events fire; a tap on a
   // bubble advances) and the barks of the last few ticks
   const [talk, setTalk] = useState<TalkQueue>(EMPTY_TALK);
+  // 大字 on a small book (#104): the bubbles grow so much that a beat holds one line, not 3
+  const textScale = useTextScale();
+  const perBeatRef = useRef(MAX_PER_BEAT);
+  perBeatRef.current = textScale > 1 && talkScale(layout.scale, textScale) > BIG_BEAT_K ? 1 : MAX_PER_BEAT;
   const [barks, setBarks] = useState<readonly BarkShow[]>([]);
   // Words (#99): the ring, the learn beat in progress, the words said on this page
   const [ringOpen, setRingOpen] = useState(false);
@@ -336,12 +343,12 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     if (hold || pendingIntro.current === null) return;
     const lines = pendingIntro.current;
     pendingIntro.current = null;
-    setTalk((q) => enqueue(q, lines));
+    setTalk((q) => enqueue(q, lines, perBeatRef.current));
   }, [hold]);
   useEffect(() => {
     const open = openLines !== undefined ? loadLines(openLines) : from === undefined ? introLines(def) : [];
     pendingIntro.current = holdRef.current ? open : null;
-    setTalk(pendingIntro.current === null ? enqueue(EMPTY_TALK, open) : EMPTY_TALK);
+    setTalk(pendingIntro.current === null ? enqueue(EMPTY_TALK, open, perBeatRef.current) : EMPTY_TALK);
     setBarks(showWords?.poke ? [wantPoke(def, session.frame().state)] : []);
     setRingOpen(showWords?.ring === true);
     const card = showWords?.card;
@@ -370,7 +377,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       }
       onSayRef.current?.(word, WORD_MOTIF[word]);
     }
-    if (lines.length > 0) setTalk((q) => enqueue(q, lines));
+    if (lines.length > 0) setTalk((q) => enqueue(q, lines, perBeatRef.current));
     setBarks((log) => barkLog(log, barksOf(frame.prev, frame.state, frame.events), frame.state.tick));
     // 震動: Mocha's push lands (§ 2.11)
     if (frame.events.some((e) => e.type === 'push')) pulse('push', vibrateRef.current);
@@ -465,7 +472,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         // at him the first time on chapters 4, 7 and 10
         const first = !attemptRef.current.tudigong;
         const keys = ['rec.uncle.tap', ...(first && SQUINT_CHAPTERS.has(def.chapter) && mochaNode(def, session.frame().state) !== null ? ['rec.mocha.squint'] : [])];
-        setTalk((q) => (q.beats.some((b) => b.some((l) => l.key === 'rec.uncle.tap')) ? q : enqueue(q, loadLines(keys))));
+        setTalk((q) => (q.beats.some((b) => b.some((l) => l.key === 'rec.uncle.tap')) ? q : enqueue(q, loadLines(keys), perBeatRef.current)));
         earn('tudigong');
       }
       onGesture?.(event);
@@ -534,7 +541,6 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   };
   // The HUD and the bar keep their 390 box (and their 20 px text, R5) down to 360 px wide, overhanging a few px of cover
   const hudScale = Math.min(1, layout.vw / 360);
-  const textScale = useTextScale();
   // The gyro tilt leans the page box (never while held: a turn reads its layers)
   const boxRef = useRef<HTMLDivElement | null>(null);
   const setBox = useCallback(

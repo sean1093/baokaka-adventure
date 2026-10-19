@@ -140,6 +140,22 @@ function collect({ waivers, artText, minText, minTextBig }) {
   // While a modal dialog is open (the pause menu, #97) everything outside it is inert, dimmed under
   // its scrim, and not text to read: only the dialog's own text is checked
   const modal = document.querySelector('[aria-modal="true"]');
+  // Text scrolled out of a scroller (#104: a long page in 大字) is clipped away, not on screen:
+  // only the part inside every clipping ancestor is measured
+  const clipped = (el, rect) => {
+    let left = rect.left, top = rect.top, right = rect.right, bottom = rect.bottom;
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+      const o = getComputedStyle(a);
+      if (o.overflowX === 'visible' && o.overflowY === 'visible') continue;
+      const r = a.getBoundingClientRect();
+      left = Math.max(left, r.left);
+      top = Math.max(top, r.top);
+      right = Math.min(right, r.right);
+      bottom = Math.min(bottom, r.bottom);
+    }
+    const width = Math.max(0, right - left), height = Math.max(0, bottom - top);
+    return { left, top, right: left + width, bottom: top + height, width, height };
+  };
   const seen = new Set();
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -154,7 +170,7 @@ function collect({ waivers, artText, minText, minTextBig }) {
     if (modal && !modal.contains(el)) continue;
     const opacity = opacityOf(el);
     if (opacity < 0.05) continue;
-    const box = el.getBoundingClientRect();
+    const box = clipped(el, el.getBoundingClientRect());
     if (box.width < 1 || box.height < 1) continue;
     if (box.right < 0 || box.bottom < 0 || box.left > innerWidth || box.top > innerHeight) continue;
     const style = getComputedStyle(el);
