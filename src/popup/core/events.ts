@@ -72,17 +72,11 @@ export const EVENT_RADIUS: Readonly<Partial<Record<EventType, number>>> = {
   cry: 220,
 };
 
-/** Baokaka's automatic flavour lines (GDD § 2.2.1, § 2.2.3); the text is in `BARK_TEXT`. */
+/**
+ * Baokaka's automatic flavour lines (GDD § 2.2.1, § 2.2.3). The zh-Hant text lives with all the
+ * game's text, in `content/barks.ts` (`BABY_BARKS`).
+ */
 export type Bark = 'want' | 'meow' | 'milk' | 'pretty' | 'wantWant';
-
-/** zh-Hant text of each bark (Baokaka's vocabulary, GDD § 5.1). */
-export const BARK_TEXT: Readonly<Record<Bark, string>> = {
-  want: '要！',
-  meow: '喵喵！',
-  milk: 'ㄋㄟㄋㄟ',
-  pretty: '好看！',
-  wantWant: '要！要！',
-};
 
 export interface SimEvent {
   type: EventType | UiEventType;
