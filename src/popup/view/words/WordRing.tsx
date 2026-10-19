@@ -19,7 +19,7 @@ import './words.css';
  * else closes it with no effect (`onClose`). The page dims 30 % except a pool of light on Baokaka.
  * The world is paused while it is open (`PagePlayer` holds the `ring` reason).
  *
- * Screen px, over the whole player. Discs are 72 px buttons (≥ 64 px; R6) with 20 px glyphs (R5).
+ * A modal dialog (`aria-modal`): the page under it is not read. Screen px, over the whole player. Discs are 72 px buttons (≥ 64 px; R6) with 20 px glyphs (R5).
  * The newly learned word glows until it is first said; the first-use tutorial's ghost hand taps
  * `hand`'s disc.
  */
@@ -43,7 +43,9 @@ export interface WordRingProps {
 function discArt(ctx: KitCtx, ring: string): string {
   const r = DISC / 2 - 2;
   return `<circle cx="1.8" cy="3.4" r="${r}" fill="${C.shadow}" opacity=".5"/><circle cx="-1" cy="-1" r="${r}" fill="${C.cutRim}" opacity=".42"/>`
-    + `<circle r="${r}" fill="${C.page}"/><circle r="${r}" fill="url(#${ctx.id('wrShade')})"/>`
+    + `<circle r="${r}" fill="${C.page}"/>`
+    // The shade stays out at the rim, clear of the glyph (R5 contrast)
+    + `<circle r="${r}" fill="url(#${ctx.id('wrShade')})"/>`
     + `<circle r="${r - 3}" fill="none" stroke="${ring}" stroke-width="2.4"/>`;
 }
 
@@ -80,7 +82,7 @@ export function WordRing({ around, words, safe, leftHand = false, fresh = null, 
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('ring'), id: ids }), [ids]);
   const ring = useMemo(() => ringLayout(around, words, { leftHand, safe }), [around[0], around[1], words.join(), leftHand, safe.x, safe.y, safe.w, safe.h]);
   const defs = useMemo(
-    () => kitDefs(ctx, ['foil', 'softMarigold'], `<radialGradient id="${ctx.id('wrShade')}" cx=".35" cy=".3" r=".8"><stop offset=".6" stop-color="${C.pageDark}" stop-opacity="0"/><stop offset="1" stop-color="${C.pageDark}" stop-opacity=".9"/></radialGradient>`),
+    () => kitDefs(ctx, ['foil', 'softMarigold'], `<radialGradient id="${ctx.id('wrShade')}" cx=".5" cy=".42" r=".62"><stop offset=".88" stop-color="${C.pageDark}" stop-opacity="0"/><stop offset="1" stop-color="${C.pageDark}" stop-opacity=".5"/></radialGradient>`),
     [ctx],
   );
   const band = useMemo(() => bandArt(ring), [ring]);
@@ -106,7 +108,7 @@ export function WordRing({ around, words, safe, leftHand = false, fresh = null, 
   const handSlot = hand === null ? undefined : ring.slots.find((s) => s.kind === 'word' && s.word === hand);
 
   return (
-    <div className="absolute inset-0" style={pool} data-word-ring={words.join(' ')} onPointerDown={outside}>
+    <div className="absolute inset-0" style={pool} role="dialog" aria-modal="true" aria-label={UI.bar.talk} data-word-ring={words.join(' ')} onPointerDown={outside}>
       <svg className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
         <g dangerouslySetInnerHTML={{ __html: defs }} />
         <g className={reduced ? 'wr-fade' : 'wr-band'}>
@@ -143,11 +145,11 @@ export function WordRing({ around, words, safe, leftHand = false, fresh = null, 
                 </text>
               ) : (
                 <>
-                  <g transform="translate(0 -13)">
-                    <ArtG html={wordSeal(word, 26)} />
+                  <g transform="translate(0 -15)">
+                    <ArtG html={wordSeal(word, 24)} />
                   </g>
                   {/* Three glyphs (飛機！, 咻——) are drawn a little narrower to stay inside the disc */}
-                  <text y={19} textAnchor="middle" fontFamily={SERIF} fontWeight={900} fontSize={20} fill={C.ink} textLength={[...label].length > 2 ? 52 : undefined} lengthAdjust="spacingAndGlyphs">
+                  <text y={17} textAnchor="middle" fontFamily={SERIF} fontWeight={900} fontSize={20} fill={C.ink} textLength={[...label].length > 2 ? 50 : undefined} lengthAdjust="spacingAndGlyphs">
                     {label}
                   </text>
                 </>

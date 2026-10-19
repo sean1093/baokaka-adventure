@@ -22,7 +22,7 @@ describe('WordRing', () => {
   test('a disc per word and 「好了」, 72 px buttons named by their word', () => {
     const html = ring({ words: [...WORDS] });
     const labels = [...html.matchAll(/aria-label="([^"]+)"/g)].map((m) => m[1]);
-    expect(labels).toEqual(['好了', '嗶！', '掰掰', '不要！', '哇！', '抱抱', '飛機！', '咻——', '一起']);
+    expect(labels).toEqual(['說話', '好了', '嗶！', '掰掰', '不要！', '哇！', '抱抱', '飛機！', '咻——', '一起']);
     expect(html.match(/width:72px;height:72px/g)).toHaveLength(9);
   });
 

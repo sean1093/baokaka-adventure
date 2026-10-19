@@ -57,44 +57,46 @@ export function WordCard({ learn, vw, cy, reduced, onDone }: WordCardProps) {
   const left = (vw - CARD_W) / 2;
   const top = cy - CARD_H / 2;
   return (
-    <button
-      type="button"
-      className="absolute inset-0 block cursor-default"
-      style={{ background: withAlpha(C.shadow, 0.3), WebkitTapHighlightColor: 'transparent' }}
-      aria-label={`${UI.ring.card}：${beat.title}`}
-      data-word-card={learn}
-      onPointerDown={(e) => {
-        e.stopPropagation();
-        pressed.current = true;
-      }}
-      onClick={click}
-    >
-      <svg
-        className={`absolute overflow-visible ${reduced ? 'wr-fade' : 'wc-drop'}`}
-        style={{ left: r2(left), top: r2(top) }}
-        width={CARD_W}
-        height={CARD_H}
-        viewBox={`0 0 ${CARD_W} ${CARD_H}`}
-        aria-hidden="true"
+    <div className="absolute inset-0" role="dialog" aria-modal="true" aria-label={UI.ring.card}>
+      <button
+        type="button"
+        className="absolute inset-0 block cursor-default"
+        style={{ background: withAlpha(C.shadow, 0.3), WebkitTapHighlightColor: 'transparent' }}
+        aria-label={`${UI.ring.card}：${beat.title}`}
+        data-word-card={learn}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          pressed.current = true;
+        }}
+        onClick={click}
       >
-        <g transform={`rotate(-1.2 ${CARD_W / 2} ${CARD_H / 2})`}>
-          <ArtG html={art} />
-          <g transform={`translate(${CARD_W / 2} 62) rotate(-4)`}>
-            <ArtG html={seal} />
+        <svg
+          className={`absolute overflow-visible ${reduced ? 'wr-fade' : 'wc-drop'}`}
+          style={{ left: r2(left), top: r2(top) }}
+          width={CARD_W}
+          height={CARD_H}
+          viewBox={`0 0 ${CARD_W} ${CARD_H}`}
+          aria-hidden="true"
+        >
+          <g transform={`rotate(-1.2 ${CARD_W / 2} ${CARD_H / 2})`}>
+            <ArtG html={art} />
+            <g transform={`translate(${CARD_W / 2} 62) rotate(-4)`}>
+              <ArtG html={seal} />
+            </g>
+            <text x={CARD_W / 2} y={beat.effect === null ? 178 : 160} textAnchor="middle" fontFamily={SERIF} fontWeight={900} fontSize={52} fill={C.sealInk}>
+              {beat.title}
+            </text>
+            {beat.effect !== null && (
+              <>
+                <path d={`M${CARD_W / 2 - 92} 180H${CARD_W / 2 + 92}`} stroke={C.sealInk} strokeOpacity={0.35} strokeWidth={1.4} strokeDasharray="5 5" />
+                <text x={CARD_W / 2} y={214} textAnchor="middle" fontFamily={SERIF} fontWeight={700} fontSize={24} fill={C.ink}>
+                  {beat.effect}
+                </text>
+              </>
+            )}
           </g>
-          <text x={CARD_W / 2} y={beat.effect === null ? 178 : 160} textAnchor="middle" fontFamily={SERIF} fontWeight={900} fontSize={52} fill={C.sealInk}>
-            {beat.title}
-          </text>
-          {beat.effect !== null && (
-            <>
-              <path d={`M${CARD_W / 2 - 92} 180H${CARD_W / 2 + 92}`} stroke={C.sealInk} strokeOpacity={0.35} strokeWidth={1.4} strokeDasharray="5 5" />
-              <text x={CARD_W / 2} y={214} textAnchor="middle" fontFamily={SERIF} fontWeight={700} fontSize={24} fill={C.ink}>
-                {beat.effect}
-              </text>
-            </>
-          )}
-        </g>
-      </svg>
-    </button>
+        </svg>
+      </button>
+    </div>
   );
 }
