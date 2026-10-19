@@ -35,6 +35,19 @@
 
 @keyframes aff-halo { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 
+/* Hint L0 (the auto nudge, #100): the target shimmers once — in, out, gone */
+.aff-halo-once { opacity: 0; animation: aff-halo-once 1.6s ease-in-out 1; }
+
+@keyframes aff-halo-once { 0% { opacity: 0; } 40% { opacity: 0.9; } 100% { opacity: 0; } }
+
+/*
+ * Mocha's 「等等看。」 (#100, GDD § 2.7): he sits and taps his paw — a small, slow bob of the standee
+ * about his feet (≈ 1.4 taps a second, well under 3 Hz).
+ */
+.aff-mocha-wait { animation: aff-mocha-wait 720ms ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+
+@keyframes aff-mocha-wait { 0%, 55%, 100% { transform: none; } 25% { transform: translateY(-2.5px) rotate(-1.5deg); } }
+
 /*
  * Hint L2: the vellum ghost hand does the gesture, on a 2.4 s loop. The path comes from custom
  * properties on the element (page units): --dx/--dy for a drag, --deg for a turn, --rise for a lift.
@@ -74,9 +87,13 @@
 @media (prefers-reduced-motion: reduce) {
   .aff-wig,
   .aff-halo,
-  .aff-hand { animation: none; }
+  .aff-hand,
+  .aff-mocha-wait { animation: none; }
+  .aff-halo-once { animation: none; opacity: 1; }
 }
 
 .reduce-motion .aff-wig,
 .reduce-motion .aff-halo,
-.reduce-motion .aff-hand { animation: none; }
+.reduce-motion .aff-hand,
+.reduce-motion .aff-mocha-wait { animation: none; }
+.reduce-motion .aff-halo-once { animation: none; opacity: 1; }

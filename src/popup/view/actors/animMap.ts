@@ -240,6 +240,19 @@ export function mochaState(i: MochaAnimInput): MochaState {
 
 export const mochaAnim = (i: MochaAnimInput): ActorAnim => MOCHA_STATE_ANIM[mochaState(i)];
 
+/**
+ * Mocha's hint cues (GDD § 2.7, #100): the nudge's yawn is his stretch (伸懶腰), 「等等看。」 is him
+ * sitting up (the paw tap is the view's bob). Only at rest (`sit`, `onPart`): anything he is doing
+ * wins over a hint.
+ */
+export const MOCHA_CUE_ANIM: Readonly<Record<'yawn' | 'wait', ActorAnim>> = {
+  yawn: hold('mocha.stretch', null),
+  wait: hold('mocha.sit', 'sit'),
+};
+
+/** Whether a hint cue may show over this state (he is at rest). */
+export const mochaCueFits = (state: MochaState): boolean => state === 'sit' || state === 'onPart';
+
 // ——— Frames over the tick ———
 
 /** Page units one crawl (or walk) cycle covers: whole strides per edge, so hands plant once per stride. */

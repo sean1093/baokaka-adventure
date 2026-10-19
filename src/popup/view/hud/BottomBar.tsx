@@ -17,6 +17,8 @@ import '../words/words.css';
  * - The stickers are blind-embossed navy dimples with a dashed gold ring when empty and foil discs
  *   with their icon when earned (✓, 嘿, a 土地公 hat); their names are their accessible names.
  * - During the first-use tutorial (#99) the portrait glows (`glow`: a breathing marigold halo).
+ * - When a hint finds no way on from here (#100: the fallback's 重來 + step 1), 重來 glows the same way
+ *   (`retryGlow`).
  * - **左手模式** (§ 2.11) mirrors the bar: the portrait on the right, the stickers on the left.
  *
  * Laid out in a 390 × 120 box, scaled like the HUD on narrow phones.
@@ -29,6 +31,8 @@ export interface BottomBarProps {
   readonly scale?: number;
   /** The portrait glows (the first-use tutorial, #99) */
   readonly glow?: boolean;
+  /** 重來 glows: the hint's way on starts over (#100) */
+  readonly retryGlow?: boolean;
   /** Reduced motion: the glow holds still */
   readonly reduced?: boolean;
   readonly onPortrait?: () => void;
@@ -72,7 +76,7 @@ function BarButton({ label, onClick, children, testId }: { label: string; onClic
   );
 }
 
-export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow = false, reduced = false, onPortrait, onHint, onRetry, onMenu }: BottomBarProps) {
+export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow = false, retryGlow = false, reduced = false, onPortrait, onHint, onRetry, onMenu }: BottomBarProps) {
   const ids = useSvgIds('bar');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('bar'), id: ids }), [ids]);
   const head = useMemo(() => {
@@ -83,8 +87,9 @@ export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow =
     () => kitDefs(ctx, ['foil', 'softMarigold'], `<radialGradient id="${ctx.id('discShade')}" cx=".35" cy=".3" r=".8"><stop offset=".6" stop-color="${C.pageDark}" stop-opacity="0"/><stop offset="1" stop-color="${C.pageDark}" stop-opacity=".9"/></radialGradient>`),
     [ctx],
   );
-  const disc = (icon: string, ring = ref(ctx, 'foil')) => (
-    <svg width={64} height={64} viewBox="-32 -32 64 64" aria-hidden="true" className="overflow-visible">
+  const disc = (icon: string, ring = ref(ctx, 'foil'), glowing = false) => (
+    <svg width={64} height={64} viewBox="-32 -32 64 64" aria-hidden="true" className="overflow-visible" data-glow={glowing ? '' : undefined}>
+      {glowing && <circle r={46} fill={`url(#${ctx.id('softMarigold')})`} className={reduced ? undefined : 'wr-portrait-glow'} />}
       <g dangerouslySetInnerHTML={{ __html: discSvg(ctx, icon, ring) }} />
     </svg>
   );
@@ -130,7 +135,7 @@ export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow =
       {disc(ICONS.hint)}
     </BarButton>,
     <BarButton key="retry" label={UI.bar.retry} onClick={onRetry} testId="retry">
-      {disc(ICONS.retry)}
+      {disc(ICONS.retry, ref(ctx, 'foil'), retryGlow)}
     </BarButton>,
     <BarButton key="menu" label={UI.bar.menu} onClick={onMenu} testId="menu">
       {disc(ICONS.menu)}

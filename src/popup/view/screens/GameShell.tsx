@@ -8,6 +8,7 @@ import { COVER, holdsPage, isFirstLaunch, navigate, pageStickers, resumeTarget, 
 import { ProgressStore } from '../../game/progress';
 import type { TickSpeed } from '../../game/session';
 import { registry as gameRegistry, type PageRegistry } from '../../pages';
+import { autoHintMs } from '../affordance/ladder';
 import { bookLayout } from '../geometry';
 import { PagePlayer } from '../PagePlayer';
 import { PAGE_VIEW_BOX } from '../geometry';
@@ -32,7 +33,8 @@ import './screens.css';
  * - Any layer over a page (the menu, the 目錄, the settings) and a turn in progress hold the page's
  *   session (§ 2.6).
  * - Settings read from the save: tick speed (0/1/2 → slow/normal/fast), 左手模式, 減少動態 (null
- *   follows the OS). #104 builds the settings screen that changes them.
+ *   follows the OS), 自動提示 (the hint nudge's delay; 15 s in 長輩模式, #100). #104 builds the
+ *   settings screen that changes them.
  */
 
 export interface GameShellProps {
@@ -140,8 +142,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
         leftHand: save.settings.leftHand,
         onRetry: () => go({ t: 'retry' }),
         onMenu: () => go({ t: 'menu' }),
-        // The hint ladder is #100's; the button is here, pressed, with nothing behind it yet
-        onHint: () => undefined,
+        // The hint ladder runs in the page (#100); the nudge comes after the 自動提示 setting's delay
+        autoHintMs: autoHintMs(save.settings),
       },
     [def, save, go],
   );

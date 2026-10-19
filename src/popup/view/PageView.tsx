@@ -22,7 +22,10 @@ import {
   edgeKind,
   fadeSlide,
   flipScale,
-  mochaAnim,
+  MOCHA_CUE_ANIM,
+  MOCHA_STATE_ANIM,
+  mochaCueFits,
+  mochaState,
   sayingWord,
   standeeTilt,
   stepT,
@@ -35,7 +38,7 @@ import { NO_AFFORDANCE, wearsMarigold, type AffordanceFlags, type PartLook } fro
 import { attractorArt, chapterSky, ledge, perchMark, perchPost, pottedPlant, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
-import { NO_GESTURE, minHit, targetsOf, type GestureFlags } from './gestures';
+import { NO_GESTURE, hitCenter, minHit, targetsOf, type GestureFlags } from './gestures';
 import { clamp01, drawnNodePos, easeInOut, lerpPt, offpagePoint, partProgress, stepPose } from './interp';
 import { PRESET_Z, type LayerId } from './layers';
 import { ArtG, r2 } from './parts/common';
@@ -137,6 +140,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
 
   // ——— The hit layer: every touchable's shape, grown to 48 screen px (what hitTest uses) ———
   const targets = targetsOf(def, state);
+  // The hinted target (#100's ladder; #140's looks), if it is on the page now
+  const hint = affordance.hint ?? null;
+  const hinted = hint === null ? undefined : targets.find((tg) => tg.key === hint.key);
 
   // ——— Static layers, built once per page ———
   const statics = useMemo(() => {
@@ -306,7 +312,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const mochaStart = mochaFrom === null ? undefined : nodePos(def, prev, mochaFrom);
   const mochaEnd = mochaTo === null ? undefined : nodePos(def, state, mochaTo);
   const stared = prev.mocha.stare;
-  const mAnim = mochaAnim({
+  const mState = mochaState({
     travelling: mochaTravel,
     landed: tStep >= 1 || held,
     edge: mochaTravel ? edgeKind(def, mochaFrom!, mochaTo!) : null,
@@ -320,6 +326,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     cuddled: state.baby.mode === 'cuddling' && state.baby.target === 'mocha',
     onPart: perch?.onPart !== undefined,
   });
+  // A hint's cue (#100) while he is at rest: the nudge's yawn, 「等等看。」's sit; he looks at the hinted target
+  const cue = affordance.mocha && mochaCueFits(mState) ? affordance.mocha : null;
+  const mAnim = cue === 'yawn' || cue === 'wait' ? MOCHA_CUE_ANIM[cue] : MOCHA_STATE_ANIM[mState];
   const mFrame = chooseFrame(mAnim, { k: tStep, dist: 0, tickMs, hold: held });
   // In a box (C9) he is still drawn at the perch: the `inbox` frame is only his head and paws over the rim
   let mochaPose = stepPose(def, prev, state, mochaFrom, mochaTo, tStep, ms, { reduced, hop: 24, preview });
@@ -331,8 +340,10 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   }
   const mochaDir = mochaTravel && mochaStart && mochaEnd ? travelDir(mochaStart, mochaEnd) : 0;
   const mochaTilt = still ? 0 : standeeTilt(ms, tickMs, mochaDir, reduced);
-  // At rest he sits turned toward 寶咖咖; travelling, toward where he is going (frames face right)
-  const mochaFacing = mochaDir !== 0 ? (mochaDir < 0 ? 'l' : 'r') : mochaPose && babyPose && babyPose.x < mochaPose.x - 4 ? 'l' : 'r';
+  // At rest he sits turned toward 寶咖咖 — or, with a hint's yawn or look, toward the hinted target;
+  // travelling, toward where he is going (frames face right)
+  const lookAt: Pt | null = (cue === 'yawn' || cue === 'look') && hinted !== undefined ? hitCenter(hinted.hit) : babyPose ? [babyPose.x, babyPose.y] : null;
+  const mochaFacing = mochaDir !== 0 ? (mochaDir < 0 ? 'l' : 'r') : mochaPose && lookAt && lookAt[0] < mochaPose.x - 4 ? 'l' : 'r';
 
   // ——— What is said (#98): the thought bubble, barks, subtitles, placed off him and the goal ———
   const k = talkScale(scale);
@@ -369,10 +380,10 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const tdg = def.tudigong;
   const tudigongShown = holds(def, state, tdg.visibleWhen);
 
-  // ——— Hints (bible § 4.1 L1/L2): a halo behind the target, the ghost hand over the page ———
-  const hint = affordance.hint ?? null;
-  const hinted = hint === null ? undefined : targets.find((tg) => tg.key === hint.key);
-  const halo = hinted && <HintHalo key={`halo:${hinted.key}`} ctx={ctx} shape={haloShape(def, state, hinted)} reduced={reduced} strong={affordance.elder} />;
+  // ——— Hints (bible § 4.1 L0–L2): a halo behind the target, the ghost hand over the page ———
+  const halo = hinted && (
+    <HintHalo key={`halo:${hinted.key}:${hint?.level === 0 ? 'nudge' : 'where'}`} ctx={ctx} shape={haloShape(def, state, hinted)} reduced={reduced} strong={affordance.elder} once={hint?.level === 0} />
+  );
   const haloMid = hinted !== undefined && hinted.layer <= 3;
   const thread = hinted === undefined ? null : linkThread(def, state, hinted);
   const hand = hinted !== undefined && hint?.level === 2 ? handGesture(def, state, hinted, hint) : null;
@@ -418,7 +429,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {/* The characters in their chapter's half grade (#96: a baked variant of each frame) */}
         <SpriteGrade.Provider value={chapterGradeKey(def.chapter)}>
         {mochaPose && (
-          <Mocha x={mochaPose.x} y={mochaPose.y} anim={mAnim} frame={mFrame} glare={locked?.serial} facing={mochaFacing} tilt={mochaTilt} opacity={mochaOpacity} reduced={reduced} still={still} />
+          <Mocha x={mochaPose.x} y={mochaPose.y} anim={mAnim} frame={mFrame} glare={locked?.serial} facing={mochaFacing} tilt={mochaTilt} opacity={mochaOpacity} reduced={reduced} still={still} tapping={cue === 'wait'} />
         )}
         {babyPose && (
           <Baby x={babyPose.x} y={babyPose.y} mode={state.baby.mode} anim={bAnim} frame={bFrame} sx={sx} tilt={babyTilt} opacity={babyOpacity} watch={watch} glow={glow} reduced={reduced} still={still} />

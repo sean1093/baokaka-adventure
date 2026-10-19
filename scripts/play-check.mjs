@@ -16,7 +16,8 @@
  * add one with every new page. A scenario can also play a PageLab stage through a live fixture
  * (`SCENARIO_URLS`): `lab-gates` plays 1-3's word flow end to end (#99) — the 「要！」 poke, Mocha's
  * push, the learn beat and its word card, the tutorial, the word ring and 嗶！ — until #107 brings
- * the real 1-3. Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
+ * the real 1-3; `hints-c1p2` plays 1-2 with 提示 alone (#100: where, how, then show me until done).
+ * Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
  * and UI checks.
  */
 import { mkdir } from 'node:fs/promises';
@@ -63,11 +64,24 @@ const SCENARIOS = {
     { tapEl: '[data-actor="baby"]' },
     { tapEl: '[data-word="beep"]', paused: true },
   ],
+  // The hint ladder (#100, GDD § 2.7) on 1-2: 提示 shows where (the halo), then how (the ghost hand),
+  // then "show me" plays the solver's next step for real — pressed again and again, it finishes the page
+  'hints-c1p2': [
+    { wait: 'reaching' },
+    { tapEl: '[data-bar="hint"]' },
+    { expect: '[data-hint-halo]' },
+    // The answer came from the worker's solver, not the fallback
+    { expect: '[data-hint-source="solver"]' },
+    { tapEl: '[data-bar="hint"]' },
+    { expect: '[data-hint-hand]' },
+    { showMe: 30 },
+  ],
 };
 
 /** Scenarios that start somewhere other than `#/popup?page=<id>`: a PageLab stage, live. */
 const SCENARIO_URLS = {
   'lab-gates': '#/pagelab?fixture=word-poke',
+  'hints-c1p2': '#/popup?page=c1p2&speed=fast',
 };
 
 const VIEWPORTS = [
@@ -151,6 +165,18 @@ async function run(page, base, id, kind, viewport, shots) {
       await page.waitForTimeout(60);
       await input.up();
       await shot('tap');
+    } else if (stepDef.showMe) {
+      // 提示 at level 3, pressed until the page is done (each press: the hand, then the step played)
+      const button = await page.waitForSelector('[data-bar="hint"]');
+      for (let i = 0; i < stepDef.showMe && !(await page.$('svg[data-page][data-done]')); i++) {
+        const box = await button.boundingBox();
+        await input.down([box.x + box.width / 2, box.y + box.height / 2]);
+        await page.waitForTimeout(60);
+        await input.up();
+        await page.waitForTimeout(1700);
+      }
+      if ((await page.getAttribute('[data-popup-page]', 'data-hint-level')) === null) throw new Error('no hint ladder on the page');
+      await shot('show-me');
     } else if (stepDef.expect) {
       await page.waitForSelector(stepDef.expect, { timeout: 5_000 });
       if (stepDef.absent && (await page.$(stepDef.absent))) throw new Error(`${stepDef.absent} should not be there`);

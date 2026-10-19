@@ -467,3 +467,24 @@ Format:
   - #107: register 1-3, then move the `word-*` fixtures and the play scenario onto `c1p3`.
   - #105: play the word motifs.
   - Learn lines advance only on a tap (as all subtitles do), so the card waits for that tap. Playtest (#110) should check that players find it.
+
+### 2026-10-19 · Staff engineer · #100 Hint system via the solver: levels 0–3, hint worker, ghost hand, 「等等看」 (PR #169)
+- **Source (`core/hint.ts`, pure).**
+  - `nextHint`: the solver from the current state (`cap 200_000`, `timeMs 300`, `stopAtGoal`) and its `nextAction`.
+  - The fallback, `solutionAction`: the stored solution step whose part states match (exactly, then on the parts the solution drives), waiting first where the solution settled. Failing that, `restart` (重來 + step 1).
+  - `applyHint` plays an answer.
+- **Worker (`workers/`).** `hint.worker.ts` is thin over `protocol.ts` (`{ id, pageId, state, def? } → { id, action, source }`). `HintClient` never fails: no worker, an error, an uncloneable message or a 2 s silence all fall back on the main thread.
+- **Ladder (`view/affordance/ladder.ts`, `useHintLadder.ts`).**
+  - 提示 climbs where → how → show me, and "show me" repeats. The player's own move resets it.
+  - The auto nudge comes after the 自動提示 delay (`autoHintMs`; 15 s in 長輩模式), when nothing has changed.
+  - Mocha's cues (`affordance.mocha`): the nudge's yawn is the `mocha.stretch` pose (now preloaded from chapter 1, re-synced). He looks at the target, and taps his paw for 「等等看。」.
+  - The § 5.3 lines are his bark (`content/hints.ts`). A lost page glows 重來 (`BottomBar retryGlow`). The L0 shimmer is `aff-halo-once`.
+  - `PagePlayer` runs it all; `GameShell` passes the setting. `PageChrome.onHint` now only listens.
+- **Tests.**
+  - `core/hint.test.ts`: solver and fallback loops from the start and from wandered states, timeout, page error, restart.
+  - `pages/hints.test.ts`: the acceptance test, "show me" to `done` on every registered page with the solver and with the fallback alone.
+  - `workers/hint.test.ts`: the job, and every client failure path.
+  - `ladder.test.ts`, plus hint fixture checks in `fixtures.test.ts`.
+- **Fixtures.** `hint-nudge`, `hint-level1`, `hint-ghost-hand`, `hint-wait`. `check:play` gains `hints-c1p2`, which plays 1-2 with 提示 alone.
+- **Decision.** D-63. GDD § 2.7 has an engineers' note; the handbook § 5 and bible § 4.1 are updated.
+- **Follow-ups.** #106 reuses `GhostHand`/`HintShow` for the scripted tutorials. #104's settings screen sets `autoHint`/`elder`. #105 can sound on `onHint`.
