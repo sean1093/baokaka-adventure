@@ -387,6 +387,8 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 - All 65 土地公 unlock the bonus page 「象山的日出」 (post-game).
 - All 淘氣 stickers unlock the album's 「淘氣大王」 cover.
 
+*Engineers' note (#101, D-64):* the card shows in the page turn's interlude, over the folded page (with reduced motion, over the page before the fade); the 1.5 s count from its last sticker landing, and a tap ends it. 淘氣 is `game/stickers.ts` `mischiefFired`, matched every tick of every attempt; 淘氣 and 土地公 pop 「嘿嘿，淘氣！」 / 「找到土地公！」 over the bar's tray and are saved at once. The rewards are read off the save (`rewardFlags`, over all 65 pages), not stored. Page select is the 目錄: each solved page's 淘氣 is listed under the page strip.
+
 ### 2.9 Chapter spread and the album photo (borrowed from concept B)
 
 **Page 6 of every chapter is a two-page spread.** It has a wider page (rendered at 390×560 like the others, but drawn as a centrefold with a visible spine crease) and a richer puzzle. The goal is the **chapter treasure**.
