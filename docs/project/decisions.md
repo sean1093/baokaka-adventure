@@ -692,3 +692,33 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #105 can sound the drop, the flaps and the lift: `[data-chapter-board]`, `[data-flap]`.
 - #110's playtest: the prologue card plus the 0-1 intro is five taps of reading before play. Watch whether children wait for it.
 - Fixtures: `chapter-card-p` and `chapter-card-c1`. `check:play` runs `prologue-card`, from a fresh save to 0-1's intro.
+
+### D-66 · 2026-10-19 · The chapter spread, the photo moment and the album page (#103)
+
+**Context.** #103 builds GDD § 2.9: the spread, the photo moment and the album page with its four notes (§ 5.6). Page 1-6 itself is #107's, and the photo frames are still to be drawn by the character artist. Several points are left open:
+- what "2 edges from the treasure with a clear path" means in the engine;
+- what the slow-motion approach is, since the simulation is paused;
+- which Mocha line Frame A takes when Mocha is not in the photo;
+- how the pool formula numbers the frames;
+- when a photo is saved, and how a retake's choice works;
+- where the album sits in the flow before #113.
+
+**Decision.**
+1. **The trigger** (`game/photo.ts` `photoReady`). On a page with `spread`, the moment starts on the first tick where Baokaka's target (`selectTarget`, at the step's growth) is the goal, it is reachable (`approach` not null), and its path is 1 or 2 edges. If he reaches the treasure without passing that point (it came into reach under him), the moment plays after the grab. A spread's `onDone` waits for its photo. The session is paused with the reason `photo`; the hint ladder is held.
+2. **The slow motion is a viewfinder.** The paper camera's viewfinder shows the photo as it would be taken at this instant, composed from the baked frames (`PhotoScene`). B is `reach`, crawling in toward the treasure on the floor. A is `bounce`, arms up, the treasure over his head. C is `eat`, the treasure at his mouth. +M is `mocha.album` in the bottom-left corner. The 3 s loop puts the grab (the peak) at 1.8 s: B before 1.4 s, A from 1.4 to 2.2 s, C after. The viewfinder creeps in (scale 1 → 1.09, a CSS loop) and the 「哇！」 meter rises to its star at the peak. What you see is what you get. Under reduced motion there is no zoom, and the meter stands at its peak mark; the picture still changes.
+3. **Placeholder composites.** These poses stand in for the photo frames the character artist will draw (§ 2.9 requirement 2). The treasure is drawn in `view/photo/treasureArt.ts`: 雞腿 for chapter 1, a foil token with the first character for the other chapters until their art issues. A spread's goal is drawn as its treasure on the page too.
+4. **Notes.** Frame A takes the chapter's § 5.6 row for all four speakers, Mocha's line included, whether he is in the photo or not ("chapter-specific Mocha lines replace these for Frame A"). B and C take each speaker's pool at `(chapter × 7 + frame) mod poolSize` with A = 0, B = 1, C = 2. Mocha's pool is `mocha.in` with +M, otherwise `mocha.out`. Chapter 1: B gives pool index 2 (Mocha 0), C gives 0 (Mocha 1). The tables are `content/album.ts`, with the ending's row for #135.
+5. **Saving.** Every shot is kept the moment it is taken (`store.keepPhoto`, a save trigger, § 2.10), so "the last photo taken is kept". After a retake, the previous and the new shot lie side by side under the print, and tapping one keeps it. 「放進相簿」 goes on: the sticker card, then the chapter turn.
+6. **The flow.** Spread done → the grab's 0.9 s hold → the album page over the book (the print flies in, the notes pop on 0.6 s apart) → 「再拍一次」 / 「放進相簿」. The chapter-end lines (`c1p6.end.*`) are #107's page lines. The cover's 相簿 opens the album at the latest chapter with a photo (`albumHome`), or chapter 1's empty page, with 「返回」 and, when there is a photo, 「再拍一次」. Browsing chapters is #113.
+7. **The album page.** It is a cream leaf on 花磚 endpapers with the linen cover down the binding. It holds the album's name on washi, 第N章 + title + time, the instant print (the treasure's name under it), 學會了 + the word big in red serif on its seal, the 6 × 3 sticker grid (a column per page, from the registered page with that index), its count, and the four sticky notes (pink, mint, sky, lilac; never marigold). There is no handwriting font in the build (no new font payload): the notes use the rounded Chiron GoRound, tilted. The leaf scrolls on short phones; the buttons stay fixed under it.
+8. **The spread.** It is drawn on the same 390 × 560 page with a valley-fold spine down the middle (`placeholders.ts` `spine`). The crop of the photo is 300 × 225 page units inside the page, centred across on `photoRect`.
+9. **Lab stage.** `lab-spread` is 1-2 as a spread (index 6, the bead renamed `drumstick`, `photoRect` round the right platform: the bench is in, the pillar is out). `SPREAD_REGISTRY` puts it after 1-2 so the shell can play it (`spread-shell`).
+
+**Why.** A viewfinder that shows the shot it will take makes the timing readable without explaining frames. It needs no change to the paused page. Saving every shot is the simplest reading of "the last photo taken is kept" that never loses a photo to a closed tab.
+
+**Consequences.**
+- #107 registers 1-6 with `spread` and `photoRect`. Then it moves `photo-moment`, `spread-c1` and the `photo-spread` play scenario onto `c1p6`, and wires `c1p6.end.*` after the album.
+- The character artist: the photo frames A, B and C (+M) per chapter can replace the composites in `PhotoScene` without changing anything else.
+- #113 adds the album's chapter navigation and the 淘氣大王 cover (`rewardFlags(save).mischiefCover`).
+- #105: the shutter click, the flash, the note pops (`[data-album-note]`).
+- New UI strings not in § 5.7: 「寶咖咖一歲的相簿」 (§ 2.9's name), 學會了 (D-62's), 返回, and 已收集 as the grid's accessible name.

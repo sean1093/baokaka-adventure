@@ -399,6 +399,8 @@ Each chapter has **2 dominant hues + 1 accent**, a **signature material**, and a
 - The chapter's word is big in red serif, with a 6×3 sticker grid.
 - The shutter moment uses a paper camera frame sliding over the page and a big round 咔嚓 button in marigold (it is a touchable).
 
+*Engineers' note (#103, D-66):* `src/popup/view/photo/`. The camera is black card with a cream band (a foil-ringed lens, a vellum flash, the 翻 seal) and a cut viewfinder with chalk corner marks. Beside the viewfinder hangs the 「哇！」 thermometer: magenta word ink rising to a foil star. Under it is the 108 px marigold 咔嚓 disc ringed in the camera's black and gold. One flash is a 360 ms white fade. The album is a cream leaf on the 花磚 endpaper (the kit's `tiles`) with the linen cover down the binding. The instant print has a warm-white border, a −2.5° tilt and celadon and pink washi corners, with the treasure's name under the picture. The word is in 44 px red serif on its seal, and the sticker grid has a foil disc per sticker. The notes are pink, mint, sky and lilac sticky notes, each with a strip of tape and the speaker's name in red serif. A spread's spine is a valley fold down x = 195. Proofs: `docs/screenshots/103/`.
+
 **目錄:** the 月亮線 route as a **paper map**. Stations are chapters (foil when complete); the line is a ribbon.
 
 **Cover screen:** the closed book 《翻翻台北》 on 阿嬤's low table and 花布, with Baokaka and Mocha standees and a gold-foil title.

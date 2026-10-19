@@ -411,6 +411,8 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 - Each chapter page shows: photo, chapter title, clock time, the word learned (big), four notes, and that chapter's sticker grid (6 pages × 3 stickers).
 - Swipe or tap arrows to flip pages.
 
+*Engineers' note (#103, D-66):* the moment starts on the first tick a spread's goal is its target and 1–2 edges away on an open path (`game/photo.ts` `photoReady`; after the grab if he skipped that point), and pauses the session. The slow motion is the camera's viewfinder: the photo it would take now, composed from the baked frames (B `reach` crawling in, A `bounce` with the treasure held up, C `eat`, +M `mocha.album` bottom left) over the spread's backdrop, creeping in over the 3 s loop. The grab is at 1.8 s, so A is 1.4–2.2 s. Frame A takes the chapter's § 5.6 row for all four notes; B and C the pools with A = 0, B = 1, C = 2. Every shot is saved when taken. After a retake both shots lie under the print and the tapped one is kept. The album page opens over the book after the grab, before the sticker card. The cover's 相簿 opens the latest chapter with a photo (#113 adds the rest).
+
 ### 2.10 Save and progress
 
 - **Storage:** `localStorage` key `popup.save.v1`, via the existing `src/shared/storage.ts` (`loadJson` / `browserStorage`). It must work when storage is unavailable (private mode); the session just doesn't persist.
