@@ -500,7 +500,7 @@ Format:
 - **Decision.** D-64. GDD § 2.8, the bible § 7 and the handbook § 5 have engineers' notes.
 - **Follow-ups.** #103: the album reads `rewardFlags(save).mischiefCover`. #105: sounds for the slap, the pop, 「這個！」 and the burst. #110 playtest: the card adds ≈ 2.4 s between pages (tap to skip) — check it doesn't drag.
 
-### 2026-10-19 · Staff engineer · #102 Chapter card (departure board) and all prologue + chapter 1 lines (PR #PRNUM)
+### 2026-10-19 · Staff engineer · #102 Chapter card (departure board) and all prologue + chapter 1 lines (PR #171)
 - **Script (`content/script.ts`).**
   - Every § 5.2 line of P (12 lines), 0-3 (10), 0-4 (3), the ch1 intro (kept from #98), 1-1, 1-5 and 1-6. 咻咻 is labelled 「小小的雲」. Hokkien and wording are exactly as in the GDD; speech is stored without its outer 「」.
   - `chapters.ts` gains `next` (下一站) for all 11 chapters and `cardLines(chapter)` (P 1–5, ch1 1–4). 0-1's `lines.intro` is P 6–12.
