@@ -430,7 +430,7 @@ Format:
 - **Decision.** D-60. Handbook § 5, GDD § 2.13 and bible § 7 have engineers' notes.
 - **Follow-ups.** #100 wires 提示; #101 puts the sticker card between the fold and the next page and fills the bar's stickers live; #102 replaces the turn's card with the departure board; #103 / #104 replace the stubs; #109 points `#/` at the shell and calls `retireRpgSave`; a same-chapter fold becomes visible with #106's pages.
 
-### 2026-10-19 · Staff engineer · #98 Thought bubble with change-of-mind animation, barks, subtitle bubbles and narration strips (PR #TBD)
+### 2026-10-19 · Staff engineer · #98 Thought bubble with change-of-mind animation, barks, subtitle bubbles and narration strips (PR #167)
 - **Thought bubble (`view/talk/Talk.tsx`).** It is a die-cut cloud on a wire spring from the shown frame's head. When the target changes, the old icon pops, the new one inflates 100 ms later and the spring wobbles (a damped 3-cycle sine). 「要！」 is red serif and pulses while he reaches. Reduced motion uses fades only, and stills show only the settled bubble. Icons are shapes: a foil bead with a sparkle, Mocha's head, a bottle, a music note, tears, a heart.
 - **Placement (`view/talk/place.ts`, `layout.ts`).** Candidate boxes are tried in order (preferred side, other side, then raised). Baokaka and the goal are hard avoids; Mocha, earlier bubbles and, for subtitles, the touchables are soft avoids. Bubbles stay below the HUD edge. Placement uses tick-end positions, and bubbles ride with their speaker between ticks.
 - **R5:** every bubble grows by `talkScale(book scale)`, so its text is ≥ 20 screen px (× 1.39 at 375 × 667). The `[data-bubble]` waiver is deleted from `scripts/popup-checks.mjs`.
