@@ -200,7 +200,7 @@ The first candidate is the **target**.
 - **If the target is reachable:** he takes one edge of the shortest path per tick (BFS over the baby-traversable edges whose conditions are currently true, at his current growth stage). Equal-length paths are broken by edge order in the data.
 - **If the target is unreachable:** he moves toward the reachable node that minimises straight-line distance to the target (ties go to the shorter path, then to the node id). When he's already there, he enters **reaching**: he sits facing the target, stretches his arms, and barks 「要！要！」 every 4 ticks. This state is the visual heart of most puzzles. It says "help me across."
 - **Riding:** if he stands on a node attached to a part and the part changes state, he moves with it. That's not an action, he just sits there delighted (「哇！」 the first time on each page).
-- **Blocked nodes:** a node occupied by a creature or a closed gate (as data conditions) is not traversable. He never steps through a creature.
+- **Blocked nodes:** a node occupied by a creature or a closed gate (as data conditions) is not traversable. He never steps through a creature. In data: a creature blocks the node of its current position unless it sets `blocks: false`; a gate blocks the node attached to it (`attach: { part: <gate> }`, same position in both states) while it is `closed` (D-42). Blocking applies to Baokaka only; his own node never counts as blocked.
 
 #### 2.2.4 Edge behaviour: never falls
 
