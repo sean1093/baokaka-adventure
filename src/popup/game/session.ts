@@ -126,6 +126,10 @@ export class PageSession {
     return [...this.reasons].sort();
   }
 
+  /**
+   * Hears every new frame (each tick, a reset) and the clock starting to run again after a pause
+   * (with the same frame), so a view that sleeps between ticks knows when to animate.
+   */
   subscribe(listener: (frame: SessionFrame) => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -159,7 +163,10 @@ export class PageSession {
     this.cancelGrace();
     this.graceTimer = this.clock.setTimeout(() => {
       this.graceTimer = null;
-      if (this.reasons.size === 0 && this.started) this.run();
+      if (this.reasons.size === 0 && this.started) {
+        this.run();
+        this.notify(); // the same frame: the view wakes to play out the rest of the tick
+      }
     }, RESUME_GRACE_MS);
   }
 
@@ -183,7 +190,7 @@ export class PageSession {
     this.current = { def: this.def, prev: this.current.state, state, events, tickMs: this.tickLength(state), serial: this.current.serial + 1 };
     this.banked = 0;
     if (running) this.run();
-    for (const listener of [...this.listeners]) listener(this.current);
+    this.notify();
     return this.current;
   }
 
@@ -194,16 +201,23 @@ export class PageSession {
     this.queue.length = 0;
     this.banked = 0;
     this.current = { def: this.def, prev: from, state: from, events: [], tickMs: TICK_MS[this.speed], serial: this.current.serial + 1 };
-    for (const listener of [...this.listeners]) listener(this.current);
     if (running) this.run();
+    this.notify();
+  }
+
+  private notify(): void {
+    for (const listener of [...this.listeners]) listener(this.current);
   }
 
   /** Recomputes the current tick's length (speed or queue changed), keeping the time already run. */
   private retime(): void {
     const running = this.runningSince !== null;
+    const tickMs = this.tickLength(this.current.state);
     this.halt();
-    this.current = { ...this.current, tickMs: this.tickLength(this.current.state) };
+    const changed = tickMs !== this.current.tickMs;
+    if (changed) this.current = { ...this.current, tickMs };
     if (running) this.run();
+    if (changed) this.notify();
   }
 
   private tickLength(state: SimState): number {

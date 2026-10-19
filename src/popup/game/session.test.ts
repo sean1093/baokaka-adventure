@@ -85,8 +85,12 @@ describe('PageSession clock', () => {
     advance(RESUME_GRACE_MS - 1);
     expect(s.paused).toBe(true);
     expect(s.elapsed()).toBe(200);
+    const heard: number[] = [];
+    s.subscribe((f) => heard.push(f.serial));
     advance(1);
     expect(s.paused).toBe(false);
+    // Subscribers hear the clock run again (same frame), so a sleeping view wakes
+    expect(heard).toEqual([0]);
     // The rest of the tick (300 ms) runs, then the tick lands
     advance(299);
     expect(s.frame().state.tick).toBe(0);
