@@ -558,3 +558,34 @@ Format:
   - #113: album navigation and the 淘氣大王 cover.
   - #105: shutter and note sounds.
   - The thought bubble still shows the bead icon for a spread's treasure. It is minor, and #107/#108 can draw a treasure icon.
+
+### 2026-10-19 · Staff engineer · #104 Settings, 長輩模式 and 大字 (PR #173)
+- **Rules (`game/settings.ts`, pure).**
+  - `effectiveSettings` applies 長輩模式 (慢, 大字, 15 秒 and its extras) over the player's own values and never writes them, so turning it off restores them. `elderPatch` drops changes to the settings it holds while it is on.
+  - It also resolves 減少動態 against the OS, and the tilt and low power.
+  - `FrameWatch` turns on low power when frames stay over 20 ms for 2 s (sustained). `pulse` / `HAPTICS` are the vibrations.
+  - `Settings.tilt` is optional, so old saves load. `autoHintMs` is always 15 s in 長輩模式.
+- **Screen (`screens/Settings.tsx`).**
+  - Index cards on the endpaper, with 長輩模式 first. Paper radio groups mark the chosen option navy with a ✓.
+  - Rows held by 長輩模式 are locked with 「長輩模式幫你設好了」.
+  - Volume sliders; 減少動態 shows 「跟著手機的設定」 until chosen; 書本傾斜 asks for the gyro.
+  - 「重新開始（按住三秒）」 has a countdown and a bar, then `store.reset()` and the cover. The stub screen is gone.
+- **Shell and page.**
+  - 大字 is `TextScaleContext` plus `[data-text-size="big"]` on the shell and on `<html>`.
+  - The elder extras: reveal outlines always on, bolder perch markers, 28 px seals, the strong halo.
+  - Vibration pulses; `useTilt` (±3° page lean); `useLowPower` (no confetti, half the sparkles, no tilt).
+- **大字 everywhere.**
+  - HUD: the clock chip scales with its digits, and the chapter line is condensed.
+  - Bar labels and bubbles grow. A small book plays one line a beat; the chapter card two.
+  - The chapter card scales to the width and holds its words at 24 px.
+  - Word ring, sticker card, 「哇！」 meter and album grow; headers stay on one line. `textSize.css` grows Tailwind sizes.
+- **QA.**
+  - Fixtures `settings`, `settings-elder`, `page-big`, `page-elder` and `subtitle-big`: 10 new baselines; every other target is 0 px.
+  - `npm run check:ui:big` (`UI_TEXT=big`, or `&text=big` on a fixture URL) runs every popup fixture with 大字: all pass. `check:ui` skips text clipped by a scroller.
+  - `npm test` (2264) and `npm run build` pass.
+- **Screenshots.** `docs/screenshots/104/`.
+- **Decision.** D-67. GDD § 2.11, bible § 9.3 and the handbook § 5 have notes.
+- **Follow-ups.**
+  - #105 reads `settings.sfx` / `settings.music` (0–100) for its volumes.
+  - #136: per-layer tilt parallax, and a device check of low power and vibration.
+  - New screens should pass `check:ui:big`.

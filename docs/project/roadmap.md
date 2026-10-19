@@ -51,7 +51,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [101](https://github.com/sean1093/baokaka-adventure/issues/101) | Page completion, sticker card, 淘氣 detection and 土地公 tap | ui, engine, m1 | #97 | done (#170) |
 | [102](https://github.com/sean1093/baokaka-adventure/issues/102) | Chapter card (departure board) and all prologue + chapter 1 lines in content/script.ts | ui, content, m1 | #97, #98 | done (#171) |
 | [103](https://github.com/sean1093/baokaka-adventure/issues/103) | Chapter spread, photo moment and the album page (chapter 1 comments) | ui, m1 | #101 | done (#172) |
-| [104](https://github.com/sean1093/baokaka-adventure/issues/104) | Settings, including 長輩模式 (grandparent mode), 大字, speed, auto-hint, sound, vibration, reduced motion, 左手模式 | ui, m1 | #97, #93 | done (#PR) |
+| [104](https://github.com/sean1093/baokaka-adventure/issues/104) | Settings, including 長輩模式 (grandparent mode), 大字, speed, auto-hint, sound, vibration, reduced motion, 左手模式 | ui, m1 | #97, #93 | done (#173) |
 | [105](https://github.com/sean1093/baokaka-adventure/issues/105) | Audio: extend src/shared/audio.ts with the §2.12 cues and a music-box loop for chapters 0–1 | audio, m1 | #104 | todo |
 | [106](https://github.com/sean1093/baokaka-adventure/issues/106) | Prologue pages 0-2, 0-3, 0-4 as data, with scripted tutorials — all green in the solver | content, m1 | #100, #102, #140 | todo |
 | [107](https://github.com/sean1093/baokaka-adventure/issues/107) | Chapter 1 pages 1-1, 1-3, 1-4, 1-5, 1-6 (台北車站) as data — all green in the solver | content, m1 | #106, #99, #103 | todo |
