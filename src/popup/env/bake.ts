@@ -1,7 +1,7 @@
 import { LIFT, kitCtx, kitDefs, liftShadow } from '../art';
 import { envGrade, gradeSvg, keepColours } from './grade';
 import { DRAGGED, type EnvBox } from './manifest';
-import type { BackdropSource, CutoutSource, PartSource } from './sources';
+import type { BackdropSource, CutoutSource, PartSource, ScreenSource } from './sources';
 
 /**
  * What `npm run bake:popup` renders, as pure functions (#96): the exact SVG of every bitmap and
@@ -13,7 +13,7 @@ import type { BackdropSource, CutoutSource, PartSource } from './sources';
 export const BAKE_VERSION = 'env-v1';
 
 /** Pillow WebP settings (D-56's encoder): backdrops at 80, parts and cut-outs at 86 with a cheaper alpha. */
-export const ENCODE = { backdrop: { quality: 80, alpha: 70 }, part: { quality: 86, alpha: 65 } } as const;
+export const ENCODE = { backdrop: { quality: 80, alpha: 70 }, part: { quality: 86, alpha: 65 }, screen: { quality: 76, alpha: 70 } } as const;
 
 /**
  * A short content hash (two FNV-1a lanes over the JSON, 16 hex digits): pure, so the test computes
@@ -79,3 +79,11 @@ export const PART_PAD = 16;
 
 /** The padded render box of a part. */
 export const paddedBox = (box: EnvBox): EnvBox => ({ x: box.x - PART_PAD, y: box.y - PART_PAD, w: box.w + 2 * PART_PAD, h: box.h + 2 * PART_PAD });
+
+/** A screen's SVG body (#97): the kit's defs and the drawing, not graded. */
+export function screenSvg(src: ScreenSource): string {
+  const ctx = kitCtx('sc', { filters: true });
+  return kitDefs(ctx) + src.draw(ctx);
+}
+
+export const screenHash = (key: string, src: ScreenSource, svg = screenSvg(src)): string => envHash('screen', key, svg, src.box, ENCODE.screen);

@@ -3,6 +3,7 @@ import type { PageDef, PartPreset } from '../core/types';
 import { chapterSky, placeholderBackdrop, stageDefs } from '../view/art/placeholders';
 import { BLOCK_DEPTH, FLOOR_BOTTOM, GUTTER_Y, PAGE_VIEW_BOX, PAGE_W, floorOutline, floorWiden } from '../view/geometry';
 import { departureBoard } from './art/c1';
+import { SCREEN_ART, type ScreenSource } from './art/screens';
 import type { EnvBox } from './manifest';
 
 /**
@@ -19,6 +20,8 @@ import type { EnvBox } from './manifest';
  *   preset's live kit art (the touchables' seals, grips and cues stay live SVG: the affordance
  *   lint reads them).
  * - **Cut-outs** (`CUTOUT_SOURCES`): static standing pieces a page places with `PageDef.cutouts`.
+ * - **Screens** (`SCREEN_SOURCES`, #97): the quilt, the cover scene and the 目錄 map, baked always
+ *   (they belong to no page).
  */
 
 /** A part's art: one drawing per state, in its local space (the origin at the part's hit centre). */
@@ -112,3 +115,7 @@ export function cutoutSources(pages: readonly Pick<PageDef, 'cutouts'>[]): [stri
   const keys = new Set(pages.flatMap((p) => (p.cutouts ?? []).map((c) => c.art)));
   return Object.entries(CUTOUT_SOURCES).filter(([key]) => keys.has(key));
 }
+
+/** The screens' art (#97), by key: always baked. */
+export const SCREEN_SOURCES: Readonly<Record<string, ScreenSource>> = SCREEN_ART;
+export type { ScreenSource };

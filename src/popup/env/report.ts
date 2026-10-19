@@ -10,7 +10,8 @@ import type { EnvFile, EnvManifest } from './manifest';
  * - **Page art** is the environment a page draws: its baked backdrop, the bitmaps of every state
  *   (and lifted state) of its baked parts, and its cut-outs. Budget: 350 KB per page.
  * - **First load** is everything the art pipeline fetches before the first chapter is playable: the
- *   first chapter's pages' environment art plus its character set at @3x (the worst device scale;
+ *   screens' art (the cover is the first thing shown, #97), the first chapter's pages' environment
+ *   art plus its character set at @3x (the worst device scale;
  *   the core set is pinned at ≤ 400 KB on its own by `sprites.test.ts`). Budget: 2.5 MB. Later
  *   chapters load lazily, page by page.
  */
@@ -63,6 +64,7 @@ export function firstLoad(pages: readonly PageDef[], m: EnvManifest): FirstLoad 
   const chapter = Math.min(...pages.map((p) => p.chapter));
   const first = pages.filter((p) => p.chapter === chapter);
   const files = new Map<string, number>();
+  for (const f of Object.values(m.screens)) files.set(f.file, f.bytes);
   for (const p of first) {
     const art = pageArt(p, m);
     for (const f of [art.backdrop, ...art.parts, ...art.cutouts]) if (f) files.set(f.file, f.bytes);
@@ -91,6 +93,8 @@ export function formatReport(pages: readonly PageDef[], m: EnvManifest): string 
     'Page art (environment bitmaps, @2x; GDD § 3.9 budget 350 KB per page)',
     ...rows,
     '',
-    `First load (chapter ${f.chapter}: its environment art ${kb(f.env)} + its characters @3x ${kb(f.sprites)}) = ${kb(f.bytes)} / ${kb(FIRST_LOAD_BUDGET)} ${f.bytes <= FIRST_LOAD_BUDGET ? 'ok' : 'OVER'}`,
+    `Screens (#97): ${Object.entries(m.screens).map(([k, f]) => `${k} ${kb(f.bytes)}`).join(' · ')}`,
+    '',
+    `First load (the screens + chapter ${f.chapter}: environment art ${kb(f.env)} + its characters @3x ${kb(f.sprites)}) = ${kb(f.bytes)} / ${kb(FIRST_LOAD_BUDGET)} ${f.bytes <= FIRST_LOAD_BUDGET ? 'ok' : 'OVER'}`,
   ].join('\n');
 }
