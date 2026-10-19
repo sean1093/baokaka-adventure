@@ -99,22 +99,23 @@
    },
    "reach": {
     "label": "伸手抓高處",
-    "frames": 1,
+    "frames": 2,
     "keyframes": null,
     "loop": false,
     "fps": 4,
     "size_pt": [
      49.0,
-     101.0
+     102.0
     ],
     "anchor_pt": [
      27.85,
-     95.67
+     96.33
     ],
     "files": [
-     "baokaka-reach-0@{2x,3x}.webp"
+     "baokaka-reach-0@{2x,3x}.webp",
+     "baokaka-reach-1@{2x,3x}.webp"
     ],
-    "bytes_3x": 10056
+    "bytes_3x": 20502
    },
    "hold": {
     "label": "抓著東西",
@@ -399,6 +400,124 @@
      "baokaka-zhuazhou-0@{2x,3x}.webp"
     ],
     "bytes_3x": 10454
+   },
+   "look": {
+    "label": "左看右看",
+    "frames": 2,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     60.0,
+     90.0
+    ],
+    "anchor_pt": [
+     20.52,
+     84.33
+    ],
+    "files": [
+     "baokaka-look-0@{2x,3x}.webp",
+     "baokaka-look-1@{2x,3x}.webp"
+    ],
+    "bytes_3x": 19954
+   },
+   "watch": {
+    "label": "看燈搖搖",
+    "frames": 2,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     64.0,
+     91.0
+    ],
+    "anchor_pt": [
+     23.85,
+     84.67
+    ],
+    "files": [
+     "baokaka-watch-0@{2x,3x}.webp",
+     "baokaka-watch-1@{2x,3x}.webp"
+    ],
+    "bytes_3x": 20436
+   },
+   "giggle": {
+    "label": "搭便車咯咯笑",
+    "frames": 1,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     59.0,
+     88.0
+    ],
+    "anchor_pt": [
+     17.85,
+     82.67
+    ],
+    "files": [
+     "baokaka-giggle-0@{2x,3x}.webp"
+    ],
+    "bytes_3x": 10744
+   },
+   "touchwatch": {
+    "label": "抬頭看手指",
+    "frames": 1,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     59.0,
+     90.0
+    ],
+    "anchor_pt": [
+     19.85,
+     83.67
+    ],
+    "files": [
+     "baokaka-touchwatch-0@{2x,3x}.webp"
+    ],
+    "bytes_3x": 10492
+   },
+   "carried": {
+    "label": "被抱起來",
+    "frames": 1,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     55.0,
+     117.0
+    ],
+    "anchor_pt": [
+     20.19,
+     111.33
+    ],
+    "files": [
+     "baokaka-carried-0@{2x,3x}.webp"
+    ],
+    "bytes_3x": 10984
+   },
+   "climb": {
+    "label": "爬上台階",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     96.0,
+     99.0
+    ],
+    "anchor_pt": [
+     44.52,
+     93.0
+    ],
+    "files": [
+     "baokaka-climb-0@{2x,3x}.webp",
+     "baokaka-climb-1@{2x,3x}.webp",
+     "baokaka-climb-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 29910
    }
   },
   "mocha": {
@@ -645,6 +764,63 @@
      "mocha-rub-0@{2x,3x}.webp"
     ],
     "bytes_3x": 7708
+   },
+   "glare": {
+    "label": "瞪（耳朵往後壓）",
+    "frames": 1,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     46.0,
+     53.0
+    ],
+    "anchor_pt": [
+     23.11,
+     47.93
+    ],
+    "files": [
+     "mocha-glare-0@{2x,3x}.webp"
+    ],
+    "bytes_3x": 7354
+   },
+   "purr": {
+    "label": "呼嚕（被抱）",
+    "frames": 1,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     54.0,
+     43.0
+    ],
+    "anchor_pt": [
+     22.11,
+     38.27
+    ],
+    "files": [
+     "mocha-purr-0@{2x,3x}.webp"
+    ],
+    "bytes_3x": 5626
+   },
+   "inbox": {
+    "label": "躲在箱子裡探頭",
+    "frames": 1,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     35.0,
+     37.0
+    ],
+    "anchor_pt": [
+     15.44,
+     32.27
+    ],
+    "files": [
+     "mocha-inbox-0@{2x,3x}.webp"
+    ],
+    "bytes_3x": 4274
    },
    "album": {
     "label": "合照（陪寶咖咖坐）",
