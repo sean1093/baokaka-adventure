@@ -8,7 +8,7 @@ exports[`PageView layers and budget > node counts per layer (1-2 is far below th
   },
   "backdrop": {
     "animated": 0,
-    "elements": 345,
+    "elements": 134,
   },
   "creatures": {
     "animated": 11,
@@ -39,8 +39,8 @@ exports[`PageView layers and budget > node counts per layer (1-2 is far below th
     "elements": 17,
   },
   "parts-near": {
-    "animated": 37,
-    "elements": 66,
+    "animated": 29,
+    "elements": 58,
   },
 }
 `;

@@ -10,7 +10,7 @@ import type { SimEvent } from '../core/events';
 import { nodePos } from '../core/graph';
 import { mochaNode, perchHidesMocha } from '../core/mocha';
 import type { CreatureDef, Id, PageDef, PerchDef, SimState } from '../core/types';
-import { spriteHead } from '../sprites';
+import { SpriteGrade, chapterGradeKey, spriteHead } from '../sprites';
 import {
   Baby,
   Bubble,
@@ -34,8 +34,8 @@ import { haloShape, handGesture, linkThread } from './affordance/hints';
 import { GhostHand, HintHalo, LinkThread } from './affordance/Hints';
 import { NO_AFFORDANCE, wearsMarigold, type AffordanceFlags, type PartLook } from './affordance/look';
 import { attractorArt, chapterSky, ledge, perchMark, perchPost, pottedPlant, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
-import { backdropArt } from './art/registry';
-import { BOOK_EXTENT, PAGE_W, type Hit, type Pt } from './geometry';
+import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
+import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
 import { NO_GESTURE, minHit, targetsOf, type GestureFlags } from './gestures';
 import { clamp01, drawnNodePos, easeInOut, lerpPt, offpagePoint, partProgress, stepPose } from './interp';
 import { PRESET_Z, type LayerId } from './layers';
@@ -68,7 +68,7 @@ import { foregroundSlot, stageOf } from './stage';
  */
 
 /** The SVG's view box in page units: the page plus room for the floor page's widening and the page block. */
-export const VIEW_BOX = { x: -30, y: BOOK_EXTENT.top - 12, w: PAGE_W + 60, h: BOOK_EXTENT.bottom - BOOK_EXTENT.top + 24 } as const;
+export const VIEW_BOX = PAGE_VIEW_BOX;
 
 export interface PageViewProps {
   readonly def: PageDef;
@@ -94,6 +94,10 @@ export interface PageViewProps {
 }
 
 const NO_EVENTS: readonly SimEvent[] = [];
+
+/** A baked bitmap as an SVG `<image>` string over its box (page or local units). */
+const image = (url: string, box: { x: number; y: number; w: number; h: number }, attrs = '') =>
+  `<image href="${url}" x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" preserveAspectRatio="none"${attrs ? ` ${attrs}` : ''}/>`;
 
 function Layer({ id, children, html }: { id: LayerId; children?: ReactNode; html?: string }) {
   if (html !== undefined) return <g data-layer={id} dangerouslySetInnerHTML={{ __html: html }} />;
@@ -129,8 +133,14 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   // ——— Static layers, built once per page ———
   const statics = useMemo(() => {
     const defs = stageDefs(ctx, chapterSky(def.chapter));
-    const backdrop = defs + backdropArt(def.backdrop)(ctx, def);
-    const cutouts = stage.carriages.map(trackPit).join('');
+    // The baked backdrop (#96) over the whole view box, else the placeholder stage drawn live
+    const baked = backdropBitmap(def.backdrop);
+    const backdrop = defs + (baked ? image(baked.url, baked.box, 'data-baked="backdrop"') : backdropArt(def.backdrop)(ctx, def));
+    // Standing cut-outs the page places (GDD § 3.9 layer 2), then the track pits from the walk graph
+    const cutouts = (def.cutouts ?? []).map((c) => {
+      const img = cutoutBitmap(c.art);
+      return img ? `<g data-cutout="${c.art}" transform="translate(${c.x} ${c.y})">${image(img.url, img.box)}</g>` : '';
+    }).join('') + stage.carriages.map(trackPit).join('');
     const floor = stage.slopes.map((s) => ramp(ctx, s, theme)).join('')
       + stage.runs.map((run) => ledge(ctx, run, theme)).join('')
       + [...stage.posts].sort((a, b) => a.foot - b.foot).map((p) => perchPost(ctx, p)).join('');
@@ -365,12 +375,15 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       </Layer>
       <Layer id="creatures">{creatures}</Layer>
       <Layer id="actors">
+        {/* The characters in their chapter's half grade (#96: a baked variant of each frame) */}
+        <SpriteGrade.Provider value={chapterGradeKey(def.chapter)}>
         {mochaPose && (
           <Mocha x={mochaPose.x} y={mochaPose.y} anim={mAnim} frame={mFrame} glare={locked?.serial} facing={mochaFacing} tilt={mochaTilt} opacity={mochaOpacity} reduced={reduced} still={still} />
         )}
         {babyPose && (
           <Baby x={babyPose.x} y={babyPose.y} mode={state.baby.mode} anim={bAnim} frame={bFrame} sx={sx} tilt={babyTilt} opacity={babyOpacity} watch={watch} glow={glow} reduced={reduced} still={still} />
         )}
+        </SpriteGrade.Provider>
       </Layer>
       <Layer id="fx">
         {babyPose && show && <Bubble ctx={ctx} show={show} x={babyPose.x} y={babyPose.y} head={head} />}

@@ -176,6 +176,9 @@ export interface CreatureDef {
   art: string;
 }
 
+/** A standing cut-out on a page (GDD § 3.9 layer 2): an art key and where its origin goes, in page units. */
+export interface CutoutDef { art: string; x: number; y: number }
+
 export interface PageDef {
   /** 'c1p2' */
   id: Id;
@@ -212,6 +215,11 @@ export interface PageDef {
   lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey }[] };
   /** baked art key */
   backdrop: string;
+  /**
+   * Standing cut-outs (GDD § 3.9 layer 2; #96): static art placed at (x, y), the cut-out's own
+   * origin; drawn over the backdrop and under every part. Pure art: the simulation never reads it.
+   */
+  cutouts?: CutoutDef[];
 }
 
 /** The identity helper every page file uses (`core/define.ts`, re-exported by `pages/`). */

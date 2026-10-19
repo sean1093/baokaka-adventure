@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { LIFT, VERBS, brad, circleOutline, depth, doubleOutline, f1, liftShadow, lockVeil, ref, seal, sealR, wheelRim } from '../../art';
 import { wiggleClass } from '../affordance/look';
-import { ArtG, hitBox, r2, squashFor, stateAt, type PartViewProps } from './common';
+import { partBitmap } from '../art/registry';
+import { ArtG, bakedImage, hitBox, r2, squashFor, stateAt, type PartViewProps } from './common';
 import { lerp, partProgress } from '../interp';
 
 /**
@@ -59,24 +60,30 @@ export function WheelView(props: PartViewProps) {
     return { veil: lockVeil(`<path d="${rim}"/>`), outline: doubleOutline(circleOutline(0, 0, reach)), shadow: liftShadow(ctx, { x: -r, y: -r, w: 2 * r, h: 2 * r }, r) };
   }, [ctx, r, touchable]);
 
+  // A baked disc (#96): the state's bitmap turned about its pivot; dragged, its lifted variant
+  // carries the rise, the scale and the dropped shadow itself
+  const baked = partBitmap(part.art, to, look.lifted);
+  const discHtml = useMemo(() => (baked ? bakedImage(baked, baked.pivot) : disc), [baked?.url, baked?.pivot, disc]);
+  const bakedLift = baked?.lifted === true;
+
   const a = stateAt(part, from);
   const b = stateAt(part, to);
   const start = angleOf(a.index, a.count);
   const rot = preview !== undefined ? angleOf(1, b.count) * preview : start + lerp(0, turnDelta(a.index, b.index, b.count), from === to ? 1 : partProgress(ms, reduced));
   const sq = preview !== undefined ? 1 : squashFor(props);
   const lift = look.lifted ? LIFT.rise : 0;
-  const k = look.lifted ? LIFT.scale : 1;
+  const k = look.lifted && !bakedLift ? LIFT.scale : 1;
   return (
     <g data-part={part.id} data-preset={part.preset} transform={`translate(${r2(cx)} ${r2(cy)})`}>
       <ArtG html={fixed.arrow} />
-      {look.lifted && (
+      {look.lifted && !bakedLift && (
         <g transform={`translate(${LIFT.shadow[0]} ${LIFT.shadow[1]})`}>
           <ArtG html={states.shadow} />
         </g>
       )}
-      <g data-anim="" transform={`translate(0 ${-lift}) rotate(${r2(rot)}) scale(${r2(sq * k)})`}>
-        <g className={wiggleClass('wheel', look.wiggle)}>
-          <ArtG html={disc} />
+      <g data-anim="" transform={`translate(0 ${bakedLift ? 0 : -lift}) rotate(${r2(rot)}) scale(${r2(sq * k)})`}>
+        <g className={wiggleClass('wheel', look.wiggle)} data-grip={baked && touchable ? 'rim' : undefined} data-baked-marigold={baked && touchable ? '' : undefined}>
+          <ArtG html={discHtml} />
           {look.locked && <ArtG html={states.veil} />}
         </g>
       </g>

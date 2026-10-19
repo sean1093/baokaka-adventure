@@ -249,7 +249,7 @@ describe('hint geometry', () => {
 
   test('props, perches and the rest are tapped at their centre', () => {
     const s = initialState(c1p2);
-    expect(handGesture(c1p2, s, target(c1p2, s, 'board'))).toEqual({ kind: 'tap', at: [138, 152] });
+    expect(handGesture(c1p2, s, target(c1p2, s, 'board'))).toEqual({ kind: 'tap', at: [140, 72] });
     const perch = targetsOf(c1p2, s).find((t) => t.kind === 'perch')!;
     expect(handGesture(c1p2, s, perch).kind).toBe('tap');
   });

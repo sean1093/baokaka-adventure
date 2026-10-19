@@ -36,6 +36,12 @@ export const BLOCK_DEPTH = 14;
 /** The drawn book, top to bottom, in page units */
 export const BOOK_EXTENT = { top: 0, bottom: FLOOR_BOTTOM + BLOCK_DEPTH } as const;
 
+/**
+ * The page SVG's view box in page units: the page plus room for the floor page's widening and the
+ * page block. The baked backdrop (#96) covers exactly this box.
+ */
+export const PAGE_VIEW_BOX = { x: -30, y: BOOK_EXTENT.top - 12, w: PAGE_W + 60, h: BOOK_EXTENT.bottom - BOOK_EXTENT.top + 24 } as const;
+
 /** The floor perspective (bible § 2.1): ~6 % wider toward the reader every 250 units, VP high above centre. */
 export const FLOOR_WIDEN = 0.06;
 export const FLOOR_WIDEN_SPAN = 250;

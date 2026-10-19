@@ -12,6 +12,8 @@
     "sim": "vite-node scripts/sim.ts",
     "solve": "vite-node scripts/solve-pages.ts",
     "sync:sprites": "vite-node scripts/sync-sprites.ts",
+    "bake:popup": "vite-node scripts/bake-popup.ts",
+    "art:report": "vite-node scripts/art-report.ts",
     "visual": "node scripts/visual-check.mjs --serve",
     "visual:update": "node scripts/visual-check.mjs --serve --update",
     "check:ui": "node scripts/ui-check.mjs --serve",

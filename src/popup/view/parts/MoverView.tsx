@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 import { PRESET_ART } from '../../art';
 import { nodePos } from '../../core/graph';
 import type { PageDef, PartDef, SimState } from '../../core/types';
-import { partArt } from '../art/registry';
+import { partArt, partBitmap } from '../art/registry';
 import type { Pt } from '../geometry';
-import { ArtG, artOpts, hitBox, r2, squashFor, stateAt, tweened, type PartViewProps } from './common';
+import { ArtG, artOpts, bakedImage, hitBox, r2, squashFor, stateAt, tweened, type PartViewProps } from './common';
 
 /**
  * Parts that travel between places per state (GDD § 2.1): a `lift` between floors, a `pushable`
@@ -45,7 +45,11 @@ export function moverPoint(def: PageDef, part: PartDef, state: string, sim: SimS
 export function MoverView(props: MoverProps) {
   const { def, part, ctx, from, to, ms, reduced, prev, state } = props;
   const art = partArt(part.art, part.preset);
-  const html = useMemo(() => art.draw(ctx, artOpts(part, to)), [art, ctx, part, to]);
+  // Its baked bitmap for the state (#96), else the live kit art
+  const html = useMemo(() => {
+    const img = partBitmap(part.art, to);
+    return img ? bakedImage(img) : art.draw(ctx, artOpts(part, to));
+  }, [art, ctx, part, to]);
   const a = moverPoint(def, part, from, prev);
   const b = moverPoint(def, part, to, state);
   const x = tweened(a[0], b[0], ms, reduced);

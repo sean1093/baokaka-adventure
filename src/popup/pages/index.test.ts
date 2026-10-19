@@ -130,7 +130,8 @@ describe('the first pages (GDD § 4.3)', () => {
   test('1-2 is the § 3.4 example: the engine fixture with the board states from § 4.3', () => {
     const board = (d: PageDef) => d.parts.find((p) => p.id === 'board')!;
     expect(board(c1p2).states).toEqual(['times', 'flip']);
-    const strip = (d: PageDef) => ({ ...d, parts: d.parts.filter((p) => p.id !== 'board') });
+    // The board and the 土地公 peeking from behind it are laid out for the board's baked art (#96)
+    const strip = (d: PageDef) => ({ ...d, parts: d.parts.filter((p) => p.id !== 'board'), tudigong: { ...d.tudigong, x: 0, y: 0 } });
     expect(strip(c1p2)).toEqual(strip(c1p2Fixture));
   });
 });

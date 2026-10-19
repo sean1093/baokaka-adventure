@@ -29,8 +29,10 @@ export default definePage({
       track: { from: [80, 610], to: [200, 610] }, hit: { x: 56, y: 590, w: 150, h: 56 },
       stateWhen: { full: { creature: 'pigeon', at: 'away' } },   // the pigeon on the track jams the tab at 'half'
       art: 'c1/train-blue' },
-    { id: 'board', preset: 'prop', states: ['times', 'flip'], hit: { x: 90, y: 120, w: 96, h: 64 },
-      art: 'c1/departure-board' },   // the split-flap board; tapping it flips and shows the 土地公
+    // The split-flap board (proof A; baked art since #96) hangs from the top of the backdrop page;
+    // tapping it flips every card and the 土地公 peeks out from behind its corner
+    { id: 'board', preset: 'prop', states: ['times', 'flip'], hit: { x: 52, y: 40, w: 176, h: 64 },
+      art: 'c1/departure-board' },
   ],
   perches: [
     { id: 'bench', node: 'bench', reachNode: 'R2' },
@@ -44,6 +46,6 @@ export default definePage({
   baby: { start: 'L1', facing: 'r' },
   mocha: { start: 'bench' },
   mischief: { text: '讓寶咖咖坐火車來回兩次', when: { type: 'ride', count: 4 } },
-  tudigong: { x: 120, y: 160, visibleWhen: { part: 'board', in: ['flip'] }, hat: '站務帽' },
+  tudigong: { x: 236, y: 98, visibleWhen: { part: 'board', in: ['flip'] }, hat: '站務帽' },
   solution: [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { set: 'train', to: 'full' }, { wait: 'goal' }],
 });

@@ -8,6 +8,8 @@ import { bottomBar, cover, hudLabel, kitCtx, kitDefs, type KitCtx } from '../art
 import type { Input, PageDef, SimState } from '../core/types';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
 import { usePagePreload } from '../sprites';
+import { usePageArt } from '../env/loader';
+import { nextPage } from '../pages';
 import { chapterSky } from './art/placeholders';
 import { BAR_H, HUD_H, bookLayout, toScreen, type BookLayout } from './geometry';
 import { wearsMarigold, type AffordanceFlags } from './affordance/look';
@@ -31,8 +33,9 @@ import { useGestures } from './useGestures';
  * Animation runs on `requestAnimationFrame` only while something moves (an actor mid-step, a part
  * mid-tween) and sleeps between ticks.
  *
- * Character sprites (#94): the page preloads its chapter's baked frames as it opens
- * (`usePagePreload`) and marks itself `data-sprites="ready"` once they are decoded.
+ * Images (#94, #96): the page preloads its chapter's baked character frames (`usePagePreload`)
+ * and its own environment bitmaps (`usePageArt`, then the next page's backdrop) as it opens, and
+ * marks itself `data-sprites="ready"` once both are decoded (screenshots wait for it).
  *
  * Touchable states (#140): the idle wiggle runs on its own timer (`useIdleWiggle`; off in a still,
  * under reduced motion and while a finger is down), and a tapped prop shakes. `affordance` passes
@@ -153,8 +156,11 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
   useEffect(() => setFingerDown(down), [down]);
   const pageAffordance = useMemo(() => ({ ...affordance, wiggle: idle.wiggle }), [affordance, idle.wiggle]);
 
-  // The page's character frames (#94): preloaded and decoded as it opens; placeholders until then
+  // The page's character frames (#94) and environment bitmaps (#96): preloaded and decoded as it
+  // opens (placeholders until then); once they are in, the next page's backdrop is preloaded too
   const spritesReady = usePagePreload(def.chapter);
+  const next = useMemo(() => nextPage(def.id), [def.id]);
+  const artReady = usePageArt(def, next);
 
   const ids = useSvgIds('book');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('book'), id: ids }), [ids]);
@@ -199,7 +205,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
       lang="zh-Hant"
       data-popup-page={def.id}
       data-still={still ? '' : undefined}
-      data-sprites={spritesReady ? 'ready' : 'loading'}
+      data-sprites={spritesReady && artReady ? 'ready' : 'loading'}
       {...gestures.handlers}
     >
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />

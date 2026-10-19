@@ -145,6 +145,8 @@ export function lintMarkup(markup: string, { page, touchable, expected, where }:
         if ('data-seal' in t.attrs) c.seal = true;
         if ('data-grip' in t.attrs) c.grip = true;
         if ('data-cue' in t.attrs) c.cue = true;
+        // A baked touchable bitmap (#96) carries its marigold in pixels; `env.test.ts` lints its source
+        if ('data-baked-marigold' in t.attrs) c.marigold = true;
         cues.set(frame.part, c);
       }
       const hidden = t.attrs.opacity === '0' || t.attrs['fill-opacity'] === '0';
