@@ -62,6 +62,12 @@ export interface PopupFixture {
    * motion, so the still pins its look; live, the OS setting decides.
    */
   readonly look?: 'motion' | 'reduced';
+  /**
+   * 大字 (#104): the page drawn at the big text scale under `[data-text-size="big"]` (a screen
+   * fixture reads it from its save instead). `#/pagelab?fixture=<name>&text=big` (and
+   * `UI_TEXT=big npm run check:ui`) does the same for any fixture.
+   */
+  readonly big?: boolean;
   /** A specimen sheet drawn instead of the page (`page` and `steps` still name a valid frame) */
   readonly sheet?: 'affordance-states' | 'sprites-anchors';
   /**
@@ -88,6 +94,10 @@ const FRESH = freshSave();
 /** 0-1 solved with both its stickers, 1-2 current with its 淘氣 already earned. */
 const PLAYED = earnSticker(completePage(FRESH, 'c0p1', { mischief: true, tudigong: true, moves: 1 }), 'c1p2', 'mischief');
 const LEFT_HANDED = updateSettings(PLAYED, { leftHand: true });
+/** 大字 on (#104). */
+const BIG_TEXT = updateSettings(PLAYED, { bigText: true });
+/** 長輩模式 on over a player who chose 快 and no auto hints (#104): the held rows show 慢 and 15 秒. */
+const ELDER_ON = updateSettings(updateSettings(PLAYED, { speed: 2, autoHint: 0 }), { elder: true });
 const ON_PAGE: NavState = { base: { kind: 'page', id: 'c1p2', run: 0 }, layer: null };
 /** 1-2 just completed: solved, its 淘氣 earned on the way, the 土地公 not found (#101). */
 const C1P2_DONE = completePage(PLAYED, 'c1p2', { mischief: true, moves: 6 });
@@ -299,6 +309,42 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'The pause menu over 1-2 (#97): 繼續 / 目錄 / 設定 / 封面 on the paper sheet; the page is held.',
   },
   {
+    name: 'settings',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'settings' } }, save: PLAYED },
+    note: '設定 (GDD § 2.11, § 5.7; #104): 長輩模式 first on its own card (關), then 速度 普通, 字的大小 標準, 自動提示 30秒, the 音效 80 % and 音樂 50 % sliders, 震動 開, 減少動態 / 左手模式 / 書本傾斜 關, and 「重新開始（按住三秒）」 at the bottom (scroll). The chosen option is navy with a ✓.',
+  },
+  {
+    name: 'settings-elder',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'settings' } }, save: ELDER_ON },
+    note: '設定 with 長輩模式 開 (#104) over a player who chose 快 and no auto hints: everything in 大字 (25 % larger), and 速度, 字的大小, 自動提示 held at 慢, 大字, 15秒 with a padlock and 「長輩模式幫你設好了」. Turning it off brings back 快 and 關.',
+  },
+  {
+    name: 'page-big',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ON_PAGE, save: BIG_TEXT },
+    note: '1-2 with 大字 (#104): the HUD\'s landmark 31 px and every other word 25 px (the chapter line and clock condensed to fit), the bar\'s labels 25 px; `check:ui` holds it to ≥ 24 px.',
+  },
+  {
+    name: 'page-elder',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ON_PAGE, save: ELDER_ON },
+    note: '1-2 in 長輩模式 (#104, bible § 9.3): 大字, the hold-to-reveal outlines always on (every touchable and prop dashed in chalk), the 28 px verb seals, and the perch markers bolder (bigger paws with an ink edge on a stronger halo).',
+  },
+  {
+    name: 'subtitle-big',
+    page: 'c1p2',
+    steps: [],
+    big: true,
+    show: { talk: ['c1.intro.1', 'c1.intro.2', 'c1.intro.3'] },
+    note: 'The three-line beat of `subtitle-3` in 大字 (#104): the bubbles and the narration strip grow 25 % so their text is ≥ 25 px, still clear of Baokaka and the bead.',
+  },
+  {
     name: 'c1p2-grab',
     page: 'c1p2',
     steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { set: 'train', to: 'full' }, { wait: 'goal' }],
@@ -490,7 +536,7 @@ export function popupFixture(name: string): PopupFixture | undefined {
   return POPUP_FIXTURES.find((f) => f.name === name);
 }
 
-/** The full-screen fixture view's parameters: `fixture=<name>` and `still=1`. */
-export function fixtureParams(params: URLSearchParams): { fixture: string | null; still: boolean } {
-  return { fixture: params.get('fixture') || null, still: params.get('still') === '1' };
+/** The full-screen fixture view's parameters: `fixture=<name>`, `still=1` and `text=big` (大字, #104). */
+export function fixtureParams(params: URLSearchParams): { fixture: string | null; still: boolean; big: boolean } {
+  return { fixture: params.get('fixture') || null, still: params.get('still') === '1', big: params.get('text') === 'big' };
 }

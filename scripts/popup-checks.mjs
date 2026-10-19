@@ -54,8 +54,10 @@ export const WAIVERS = [
 export const ART_TEXT = '[data-art-text]';
 
 export const fixtureIndexUrl = (base) => new URL('#/pagelab?section=fixtures', base).href;
+/** `UI_TEXT=big` opens every fixture with 大字 on (#104: `text=big`), so the 24 px rule covers every screen. */
+const TEXT_PARAM = process.env.UI_TEXT === 'big' ? '&text=big' : '';
 export const popupFixtureUrl = (base, name, still = true) =>
-  new URL(`#/pagelab?fixture=${encodeURIComponent(name)}${still ? '&still=1' : ''}`, base).href;
+  new URL(`#/pagelab?fixture=${encodeURIComponent(name)}${still ? '&still=1' : ''}${TEXT_PARAM}`, base).href;
 
 /** Popup fixture names and registered page ids, from PageLab's fixture index (null: no PageLab here). */
 export async function listPopupFixtures(page, base) {

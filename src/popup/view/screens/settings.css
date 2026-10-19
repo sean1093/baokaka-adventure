@@ -1,0 +1,54 @@
+/*
+ * The settings' volume sliders (#104): a pressed groove in the card, filled with seal red up to the
+ * value, and a cream paper disc with a foil ring for the thumb (40 px; the input itself is 48 px
+ * tall, R6). Colours come from the palette through custom properties set in `Settings.tsx`.
+ */
+.settings-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 48px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+.settings-range:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.settings-range::-webkit-slider-runnable-track {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--done) 0 var(--fill), var(--track) var(--fill) 100%);
+  box-shadow: inset 0 2px 3px var(--groove);
+}
+
+.settings-range::-moz-range-track {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--done) 0 var(--fill), var(--track) var(--fill) 100%);
+  box-shadow: inset 0 2px 3px var(--groove);
+}
+
+.settings-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 40px;
+  height: 40px;
+  margin-top: -13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--thumbLit), var(--thumb) 70%);
+  border: 3px solid var(--ring);
+  box-shadow: 0 0 0 1.5px var(--edge), 1px 3px 4px var(--groove);
+}
+
+.settings-range::-moz-range-thumb {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--thumbLit), var(--thumb) 70%);
+  border: 3px solid var(--ring);
+  box-shadow: 0 0 0 1.5px var(--edge), 1px 3px 4px var(--groove);
+}

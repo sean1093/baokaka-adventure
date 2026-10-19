@@ -104,6 +104,10 @@ export interface PageViewProps {
   readonly barks?: readonly BarkShow[];
   /** The subtitle beat on the page (#98, `game/talk.ts`) and the tap that advances it */
   readonly talk?: { readonly beat: readonly TalkLine[] | null; readonly serial: number; readonly onAdvance?: () => void };
+  /** 大字 (#104): the bubbles' text grows by this much (1 or 1.25) */
+  readonly textScale?: number;
+  /** Low power (bible § 9.3, #104): the grab's sparkle burst at half its rays and glints */
+  readonly lowPower?: boolean;
 }
 
 const NO_EVENTS: readonly SimEvent[] = [];
@@ -129,7 +133,7 @@ function creaturePoint(def: PageDef, creature: CreatureDef, state: SimState, oth
   return anchor === undefined ? null : offpagePoint(anchor);
 }
 
-export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false, events = NO_EVENTS, barks: barksProp, talk }: PageViewProps) {
+export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false, events = NO_EVENTS, barks: barksProp, talk, textScale = 1, lowPower = false }: PageViewProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
   const ids = useSvgIds(`pg-${def.id}`);
@@ -253,7 +257,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     return <AttractorItem key={a.id} ctx={ctx} id={a.id} kind={a.kind} x={p[0]} y={p[1]} treasure={a.goal && def.spread ? def.chapter : undefined} />;
   });
   const marks = mochaOn
-    ? def.perches.filter((p) => p.id !== state.mocha.perch).map((p) => <PerchMarkItem key={p.id} ctx={ctx} perch={p} def={def} state={state} />)
+    ? def.perches.filter((p) => p.id !== state.mocha.perch).map((p) => <PerchMarkItem key={p.id} ctx={ctx} perch={p} def={def} state={state} bold={affordance.elder === true} />)
     : [];
 
   // ——— Creatures ———
@@ -350,7 +354,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const mochaFacing = mochaDir !== 0 ? (mochaDir < 0 ? 'l' : 'r') : mochaPose && lookAt && lookAt[0] < mochaPose.x - 4 ? 'l' : 'r';
 
   // ——— What is said (#98): the thought bubble, barks, subtitles, placed off him and the goal ———
-  const k = talkScale(scale);
+  const k = talkScale(scale, textScale);
   const babyHead = spriteHead(bAnim.sprite, state.baby.facing);
   const babyBox = spriteBox(bAnim.sprite, state.baby.facing);
   const mochaHead = spriteHead(mAnim.sprite, mochaFacing);
@@ -471,7 +475,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {(said.strip || said.subs.length > 0) && (
           <Subtitles strip={said.strip} subs={said.subs} horn={said.horn} k={k} ride={{ baby: babyOff, mocha: mochaOff }} serial={talk?.serial ?? 0} reduced={reduced} onAdvance={talk?.onAdvance} />
         )}
-        {grabAt && <GrabBurst key={`grab:${state.tick}`} at={grabAt} reduced={reduced} />}
+        {grabAt && <GrabBurst key={`grab:${state.tick}`} at={grabAt} reduced={reduced} sparse={lowPower} />}
         {thread && <LinkThread from={thread[0]} to={thread[1]} />}
         {hand && <GhostHand gesture={hand} reduced={reduced} />}
       </Layer>
@@ -523,9 +527,9 @@ function AttractorItem({ ctx, id, kind, x, y, treasure }: { ctx: KitCtx; id: str
   );
 }
 
-function PerchMarkItem({ ctx, perch, def, state }: { ctx: KitCtx; perch: PerchDef; def: PageDef; state: SimState }) {
+function PerchMarkItem({ ctx, perch, def, state, bold }: { ctx: KitCtx; perch: PerchDef; def: PageDef; state: SimState; bold: boolean }) {
   const p = nodePos(def, state, perch.node);
-  const html = useMemo(() => (p ? perchMark(ctx, p[0], p[1]) : ''), [ctx, p?.[0], p?.[1]]);
+  const html = useMemo(() => (p ? perchMark(ctx, p[0], p[1], bold) : ''), [ctx, p?.[0], p?.[1], bold]);
   return <ArtG html={html} className="perch-mark" />;
 }
 
@@ -537,13 +541,15 @@ function TudigongItem({ ctx, x, y }: { ctx: KitCtx; x: number; y: number }) {
 /**
  * The sparkle burst of a grab (GDD § 2.8 step 1; bible § 8 sparkles on foil; #101): eight foil rays
  * and three four-point glints flash out of the shiny's place once (≈ 650 ms) and are gone. Its own
- * style is the burst at its fullest, so a still shows it; reduced motion only fades it.
+ * style is the burst at its fullest, so a still shows it; reduced motion only fades it. In low
+ * power (`sparse`, bible § 9.3) it has half the rays and glints.
  */
-function GrabBurst({ at, reduced }: { at: Pt; reduced: boolean }) {
+function GrabBurst({ at, reduced, sparse = false }: { at: Pt; reduced: boolean; sparse?: boolean }) {
   const html = useMemo(() => {
     let rays = '';
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2 + 0.2;
+    const n = sparse ? 4 : 8;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + 0.2;
       const r0 = i % 2 === 0 ? 16 : 19;
       const r1 = i % 2 === 0 ? 38 : 30;
       rays += `M${r2(Math.cos(a) * r0)} ${r2(Math.sin(a) * r0)}L${r2(Math.cos(a) * r1)} ${r2(Math.sin(a) * r1)}`;
@@ -555,8 +561,8 @@ function GrabBurst({ at, reduced }: { at: Pt; reduced: boolean }) {
     return `<circle r="13" fill="${POPUP.lampHot}" opacity=".55"/>`
       + `<path d="${rays}" stroke="${POPUP.goldLight}" stroke-width="3" stroke-linecap="round"/>`
       + `<path d="${rays}" stroke="${POPUP.goldDeep}" stroke-width="1" stroke-linecap="round" opacity=".5"/>`
-      + glint(-24, -22, 8.5) + glint(27, -12, 6) + glint(6, 29, 5.5);
-  }, []);
+      + glint(-24, -22, 8.5) + glint(27, -12, 6) + (sparse ? '' : glint(6, 29, 5.5));
+  }, [sparse]);
   return (
     <g transform={`translate(${r2(at[0])} ${r2(at[1] - 16)})`} data-grab-burst="">
       <g className={reduced ? 'grab-burst-fade' : 'grab-burst'} dangerouslySetInnerHTML={{ __html: html }} />

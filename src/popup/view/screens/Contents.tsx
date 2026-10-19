@@ -109,7 +109,7 @@ function pageCards(save: SaveV1, reg: PageRegistry, chapter: number): PageCard[]
 }
 
 /** The 花磚 endpaper behind the 目錄 (bible § 3.1: the menu background), dimmed so the map leads. */
-function Endpaper() {
+export function Endpaper() {
   const ids = useSvgIds('endpaper');
   const ctx = useMemo(() => ({ ...kitCtx('endpaper'), id: ids }), [ids]);
   return (
