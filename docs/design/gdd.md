@@ -236,7 +236,7 @@ The first candidate is the **target**.
 
 `idle` · `moving` · `reaching` · `looking(n)` · `crying` · `watching` · `cuddling` · `eating` · `grabbing` · `saying(word)` · `carried(by, k)` · `linked` (一起) · `done`
 
-All are deterministic functions of the state (§3.3). The view-only "touch-watch" pose (§2.6) is *not* a mode; the simulation is simply paused.
+All are deterministic functions of the state (§3.3). `core/baby.ts` (#82) implements §2.2.1–2.2.5 as `babyTick(def, state, { prev })`; the precise readings (Mocha as the candidate `'mocha'` at the perch's `reachNode`, decoys always unreachable, unreachable candidates tie on path length, arrival on the same tick as the move, `reaching` the tick after he gets as close as he can, silent comfort, `refused` cleared on the first arrival or when the refused attractor's place or availability changes) are in D-43. The view-only "touch-watch" pose (§2.6) is *not* a mode; the simulation is simply paused.
 
 ### 2.3 Mocha: controls and cat rules
 
@@ -632,6 +632,7 @@ export interface SimState {
   tick: number;
   parts: Record<Id, string>;
   baby: { node: Id; mode: BabyMode; facing: 'l' | 'r'; refused: Id[]; lookCount: number;
+          target: Id | null; reachTicks: number;   // current target ('mocha' = Mocha) and reach beat 0–3 (D-43)
           carriedBy?: { id: Id; k: number }; linked: boolean };
   mocha: { perch: Id | null; path: Id[]; floorNode?: Id };    // floorNode in linked mode
   creatures: Record<Id, string>;

@@ -9,7 +9,7 @@ describe('initialState', () => {
     expect(initialState(c1p2)).toEqual({
       tick: 0,
       parts: { train: 'out', board: 'still' },
-      baby: { node: 'L1', mode: 'idle', facing: 'r', refused: [], lookCount: 0, linked: false },
+      baby: { node: 'L1', mode: 'idle', facing: 'r', refused: [], lookCount: 0, target: null, reachTicks: 0, linked: false },
       mocha: { perch: 'bench', path: [] },
       creatures: { pigeon: 'onTrack' },
       pushables: {},
@@ -91,7 +91,7 @@ describe('canonicalKey', () => {
     pushables: {},
     creatures: { goose: 'pond', pigeon: 'away' },
     mocha: { path: ['bench', 'pillarTop'], perch: 'pillar' },
-    baby: { linked: false, carriedBy: { k: 1, id: 'auntie' }, lookCount: 0, refused: ['mocha', 'bead'], facing: 'r', mode: 'idle', node: 'L1' },
+    baby: { linked: false, carriedBy: { k: 1, id: 'auntie' }, lookCount: 0, target: null, reachTicks: 0, refused: ['mocha', 'bead'], facing: 'r', mode: 'idle', node: 'L1' },
     parts: { board: 'flip', train: 'half' },
     tick: 7,
   };

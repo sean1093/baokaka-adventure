@@ -26,7 +26,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [139](https://github.com/sean1093/baokaka-adventure/issues/139) | Port the pop-up art kit (docs/art/popup/src/kit.js) to TypeScript under src/popup/art/ as default placeholder art | art, ui, m0 | #79 | done (#144) |
 | [80](https://github.com/sean1093/baokaka-adventure/issues/80) | Core types, conditions and part presets (src/popup/core/types.ts, cond.ts, presets.ts) | engine, m0 | #79 | done (#145) |
 | [81](https://github.com/sean1093/baokaka-adventure/issues/81) | Walk graph: BFS, reach sets and distance tie-breaks (core/graph.ts) | engine, m0 | #80 | done (#146) |
-| [82](https://github.com/sean1093/baokaka-adventure/issues/82) | Baokaka's decision loop: desires, targets, reaching, looking and crying (core/baby.ts) | engine, m0 | #81 | todo |
+| [82](https://github.com/sean1093/baokaka-adventure/issues/82) | Baokaka's decision loop: desires, targets, reaching, looking and crying (core/baby.ts) | engine, m0 | #81 | done (#147) |
 | [83](https://github.com/sean1093/baokaka-adventure/issues/83) | Mocha: perch pathing, arrival actions (push, onPart, set, flee), pet and cat rules (core/mocha.ts) | engine, m0 | #81 | todo |
 | [84](https://github.com/sean1093/baokaka-adventure/issues/84) | The tick: step(), event cascade, creatures, words core and ride detection (core/step.ts, events.ts, creatures.ts, words.ts) | engine, m0 | #82, #83 | todo |
 | [85](https://github.com/sean1093/baokaka-adventure/issues/85) | Solver: BFS over step(), par, dead-end analysis, mischief/土地公 reachability, nextAction (core/solver.ts) | engine, m0 | #84 | todo |
