@@ -78,6 +78,14 @@ export const TARGETS = [
     fullPage: true,
     artlab: true,
   },
+  {
+    name: 'kit-swatches',
+    // 翻翻台北's paper kit port (#139): proof D rebuilt from src/popup/art, every part preset's default art, the kit.js proof
+    hash: '#/pagelab?section=kit',
+    waitFor: '[data-pagelab-kit] [data-kit-live] [data-kit-preset="prop"]',
+    fullPage: true,
+    artlab: true,
+  },
 ];
 
 /** The screenshot target for one art lab fixture. */

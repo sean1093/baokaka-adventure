@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { CHAPTER_CLOCK } from '../quest/engine/clock';
-import { CARD_SCRIM, MIN_CONTRAST, POPUP_TEXT_PAIRS, TEXT_PAIRS, contrastRatio, luminance } from './contrast';
+import { CARD_SCRIM, MIN_CONTRAST, MIN_GRAPHIC_CONTRAST, POPUP_GRAPHIC_PAIRS, POPUP_TEXT_PAIRS, TEXT_PAIRS, contrastRatio, luminance } from './contrast';
 import { POPUP, UI, mixHex, skyAt, withAlpha } from './palette';
 
 describe('contrastRatio', () => {
@@ -33,6 +33,17 @@ describe('§ 3.3 contrast rules', () => {
 describe('翻翻台北 POPUP contrast (GDD § 1.3: every text ≥ 7:1)', () => {
   test.each(POPUP_TEXT_PAIRS.map((pair) => [`${pair.text} on ${pair.on} (${pair.use})`, pair] as const))('%s', (_name, pair) => {
     expect(contrastRatio(POPUP[pair.text], POPUP[pair.on])).toBeGreaterThanOrEqual(MIN_CONTRAST.body);
+  });
+
+  test.each(POPUP_GRAPHIC_PAIRS.map((pair) => [`${pair.text} on ${pair.on} (${pair.use})`, pair] as const))('graphic: %s ≥ 3:1', (_name, pair) => {
+    expect(contrastRatio(POPUP[pair.text], POPUP[pair.on])).toBeGreaterThanOrEqual(MIN_GRAPHIC_CONTRAST);
+  });
+
+  test('text pairs and graphic pairs never overlap below 7:1 (a graphic pair is not a loophole for text)', () => {
+    const text = new Set(POPUP_TEXT_PAIRS.map((pair) => `${pair.text}/${pair.on}`));
+    for (const pair of POPUP_GRAPHIC_PAIRS) {
+      if (text.has(`${pair.text}/${pair.on}`)) expect(contrastRatio(POPUP[pair.text], POPUP[pair.on])).toBeGreaterThanOrEqual(MIN_CONTRAST.body);
+    }
   });
 
   test('every POPUP token is a solid colour', () => {

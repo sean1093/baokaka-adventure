@@ -11,7 +11,8 @@
  *   light fixtures and sky art (§ 2.7, § 4.4), graded per clock by `gradeTiles()`.
  * - `UI`: the navy-glass and gold interface, mirrored into Tailwind (`tailwind.config.ts`).
  * - `MRT`: the five 月亮線 line colours.
- * - `POPUP`: 翻翻台北's pop-up book (navy linen cover, gold foil, cream page, ink); #139 extends it.
+ * - `POPUP`, `POPUP_FOIL`, `POPUP_CHAPTER_CLOCK`: 翻翻台北's pop-up book (popup art bible): cover,
+ *   page, ink, marigold touchables, seal, light, paper stocks, standees, UI; foils; colour clock.
  * - `SKY_KEYS` / `skyAt()` / `gradeTokens()` / `gradeCharacter()`: the night clock (§ 3.2).
  *
  * Pure TypeScript with no imports, so the Tailwind config, the engine and tests can all load it.
@@ -633,17 +634,22 @@ export const MRT = {
 // 翻翻台北 Pop-Up Taipei
 
 /**
- * The pop-up book's core tokens (popup art bible § 3, § 7; `docs/art/popup/src/kit.js` `C`):
- * the navy linen cover with gold foil, the cream page, and the ink printed on it. The scaffold
- * (#79) seeds the group with what the placeholder screen needs; the kit port (#139) adds the
- * paper stocks, marigold, seal red, foil and the chapter colour clock. Text pairs and their
- * ≥ 7:1 check live in `contrast.ts` (`POPUP_TEXT_PAIRS`).
+ * The pop-up book's tokens (popup art bible § 3, § 4, § 7; `docs/art/popup/src/kit.js` `C` and the
+ * colours its helpers and proof D inline). The TS kit port in `src/popup/art/` (#139) reads every
+ * colour from here; `tailwind.config.ts` mirrors the group as `popup-*`. Every value is a solid
+ * `#RRGGBB`; multi-stop foils live in `POPUP_FOIL` and the chapter colour clock in
+ * `POPUP_CHAPTER_CLOCK`. Text pairs (≥ 7:1) and graphic pairs (≥ 3:1) live in `contrast.ts`.
+ *
+ * Two deliberate departures from kit.js, both for GDD R5 (decisions D-40): `inkSoft` is darker
+ * (kit `#5B4A5E` is 6.6:1 on the page) and red text on paper uses `sealInk`, not the seal red.
  */
 export const POPUP = {
   /** Navy linen cover: the screen around the book, and the bottom bar */
   cover: '#1B2052',
   coverDark: '#121638',
   coverLight: '#2A3170',
+  /** The vignette at the cover's corners */
+  vignette: '#05061A',
   /** Gold foil trim on the cover */
   gold: '#E8C77A',
   goldLight: '#FFE9B0',
@@ -656,9 +662,188 @@ export const POPUP = {
   cutRim: '#FFF8E8',
   /** Text printed on paper */
   ink: '#2E2235',
+  /** Secondary text on paper (sub-labels, the HUD's 第N章 line) */
+  inkSoft: '#4A3A4E',
   /** Indigo shadow: shadows are never black (bible § 2.2) */
   shadow: '#140C34',
+
+  // Touchables (bible § 4): the reserved marigold card, never night-graded
+  marigold: '#FFC23A',
+  marigoldLight: '#FFE38C',
+  marigoldDeep: '#E39A17',
+  marigoldEdge: '#A9650C',
+  /** The inner hairline on a marigold card */
+  marigoldShine: '#FFF6D6',
+  /** The light rib of a ridged grip */
+  ridgeLight: '#FFF3C2',
+  /** The red verb seal (印章) and its pressed edge */
+  seal: '#D8342A',
+  sealDark: '#9E1F18',
+  /** The white serif glyph on a seal, and the seal's inner hairline */
+  sealGlyph: '#FFF4EA',
+  sealHairline: '#FFE7D8',
+  /** Red text printed on paper (the HUD's 「page title」): seal red darkened to 7:1 */
+  sealInk: '#8C1A14',
+  /** Chalk: Mocha's perch paw, hold-to-reveal outlines, captions on night card */
+  chalk: '#FFF7E0',
+  /** Brass split-pin and foil highlights */
+  brassShine: '#FFF8DC',
+  foilShine: '#FFFBEA',
+  /** The small green check knot on a solved part (bible § 4.1 done) */
+  doneGreen: '#3FA86A',
+  /** The paw badge on a locked part */
+  lockBadge: '#3A2E66',
+
+  // Light on paper (bible § 3.3)
+  lamp: '#FFD98A',
+  lampHot: '#FFF3CF',
+  lampAmber: '#FFB45A',
+  /** Lit vellum window: top → middle → bottom with `lampAmber` */
+  windowTop: '#FFF1C4',
+  windowMid: '#FFD27A',
+  neonPink: '#FF6FAE',
+  neonCyan: '#7FF3FF',
+  moon: '#FFF4D2',
+  moonRim: '#CFEAFF',
+  /** Pinhole stars: light through needle holes in the backdrop */
+  pinhole: '#FFF3C8',
+
+  // Paper stocks (bible § 3.1, proof D row 1)
+  /** Night card stock: the 2-stop gradient of a night backdrop */
+  nightCard: '#2E3482',
+  nightCardDeep: '#1A2464',
+  /** Night card at its darkest (the light-recipe tiles) */
+  nightInk: '#141A40',
+  kraft: '#C49A6C',
+  kraftDark: '#A97E52',
+  kraftFiber: '#6E4A2A',
+  washi: '#F6EEE2',
+  washiFiber: '#B9A88E',
+  /** The two washi tapes on the HUD label */
+  washiPink: '#E9A9A0',
+  washiCeladon: '#9CC9C2',
+  /** Fibres in the cream page */
+  pageFiber: '#A88A5E',
+  /** Vellum (tracing paper): a lilac-white sheet at 45–72 % */
+  vellum: '#ECE8FA',
+  /** Glassine sheen streaks */
+  glassine: '#E8E4F8',
+  glassineDeep: '#D8D2F0',
+  corrugated: '#B98A5E',
+  corrugatedDark: '#A37448',
+  corrugatedLight: '#D8AE80',
+  corrugatedLip: '#C9A070',
+  /** 花磚 endpaper: navy tile, gold diamond, rose dots */
+  tile: '#1E2558',
+  tileRose: '#C8546A',
+  /** Folds: lit and shaded faces of a crease (proof D row 2) */
+  foldLit: '#E9DCC0',
+  foldLitHigh: '#F8EEDA',
+  foldShade: '#B9A888',
+  foldShadeHigh: '#D6C6A6',
+  foldRidge: '#8A7656',
+  foldValley: '#7A6646',
+  foldAo: '#3A2C1A',
+  /** Printed (non-touchable) parts: grey-lilac card (bible § 6, 101's fixed sections) */
+  printLilac: '#9A96C0',
+  printLilacDeep: '#6E6A9C',
+  /** Printed ochre: decorative yellows are desaturated so marigold stays reserved (bible § 4) */
+  ochre: '#9A8650',
+  ochreDark: '#8A7848',
+  /** Printed dark tyre/ink on night card */
+  printDark: '#2A2346',
+  /** A plum flap face (proof D) */
+  flapFace: '#6A4A9A',
+  /** Stacked-depth demo cards z0 → z4 (proof D row 2) */
+  depth0: '#3A4290',
+  depth1: '#4A52A0',
+  depth2: '#6068B4',
+  depth3: '#7C82C6',
+  depth4: '#A0A4DA',
+  /** A moonlit facade on the light-recipe tile */
+  moonFacade: '#5A5E9A',
+  /** A lit shopfront on the light-recipe tile */
+  lampFacade: '#4E3A5A',
+
+  // Characters in the paper world (bible § 5)
+  /** The warm-white die-cut border of a standee (never pure white) */
+  standeeCard: '#FBF6EC',
+  /** The mauve-grey cut line outside the border */
+  standeeCut: '#8F8296',
+  /** The fold-back easel tab behind the feet */
+  easel: '#D9CDBB',
+  /** The coiled wire of a thought bubble, and its shadow */
+  wire: '#E9E4F4',
+  wireShadow: '#1A1238',
+
+  // UI on the cover (bible § 7)
+  /** Labels under the bottom-bar discs */
+  barLabel: '#F4EEDC',
+  /** Sticker dimples: navy, their lit and dark rims, their labels */
+  sticker: '#2B3274',
+  stickerRim: '#4A54A8',
+  stickerDeep: '#0A0C26',
+  stickerLabel: '#C9CBEF',
+  /** The sticker icons' ink on foil */
+  foilInk: '#7A5410',
+  /** Blind-embossed paper dimples (empty 抓周 slots) */
+  dimpleLight: '#FFF7E6',
+  dimpleShade: '#B7A07A',
+  /** The coin's engraved ring */
+  coinRing: '#9A6A22',
+  /** The hint bulb icon */
+  bulb: '#FFD27A',
+  bulbInk: '#8A5E1E',
+  /** The 土地公 sticker's hat */
+  hatRed: '#C8342C',
 } as const;
+
+/** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
+export type GradientStop = readonly [offset: number, color: string];
+
+/**
+ * Foil gradients (bible § 3.1 燙金 / 銀箔): the only things allowed to sparkle. `gold` is the
+ * diagonal foil, `goldH` the horizontal trim, `coin` the radial coin, `silver` the cool metal.
+ */
+export const POPUP_FOIL = {
+  gold: [[0, '#8A5E1E'], [0.22, '#FFE9A8'], [0.34, '#C9963A'], [0.55, '#FFF6D2'], [0.7, '#B8822A'], [1, '#FFE08A']],
+  goldH: [[0, '#9A6A22'], [0.3, '#FFEDB0'], [0.5, '#C9963A'], [0.75, '#FFF4CC'], [1, '#A87A2A']],
+  coin: [[0, '#FFF6D2'], [0.45, '#F2C860'], [1, '#A87A2A']],
+  silver: [[0, '#6E7AA8'], [0.3, '#F2F6FF'], [0.5, '#9AA6CC'], [0.75, '#FFFFFF'], [1, '#7A86B4']],
+} as const satisfies Record<string, readonly GradientStop[]>;
+
+/** One chapter on the pop-up colour clock: its sky from top to horizon at its time. */
+export type PopupChapterSky = {
+  /** 0 = 序 (prologue), 1–10 = the chapters, 11 = page E (抓周) */
+  readonly chapter: number;
+  /** The label on the colour-script strip: 序, 1 … 10, E */
+  readonly label: string;
+  readonly place: string;
+  /** `HH:MM` (GDD § 4.2) */
+  readonly time: string;
+  readonly top: string;
+  readonly horizon: string;
+  readonly feeling: string;
+};
+
+/**
+ * The chapter colour clock (bible § 3.3 table: art direction § 3.2 re-keyed to GDD chapter times).
+ * Backdrops bake this sky into their colours at build time; it is never a runtime filter.
+ */
+export const POPUP_CHAPTER_CLOCK: readonly PopupChapterSky[] = [
+  { chapter: 0, label: '序', place: '家', time: '00:00', top: '#0A1034', horizon: '#3A3A86', feeling: 'warm lamp interior, cool window' },
+  { chapter: 1, label: '1', place: '台北車站', time: '00:20', top: '#0B1238', horizon: '#40408E', feeling: 'deep navy, amber windows' },
+  { chapter: 2, label: '2', place: '大安森林公園', time: '00:50', top: '#0B1238', horizon: '#4A4A96', feeling: 'green-black canopies, fireflies' },
+  { chapter: 3, label: '3', place: '台灣大學', time: '01:20', top: '#0C1440', horizon: '#5A4E9C', feeling: 'cool lake, warm library' },
+  { chapter: 4, label: '4', place: '西門町', time: '01:50', top: '#0C1440', horizon: '#6A5AA4', feeling: 'magenta and cyan neon spill' },
+  { chapter: 5, label: '5', place: '士林夜市', time: '02:20', top: '#0E1644', horizon: '#7A62AA', feeling: 'the hottest, warmest page: bulbs and steam' },
+  { chapter: 6, label: '6', place: '松山機場', time: '02:50', top: '#101848', horizon: '#8A6AB0', feeling: 'runway blues, amber taxi lights' },
+  { chapter: 7, label: '7', place: '貓空', time: '03:30', top: '#141C50', horizon: '#9A70B4', feeling: 'mountain mist (vellum layers), gondola lights' },
+  { chapter: 8, label: '8', place: '北投', time: '04:00', top: '#16205A', horizon: '#A878B8', feeling: 'steam vellum, wooden warmth' },
+  { chapter: 9, label: '9', place: '淡水 / 淡江大橋', time: '04:40', top: '#1E2A66', horizon: '#C88AB8', feeling: 'the first violet light, sea glassine' },
+  { chapter: 10, label: '10', place: '台北101', time: '05:10', top: '#3A3A80', horizon: '#F4B49A', feeling: 'dawn peach, gold rim' },
+  { chapter: 11, label: 'E', place: '家 (抓周)', time: '10:00', top: '#8EC8E8', horizon: '#FFF0C8', feeling: 'the only daytime page' },
+];
 
 // ---------------------------------------------------------------------------------------------
 // The night clock (§ 3.2)
