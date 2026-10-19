@@ -338,6 +338,8 @@ The closed list of gestures:
 - This makes every page turn-based in practice, removes all dexterity, and is a cute toddler behaviour.
 - When you release, ticks resume after a 150 ms grace period.
 
+**For engineers.** `view/gestures.ts` (#90) is the pure rule set: `targetsOf` (player-driven parts by their `hit`, perch paw prints while Mocha is on the page, Mocha, Baokaka, the 土地公 while he shows), `hitTest` (topmost direct hit → a hit grown to 48 screen px → the 32 px magnet), `snapStop`, `rubberBand`, `rotaryDelta` / `rotaryStep`, `Debouncer` and `GestureTracker` (threshold, capture, palm, locks, hold-to-reveal). `view/useGestures.ts` wires it to Pointer Events and the session (`pause('finger')`). Readings in D-51: hit areas are grown to 48 px *after* the book scale, so R6 holds on short phones; a tap on Baokaka opens the word ring and a tap on the 土地公 is a game event, neither is a sim input; a locked part answers at once in the view and queues nothing; drags commit as `set` (a flap's as `tap`).
+
 **Tick speed** (setting): 慢 0.75 s · 普通 0.5 s (default) · 快 0.33 s. A **fast-forward button** appears while Baokaka is walking a long path with nothing for the player to do (more than 4 edges, no input possible); holding it runs at 4× speed.
 
 ### 2.7 Hints (gentle, never punishing)

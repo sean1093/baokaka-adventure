@@ -123,9 +123,13 @@ Since #89, `#/popup?page=c0p1` (any registered page id) plays one page in the bo
 - `tick=N` starts N idle ticks in;
 - `paused=1` holds the clock (screenshots);
 - `speed=slow|normal|fast` sets the tick length;
-- `demo=1` plays three idle ticks, then the page's authored solution, which is how to watch rides and part tweens until gestures land (#90).
+- `demo=1` plays three idle ticks, then the page's authored solution.
+
+Since #90 the page is played by touch or mouse (GDD § 2.6): taps and one-finger drags on the page, a finger down anywhere pauses the world, holding 600 ms on empty space outlines every touchable, and tapping Baokaka opens the word ring stub.
 
 The visual targets are `popup-c0p1` and `popup-c1p2`, each paused with Baokaka reaching.
+
+**`npm run check:play`** (`scripts/play-check.mjs`, #90) plays 0-1 and 1-2 to completion through real pointer input — the mouse and CDP touch emulation, at 390×844 and 375×667 — dragging the tabs along their tracks and tapping the pillar perch, and fails if a page does not reach `data-done`, if the world ticks while a finger is down, or on console errors. `--shots <dir>` writes a PNG per step. Add a scenario when you add a page; #92 folds it into the visual QA run.
 
 - **Kit** (`#/pagelab?section=kit`, since #139): proof D rebuilt from the TS kit port (`src/popup/art/`, with filters), every GDD part preset's default art in its idle state (with filters, as PageLab and the bake show it, and without, as the game draws it until bitmaps are baked), and the artist's `proof-d-swatches.png` below for comparison. Visual target `kit-swatches`.
 
