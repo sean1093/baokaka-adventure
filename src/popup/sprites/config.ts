@@ -67,8 +67,9 @@ export const POSE_CONFIG: Readonly<Record<string, PoseConfig>> = {
   'baokaka.wobble': { group: 9, mode: 'loop', easel: true },
   'baokaka.walk': { group: 10, easel: true },
   'baokaka.zhuazhou': { group: 'ui' },
-  // #141's frames. look / watch / touch-watch / ride-giggle and the 2-frame reach show on any
-  // page, so they are core (ride-giggle from chapter 1, the first ride); carried first comes in chapter 5 (5-3, 抱抱), climb in chapter 7 (7-3).
+  // #141's frames. look, watch, touch-watch and the 2-frame reach show from the prologue on, so
+  // they are core; ride-giggle from chapter 1 (the first ride); carried from chapter 5 (5-3, 抱抱);
+  // climb from chapter 7 (7-3).
   'baokaka.reach': { mode: 'pingpong' },
   'baokaka.giggle': { group: 1 },
   'baokaka.look': { mode: 'loop', fps: 1.5 },
