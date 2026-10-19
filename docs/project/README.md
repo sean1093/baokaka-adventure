@@ -131,6 +131,15 @@ The visual targets are `popup-c0p1` and `popup-c1p2`, each paused with Baokaka r
 
 **`npm run check:play`** (`scripts/play-check.mjs`, #90) plays 0-1 and 1-2 to completion through real pointer input — the mouse and CDP touch emulation, at 390×844 and 375×667 — dragging the tabs along their tracks and tapping the pillar perch, and fails if a page does not reach `data-done`, if the world ticks while a finger is down, or on console errors. `--shots <dir>` writes a PNG per step. Add a scenario when you add a page; #92 folds it into the visual QA run.
 
+- **The lab** (`#/pagelab`, since #91; GDD § 3.10). Desktop-first; on a phone the columns stack.
+  - **Left:** every registered page with its solver badge (`ok` / `dead-end` / `over cap` / `lint` / `fail`, from `pages/report.ts`, the same judge as `npm run solve`), then lab-only fixtures that are broken on purpose (`c1p2-broken`: the train locks for good if Mocha scares the pigeon first), so the dead-end tools can be tried on real data.
+  - **Centre:** the page (`PageView`) with overlay checkboxes — nodes by height, Baokaka's edges by kind (dashed while closed), perches and cat edges, attractors with their rank and priority, hit areas (data shape solid, the grown 48 px shape dashed), his target line and path preview plus Mocha's trip.
+  - **Controls:** reset, play/pause, +1 tick, speed, and the input palette (every legal input as a button; while playing, clicks queue).
+  - **Solver** (in a worker, `dev/solver.worker.ts`): run from the start or from the current state → par, states, time, 淘氣/土地公 reachability, the shortest solution with 「▶ play it」, and the dead ends (click one to load its state).
+  - **Lint** re-runs on every edit. **Readability:** greyscale, the 25 % squint thumbnail, the touchable count (≤ 3 on pages 1–3) and the art-key report (placeholder vs own art per backdrop, part and creature).
+  - **Edit:** tick `edit`, drag nodes (a node riding a part moves its position for the part's current state) and track ends; 「Copy TS」 copies the `nodes` block and the `track` lines to paste into the page file (a text box shows the same when the clipboard is blocked).
+  - **State:** the event log of the last 20 ticks and the `SimState` JSON.
+  - **URL:** `page`, `overlay` (comma list of `nodes,edges,perches,attractors,hits,target`; absent = `nodes,edges,target`, empty = none), `tick` (start N idle ticks in), `speed`, `edit=1`, `view=grey,squint`. Every checkbox rewrites the hash in place, so the address bar is always a reproducible link, e.g. `#/pagelab?page=c1p2&overlay=nodes,edges&tick=12`.
 - **Kit** (`#/pagelab?section=kit`, since #139): proof D rebuilt from the TS kit port (`src/popup/art/`, with filters), every GDD part preset's default art in its idle state (with filters, as PageLab and the bake show it, and without, as the game draws it until bitmaps are baked), and the artist's `proof-d-swatches.png` below for comparison. Visual target `kit-swatches`.
 
 ### The art lab: `#/artlab` (dev builds only)

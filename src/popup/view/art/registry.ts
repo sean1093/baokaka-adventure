@@ -65,6 +65,12 @@ export function backdropArt(key: string): BackdropArt {
   return own ?? placeholderBackdrop;
 }
 
+/** True when backdrop `key` has art of its own (PageLab's art-key report). */
+export const hasBackdropArt = (key: string): boolean => key in BACKDROPS;
+
+/** True when creature `key` has art of its own (PageLab's art-key report). */
+export const hasCreatureArt = (key: string): boolean => key in CREATURES;
+
 /** The art for a creature: its key's own, else the origami bird. */
 export function creatureArt(key: string): CreatureArt {
   const own = CREATURES[key];
