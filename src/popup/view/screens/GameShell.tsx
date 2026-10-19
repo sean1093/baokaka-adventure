@@ -67,7 +67,7 @@ import './screens.css';
  *   extras on the page. Low power (`useLowPower`: frames over 20 ms for 2 s) drops the tilt and
  *   the confetti and halves the sparkles. 「重新開始」 (a 3-second hold) starts a new game with the
  *   same settings and goes to the cover.
- * - **Sound** (GDD § 2.12; #105, D-68): the first pointer or key anywhere unlocks WebAudio (iOS);
+ * - **Sound** (GDD § 2.12; #105, D-68): the first touch, click or key anywhere unlocks WebAudio (iOS);
  *   音效 / 音樂 set the two buses' volumes live (a 音效 change plays a click at the new volume); the
  *   chapter's music box loops under the page (the prologue's on the cover), switching at the turn
  *   and sleeping while the tab is hidden. The shell is the `SoundContext` for every screen in it:
@@ -96,6 +96,8 @@ export interface GameShellProps {
 const SPEEDS: readonly TickSpeed[] = ['slow', 'normal', 'fast'];
 /** After the goal is grabbed (「這個！」, the sparkle) the page holds this long before it folds (GDD § 2.8). */
 export const GRAB_HOLD_MS = 900;
+/** Events that may unlock WebAudio: the first that counts as a user activation wins (#105) */
+const UNLOCK_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'keydown'] as const;
 /** The chapter card hangs this far below the safe area's top (#102) */
 const BOARD_TOP = 14;
 
@@ -162,12 +164,11 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
       if (unlockAudio()) setUnlocked(true);
     };
     const hide = () => suspendAudio(document.hidden);
-    window.addEventListener('pointerdown', unlock, true);
-    window.addEventListener('keydown', unlock, true);
+    // A touch only counts as a user activation on its release (iOS Safari): listen to both ends
+    for (const type of UNLOCK_EVENTS) window.addEventListener(type, unlock, true);
     document.addEventListener('visibilitychange', hide);
     return () => {
-      window.removeEventListener('pointerdown', unlock, true);
-      window.removeEventListener('keydown', unlock, true);
+      for (const type of UNLOCK_EVENTS) window.removeEventListener(type, unlock, true);
       document.removeEventListener('visibilitychange', hide);
     };
   }, [still]);
