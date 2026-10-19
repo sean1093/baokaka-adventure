@@ -14,7 +14,8 @@
  * Landed so far: `types.ts`, `cond.ts`, `presets.ts`, `state.ts` (`initialState`, `canonicalKey`)
  * and `define.ts` (`definePage`), all from #80; `graph.ts` (node positions, open edges, blocked
  * nodes, BFS, reach sets, nearest reachable node) from #81;
- * `baby.ts` (Baokaka's decision loop) and the first `events.ts` (`SimEvent`, barks) from #82.
+ * `baby.ts` (Baokaka's decision loop) and the first `events.ts` (`SimEvent`, barks) from #82;
+ * `mocha.ts` (perch pathing, arrival actions, pet, cat rules C1–C9) from #83.
  */
 export * from './types';
 export * from './cond';
@@ -23,4 +24,5 @@ export * from './state';
 export * from './graph';
 export * from './events';
 export * from './baby';
+export * from './mocha';
 export { definePage } from './define';

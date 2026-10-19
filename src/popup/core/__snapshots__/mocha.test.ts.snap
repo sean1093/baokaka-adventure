@@ -1,0 +1,67 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`determinism > the same inputs give the same states and events 1`] = `
+[
+  [
+    {
+      "id": "sofaArm",
+      "type": "catLeave",
+    },
+    {
+      "id": "table",
+      "type": "catArrive",
+    },
+    {
+      "id": "bead",
+      "type": "mochaStare",
+    },
+  ],
+  [
+    {
+      "id": "bead",
+      "type": "push",
+    },
+  ],
+  [
+    {
+      "id": "bead",
+      "type": "land",
+    },
+    {
+      "id": "table",
+      "type": "catLeave",
+    },
+    {
+      "id": "shelf",
+      "type": "catArrive",
+    },
+    {
+      "id": "redEnvelope",
+      "type": "mochaStare",
+    },
+  ],
+  [
+    {
+      "id": "redEnvelope",
+      "type": "push",
+    },
+  ],
+  [
+    {
+      "id": "redEnvelope",
+      "type": "land",
+    },
+  ],
+  [],
+  [
+    {
+      "id": "shelf",
+      "type": "catLeave",
+    },
+    {
+      "id": "sofaArm",
+      "type": "catArrive",
+    },
+  ],
+]
+`;

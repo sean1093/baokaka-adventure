@@ -280,8 +280,14 @@ export interface SimState {
     carriedBy?: { id: Id; k: number };
     linked: boolean;
   };
-  /** floorNode in linked mode */
-  mocha: { perch: Id | null; path: Id[]; floorNode?: Id };
+  /**
+   * Mocha (GDD § 2.3, D-44). Settled: `perch` is where he sits and `path` is empty. Travelling:
+   * `perch` is null, `path` is the rest of his trip with his current node first, and `to` is the
+   * perch he is heading for (between a `mocha` input and the tick's Mocha phase, `perch` is still
+   * the one he's about to leave). `stare` is the pushable he is making eye contact over (C3): he pushes
+   * it next tick. `floorNode` is for linked mode (#128).
+   */
+  mocha: { perch: Id | null; path: Id[]; to?: Id; stare?: Id; floorNode?: Id };
   creatures: Record<Id, string>;
   pushables: Record<Id, 'onPerch' | 'falling' | 'landed'>;
   consumed: Id[];
