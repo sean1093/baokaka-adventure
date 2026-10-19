@@ -205,7 +205,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
       <div style={block} aria-hidden="true" />
       <div style={page}>
-        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still} />
+        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still} events={frame.events} />
       </div>
       <svg
         className="absolute left-1/2 top-0 font-body"

@@ -61,6 +61,8 @@ export function stageDefs(ctx: KitCtx, sky: PopupChapterSky): string {
     lin(id('gutterAo'), [[0, C.vignette, 0], [0.5, C.vignette, 0.55], [1, C.vignette, 0]]),
     lin(id('lampBand'), [[0, C.lampAmber, 0], [1, C.lampAmber, 0.16]]),
     radial(id('lampPool'), [[0, C.lamp, 0.55], [0.6, C.lampAmber, 0.18], [1, C.lampAmber, 0]]),
+    // The lamp glow behind 寶咖咖 near a lit light (bible § 5: a soft warm glow, ≈ 18 %), as a gradient: no filter on a mover
+    radial(id('standeeGlow'), [[0, C.lamp, 0.34], [0.5, C.lampAmber, 0.18], [1, C.lampAmber, 0]]),
     lin(id('leaf'), [[0, S.leafLight], [1, S.leaf]]),
   ].join(''));
 }

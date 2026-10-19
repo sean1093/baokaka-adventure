@@ -11,7 +11,8 @@ import { SPRITE_MANIFEST, type SpriteId } from './sprites.gen';
  *
  * - **Frames** come from the shared rAF clock (`clock.ts`): the component re-renders only when the
  *   shown frame changes. `playing` false (or `reduced`) holds the animation's key frame; a `once`
- *   animation calls `onDone` after its last frame, and `onEvent` hears its named frames.
+ *   animation calls `onDone` after its last frame, and `onEvent` hears its named frames. `frame`
+ *   shows one frame instead, for frames driven by the step (#95: the crawl stride, Mocha's hop).
  * - **Mirroring**: frames face right; `facing: 'l'` mirrors about the anchor, so the foot point
  *   never jumps (`noMirror` sprites never flip).
  * - **Loading**: until every frame of the animation is decoded, a placeholder card fills the
@@ -29,6 +30,11 @@ export interface SpriteAnimProps {
   readonly anim?: string;
   readonly facing?: Facing;
   readonly playing?: boolean;
+  /**
+   * Show this frame (an index into the animation's frames) instead of running the clock: frames
+   * driven by something else, such as a crawl stride synced to the step's lerp (#95)
+   */
+  readonly frame?: number;
   /** Reduced motion: hold the key frame */
   readonly reduced?: boolean;
   readonly x?: number;
@@ -55,6 +61,7 @@ export function SpriteAnim({
   anim = 'main',
   facing = 'r',
   playing = true,
+  frame: shown,
   reduced = false,
   x = 0,
   y = 0,
@@ -76,7 +83,8 @@ export function SpriteAnim({
   const cb = useRef({ onDone, onEvent });
   cb.current = { onDone, onEvent };
 
-  const live = playing && !reduced;
+  const controlled = shown !== undefined;
+  const live = playing && !reduced && !controlled;
   useEffect(() => {
     setStep(0);
     if (!live) return;
@@ -105,10 +113,11 @@ export function SpriteAnim({
 
   // Reduced motion and paused sprites hold the key frame; a held `once` is finished at once
   useEffect(() => {
-    if (!live && reduced && a.mode === 'once') cb.current.onDone?.();
-  }, [live, reduced, a, restart]);
+    if (!live && reduced && !controlled && a.mode === 'once') cb.current.onDone?.();
+  }, [live, reduced, controlled, a, restart]);
 
-  const index = live ? frameOfStep(a, step) : a.hold;
+  const n = a.frames.length;
+  const index = controlled ? ((Math.floor(shown) % n) + n) % n : live ? frameOfStep(a, step) : a.hold;
   const frame = a.frames[index];
   const href = ready ? frameUrl(def.files[frame], res) : undefined;
   const s = scale * def.mapScale;

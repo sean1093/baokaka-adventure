@@ -1,7 +1,7 @@
 import { initialState, replay, step } from '../core';
 import type { SimEvent } from '../core/events';
 import type { BabyMode, Id, PageDef, SimState, SolutionStep } from '../core/types';
-import { pageById } from '../pages';
+import { labPageById } from './labPages';
 import type { AffordanceFlags } from '../view/affordance/look';
 import type { GestureFlags } from '../view/gestures';
 
@@ -25,7 +25,7 @@ import type { GestureFlags } from '../view/gestures';
 export interface PopupFixture {
   /** Kebab-case, unique among popup and art lab fixtures (it is the screenshot's file name) */
   readonly name: string;
-  /** A registered page id */
+  /** A registered page id, or a lab-only stage (`labPages.ts`) */
   readonly page: Id;
   /** Replayed from the page's initial state; empty is the page as it opens */
   readonly steps: readonly SolutionStep[];
@@ -106,6 +106,20 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: '1-2 under reduced motion: no idle wiggle, the touchable carries the static double outline instead.',
   },
   {
+    name: 'lab-eye-contact',
+    page: 'lab-push',
+    steps: [{ mocha: 'pillar' }],
+    note: 'Mocha lands on the pillar beside a cup and looks straight at the camera for a tick (C3; #95). Lab stage: 1-2 with a cup, until #106 adds 0-3 (c0p3-eye-contact).',
+    expect: { event: 'mochaStare' },
+  },
+  {
+    name: 'lab-crying',
+    page: 'lab-cry',
+    steps: [{ wait: 3 }],
+    note: 'Nothing to want: after looking for two ticks Baokaka cries (GDD § 2.2.5; #95). Lab stage: 0-1 with the bead hidden, until #106 adds 0-4 (c0p4-crying).',
+    expect: { mode: 'crying' },
+  },
+  {
     name: 'c0p1-hint-how',
     page: 'c0p1',
     steps: [],
@@ -125,7 +139,7 @@ export interface FixtureFrame {
 
 /** Replays a fixture. Throws on an unknown page (the unit test catches it first). */
 export function fixtureFrame(fixture: PopupFixture): FixtureFrame {
-  const def = pageById(fixture.page);
+  const def = labPageById(fixture.page);
   if (def === undefined) throw new Error(`popup fixture '${fixture.name}': no page '${fixture.page}'`);
   // `replay` expands the waits into one input per tick; stepping them again keeps the state before the last
   const { ticks } = replay(def, fixture.steps);

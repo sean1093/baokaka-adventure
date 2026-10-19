@@ -44,12 +44,13 @@ export interface PoseConfig {
 /** Per pose, keyed `<char>.<pose>` (poses.json `characters.<char>.<pose>`). Unlisted poses take the defaults. */
 export const POSE_CONFIG: Readonly<Record<string, PoseConfig>> = {
   // ——— 寶咖咖 (bible § 5 growth: crawl / sit until Ch7; stand holding a rail from 9-3; walk only on 10-6).
-  // Word poses join with their word (GDD § 4.1): 掰掰 ch2 (wave), 不要！ ch3 (refuse), 抱抱 ch5 (hug),
+  // Word poses join with their word (GDD § 4.1): 掰掰 ch2 (wave), 不要！ ch3 (refuse),
   // 飛機！ ch6 (wonder); 嗶！ (ch1) is `point`. He falls asleep only in the ending. ———
   'baokaka.crawl': { events: [{ frame: 0, name: 'step' }, { frame: 4, name: 'step' }] },
   'baokaka.clap': { mode: 'loop' },
   'baokaka.reach': {},
-  'baokaka.hug': { group: 5 },
+  // 抱抱 is also the cuddle frame (GDD § 2.2.1 cuddling Mocha, from the prologue on; #95), so it is core
+  'baokaka.hug': {},
   'baokaka.wonder': { group: 6 },
   'baokaka.wave': { group: 2, mode: 'loop' },
   'baokaka.cry': { mode: 'loop' },

@@ -271,7 +271,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [31.12, 2.33],
       "foot": [19.67, 65.67],
       "mapScale": 1,
-      "group": 5,
+      "group": 0,
       "noMirror": false,
       "files": ["poses/baokaka-hug-0"],
       "bytes": [
@@ -286,7 +286,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "b34428605d1a81d2"
+      "source": "04a7ba9e89e9327f"
     },
     "baokaka.cry": {
       "kind": "pose",

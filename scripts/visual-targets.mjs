@@ -89,6 +89,14 @@ export const TARGETS = [
     artlab: true,
   },
   {
+    name: 'pagelab-sprites',
+    // The missing-frame report (#95): GDD § 3.9's character frames ✓ / ✗ / later, the delivered frames drawn
+    hash: '#/pagelab?section=sprites',
+    waitFor: '[data-pagelab-sprites][data-sprites="ready"] [data-frame-need="mocha.walk"]',
+    fullPage: true,
+    artlab: true,
+  },
+  {
     name: 'popup-c0p1',
     // 翻翻台北 page 0-1 in the book frame (#89): the placeholder home stage, the crib rail closed, Baokaka reaching
     hash: '#/popup?page=c0p1&tick=2&paused=1',

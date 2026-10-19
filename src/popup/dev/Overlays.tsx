@@ -187,7 +187,7 @@ export function Overlays({ def, state, overlays, scale, edit, onMoveNode, onMove
       {on('anchors') && (
         <g data-overlay="anchors">
           {mochaAt && <SpriteMarks sprite="mocha.sit" facing={babyAt && babyAt[0] < mochaAt[0] - 4 ? 'l' : 'r'} x={mochaAt[0]} y={mochaAt[1]} />}
-          {babyAt && <SpriteMarks sprite={babySprite(state.baby.mode).sprite} facing={state.baby.facing} x={babyAt[0]} y={babyAt[1]} />}
+          {babyAt && <SpriteMarks sprite={babySprite(state.baby.mode)} facing={state.baby.facing} x={babyAt[0]} y={babyAt[1]} />}
         </g>
       )}
 

@@ -211,7 +211,7 @@ describe('the page list', () => {
 
   test('the lab lists every registered page, then the broken fixture', () => {
     expect(LAB_PAGES.slice(0, PAGES.length)).toEqual(PAGES);
-    expect(LAB_FIXTURES.map((p) => p.id)).toEqual(['c1p2-broken']);
+    expect(LAB_FIXTURES.map((p) => p.id)).toEqual(['c1p2-broken', 'lab-push', 'lab-cry']);
     expect(labPageById('c1p2')).toBe(c1p2);
     expect(labPageById('c1p2-broken')).toBe(LAB_FIXTURES[0]);
     expect(labPageById('nope')).toBeUndefined();
