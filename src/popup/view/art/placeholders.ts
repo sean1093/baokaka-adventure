@@ -79,6 +79,24 @@ export function gutter(ctx: KitCtx, y = GUTTER_Y): string {
 }
 
 /**
+ * A spread's spine (GDD § 2.9; bible § 3.2 valley fold; #103): the book opened flat across two
+ * pages, so a crease runs down the middle of both the standing page and the floor page — a blurred
+ * ambient-occlusion strip, darkest on the fold, a dark crease line and a lit ridge on its left.
+ * Flat fills and gradients (no filter), in page units over the whole drawn book.
+ */
+export function spine(ctx: KitCtx, x = PAGE_W / 2): string {
+  const id = ctx.id('spineAo');
+  return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${C.foldAo}" stop-opacity="0"/>`
+    + `<stop offset=".5" stop-color="${C.foldAo}" stop-opacity=".6"/><stop offset="1" stop-color="${C.foldAo}" stop-opacity="0"/></linearGradient></defs>`
+    + `<g data-spine="">`
+    + `<rect x="${x - 22}" y="0" width="44" height="${FLOOR_BOTTOM}" fill="url(#${id})"/>`
+    + `<rect x="${x}" y="0" width="12" height="${FLOOR_BOTTOM}" fill="${C.shadow}" opacity=".16"/>`
+    + `<path d="M${x - 2} 0V${FLOOR_BOTTOM}" stroke="${C.cutRim}" stroke-width="1.2" opacity=".42"/>`
+    + `<path d="M${x} 0V${FLOOR_BOTTOM}" stroke="${C.foldAo}" stroke-width="1.4" opacity=".8"/>`
+    + `</g>`;
+}
+
+/**
  * The V-fold crease of a landmark pop-up (bible § 2.2): the facade `shape` folded down its centre
  * line `cx`. The left half stays lit, the right half falls 20–26 % darker (`shade`, default 23 %),
  * and a 0.8 light ridge runs down the fold. `clipId` must be unique in the document.

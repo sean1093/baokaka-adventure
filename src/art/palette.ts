@@ -869,6 +869,24 @@ export const POPUP = {
   /** The paper map's printed river and streets (目錄) */
   mapRiver: '#A8C4D8',
   mapStreet: '#D9C7A2',
+
+  // The photo moment and the album (bible § 7 Album; #103)
+  /** The paper camera's body (black card stock) and its lit edge */
+  cameraBody: '#24263C',
+  cameraEdge: '#45486A',
+  /** The instant print's white border (warm, never pure white) and its shade */
+  printWhite: '#FCF9F1',
+  printShade: '#E4DCCB',
+  /** The four sticky notes (阿嬤, 媽媽, 爸爸, 摩卡): pale stocks under ink, none of them marigold */
+  notePink: '#F8CDD2',
+  noteMint: '#CDEBDC',
+  noteSky: '#CFE0F6',
+  noteLilac: '#E0D3F2',
+  /** 雞腿, chapter 1's treasure: the glazed leg, its dark crust, the glaze shine and the bone */
+  drumstick: '#B8642A',
+  drumstickDeep: '#7A3A16',
+  drumstickGlaze: '#F2B468',
+  bone: '#F6EEDC',
 } as const;
 
 /**
