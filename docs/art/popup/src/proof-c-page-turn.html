@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>Pop-Up Taipei: Page Turn</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Chiron+GoRound+TC:wght@500;700;900&family=Fredoka:wght@500;600;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#1B1430}
+  svg{display:block;font-family:'Chiron GoRound TC','Noto Sans TC',sans-serif}
+  .abs{position:absolute}
+  /* Page turn = the camera pulls back to a 3/4 view; the book is real CSS 3D (planes hinged at the gutter). */
+  #stage{position:absolute;inset:0;perspective:1250px;perspective-origin:195px 400px}
+  #book{position:absolute;left:30px;top:452px;width:354px;height:0;transform-style:preserve-3d;
+        transform:rotateX(-31deg) rotateY(-17deg) rotateZ(-1deg) scale(.8)}
+  .p{position:absolute;transform-style:preserve-3d}
+  .face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden}
+  .face svg,.p>svg{position:absolute;left:0}
+</style>
+<script src="kit.js"></script>
+</head><body>
+<svg class="abs" id="bg" width="390" height="844" viewBox="0 0 390 844" style="left:0;top:0"></svg>
+<div id="stage"><div id="book">
+  <!-- hardcover boards + page blocks -->
+  <div class="p" id="boardBack" style="left:-10px;top:-356px;width:374px;height:356px;transform:translateZ(-9px)"></div>
+  <div class="p" id="blockBackTop" style="left:0;top:-344px;width:354px;height:8px;transform-origin:50% 0;transform:translateZ(-2px) rotateX(90deg)"></div>
+  <div class="p" id="boardFloor" style="left:-10px;top:10px;width:374px;height:310px;transform-origin:50% 0;transform:rotateX(90deg)"></div>
+  <div class="p" id="blockFloorFront" style="left:0;top:10px;width:354px;height:10px;transform-origin:50% 0;transform:translateZ(296px)"></div>
+  <!-- NEW backdrop (next leaf, just behind the falling one) -->
+  <div class="p" id="newBack" style="left:0;top:-344px;width:354px;height:344px;transform:translateZ(-2px)"></div>
+  <!-- NEW pop-ups standing up out of the new spread, still leaning back -->
+  <div class="p" id="signL" style="left:6px;top:-150px;width:70px;height:150px;transform-origin:50% 100%;transform:translateZ(70px) rotateX(22deg)"></div>
+  <div class="p" id="hongLou" style="left:106px;top:-180px;width:140px;height:180px;transform-origin:50% 100%;transform:translateZ(40px) rotateX(14deg)"></div>
+  <div class="p" id="signR" style="left:282px;top:-140px;width:66px;height:140px;transform-origin:50% 100%;transform:translateZ(80px) rotateX(26deg)"></div>
+  <div class="p" id="kids" style="left:200px;top:-104px;width:110px;height:104px;transform-origin:50% 100%;transform:translateZ(250px) rotateX(-6deg)"></div>
+  <!-- OLD floor: 台北車站 checker, lying flat, in the falling leaf's shadow -->
+  <div class="p" id="oldFloor" style="left:0;top:0;width:354px;height:296px;transform-origin:50% 0;transform:rotateX(90deg)"></div>
+  <div class="p" id="oldPlat" style="left:4px;top:-110px;width:144px;height:110px;transform-origin:50% 100%;transform:translateZ(200px) rotateX(-22deg)"></div>
+  <div class="p" id="oldPlat2" style="left:206px;top:-110px;width:144px;height:110px;transform-origin:50% 100%;transform:translateZ(200px) rotateX(-28deg)"></div>
+  <!-- the LEAF: 3 hinged strips = a bending page. front = old backdrop, back = new floor -->
+  <div class="p" id="s1" style="left:0;top:-115px;width:354px;height:115px;transform-origin:50% 100%;transform:rotateX(-27deg)">
+    <div class="face" id="s1f"></div><div class="face" id="s1b" style="transform:rotateX(180deg)"></div>
+    <div class="p" id="oldStation" style="left:28px;top:-100px;width:298px;height:194px;transform-origin:50% 100%;transform:translateZ(34px) rotateX(-6deg)"></div>
+    <div class="p" id="s2" style="left:0;top:-115px;width:354px;height:115px;transform-origin:50% 100%;transform:rotateX(-9deg)">
+      <div class="face" id="s2f"></div><div class="face" id="s2b" style="transform:rotateX(180deg)"></div>
+      <div class="p" id="s3" style="left:0;top:-114px;width:354px;height:114px;transform-origin:50% 100%;transform:rotateX(-12deg)">
+        <div class="face" id="s3f"></div><div class="face" id="s3b" style="transform:rotateX(180deg)"></div>
+        <div class="p" style="left:0;top:0;width:354px;height:3px;transform-origin:50% 0;transform:rotateX(-90deg);background:#EADCBC"></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+<svg class="abs" id="fx" width="390" height="844" viewBox="0 0 390 844" style="left:0;top:0;pointer-events:none"></svg>
+<script>
+const { crawlBaby, C, defs, grain, fibers, scallopBand, skyline, pinholes, sparkle, seal, cover, washi, rng, f1 } = K;
+const SPR = 'sprites/';
+const svgIn = (w, h, inner, y = 0) => `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="top:${y}px">${inner}</svg>`;
+const set = (id, html) => { document.getElementById(id).innerHTML = html; };
+
+const extra = `
+<linearGradient id="skyX" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0C1440"/><stop offset=".5" stop-color="#26307A"/><stop offset=".85" stop-color="#6A4A9A"/><stop offset="1" stop-color="#B0608E"/></linearGradient>
+<linearGradient id="skyOld" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0D123C"/><stop offset=".55" stop-color="#1E2868"/><stop offset="1" stop-color="#4A3F8E"/></linearGradient>
+<linearGradient id="brickRoad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E3050"/><stop offset="1" stop-color="#A2565E"/></linearGradient>
+<linearGradient id="hongBrick" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B84E46"/><stop offset="1" stop-color="#8A3240"/></linearGradient>
+<linearGradient id="winG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1C4"/><stop offset=".6" stop-color="#FFD27A"/><stop offset="1" stop-color="#FFB45A"/></linearGradient>
+<linearGradient id="brick" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B85A4E"/><stop offset="1" stop-color="#8A3E40"/></linearGradient>
+<linearGradient id="underShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0A0624" stop-opacity=".8"/><stop offset=".7" stop-color="#0A0624" stop-opacity=".35"/><stop offset="1" stop-color="#0A0624" stop-opacity=".1"/></linearGradient>
+<linearGradient id="gutAO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0A0624" stop-opacity="0"/><stop offset="1" stop-color="#0A0624" stop-opacity=".6"/></linearGradient>
+<linearGradient id="leafSheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".16"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+<radialGradient id="leak" cx=".5" cy=".9" r=".7"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".55"/><stop offset="1" stop-color="#FF8AC0" stop-opacity="0"/></radialGradient>
+<radialGradient id="nightlight" cx=".15" cy=".08" r=".9"><stop offset="0" stop-color="#FFC27A" stop-opacity=".45"/><stop offset=".45" stop-color="#C0607A" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<radialGradient id="quiltVig" cx=".5" cy=".5" r=".72"><stop offset=".45" stop-color="#05030F" stop-opacity="0"/><stop offset="1" stop-color="#05030F" stop-opacity=".8"/></radialGradient>
+<pattern id="herring" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M0 8h8v-8M8 16v-8h8" stroke="#3E1C38" stroke-width="1" fill="none" opacity=".5"/></pattern>
+<pattern id="tiles" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="34" height="34" fill="#1E2558"/>
+  <path d="M17 3l14 14l-14 14l-14 -14z" fill="none" stroke="#E8C77A" stroke-width="1" opacity=".6"/>
+  <circle cx="17" cy="17" r="4" fill="#E8C77A" opacity=".55"/>${[[0, 0], [34, 0], [0, 34], [34, 34]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#C8546A" opacity=".55"/>`).join('')}</pattern>
+<pattern id="pageLines" width="4" height="10" patternUnits="userSpaceOnUse"><rect width="4" height="10" fill="#E9DAB8"/><path d="M0 1H4M0 4H4M0 7H4" stroke="#C9B48C" stroke-width=".7"/></pattern>
+<pattern id="pageLinesV" width="10" height="4" patternUnits="userSpaceOnUse"><rect width="10" height="4" fill="#E9DAB8"/><path d="M1 0V4M4 0V4M7 0V4" stroke="#C9B48C" stroke-width=".7"/></pattern>
+`;
+
+// ---------- 阿嬤's 花布 quilt under the book (night-graded peonies) ----------
+const peony = (x, y, r, rot, seed) => { const rr = rng(seed); let p = '';
+  for (let k = 0; k < 3; k++) { const R = r * (1 - k * .28), n = 7 - k; const col = ['#7A2440', '#9A3050', '#C04A62'][k];
+    let d = ''; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 + k * .4, b = a + Math.PI / n;
+      d += `${i ? 'L' : 'M'}${f1(Math.cos(a) * R * .55)} ${f1(Math.sin(a) * R * .55)}Q${f1(Math.cos(a + .15) * R * 1.1)} ${f1(Math.sin(a + .15) * R * 1.1)} ${f1(Math.cos(b) * R * .9)} ${f1(Math.sin(b) * R * .9)}`; }
+    p += `<path d="${d}Z" fill="${col}"/>`; }
+  p += `<circle r="${r * .16}" fill="#E8B04A"/>`;
+  const leaves = [0, 1, 2].map((i) => { const a = rot + i * 2.1 + rr(); return `<path d="M${f1(Math.cos(a) * r * .8)} ${f1(Math.sin(a) * r * .8)}q${f1(Math.cos(a + .6) * r * .7)} ${f1(Math.sin(a + .6) * r * .7)} ${f1(Math.cos(a) * r * .9)} ${f1(Math.sin(a) * r * .9)}q${f1(Math.cos(a - .6) * r * .1)} ${f1(Math.sin(a - .6) * r * .1)} ${f1(-Math.cos(a) * r * .9)} ${f1(-Math.sin(a) * r * .9)}z" fill="#2E6A5A"/>`; }).join('');
+  return `<g transform="translate(${x} ${y}) rotate(${rot * 57})">${leaves}${p}</g>`; };
+let bg = defs(extra) + `<rect width="390" height="844" fill="#3A1838"/>`;
+bg += `<g opacity=".9">${[[40, 60, 52, .3, 1], [230, 30, 46, 1.2, 2], [360, 170, 58, 2.1, 3], [110, 230, 40, .8, 4], [20, 420, 56, 1.6, 5], [380, 470, 44, 2.6, 6], [70, 690, 60, .2, 7], [250, 760, 54, 1.1, 8], [380, 680, 40, 2, 9], [180, 600, 30, 3, 10]].map((a) => peony(...a)).join('')}</g>`;
+bg += `<g fill="#E8C77A" opacity=".5">${Array.from({ length: 60 }, (_, i) => { const r = rng(i + 40); return `<circle cx="${f1(r() * 390)}" cy="${f1(r() * 844)}" r="${f1(1 + r() * 1.6)}"/>`; }).join('')}</g>`;
+bg += `<rect width="390" height="844" fill="#1A1048" opacity=".55"/><rect width="390" height="844" fill="url(#nightlight)"/><rect width="390" height="844" fill="url(#quiltVig)"/>`;
+bg += `<rect width="390" height="844" filter="url(#grain)" opacity=".6" style="mix-blend-mode:soft-light"/>`;
+// soft contact shadow of the whole book on the quilt
+bg += `<ellipse cx="200" cy="560" rx="190" ry="120" fill="#05030F" opacity=".55" filter="url(#blur18)"/>`;
+set('bg', bg);
+
+// ---------- boards + page blocks ----------
+const linen = (w, h) => svgIn(w, h, `<rect width="${w}" height="${h}" rx="6" fill="url(#linen)"/><rect x="5" y="5" width="${w - 10}" height="${h - 10}" rx="4" fill="none" stroke="url(#foil)" stroke-width="1" opacity=".6"/>`);
+set('boardBack', linen(374, 356)); set('boardFloor', linen(374, 310));
+set('blockBackTop', svgIn(354, 8, `<rect width="354" height="8" fill="url(#pageLines)"/>`));
+set('blockFloorFront', svgIn(354, 10, `<rect width="354" height="10" fill="url(#pageLines)"/>`));
+
+// ---------- NEW backdrop: 西門町 02:00, neon on paper ----------
+let nb = `<rect width="354" height="344" fill="url(#skyX)"/>` + pinholes(0, 0, 354, 200, 40, 17);
+nb += `<ellipse cx="177" cy="330" rx="230" ry="80" fill="#FF7AB0" opacity=".3" filter="url(#blur18)"/>`;
+const sk = skyline(0, 354, 344, 51, { minH: 70, maxH: 160, winP: .16 });
+nb += `<g filter="url(#z1)"><path d="${sk.d}" fill="#2A2266"/>${sk.wins}</g>`;
+const vsign = (x, y, txt, col, h) => `<g filter="url(#z2)"><rect x="${x}" y="${y}" width="22" height="${h}" rx="3" fill="#1A1440"/></g>
+  <rect x="${x + 2}" y="${y + 2}" width="18" height="${h - 4}" rx="2" fill="none" stroke="${col}" stroke-width="1.4" filter="url(#glowS)"/>
+  ${[...txt].map((c, i) => `<text x="${x + 11}" y="${y + 19 + i * 18}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="14" fill="${col}" filter="url(#glowS)">${c}</text>`).join('')}
+  <rect x="${x - 10}" y="${y}" width="42" height="${h}" fill="${col}" opacity=".12" filter="url(#blur8)"/>`;
+nb += vsign(96, 150, '電影院', '#6A5A8A', 64) + `<text x="124" y="150" font-family="Fredoka" font-weight="600" font-size="12" fill="#C9C2E6">z</text><text x="131" y="141" font-family="Fredoka" font-weight="600" font-size="9" fill="#C9C2E6">z</text>` + vsign(232, 132, '冰果室', C.neonCyan, 64) + vsign(300, 196, '刺青', '#FFD27A', 46);
+nb += `<g filter="url(#z1)"><circle cx="56" cy="62" r="20" fill="#FFF4D2"/></g><circle cx="56" cy="62" r="40" fill="#FFF0C0" opacity=".15" filter="url(#blur8)"/>`;
+nb += `<rect width="354" height="344" fill="url(#leak)"/><rect y="300" width="354" height="44" fill="url(#gutAO)"/>`;
+set('newBack', svgIn(354, 344, nb + `<rect width="354" height="344" filter="url(#grain)" opacity=".5" style="mix-blend-mode:soft-light"/>`));
+
+// ---------- NEW pop-ups ----------
+const hong = () => {
+  const fac = (x, w, shade) => `<g><rect x="${x}" y="58" width="${w}" height="122" fill="url(#hongBrick)"/>
+    ${[0, 1, 2, 3, 4, 5, 6, 7, 8].map((r) => `<path d="M${x} ${66 + r * 13}H${x + w}" stroke="#6E2436" stroke-width=".8" opacity=".5"/>`).join('')}
+    <path d="M${x + w / 2 - 9} 178V146a9 9 0 0 1 18 0V178Z" fill="url(#winG)"/>
+    <path d="M${x + w / 2 - 8} 116V94a8 8 0 0 1 16 0V116Z" fill="url(#winG)"/>
+    <rect x="${x}" y="58" width="${w}" height="8" fill="#F3E6CC"/><rect x="${x}" y="126" width="${w}" height="5" fill="#F3E6CC"/>
+    <rect x="${x}" y="58" width="${w}" height="122" fill="#140C34" opacity="${shade}"/></g>`;
+  return `<g filter="url(#z3)">${fac(0, 34, .4)}${fac(34, 72, 0)}${fac(106, 34, .22)}
+    <path d="M-6 60L20 30H120L146 60Z" fill="#5A2C3A"/><path d="M20 30H120" stroke="#E8C77A" stroke-width="2"/>
+    <path d="M52 30L58 6H82L88 30Z" fill="#6E3446"/><rect x="66" y="-8" width="8" height="16" fill="#F3E6CC"/></g>
+    <text x="70" y="53" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="15" fill="#FFE9B0" letter-spacing="3">紅 樓</text>`;
+};
+set('hongLou', svgIn(140, 180, hong()));
+const neonFlat = (w, h, txt, col, bgc) => `<g filter="url(#z3)"><rect width="${w}" height="${h}" rx="6" fill="${bgc}"/></g>
+  <rect x="5" y="5" width="${w - 10}" height="${h - 10}" rx="4" fill="none" stroke="${col}" stroke-width="2" filter="url(#glowS)"/>
+  ${[...txt].map((c, i) => `<text x="${w / 2}" y="${38 + i * 38}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="29" fill="${col}" filter="url(#glowS)">${c}</text>`).join('')}`;
+set('signL', svgIn(70, 150, neonFlat(70, 150, '西門町', C.neonPink, '#22184A')));
+set('signR', svgIn(66, 140, neonFlat(66, 140, '夾娃娃', C.neonCyan, '#1A2050')));
+set('kids', svgIn(110, 104, `${crawlBaby(SPR, 32, 100, 58)}<image href="${SPR}mocha-sit@3x.webp" x="66" y="30" width="38" height="72" filter="url(#standee)"/>`));
+
+// ---------- OLD floor + old pieces folding down ----------
+// OLD floor = 3-6 台灣大學: 醉月湖 printed on the page (water, moon reflection, grass bank)
+let of = `<rect width="354" height="296" fill="#2C3C7A"/><rect y="200" width="354" height="96" fill="#3E6A5A"/>
+  <path d="M0 200Q90 186 177 198T354 194V210H0Z" fill="#4E7A62"/>
+  ${Array.from({ length: 14 }, (_, i) => `<path d="M${(i * 53) % 330} ${20 + i * 13}h${18 + (i % 3) * 10}" stroke="#9AA8E8" stroke-width="1.6" opacity=".7" stroke-linecap="round"/>`).join('')}
+  <ellipse cx="250" cy="96" rx="24" ry="10" fill="#FFF2C4" opacity=".85"/><ellipse cx="250" cy="96" rx="48" ry="18" fill="#FFF2C4" opacity=".18"/>
+  ${[[60, 150], [110, 170], [300, 160], [200, 140]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="11" ry="5" fill="#4E8A62"/><path d="M${x} ${y}l9 -3" stroke="#2C3C7A" stroke-width="1.5"/>`).join('')}
+  <g transform="translate(140 110)"><ellipse rx="16" ry="7" fill="#F3EEE4"/><path d="M10 -2q6 -16 2 -22q4 -2 6 2q-2 6 -4 20z" fill="#F3EEE4"/><path d="M16 -24l7 1l-6 2z" fill="#F0A030"/><ellipse cy="6" rx="18" ry="3" fill="#0A0624" opacity=".3"/></g>`;
+of += `<rect width="354" height="296" fill="#2A2260" opacity=".2"/><rect width="354" height="230" fill="url(#underShade)"/>`;
+set('oldFloor', svgIn(354, 296, of));
+const palm = () => `<g filter="url(#z2)"><path d="M72 110Q66 70 68 34" stroke="#7A6A58" stroke-width="5" fill="none"/>
+  ${[-60, -25, 10, 45, 80].map((a) => `<path d="M68 30q${f1(Math.cos(a * Math.PI / 180) * 30)} ${f1(-20 + Math.sin(a * Math.PI / 180) * 10)} ${f1(Math.cos(a * Math.PI / 180) * 50)} ${f1(Math.sin(a * Math.PI / 180) * 18 - 4)}" stroke="#2E6A54" stroke-width="7" fill="none" stroke-linecap="round"/>`).join('')}</g>
+  `;
+set('oldPlat', svgIn(144, 110, palm())); set('oldPlat2', svgIn(144, 110, palm()));
+// old flat: 傅鐘 + 總圖 facade, riding the leaf as it folds down
+set('oldStation', svgIn(298, 194, `<g filter="url(#z2)"><rect x="30" y="86" width="238" height="108" fill="#C8B49A"/>
+  <path d="M20 90L149 50L278 90Z" fill="#6A4A4A"/><rect x="128" y="22" width="42" height="72" fill="#D8C6A8"/><path d="M122 26L149 4L176 26Z" fill="#6A4A4A"/></g>
+  <circle cx="149" cy="44" r="9" fill="#FFF1C4"/>
+  ${Array.from({ length: 7 }, (_, i) => `<path d="M${48 + i * 32} 194V140a10 10 0 0 1 20 0V194Z" fill="url(#winG)" opacity=".85"/>`).join('')}
+  <g filter="url(#z2)" transform="translate(262 120)"><rect x="-6" y="-60" width="12" height="74" fill="#D8C6A8"/><path d="M-9 -60L0 -72L9 -60Z" fill="#6A4A4A"/><circle cy="-44" r="5" fill="#F3E6CC" stroke="#8A6A4A"/></g>
+  <rect width="298" height="194" fill="#0A0624" opacity=".14"/>`));
+
+// ---------- the leaf: one 344-tall artwork sliced across 3 strips ----------
+let front = `<rect width="354" height="344" fill="url(#skyOld)"/>${pinholes(0, 0, 354, 220, 50, 9)}
+  <g filter="url(#z1)"><circle cx="294" cy="66" r="30" fill="#FFF2C4"/></g><circle cx="294" cy="66" r="60" fill="#FFF0C0" opacity=".14" filter="url(#blur8)"/>
+  <g filter="url(#z1)"><path d="${scallopBand(-4, 358, 170, 344, 21, 9, 34)}" fill="#26307A"/></g>
+  <rect width="354" height="344" fill="url(#leafSheen)"/>
+  <rect width="354" height="344" filter="url(#grain)" opacity=".5" style="mix-blend-mode:soft-light"/>`;
+let backS = `<rect width="354" height="344" fill="url(#brickRoad)"/><rect width="354" height="344" fill="url(#herring)"/>
+  <rect y="306" width="354" height="38" fill="url(#tiles)"/><path d="M0 306H354" stroke="#E8C77A" stroke-width="2"/>
+  ${[0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="${66 + i * 30}" y="170" width="15" height="60" fill="#F3E6CC" opacity=".5"/>`).join('')}
+  <rect width="354" height="90" fill="url(#gutAO)" transform="rotate(180 177 45)"/>
+  <rect width="354" height="344" filter="url(#grain)" opacity=".5" style="mix-blend-mode:soft-light"/>`;
+// strips: s1 = rows 229..344 (bottom, at the hinge), s2 = 114..229, s3 = 0..114
+set('s1f', svgIn(354, 344, front, -229)); set('s2f', svgIn(354, 344, front, -114)); set('s3f', svgIn(354, 344, front, 0));
+// back faces are rotated 180°: their top row sits at the strip's bottom (the hinge side) → new floor far edge first
+set('s1b', svgIn(354, 344, backS, 0)); set('s2b', svgIn(354, 344, backS, -115)); set('s3b', svgIn(354, 344, backS, -230));
+
+// ---------- overlay: chapter card dropping in on strings + motion ----------
+let fx = '';
+fx += `<path d="M120 0V58M270 0V52" stroke="#E8DCC0" stroke-width="1.2" opacity=".8"/>`;
+fx += `<g transform="translate(195 96) rotate(-3)">
+  <g filter="url(#z4)"><rect x="-128" y="-44" width="256" height="92" rx="4" fill="${C.page}" filter="url(#deckle)"/></g>
+  ${fibers(-126, -42, 252, 88, 60, '#A88A5E', 12, .2)}
+  <rect x="-128" y="-44" width="14" height="92" fill="${C.seal}" opacity=".9"/>
+  <text x="-96" y="-14" font-size="14" font-weight="700" fill="${C.inkSoft}" letter-spacing="2">第四章 · 霓虹燈睡著了</text>
+  <text x="-97" y="28" font-family="'Noto Serif TC'" font-weight="900" font-size="36" fill="${C.ink}" letter-spacing="4">西門町</text>
+  <g transform="translate(50 6)"><rect width="52" height="24" rx="12" fill="${C.cover}"/><text x="26" y="17" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="14" fill="${C.goldL}">01:50</text></g>
+  ${seal(104, -22, '翻', 14)}
+</g>`;
+// trail of the leaf's free edge: a dotted arc + paper flecks thrown off it
+fx += `<g fill="none" stroke="#FFF4DA" stroke-linecap="round"><path d="M28 300Q12 420 70 520" stroke-width="2.2" opacity=".55" stroke-dasharray="1 8"/>
+  <path d="M376 266Q394 400 350 506" stroke-width="2.2" opacity=".55" stroke-dasharray="1 8"/></g>`;
+const r = rng(5);
+for (let i = 0; i < 16; i++) { const x = 20 + r() * 350, y = 200 + r() * 360, sz = 3 + r() * 5, rot = r() * 180;
+  const col = ['#FFE9B0', '#FF9AC4', '#9AE8FF', '#F3E6CC'][i % 4];
+  fx += `<rect x="${f1(x)}" y="${f1(y)}" width="${f1(sz)}" height="${f1(sz * .6)}" fill="${col}" opacity=".8" transform="rotate(${f1(rot)} ${f1(x)} ${f1(y)})"/>`; }
+fx += sparkle(330, 250, 7, '#FFE9B0') + sparkle(60, 300, 5, '#FFE9B0') + sparkle(300, 360, 4, '#FFFFFF');
+fx += `<text x="195" y="812" text-anchor="middle" font-size="15" font-weight="700" fill="#E8DCF0" opacity=".8" letter-spacing="2">寶咖咖爬進下一頁…</text>`;
+set('fx', fx);
+</script>
+</body></html>
