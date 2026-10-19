@@ -5,17 +5,15 @@ import { replay } from '../core/replay';
 import { solve, toSolutionSteps, type SolveResult } from '../core/solver';
 import type { PageDef } from '../core/types';
 import { PAGES } from './index';
+import { CI_BUDGET_MS, formatDetails, formatTable, judge, PAR_BAND } from './report';
 
 /**
  * Every registered page must pass this (GDD § 3.7, issue #87): the lint has no errors; replaying
  * its `solution` reaches `done`; the solver finds it solvable with no dead ends, no cascade
  * overflow, not trivial (unless `allowTrivial`), and the 淘氣 and 土地公 reachable. Par outside
  * the difficulty band is a warning. Content issues add pages to the registry, never to this file.
- * On a failure the assertion message carries a compact report table (page, par, states, ms).
+ * On a failure the assertion message carries the `npm run solve` report table (`./report.ts`).
  */
-
-/** GDD § 3.7: difficulty → par band. */
-const PAR_BAND: Record<PageDef['difficulty'], [number, number]> = { 1: [1, 2], 2: [2, 3], 3: [3, 4], 4: [4, 5], 5: [5, 7] };
 
 interface Row {
   readonly def: PageDef;
@@ -26,15 +24,10 @@ interface Row {
 const clock = () => performance.now();
 const rows: Row[] = PAGES.map((def) => ({ def, lint: lintPage(def, SCRIPT), solved: solve(def, undefined, { clock }) }));
 
-const pad = (s: string | number, n: number) => String(s).padEnd(n);
-/** The report designers read when a page fails: one line per page. */
+/** The report designers read when a page fails: `npm run solve`'s table (replay is checked by its own test). */
 function table(): string {
-  const head = `${pad('page', 8)}${pad('diff', 6)}${pad('par', 6)}${pad('states', 10)}${pad('dead', 7)}${pad('ms', 8)}lint`;
-  const lines = rows.map(({ def, lint, solved: r }) =>
-    `${pad(def.id, 8)}${pad(def.difficulty, 6)}${pad(r.par ?? '-', 6)}${pad(r.statesExplored, 10)}${pad(r.deadEndCount ?? '?', 7)}${pad(Math.round(r.ms ?? 0), 8)}` +
-    `${lint.errors.length}E ${lint.warnings.length}W${r.error ? ` ${r.error.kind}` : ''}${r.stop ? ` stop:${r.stop}` : ''}`,
-  );
-  return ['', head, ...lines].join('\n');
+  const report = rows.map(({ def, lint, solved }) => judge(def, lint, solved, { replayOk: true }));
+  return ['', formatTable(report), formatDetails(report)].join('\n');
 }
 
 describe('the page registry', () => {
@@ -44,7 +37,7 @@ describe('the page registry', () => {
 
   test('solves within the CI budget (GDD § 3.7: all 65 pages in under 60 s)', () => {
     const ms = rows.reduce((sum, { solved }) => sum + (solved.ms ?? 0), 0);
-    expect(ms, table()).toBeLessThan(60_000);
+    expect(ms, table()).toBeLessThan(CI_BUDGET_MS);
   });
 });
 

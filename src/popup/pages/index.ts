@@ -10,6 +10,7 @@ import c1p2 from './c1/p2';
  *
  * **Adding a page:** create `cN/pK.ts` (`export default definePage({ … })`), import it here and put
  * it in `AUTHORED` in play order. Nothing else — `pages.test.ts` picks it up.
+ * `npm run solve` (`report.ts`, `scripts/solve-pages.ts`) prints the per-page solver report.
  *
  * The prologue is chapter 0. `buildRegistry` fills in the defaults that depend on the order
  * (GDD § 3.2): `words` = the words learned (`learns.word`) on earlier pages, and `baby.growth` =
