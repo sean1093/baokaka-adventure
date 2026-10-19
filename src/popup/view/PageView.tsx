@@ -1,9 +1,8 @@
 import { useMemo, type ReactNode } from 'react';
 import { POPUP } from '../../art/palette';
-import { checkKnot, pawBadge } from '../art';
 import { useSvgIds } from '../../art/useSvgIds';
 import { useReducedMotion } from '../../components/motion';
-import { kitCtx, type KitCtx } from '../art';
+import { checkKnot, kitCtx, pawBadge, type KitCtx } from '../art';
 import { attractorNode } from '../core/baby';
 import { holds, partState } from '../core/cond';
 import { partLocked } from '../core/step';
@@ -37,7 +36,7 @@ import { foregroundSlot, stageOf } from './stage';
  *
  * Gestures (#90, `gestures.ts`) reach it as `gesture` flags: a part held between stops by a drag
  * (its riders follow), the dragged and the locked part (`data-dragging`, `data-locked` and a
- * wobble; #140 draws the full states), Mocha's glare, Baokaka watching the finger, and
+ * wobble; their looks are below), Mocha's glare, Baokaka watching the finger, and
  * hold-to-reveal outlines. The hit layer draws every touchable's hit shape grown to 48 screen px
  * (`minHit`), the same shapes `hitTest` uses; a grown one is marked `data-hit-grown` (its own shape
  * is under 48 px at this scale; `npm run check:ui` forbids that at 390 × 844).
