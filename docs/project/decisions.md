@@ -661,3 +661,34 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #103's album reads `rewardFlags(save).mischiefCover` for the 「淘氣大王」 cover; the bonus page (M4) reads `bonusPage`.
 - #105 can sound the slap, the pop and 「這個！」 (they are `data-` marked: `[data-card-sticker]`, `[data-sticker-pop]`, `[data-grab-burst]`).
 - Fixtures: `c1p2-grab`, `sticker-card`, `sticker-mischief`, `sticker-tudigong`, `contents-mischief`; `check:play` runs `stickers-c1p2` (all three of 1-2's stickers in the shell, the card, the 目錄).
+
+### D-65 · 2026-10-19 · The chapter card, its lines and the script for chapters 0–1 (#102)
+
+**Context.** #102 builds the departure-board chapter card (GDD § 2.13, § 5.2; bible § 7, § 2.4) and copies every prologue and chapter 1 line into `content/script.ts`. #97's chapter turn hung a simple card for ≈ 2.4 s. Several points are left open:
+- where the narration lines play ("over the card or the first page") and how the turn waits for them;
+- when the card shows outside a turn (the GDD flow has 目錄 → chapter card → page);
+- the prologue's 下一站;
+- how the bible's 「第N章 · title」 fits a 296 px card;
+- how speech is stored.
+
+**Decision.**
+1. **The card's lines hold the turn.** `playTurn` gains a second hold, `TurnHooks.card`, at the card's `settle` (after the drop and two swings, `CARD_MS.drop` 820 ms). While it holds, only the camera, the card and what has not started yet are paused. What is already moving keeps going: the leaf, the confetti, and the new page rising under the card in a chapter turn. The lines play under the card in beats of ≤ 3, a tap a beat, through the shell's talk queue (`game/talk.ts`), with no timer (§ 2.13). After the last tap the card lifts (300 ms) and the camera comes back in. A tap before the lines appear skips the whole turn, as #97 had it. While the lines are up, the card layer is a modal (`aria-modal`; the book is `aria-hidden`), and its own full-screen button (「下一句」) takes the taps.
+2. **Which lines.** `cardLines(chapter)` in `content/chapters.ts`:
+   - The prologue's card plays P lines 1–5: the eve of the birthday, 阿嬤's two lines, Mocha falls asleep.
+   - Page 0-1 opens on lines 6–12: midnight, the little cloud, the treasures and the book blown away, Baokaka's 「……哇。」. This puts the "night of the incident" on the page it happens on.
+   - Chapter 1's card plays all four of its lines.
+   - Chapters 2–10 add theirs with their content issues.
+3. **The chapter open.** Opening a chapter's first page from the cover or the 目錄 (「開始」 and 「繼續」 included) plays the card first, as a new turn kind, `'open'` (≈ 1.9 s). The book already lies on the quilt in the 3/4 view, with its pop-ups flat. The card drops, its lines play, it lifts, the camera comes in, and the pop-ups rise. 重來 and a turn into the page don't open it. The test is `opensChapter`: the first *registered* page of its chapter, so 1-2 stands in for 1-1 until #107. Under reduced motion every card fades in, holds and fades out.
+4. **A page's intro waits.** A page held at its start (a turn bringing it in, an `'open'`) keeps its `lines.intro` until the hold ends. The shell holds an opening page from its first frame, so its intro never shows under the card.
+5. **Layout.** The chapter is set vertically on the red spine (「第一章」, like a book's spine). The title is in red serif on the first row, beside the time chip. This keeps 「第十章 · 離天空最近的地方」 inside the card. The spine and the 翻 seal use the deep seal red (`sealDark`): `seal` red fails 7:1 under cream lettering. The landmark is 36 px, smaller only for a six-character name (大安森林公園). The board has one split-flap tile per character, digits included (台北101 is five tiles).
+6. **下一站.** It is `ChapterInfo.next`, copied from § 5.2 (公館, 西門, 劍潭, 動物園, 新北投 …; ≤ 8 characters). The prologue's is 家: the 月亮線 starts from home, and the GDD names none.
+7. **The script.** Keys follow the § 5.2 headings: `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`. Speech is stored without its outer 「」 (the bubble is the quote), as #98's lines were; inner 『』 stay. 咻咻's prologue lines carry the label 「小小的雲」. The § 5.7 UI strings that have no screen yet (photo, settings, bonus) are in `UI` for #103, #104 and #135. New strings not in § 5.7: 「跳過」 and 「下一句」, the tap layers' accessible names.
+8. **QA.** Text and touchables under an open modal are no longer measured by `check:ui`: they are out of reach. This matches what it already did for text under the pause menu. They still count as the page's touchables.
+
+**Why.** Holding the existing timeline keeps one turn, one tap layer and one skip rule. Letting what is already moving finish avoids pop-ups freezing mid-rise under the card. Splitting the prologue lets the card set the scene and the page tell the incident, without a 12-line card. Opening a chapter with its card from the cover makes 「開始」 begin with the prologue's story, as the GDD's flow intends.
+
+**Consequences.**
+- #106 wires 0-3's join lines (`lines.intro`) and 0-4's train lines (`lines.onEvent` on `partEnter train on`). #107 wires 1-1, 1-5 and 1-6. With 1-1 registered, chapter 1's card opens before 1-1.
+- #105 can sound the drop, the flaps and the lift: `[data-chapter-board]`, `[data-flap]`.
+- #110's playtest: the prologue card plus the 0-1 intro is five taps of reading before play. Watch whether children wait for it.
+- Fixtures: `chapter-card-p` and `chapter-card-c1`. `check:play` runs `prologue-card`, from a fresh save to 0-1's intro.
