@@ -436,6 +436,8 @@ Keep sounds **dry and close**, like paper on a table, with no reverb tails. The 
 | Bubbles, seals, sparkles, chalk lines | SVG | Live SVG (cheap: flat fills, no filters). The sparkles' glow is a baked sprite. |
 | Grain | Live in the proofs | **Baked into every bitmap.** Never a full-screen live noise layer at runtime. |
 
+**Engineers' note (#94, D-56).** Character frames are baked by `npm run sync:sprites` with `standeeFilter(id, { bake: true })`: the shadows have no x offset (frames are mirrored for facing left; the floor ellipse, outside the frame, carries the light), the card is cut from a softened silhouette, and the print is trimmed to it. The half grade will be baked per chapter once #96 defines the grades.
+
 **Bake step:** add `scripts/bake-popup.mjs`, mirroring `docs/art/v2/tools/bake.py` and `render.mjs`.
 - Playwright renders each page's SVG layers and each part to WebP @2x (@3x optional), with a manifest of sizes and anchor points.
 - The kit functions port to `src/popup/art/` as TS returning SVG strings, so PageLab can preview un-baked art live.

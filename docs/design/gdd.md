@@ -875,6 +875,8 @@ All frames are at map scale (~70 px tall for Baokaka crawling, at 390-wide).
 - **Budget.** Moving pieces are `data-anim` groups (transforms only). The ≤ 150 budget below is counted as every element inside them.
 - **Readings** in D-50.
 
+**For engineers.** #94 put the baked frames in the build (D-56): `npm run sync:sprites` bakes `docs/art/v2/baked` with the standee look into `src/popup/assets/sprites/` and the typed `src/popup/sprites/sprites.gen.ts`; `src/popup/sprites/` holds the loader (@2x for DPR ≤ 2, else @3x; `img.decode()`; a placeholder card until decoded; per-chapter groups) and `<SpriteAnim>` (one `<image>`, one shared rAF clock, `once` reports done, reduced motion holds the key frame, mirrored about the foot anchor). `view/actors/` draws 寶咖咖 and 摩卡 with it (a first mode mapping; #95 completes it). The core set every page preloads is 383.5 KB @3x.
+
 **Performance budget:**
 - 60 fps on a mid-range phone (2021 Android).
 - ≤ 150 animated DOM/SVG nodes per page.
