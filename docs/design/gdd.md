@@ -491,6 +491,8 @@ All sound is **synthesised with WebAudio**, extending `src/shared/audio.ts` (no 
 
 Dialogue appears in **short subtitle bubbles over the page** (≤ 30 chars, max 3 per beat, tap to advance). There is no dialogue box covering the play.
 
+**For engineers (#102, D-65).** The chapter card is `view/hud/ChapterBoard.tsx`: the chapter on the red spine (「第一章」, set vertically), the title, the time chip, the landmark, the 翻 seal and the split-flap 「下一站」 row (`ChapterInfo.next`). It hangs in every chapter turn, and before a chapter's first page when that page is opened from the cover or the 目錄 (「開始」 included). Once it settles, its lines (`cardLines`) play under it a tap a beat. A tap before then skips the whole turn. The page's own intro plays after the turn.
+
 **For engineers (#98, D-61).** A beat is ≤ 3 lines, narration included. A tap on a bubble or the strip advances it and never reaches the page. Nothing advances on a timer.
 
 ---
@@ -1311,6 +1313,8 @@ Unlocked by collecting all 65 土地公 stickers. It's a gentle sunrise page on 
 ### 5.2 Chapter intros and story beats
 
 The chapter card shows: 第N章｜title｜HH:MM｜下一站 (≤ 8 chars). The lines below play over the card or the first page. They are all skippable with a tap.
+
+**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`.
 
 **P · 序章「度晬前一晚」 00:00** (card, then 0-1)
 

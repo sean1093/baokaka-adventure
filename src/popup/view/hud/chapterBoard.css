@@ -1,0 +1,211 @@
+/*
+ * The chapter card (#102; GDD § 2.13, bible § 7, § 2.4). The card's drop, swings, lift and the
+ * board's flaps are Web Animations the turn plays (`transitions/pageTurn.ts`); the styles here are
+ * the settled card, so a still and reduced motion show it finished. The lines' entrances are
+ * one-shot CSS animations (opacity-only under reduced motion; `[data-still]` stops them).
+ */
+
+.cb-card {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  pointer-events: none;
+  /* The strings' top: the pivot it swings about */
+  transform-origin: 50% 0;
+}
+
+.cb-tilt {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-1.2deg);
+  transform-origin: 50% 0;
+}
+
+.cb-spine {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  line-height: 1;
+}
+
+/* The lettering's own box, tight round its glyphs, inside a shape whose corners are paper (R5 contrast reads the pixels behind this box) */
+.cb-run {
+  display: inline-block;
+  line-height: 1;
+}
+
+.cb-text {
+  position: absolute;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.cb-chip {
+  position: absolute;
+  height: 30px;
+  min-width: 70px;
+  padding: 0 12px;
+  border-radius: 15px;
+  font-family: Fredoka, sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 30px;
+  text-align: center;
+}
+
+.cb-seal {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 7px;
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 36px;
+  text-align: center;
+  transform: rotate(4deg);
+}
+
+.cb-row {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 8px 0 10px;
+  box-sizing: border-box;
+}
+
+.cb-label {
+  flex: none;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+/* A split-flap tile: the glyph's top half over a blank bottom half, and two flaps the turn flips */
+.cb-tile {
+  position: relative;
+  flex: none;
+  perspective: 160px;
+  border-radius: 3px;
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.45);
+}
+
+.cb-half {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  overflow: hidden;
+}
+
+.cb-top {
+  top: 0;
+  border-radius: 3px 3px 0 0;
+}
+
+.cb-bot {
+  bottom: 0;
+  border-radius: 0 0 3px 3px;
+}
+
+.cb-glyph {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 40px;
+  line-height: 40px;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cb-top .cb-glyph {
+  top: 0;
+}
+
+.cb-bot .cb-glyph {
+  bottom: 0;
+}
+
+/* Settled: the blank top flap has fallen away, the new bottom half has landed */
+.cb-flap {
+  backface-visibility: hidden;
+}
+
+.cb-flap.cb-top {
+  transform: rotateX(-90deg);
+  transform-origin: 50% 100%;
+}
+
+.cb-flap.cb-bot {
+  transform: rotateX(0deg);
+  transform-origin: 50% 0;
+}
+
+.cb-hinge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 0.5px);
+  height: 1px;
+}
+
+/* The lines under the card */
+.cb-talk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.cb-line {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: cb-line 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.cb-line-strip {
+  animation: cb-strip 260ms ease-out both;
+}
+
+.cb-line-fade {
+  animation: cb-fade 200ms ease-out both;
+}
+
+@keyframes cb-line {
+  0% {
+    transform: scale(0.82);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes cb-strip {
+  0% {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes cb-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

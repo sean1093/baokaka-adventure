@@ -5,9 +5,13 @@ import type { LineKey } from '../core/types';
  * Lint rule 10 checks every page's line keys against `SCRIPT` (`pages.test.ts`, `npm run solve`,
  * PageLab); the subtitle queue (`game/talk.ts`) loads a page's `lines` through `loadLine`.
  *
- * Keys follow the § 5 headings: `c1.intro.2` (chapter 1's card lines, § 5.2), `rec.pa.ride.1`
- * (§ 5.3 recurring lines). #98 brought the speaker table, the loader and the lines its fixtures
- * play; #102 copies the rest of § 5 in.
+ * Keys follow the § 5 headings: `p.intro.3` (the prologue, § 5.2 P), `c1.intro.2` (chapter 1's
+ * card lines), `c0p3.join.4` / `c1p5.clerk.1` (a page's beat), `rec.pa.ride.1` (§ 5.3 recurring
+ * lines), `learn.beep.mocha` (§ 5.4). Speech is stored without its outer 「」 (the bubble is the
+ * quote); narration as written. #98 brought the speaker table, the loader and the lines its
+ * fixtures play; #102 copied every line of the prologue and chapter 1 (§ 5.2) and the § 5.3 lines
+ * they use. Chapters 2–10 come with their content issues. Which lines a chapter card plays is
+ * `chapters.ts` (`cardLines`).
  */
 
 /** § 5.1 speakers: who a line belongs to (its subtitle label, colour and anchor). */
@@ -52,12 +56,53 @@ export interface ScriptLine {
 }
 
 export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
-  // § 5.2 Ch1 「便當的味道」 00:20 (the chapter card and the first page)
+  // § 5.2 P 序章「度晬前一晚」 00:00: the card plays 1–5 (`CARD_LINES`), page 0-1 opens on 6–12
+  'p.intro.1': { who: 'nar', text: '明天，是寶咖咖一歲的生日。' },
+  'p.intro.2': { who: 'nar', text: '台灣話，叫做「度晬」。' },
+  'p.intro.3': { who: 'grandma', text: '九樣寶物，長長久久。' },
+  'p.intro.4': { who: 'grandma', text: '摩卡，今暗顧好喔。' },
+  'p.intro.5': { who: 'nar', text: '……然後，摩卡就睡著了。' },
+  'p.intro.6': { who: 'nar', text: '半夜十二點，窗戶喀啦喀啦響。' },
+  'p.intro.7': { who: 'shushu', label: '小小的雲', text: '嘻……生日？什麼是生日？' },
+  'p.intro.8': { who: 'nar', text: '小小的雲轉了一圈——呼！' },
+  'p.intro.9': { who: 'nar', text: '寶物全部飛出了窗外。' },
+  'p.intro.10': { who: 'shushu', label: '小小的雲', text: '對、對不起——！' },
+  'p.intro.11': { who: 'nar', text: '阿嬤送的立體書，也被吹開了。' },
+  'p.intro.12': { who: 'baby', text: '……哇。' },
+  // § 5.2 0-3 Mocha joins (on page open: 0-3's `lines.intro`, #106)
+  'c0p3.join.1': { who: 'mocha', text: '……喵？盤子……空的？' },
+  'c0p3.join.2': { who: 'mocha', text: '完了完了完了。' },
+  'c0p3.join.3': { who: 'mocha', text: '阿嬤五點半就起床了。' },
+  'c0p3.join.4': { who: 'mocha', text: '我自己去找。你乖乖睡覺。' },
+  'c0p3.join.5': { who: 'baby', text: '不要！' },
+  'c0p3.join.6': { who: 'mocha', text: '你連走路都還不會。' },
+  'c0p3.join.7': { who: 'baby', text: '要！' },
+  'c0p3.join.8': { who: 'mocha', text: '他說：『我也要去。這是我的生日。』' },
+  'c0p3.join.9': { who: 'mocha', text: '……我在跟誰翻譯？' },
+  'c0p3.join.10': { who: 'mocha', text: '……好啦。跟緊我。' },
+  // § 5.2 0-4 The train wakes (on the cry → `train: on`: 0-4's `lines.onEvent`, #106)
+  'c0p4.train.1': { who: 'pa', text: '月亮線列車，即將進站。' },
+  'c0p4.train.2': { who: 'pa', text: '本列車，只載還沒睡的人。' },
+  'c0p4.train.3': { who: 'mocha', text: '……還有沒睡的貓。' },
+  // § 5.2 Ch1 「便當的味道」 00:20 (the chapter card)
   'c1.intro.1': { who: 'pa', text: '下一站，台北車站。Next station…' },
   'c1.intro.2': { who: 'mocha', text: '台北最大的車站。也最好迷路。' },
   'c1.intro.3': { who: 'nar', text: '大廳的地板，黑白黑白，像棋盤。' },
   'c1.intro.4': { who: 'mocha', text: '聞到了嗎？……是便當。' },
-  // § 5.3 recurring lines
+  // § 5.2 1-1 背包客 (#107 wires them to the backpacker waking: § 5.3's lines for 1-1)
+  'c1p1.pack.1': { who: 'pack', text: 'Excuse me… where is 101?' },
+  'c1p1.pack.2': { who: 'mocha', text: '往前走，看到最高的就是。' },
+  // § 5.2 1-5 店員小哥 (his chapter cameo, § 5.3)
+  'c1p5.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c1p5.clerk.2': { who: 'mocha', text: '……你怎麼在這裡？' },
+  'c1p5.clerk.3': { who: 'clerk', text: '我們是連鎖的。' },
+  // § 5.2 1-6 end (the treasure found; 阿嬤's line is also the album's, #103)
+  'c1p6.end.1': { who: 'nar', text: '找到了！抓周寶物——雞腿。' },
+  'c1p6.end.2': { who: 'grandma', text: '雞腿，一世人呷好料。' },
+  'c1p6.end.3': { who: 'baby', text: '好吃！' },
+  'c1p6.end.4': { who: 'mocha', text: '那是阿嬤的，不能吃。' },
+  // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
+  // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },
   'rec.pa.ride.2': { who: 'pa', text: '請讓座給需要的人。' },
   'rec.pa.ride.3': { who: 'pa', text: '車門即將關閉。' },

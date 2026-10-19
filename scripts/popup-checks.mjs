@@ -19,8 +19,8 @@
  *   Flashing       with the fixture live and motion on, no animation flashes above 3 Hz (opacity or
  *                  luminance swings of ≥ 10 %, counted per second of the animation's run).
  *
- * Text outside an open modal dialog (`aria-modal`, the pause menu) is inert under its scrim and is
- * not checked; the dialog's own text is.
+ * Text and touchables outside an open modal dialog (`aria-modal`: the pause menu; the chapter card
+ * while its lines play, #102) are out of reach under it and are not checked; the dialog's own are.
  *
  * Lettering that is part of a picture (a station's name plate, a split-flap digit, a verb seal's
  * glyph) is marked `data-art-text` in the art and is not text in the R5 sense: the game never asks
@@ -188,7 +188,9 @@ function collect({ waivers, artText, minText, minTextBig }) {
     if (opacityOf(el) === 0 && !el.hasAttribute('data-hit')) continue;
     const box = el.getBoundingClientRect();
     if (box.width === 0 && box.height === 0) continue;
-    hits.push({ label: label(el), w: Math.round(box.width * 10) / 10, h: Math.round(box.height * 10) / 10, page: el.hasAttribute('data-hit'), grown: el.hasAttribute('data-hit-grown'), waived: waivedFor(el, 'hit') });
+    // Out of reach under an open modal (the pause menu, the chapter card's lines, #102): still counted as the page's, never measured
+    const covered = modal !== null && !modal.contains(el);
+    hits.push({ label: label(el), w: Math.round(box.width * 10) / 10, h: Math.round(box.height * 10) / 10, page: el.hasAttribute('data-hit'), grown: el.hasAttribute('data-hit-grown'), waived: waivedFor(el, 'hit'), covered });
   }
   // A specimen sheet with nothing to touch (the #94 sprite sheet) says so; pages never do. A screen
   // that is not a page (the cover, the 目錄, #97) has buttons, not page touchables
@@ -365,7 +367,7 @@ export async function checkPopup(browser, base, viewports, report) {
           faint.push(`「${t.text}」 fill ${t.fill} is not a flat colour (cannot measure)`);
         }
       }
-      const tiny = hits.filter((h) => !h.waived && (h.w < MIN_HIT_PX - 0.5 || h.h < MIN_HIT_PX - 0.5)).map((h) => `"${h.label}" ${h.w}×${h.h}`);
+      const tiny = hits.filter((h) => !h.waived && !h.covered && (h.w < MIN_HIT_PX - 0.5 || h.h < MIN_HIT_PX - 0.5)).map((h) => `"${h.label}" ${h.w}×${h.h}`);
       const pageHits = hits.filter((h) => h.page).length;
       const label = `${viewport.name}/${name}`;
       artRuns += art;
@@ -377,7 +379,7 @@ export async function checkPopup(browser, base, viewports, report) {
       else if (tiny.length === 0) pass(report, `${label}: ${hits.length} hit areas ≥ ${MIN_HIT_PX}×${MIN_HIT_PX}`);
       else report.fail(`${label} hit areas: ${tiny.join('; ')}`);
       if (viewport.name === REFERENCE_VIEWPORT) {
-        const grown = hits.filter((h) => h.grown && !h.waived).map((h) => `"${h.label}"`);
+        const grown = hits.filter((h) => h.grown && !h.waived && !h.covered).map((h) => `"${h.label}"`);
         if (grown.length === 0) pass(report, `${label}: every page hit shape is ≥ ${MIN_HIT_PX} px after the book scale (none grown)`);
         else report.fail(`${label} hit areas under ${MIN_HIT_PX} px after the book scale (grown by the hit layer): ${grown.join(', ')}`);
       }

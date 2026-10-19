@@ -69,6 +69,16 @@ export function isFirstLaunch(save: SaveV1, reg: PageRegistry = gameRegistry): b
   return Object.keys(save.pages).length === 0 && save.current === first && save.furthest === first;
 }
 
+/**
+ * Whether opening this page opens its chapter: it is the chapter's first registered page (GDD
+ * § 2.13: the chapter card comes before it; #102). Until a chapter's page 1 is built its first
+ * registered page stands in.
+ */
+export function opensChapter(id: Id, reg: PageRegistry = gameRegistry): boolean {
+  const chapter = reg.chapterOf(id);
+  return chapter !== undefined && reg.pages.find((p) => p.chapter === chapter)?.id === id;
+}
+
 /** The chapter the 目錄 opens at: the chapter of the page to resume. */
 export function homeChapter(save: SaveV1, reg: PageRegistry = gameRegistry): number {
   return reg.chapterOf(resumeTarget(save, reg)) ?? 0;

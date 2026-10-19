@@ -15,6 +15,24 @@ export const UI = {
   /** 選單 (the pause menu, #97): 繼續 / 目錄 / 設定 / 封面 */
   menu: { resume: '繼續', contents: '目錄', settings: '設定', cover: '封面' },
   contents: { title: '目錄', collected: '已收集', locked: '月亮線還沒開到這裡。', back: '封面', mischief: '淘氣' },
+  /**
+   * The chapter card (§ 2.13, § 5.2; #102): the split-flap row's label. Not in § 5.7 (D-65): the
+   * accessible names of the tap layer while a turn plays (跳過) and while the card's lines play (下一句)
+   */
+  chapterCard: { next: '下一站', skip: '跳過', more: '下一句' },
+  /** § 5.7 Photo (#103) */
+  photo: { shutter: '咔嚓', retake: '再拍一次', keep: '放進相簿' },
+  /** § 5.7 Settings (#104) */
+  settings: {
+    speed: '速度', speeds: ['慢', '普通', '快'],
+    textSize: '字的大小', textSizes: ['標準', '大字'],
+    elder: '長輩模式',
+    autoHint: '自動提示', autoHints: ['關', '30秒', '15秒'],
+    sound: '音效', music: '音樂', vibration: '震動', reduceMotion: '減少動態', leftHand: '左手模式',
+    reset: '重新開始（按住三秒）',
+  },
+  /** § 5.7 Bonus (#135) */
+  bonus: '象山的日出',
   /** Not in § 5.7 (D-60): the album and settings screens until #103 / #104 build them */
   stub: { soon: '這一頁，還在畫。', back: '返回' },
 } as const;

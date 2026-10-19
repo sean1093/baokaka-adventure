@@ -71,6 +71,8 @@ export interface PopupFixture {
     readonly save: SaveV1;
     /** The page folded flat under its sticker card (#101; the save says which stickers it shows) */
     readonly card?: boolean;
+    /** The chapter card of this chapter (#102), settled over the book on the quilt, its first beat of lines under it */
+    readonly chapterCard?: number;
   };
 }
 
@@ -258,6 +260,20 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     screen: { nav: ON_PAGE, save: C1P2_DONE, card: true },
     note: 'The sticker card (GDD § 2.8, bible § 7; #101): 1-2 done and folded flat, the kraft card taped over it — 「月台的縫」, 解開 and 淘氣 slapped on (live: 200 ms apart, with a squash), 土地公 an empty dimple with his hat\'s silhouette, 「下一頁！」. A tap or 1.5 s turns the page.',
+  },
+  {
+    name: 'chapter-card-p',
+    page: 'c0p1',
+    steps: [],
+    screen: { nav: { base: { kind: 'page', id: 'c0p1', run: 0 }, layer: null }, save: FRESH, chapterCard: 0 },
+    note: 'The prologue\'s chapter card (GDD § 2.13, § 5.2 P; bible § 7; #102): 「開始」 opens the book on the quilt and the departure board drops in on two strings — 序章 on the red spine, 「度晬前一晚」, 00:00, 家, the 翻 seal, the split-flap row 「下一站 家」 (live: it swings twice and the tiles flip in). Under it the first beat: 「明天，是寶咖咖一歲的生日。」「台灣話，叫做「度晬」。」 and 阿嬤\'s 「九樣寶物，長長久久。」; a tap is the next beat, then 0-1 opens on the rest.',
+  },
+  {
+    name: 'chapter-card-c1',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ON_PAGE, save: PLAYED, chapterCard: 1 },
+    note: 'Chapter 1\'s card in the chapter turn (#102): 第一章, 「便當的味道」, 00:20, 台北車站, 「下一站 台北車站」 on the split-flap tiles, over the book pulled back on the quilt; under it 廣播姊姊\'s 「下一站，台北車站。Next station…」, 摩卡\'s 「台北最大的車站。也最好迷路。」 and the narration strip. Tap through the lines and the card lifts away, the camera comes back in.',
   },
   {
     name: 'sticker-mischief',

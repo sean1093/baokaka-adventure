@@ -33,4 +33,6 @@ export default definePage({
   mischief: { text: '讓床鈴轉起來', when: { type: 'partEnter', id: 'mobile', when: { part: 'mobile', in: ['spin'] } } },
   tudigong: { x: 330, y: 110, hat: '' },   // in the street shrine seen through the window; always visible, no hat in the prologue
   solution: [{ set: 'crib-rail', to: 'down' }, { wait: 'goal' }],
+  // GDD § 5.2 P: the prologue's card plays its first five lines; the page opens on the rest (#102)
+  lines: { intro: ['p.intro.6', 'p.intro.7', 'p.intro.8', 'p.intro.9', 'p.intro.10', 'p.intro.11', 'p.intro.12'] },
 });

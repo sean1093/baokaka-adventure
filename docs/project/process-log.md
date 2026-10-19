@@ -499,3 +499,33 @@ Format:
 - **QA.** Fixtures `c1p2-grab`, `sticker-card` (`screen.card`: the page folded flat via `[data-folded]`), `sticker-mischief`, `sticker-tudigong`, `contents-mischief`; 10 new baselines, existing targets unchanged (0 px). `check:play` gained `stickers-c1p2`: in the shell, four rides → 淘氣, the board flipped and the 土地公 tapped → 土地公, the solve, the card with all three, then the 目錄's 淘氣 line (mouse and touch, both viewports). `npm test`, `npm run build`, `check:ui --popup` (the list's page number moved to ink for 7:1) all pass.
 - **Decision.** D-64. GDD § 2.8, the bible § 7 and the handbook § 5 have engineers' notes.
 - **Follow-ups.** #103: the album reads `rewardFlags(save).mischiefCover`. #105: sounds for the slap, the pop, 「這個！」 and the burst. #110 playtest: the card adds ≈ 2.4 s between pages (tap to skip) — check it doesn't drag.
+
+### 2026-10-19 · Staff engineer · #102 Chapter card (departure board) and all prologue + chapter 1 lines (PR #171)
+- **Script (`content/script.ts`).**
+  - Every § 5.2 line of P (12 lines), 0-3 (10), 0-4 (3), the ch1 intro (kept from #98), 1-1, 1-5 and 1-6. 咻咻 is labelled 「小小的雲」. Hokkien and wording are exactly as in the GDD; speech is stored without its outer 「」.
+  - `chapters.ts` gains `next` (下一站) for all 11 chapters and `cardLines(chapter)` (P 1–5, ch1 1–4). 0-1's `lines.intro` is P 6–12.
+  - `ui.ts` gains the § 5.7 photo, settings and bonus strings and the card's 「下一站」.
+- **Card (`view/hud/ChapterBoard.tsx`, `chapterBoard.css`).**
+  - A cream card on two strings: 第N章 set vertically on a deep red spine, the title, the time chip, the landmark in 36 px serif, the 翻 seal.
+  - The split-flap 「下一站」 row: a tile per character, its flaps animated by the turn.
+  - `CardTalk` draws the lines under it: a washi strip for narration, die-cut cards with the speaker's tab for speech.
+- **Turn (`transitions/pageTurn.ts`).**
+  - The card is now the shell's element (`TurnPages.card` getter); `buildCard` is gone.
+  - New plan fields: `card.settle` and `camera.inEnd`. `TurnHooks.card` holds at the settle. Only non-free animations pause: the leaf, confetti and a chapter turn's rise finish.
+  - A new `'open'` kind: the book on the quilt from the start, its pop-ups flat until the camera comes in. Reduced motion fades the card in and out.
+- **Shell (`GameShell.tsx`).**
+  - `startTurn` serves the fold, chapter and open turns.
+  - The card's lines run through `game/talk.ts`. Taps are the next beat while the lines are up: a modal layer with its own button.
+  - A chapter's first page opened from the cover or the 目錄 plays the open turn (`opensChapter` in `nav.ts`) and is held from its first frame.
+  - `PagePlayer` defers a held page's intro until it is released.
+- **QA.**
+  - Fixtures `chapter-card-p` and `chapter-card-c1` (`screen.chapterCard`): 4 new baselines; every other target is 0 px.
+  - `check:ui`: covered touchables under a modal are not measured. The card's lettering got tight run boxes and dark-red grounds for 7:1.
+  - `check:play`: the `prologue-card` scenario (fresh save → 開始 → card → two taps → 0-1's intro), plus `readTalk` on c0p1. At 375×667 the intro's 小小的雲 bubble covers the crib-rail tab until it is tapped away.
+  - `npm test` (2204), `npm run build`, `npm run visual`, `check:ui --popup` and `check:play` (20/20) all pass.
+- **Screenshots.** `docs/screenshots/102/`.
+- **Decision.** D-65. GDD § 2.13 and § 5.2, bible § 7 and the handbook § 5 have engineers' notes.
+- **Follow-ups.**
+  - #106 and #107 wire the 0-3, 0-4, 1-1, 1-5 and 1-6 beats into their pages' `lines`.
+  - #105: sounds for the drop and the flaps.
+  - #110: watch the reading load at the start (the card plus 0-1's intro).

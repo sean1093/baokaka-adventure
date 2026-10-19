@@ -384,6 +384,8 @@ Each chapter has **2 dominant hues + 1 accent**, a **signature material**, and a
 - A red spine bar, 「第N章 · title」, the landmark in 36 px serif, the time chip and a 翻 seal.
 - For the final version, add a **split-flap row** reading 「下一站 ○○」 to honour the departure-board idea. Narration lines are tap-through subtitles below it.
 
+*Engineers' note (#102, D-65):* `src/popup/view/hud/ChapterBoard.tsx` is a cream card on two strings of twine with foil eyelets. It hangs from above the screen's top edge and is tilted −1.2°. The chapter is set vertically in 22 px cream serif on a deep seal-red spine, with a bright red band along the fold. Next come the title in 22 px red serif, the time on a navy chip (Fredoka 20 px), the landmark in 36 px serif (smaller only for a six-character name) and the 翻 seal. The board is a navy panel with a gold frame. 「下一站」 is in cream, with one split-flap tile per character: gold glyphs on two-tone navy halves with a hinge line. The turn drops the card (overshoot, two swings, ≈ 0.8 s) and flips the tiles in 70 ms apart while it swings. The lines hang under it: narration on a washi strip, speech on a die-cut card with the speaker's tab (寶咖咖 and 摩卡 are named here, as they hang from no one). Under reduced motion it fades. Proofs: `docs/screenshots/102/`.
+
 **Subtitles:** small die-cut speech bubbles on springs, ≤ 30 chars, 18–21 px (GDD).
 
 **Sticker card** (after the page fold): a little kraft card where the three stickers **slap on** with a squash, one at a time, 200 ms apart.
@@ -401,7 +403,7 @@ Each chapter has **2 dominant hues + 1 accent**, a **signature material**, and a
 
 **Cover screen:** the closed book 《翻翻台北》 on 阿嬤's low table and 花布, with Baokaka and Mocha standees and a gold-foil title.
 
-**Engineers' note (#97, D-60).** The HUD and bottom bar are live (`src/popup/view/hud/`) with every word ≥ 20 px: the landmark 25 px serif, the page title, chapter line, clock and disc labels 20 px; the tray's 「抓周」 and the stickers' names are accessible names only. The cover scene (table, closed book, debossed foil title), the quilt and the 目錄's folded map are baked (`src/popup/env/art/screens.ts`); the cover's standees are the live sprites. The pause menu is a cream paper sheet. The page fold and chapter turn (§ 2.4) are `src/popup/view/transitions/pageTurn.ts`: the pop-ups fold and rise as a `scaleY` about each layer's base in five depth groups, the leaf is three nested strips textured with the two pages' baked backdrops, the chapter turn moves the whole book with one transform over the quilt and hangs a simple card (#102 replaces it with the departure board).
+**Engineers' note (#97, D-60).** The HUD and bottom bar are live (`src/popup/view/hud/`) with every word ≥ 20 px: the landmark 25 px serif, the page title, chapter line, clock and disc labels 20 px; the tray's 「抓周」 and the stickers' names are accessible names only. The cover scene (table, closed book, debossed foil title), the quilt and the 目錄's folded map are baked (`src/popup/env/art/screens.ts`); the cover's standees are the live sprites. The pause menu is a cream paper sheet. The page fold and chapter turn (§ 2.4) are `src/popup/view/transitions/pageTurn.ts`: the pop-ups fold and rise as a `scaleY` about each layer's base in five depth groups, the leaf is three nested strips textured with the two pages' baked backdrops, the chapter turn moves the whole book with one transform over the quilt and hangs the chapter card (#102: the departure board, below).
 
 ---
 

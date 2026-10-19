@@ -36,6 +36,8 @@ const { values: args } = parseArgs({
 /** Page-unit gesture scripts per page (data from src/popup/pages/). */
 const SCENARIOS = {
   c0p1: [
+    // The prologue's lines open the page (#102): read them away, a tap a beat (on a small phone they can cover the tab)
+    { readTalk: true },
     // Pull the crib-rail tab down along its track (150,480 → 150,540)
     { drag: [[150, 480], [150, 545]] },
   ],
@@ -108,16 +110,34 @@ const SCENARIOS = {
     // 1-2 is the last page so far: the card, then the 目錄 with the page's 淘氣 (earned)
     { expect: '[data-mischief="c1p2"][data-earned]', timeout: 8_000 },
   ],
+  // The prologue's chapter card (#102, GDD § 2.13 / § 5.2 P) in the game shell, from a fresh save:
+  // 「開始」 drops the card over the book on the quilt, its lines play a tap a beat (the world held),
+  // then the card lifts, the camera comes in and 0-1 opens on the rest of the prologue
+  'prologue-card': [
+    { fresh: true },
+    { tapEl: '[data-button="start"]' },
+    { expect: '[data-chapter-board="0"]' },
+    { expect: '[data-card-talk="1"] [data-card-line="nar"]', timeout: 6_000 },
+    { absent: '[data-subtitle], [data-narration]' },
+    { tapEl: '[data-card-next]' },
+    { expect: '[data-card-talk="2"] [data-card-line="grandma"]' },
+    { tapEl: '[data-card-next]' },
+    { expect: '[data-popup-page="c0p1"] [data-narration]', timeout: 6_000 },
+    { absent: '[data-chapter-board]' },
+  ],
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'stickers-c1p2': '[data-screen="contents"]' };
+const SCENARIO_ENDS = { 'stickers-c1p2': '[data-screen="contents"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+/** Scenarios that start on a screen other than a page (the cover). */
+const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]' };
 
 /** Scenarios that start somewhere other than `#/popup?page=<id>`: a PageLab stage, live. */
 const SCENARIO_URLS = {
   'lab-gates': '#/pagelab?fixture=word-poke',
   'hints-c1p2': '#/popup?page=c1p2&speed=fast',
   'stickers-c1p2': '#/pagelab?fixture=page-hud',
+  'prologue-card': '#/popup',
 };
 
 const VIEWPORTS = [
@@ -169,9 +189,9 @@ const tickOf = (page) => page.evaluate(() => Number(document.querySelector('svg[
 async function run(page, base, id, kind, viewport, shots) {
   await page.setViewportSize(viewport);
   await page.goto(`${base}${SCENARIO_URLS[id] ?? `#/popup?page=${id}&speed=fast`}`);
-  await page.waitForSelector('svg[data-page]');
+  await page.waitForSelector(SCENARIO_READY[id] ?? 'svg[data-page]');
   await page.evaluate(() => document.fonts.ready);
-  const toClient = await mapper(page);
+  const toClient = SCENARIO_READY[id] ? null : await mapper(page);
   const input = await driver(page, kind);
   let n = 0;
   const shot = async (label) => {
@@ -201,6 +221,31 @@ async function run(page, base, id, kind, viewport, shots) {
       await page.waitForTimeout(60);
       await input.up();
       await shot('tap');
+    } else if (stepDef.fresh) {
+      // A first launch: no save
+      await page.evaluate(() => localStorage.clear());
+      await page.reload();
+      await page.waitForSelector(SCENARIO_READY[id] ?? 'svg[data-page]');
+      await page.evaluate(() => document.fonts.ready);
+    } else if (stepDef.absent && !stepDef.expect) {
+      if (await page.$(stepDef.absent)) throw new Error(`${stepDef.absent} should not be there`);
+    } else if (stepDef.readTalk) {
+      // Tap the subtitle beat on the page until none is left (a tap on a bubble or the strip is the next beat)
+      for (let i = 0; i < 8; i++) {
+        const bubble = await page.$('[data-subtitle], [data-narration]');
+        if (!bubble) break;
+        await page.waitForTimeout(350);
+        // On its words (a bubble's box also spans its spring)
+        const el = (await bubble.$('text')) ?? bubble;
+        const box = await el.boundingBox();
+        if (!box) break;
+        await input.down([box.x + box.width / 2, box.y + box.height / 2]);
+        await page.waitForTimeout(60);
+        await input.up();
+      }
+      await page.waitForTimeout(300);
+      if (await page.$('[data-subtitle], [data-narration]')) throw new Error('the page\'s lines did not clear');
+      await shot('read');
     } else if (stepDef.showMe) {
       // 提示 at level 3, pressed until the page is done (each press: the hand, then the step played)
       const button = await page.waitForSelector('[data-bar="hint"]');
