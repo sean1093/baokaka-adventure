@@ -12,10 +12,12 @@
  * `src/shared/random.ts`, and may not touch DOM globals, the wall clock or `Math.random`.
  *
  * Landed so far: `types.ts`, `cond.ts`, `presets.ts`, `state.ts` (`initialState`, `canonicalKey`)
- * and `define.ts` (`definePage`), all from #80.
+ * and `define.ts` (`definePage`), all from #80; `graph.ts` (node positions, open edges, blocked
+ * nodes, BFS, reach sets, nearest reachable node) from #81.
  */
 export * from './types';
 export * from './cond';
 export * from './presets';
 export * from './state';
+export * from './graph';
 export { definePage } from './define';
