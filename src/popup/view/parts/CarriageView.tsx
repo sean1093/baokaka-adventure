@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { KitCtx } from '../../art';
 import type { PageDef, SimState } from '../../core/types';
 import { carriage } from '../art/placeholders';
+import type { PartPreview } from '../gestures';
 import { drawnNodePos } from '../interp';
 import { CARRIAGE_REACH, type Carriage } from '../stage';
 import { ArtG, r2 } from './common';
@@ -20,11 +21,13 @@ export interface CarriageViewProps {
   readonly ctx: KitCtx;
   readonly ms: number;
   readonly reduced: boolean;
+  /** A drag preview: the carriage follows its tab between stops (#90) */
+  readonly preview?: PartPreview | null;
 }
 
-export function CarriageView({ def, prev, state, carriage: c, ctx, ms, reduced }: CarriageViewProps) {
+export function CarriageView({ def, prev, state, carriage: c, ctx, ms, reduced, preview = null }: CarriageViewProps) {
   const lead = c.nodes[0];
-  const leadPos = drawnNodePos(def, prev, state, lead, ms, reduced) ?? [c.x0, c.y];
+  const leadPos = drawnNodePos(def, prev, state, lead, ms, reduced, preview) ?? [c.x0, c.y];
   // The card's span: the riders' spread (constant: they move together) plus a margin each side
   const spread = useMemo(() => {
     const xs = c.nodes.map((id) => def.nodes.find((n) => n.id === id)!).map((n) => Object.values(n.attach!.pos)[0][0]);

@@ -22,6 +22,11 @@ export interface PartViewProps {
   readonly reduced: boolean;
   /** Nodes ride this part (it moves a carriage): show the linked brad (bible § 4 linked parts) */
   readonly linked: boolean;
+  /**
+   * A drag holds the part between stops (#90, GDD § 2.6 live preview): its state index as a
+   * fraction (past the ends while rubber-banding; unwrapped for wheels). Overrides the tween.
+   */
+  readonly preview?: number;
 }
 
 /** A memoised raw-SVG group: the art string is set once per change, not every frame. */

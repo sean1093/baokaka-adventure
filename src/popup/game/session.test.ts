@@ -126,8 +126,10 @@ describe('PageSession clock', () => {
     const s = new PageSession(c1p2, { clock });
     s.input({ t: 'set', part: 'train', to: 'half' });
     s.input({ t: 'mocha', perch: 'pillar' });
+    expect(s.queued).toBe(2);
     s.start();
     advance(500);
+    expect(s.queued).toBe(1);
     expect(s.frame().state.parts.train).toBe('half');
     expect(s.frame().state.mocha.perch).toBe('bench');
     advance(500);

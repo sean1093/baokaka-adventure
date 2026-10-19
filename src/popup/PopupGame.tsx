@@ -16,7 +16,7 @@ import { PagePlayer } from './view/PagePlayer';
  * `#/popup?page=c1p2` plays one page (#89; a dev convenience: production will open the save's
  * current page, #93). Also `tick=N` (start N idle ticks in), `paused=1` (hold the clock),
  * `speed=slow|normal|fast` and `demo=1` (after three idle ticks, play the page's authored solution
- * through the session: until gestures land in #90 this is how to watch rides and part tweens).
+ * through the session). The page is playable by touch and mouse (#90).
  */
 
 /** The cover: navy linen, a fine weave and a vignette (popup art bible § 7). */

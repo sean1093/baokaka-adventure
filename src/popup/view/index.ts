@@ -9,8 +9,10 @@
  * rides, steps), `stage.ts` (ledges, ramps, rails, perch furniture and carriages from the walk
  * graph), `parts/` (one view per part preset), `actors/` (Baby, Mocha, Creature, Bubble sprite
  * slots) and `art/` (the registry and the placeholder stage).
+ * Landed (#90): `gestures.ts` (hit testing, magnet, threshold, snap, rotary, debounce, palm,
+ * hold-to-reveal; pure, no DOM) and `useGestures.ts` (the Pointer Events plumbing in `PagePlayer`).
  *
- * Planned (GDD § 3.5): gestures and hit testing (#90), `hud/` (TopHud, BottomBar, WordRing,
+ * Planned (GDD § 3.5): `hud/` (TopHud, BottomBar, WordRing,
  * HintLayer, StickerCard; #97) and `screens/` (Cover, 目錄, ChapterCard, Spread + photo, Album,
  * Settings, Ending).
  */

@@ -346,3 +346,24 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #98 animates the bubble's change of mind.
 - #136 decides tilt (`perspective` already sits on the page container only).
 - On 375 × 667 the book is 0.66 scale and 1-2's tab hit area falls to ≈ 37 px (R6). #90's tap magnet and #97's layout must answer that.
+
+### D-51 · 2026-10-19 · Gestures: the readings #90 left open, and R6 on short phones
+**Decision.** (#90.) `src/popup/view/gestures.ts` (pure) and `useGestures.ts` (Pointer Events plumbing in `PagePlayer`):
+1. **R6 on short phones (the #89 note).** At 375 × 667 the book is 0.66 scale and 1-2's train tab hit (56 units) is ≈ 37 px. Every touchable's hit shape is **grown about its centre to 48 × 48 screen px after the book scale** (`minHit`), on top of the 32 px magnet. The page data keeps its page-unit hits (lint still asks ≥ 48 units); the growth is a view rule, so it holds at any viewport. A test checks every touchable on every page, every frame of its solution, at 390 × 844 and 375 × 667. #97's compact HUD may still let the book grow on short screens; it is no longer needed for R6.
+2. **Hit-test order.** The topmost target whose own shape contains the point; else the grown shapes that contain it (nearest own shape; ties to the higher layer); else the magnet: the nearest grown shape within 32 screen px (ties to the higher layer).
+3. **Targets.** Player-driven parts (input ≠ `none`) by their `hit`; perch paw prints (r 24, while Mocha is on the page, not his own perch); Mocha (56 × 70 above his feet) and Baokaka (96 × 66) on the actors' layers; the 土地公 (r 22) while `visibleWhen` holds. The 土地公 is drawn far back but sits **above the parts** for touch, because he is a small find hidden behind parts (1-2's board).
+4. **Taps.** Under 8 px of travel. A tap-only target (prop, perch, Mocha, Baokaka) also takes a wobbly tap if the finger lifts within the magnet of it. Tab → `tap` (advance), wheel → `tap` (clockwise), flap/prop/light → `tap`, perch → `mocha`, Mocha → `pet`. **Baokaka and the 土地公 are game events, not sim inputs**: `wordRing` (the stub dims the page and circles him, `pause('ring')`; any touch closes it; #99) and `tudigong` (#101 awards the sticker). The 250 ms debounce is per target.
+5. **Drags.** The magnet also picks the part a drag starts on. Linear drags are relative to where the finger landed, projected on the track, scaled to stops; over-drag eases toward 0.35 stop past the ends; release snaps to the nearest stop and queues `set`. Rotary drags accumulate angle (clockwise on screen = the listed state order) and queue `set` to the wrapped stop (the core walks to it stop by stop). A flap drag lifts by distance / reach and toggles (queues `tap`) past half. Riders (the train's nodes, Baokaka on it) follow the preview.
+6. **Commit and settle.** The input applies at the next tick boundary like any other. Until that tick the part is held at its snapped stop, then glides (the part tween's curve) to where the state really landed, so a jam at `half` reads as a glide back, never a jump.
+7. **Locked parts** answer in the view at once (the world is paused under the finger): `locked` flag with a wobble, Mocha's glare, a `nope` event; nothing is queued, so the core's `locked` event is not needed for this path.
+8. **Touch pauses the world.** The whole screen takes pointers; any finger down pauses (`pause('finger')`), the last up resumes after the session's 150 ms grace. Only the first finger drives a gesture; more than 3 points at once cancels it. Baokaka tilts 3° toward the finger (`data-watch`).
+9. **Hold-to-reveal.** 600 ms still (under 8 px) on empty space: every touchable's own hit shape gets a 2 px dashed chalk outline until release.
+10. **State flags** for #140: `data-dragging`, `data-locked`, `data-glare`, `data-watch`, `data-reveal`; the page SVG also carries `data-parts` and `data-done` for tools.
+
+**Why.** Growing hits after the scale answers R6 everywhere with no layout dependency and no data churn, and the hit layer draws the same grown shapes the hit test uses. Answering locks in the view keeps feedback immediate while the world is paused, and keeps the one-input-per-tick queue for real moves.
+
+**Consequences.**
+- #140 draws the Dragging/Locked/Hold-to-reveal looks on the flags; #95 the curious head and glare frames.
+- #99 replaces the ring stub; #101 listens for `tudigong`; #105 maps `tap`/`snap`/`nope` to sounds.
+- #92 folds `npm run check:play` into visual QA.
+- The 1-2 土地公 is drawn behind the board's art, so when the board flips he is touchable but not yet visible (noted on #101).

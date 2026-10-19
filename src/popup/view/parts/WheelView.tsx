@@ -23,7 +23,7 @@ export function turnDelta(fromIndex: number, toIndex: number, count: number): nu
 }
 
 export function WheelView(props: PartViewProps) {
-  const { part, ctx, from, to, ms, reduced } = props;
+  const { part, ctx, from, to, ms, reduced, preview } = props;
   const touchable = part.preset === 'wheel';
   const hb = hitBox(part);
   const [cx, cy] = part.center ?? [hb.cx, hb.cy];
@@ -52,8 +52,8 @@ export function WheelView(props: PartViewProps) {
   const a = stateAt(part, from);
   const b = stateAt(part, to);
   const start = angleOf(a.index, a.count);
-  const rot = start + lerp(0, turnDelta(a.index, b.index, b.count), from === to ? 1 : partProgress(ms, reduced));
-  const sq = squashFor(props);
+  const rot = preview !== undefined ? angleOf(1, b.count) * preview : start + lerp(0, turnDelta(a.index, b.index, b.count), from === to ? 1 : partProgress(ms, reduced));
+  const sq = preview !== undefined ? 1 : squashFor(props);
   return (
     <g data-part={part.id} data-preset={part.preset} transform={`translate(${r2(cx)} ${r2(cy)})`}>
       <ArtG html={fixed.arrow} />
