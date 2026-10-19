@@ -362,7 +362,7 @@ Format:
 - **Decision.** D-54. Bible § 4.2 and handbook § 5 have engineers' notes.
 - **Follow-ups.** #100 drives `affordance.hint` (and Mocha looking at the target); #106 uses the L2 hand for the 0-1 tutorial; #108 calms the squint-bright backdrop lights and keeps its art lint-clean; 1-2's train hit area starts right of the tab card at `out` (data, for #108's layout pass).
 
-### 2026-10-19 · Staff engineer · #93 Save format `popup.save.v1` (PR #PRNUM)
+### 2026-10-19 · Staff engineer · #93 Save format `popup.save.v1` (PR #161)
 - **`src/popup/game/progress.ts`.** `SaveV1` exactly as GDD § 3.8 (plus `Settings`, `DEFAULT_SETTINGS` from § 2.11), `SAVE_KEY = 'popup.save.v1'`, `loadSave` / `saveNow` over `loadJson` / `saveJson` / `browserStorage`, the strict guard `isStoredSave`, the migration ladder `UPGRADES` / `migrateSave`, and reconciliation with the registry (removed pages dropped, `furthest` never behind the solved point, `current` always unlocked).
 - **Rules (pure):** `completePage` (stickers from the attempt, best move count, linear unlock across chapters, resume after the replayed page), `earnSticker` (淘氣 / 土地公 mid-page), `keepPhoto`, `updateSettings` (volumes clamped), `openPage`, `resetSave` (keeps settings), `isUnlocked`, `isChapterUnlocked`, `ownedAbilities` (from the furthest point) and `pageAbilities` (designed words and growth; later words only with `laterWords`).
 - **`ProgressStore`:** the live save for #97 (`get` / `subscribe`), which writes on every change (page complete, sticker, photo, settings, page open) and on `visibilitychange: hidden`; no-op changes write nothing.

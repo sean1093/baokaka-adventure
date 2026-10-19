@@ -39,7 +39,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [92](https://github.com/sean1093/baokaka-adventure/issues/92) | Visual QA for 翻翻台北: PageLab fixtures, screenshot targets and UI checks for R5/R6 | chore, ui, m0 | #91 | done (#159) |
 | **M1 · Vertical slice (prologue + 台北車站)** | | | | |
 | [140](https://github.com/sean1093/baokaka-adventure/issues/140) | Touchable affordance system: reserved marigold + lint, verb seals, grips, idle wiggle, hint glow/ghost-hand visuals, locked/drag states, hold-to-reveal | ui, art, engine, m1 | #139, #90 | done (#160) |
-| [93](https://github.com/sean1093/baokaka-adventure/issues/93) | Save format popup.save.v1: progress, stickers, photos, settings; discard RPG saves gracefully | engine, m1 | #87 | in progress |
+| [93](https://github.com/sean1093/baokaka-adventure/issues/93) | Save format popup.save.v1: progress, stickers, photos, settings; discard RPG saves gracefully | engine, m1 | #87 | done (#161) |
 | [94](https://github.com/sean1093/baokaka-adventure/issues/94) | Character bitmap pipeline integration: baked frames in the build, manifest loader, animation player, mirroring, anchors | art, engine, m1 | #89 | todo |
 | [95](https://github.com/sean1093/baokaka-adventure/issues/95) | Standee integration: 寶咖咖 and 摩卡 animations wired to sim modes, hop-lerp, card-flip turn, touch-watch tilt | art, ui, m1 | #94 | todo |
 | [141](https://github.com/sean1093/baokaka-adventure/issues/141) | Character art extras: missing GDD §3.9 frames for 寶咖咖 (look L/R, watch-sway, ride-giggle, touch-watch, carried, climb ×3) and 摩卡 (glare, purr, in-box) | art, m1 | #94 | todo |
