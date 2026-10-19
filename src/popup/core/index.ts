@@ -18,7 +18,8 @@
  * `mocha.ts` (perch pathing, arrival actions, pet, cat rules C1–C9) from #83; `step.ts` (the tick,
  * the cascade, rides, counters, `matchPredicate`), `words.ts`, `creatures.ts`, `replay.ts` and the
  * full `events.ts` from #84; `solver.ts` (`solve`, `candidateInputs`, `solverKey`, `nextAction`)
- * from #85; `lint.ts` (`lintPage`, GDD § 3.6) from #86.
+ * from #85; `lint.ts` (`lintPage`, GDD § 3.6) from #86; `hint.ts` (the hint source: the solver from
+ * the current state, the stored-solution fallback, 重來 + step 1) from #100.
  */
 export * from './types';
 export * from './cond';
@@ -33,5 +34,6 @@ export * from './creatures';
 export * from './step';
 export * from './replay';
 export * from './solver';
+export * from './hint';
 export * from './lint';
 export { definePage } from './define';
