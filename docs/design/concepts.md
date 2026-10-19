@@ -6,6 +6,10 @@
 
 ---
 
+> **Decision (2026-10-19): concept A, 《翻翻台北》 Pop-Up Taipei, was chosen**, with the two borrowings proposed below: B's chapter-end album photo with family comments, and C's optional 淘氣 mischief sticker on every page. The full design is in `docs/design/gdd.md`. Concepts B and C are kept here for reference only.
+>
+> Art updates since this pitch: 寶咖咖 (1 year old) wears a two-piece outfit (not a footie onesie) and has black straight hair; 摩卡 is a grey-brown tabby. The mocks in this file predate those notes.
+
 ## 0. Where I started
 
 Before writing any concepts, I asked one question: **what is actually delightful about a one-year-old and a tabby cat?** The answer is not "they fight monsters." It's this:
@@ -358,6 +362,8 @@ If an adult reaches Baokaka, they scoop him up — 「抓到了～小壞蛋」 �
 ---
 
 ## Recommendation: build A, 《翻翻台北》 Pop-Up Taipei, and borrow two things from B and C
+
+**Decision: A chosen (2026-10-19).** See `docs/design/gdd.md`.
 
 **Why A:**
 
