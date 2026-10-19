@@ -271,7 +271,7 @@ Format:
 - Tests: `lint.test.ts` — 96 negative fixtures (edits of the c1p2/c1p3 fixtures), each asserting exactly its codes, plus a check that every documented code has one; c1p2, c1p3 and c0p4 lint clean; the solver's reaction-loop page is a certain loop; radius-limited triggers aren't cycles; message format; never throws on broken data; ≈ 0.1 ms per lint of c1p2 (asserted < 5 ms); overlap geometry (rectangles, circles, the lens area). 100 % statements/branches/functions/lines on `src/popup/core`. 1409 tests.
 - Follow-ups: #87's `pages.test.ts` asserts `lintPage(def, SCRIPT).errors` is empty per page and runs the solver for rules 7 and 12; #91 shows lint codes in PageLab; new page fields need lint checks.
 
-### 2026-10-19 · Staff engineer · #87 Page registry and the first pages 0-1 and 1-2 (PR pending)
+### 2026-10-19 · Staff engineer · #87 Page registry and the first pages 0-1 and 1-2 (PR #152)
 - `src/popup/pages/index.ts`: the ordered registry — `PAGES`, `pageById`, `nextPage` (across chapters), `chapterOf`, built by `buildRegistry` (rejects duplicate ids and out-of-order pages) which fills in `words` (learned on earlier pages) and `baby.growth` (highest learned on earlier pages) from the `learns` fields; explicit values win. Prologue = chapter 0.
 - Pages: `pages/c0/p1.ts` 「嬰兒床」 (crib-rail tab opens the pillow slope; mobile prop for the 淘氣; no Mocha; 土地公 always visible) and `pages/c1/p2.ts` 「月台的縫」 (§ 3.4 data + the `board` prop, states `times`/`flip` per § 4.3). Placeholder art keys.
 - `content/script.ts`: `SCRIPT`, an empty `LineTable` until #102.
