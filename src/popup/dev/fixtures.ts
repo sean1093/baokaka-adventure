@@ -1,6 +1,9 @@
 import { initialState, replay, step } from '../core';
 import type { SimEvent } from '../core/events';
 import type { BabyMode, Id, PageDef, SimState, SolutionStep } from '../core/types';
+import type { NavState } from '../game/nav';
+import { completePage, earnSticker, encodeSave, freshSave, ProgressStore, SAVE_KEY, updateSettings, type SaveV1 } from '../game/progress';
+import type { StorageLike } from '../../shared/storage';
 import { labPageById } from './labPages';
 import type { AffordanceFlags } from '../view/affordance/look';
 import type { GestureFlags } from '../view/gestures';
@@ -46,7 +49,20 @@ export interface PopupFixture {
   readonly look?: 'motion' | 'reduced';
   /** A specimen sheet drawn instead of the page (`page` and `steps` still name a valid frame) */
   readonly sheet?: 'affordance-states' | 'sprites-anchors';
+  /**
+   * A screen of the game shell instead of the bare page (#97): where the navigation starts and the
+   * save it reads (a seeded in-memory store; the real save is never touched). `page` and `steps`
+   * still name a valid frame (the page under a page screen is `nav`'s).
+   */
+  readonly screen?: { readonly nav: NavState; readonly save: SaveV1 };
 }
+
+/** The saves the screen fixtures read (#97). */
+const FRESH = freshSave();
+/** 0-1 solved with both its stickers, 1-2 current with its 淘氣 already earned. */
+const PLAYED = earnSticker(completePage(FRESH, 'c0p1', { mischief: true, tudigong: true, moves: 1 }), 'c1p2', 'mischief');
+const LEFT_HANDED = updateSettings(PLAYED, { leftHand: true });
+const ON_PAGE: NavState = { base: { kind: 'page', id: 'c1p2', run: 0 }, layer: null };
 
 export const POPUP_FIXTURES: readonly PopupFixture[] = [
   {
@@ -160,6 +176,55 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'Mocha in a box perch: only his head and paws show over the rim, in front of the box (in-box, #141). Lab stage until #106 adds 0-4 (the laundry basket).',
   },
   {
+    name: 'cover-first',
+    page: 'c0p1',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: null }, save: FRESH },
+    note: 'The cover on first launch (#97): the closed book on 阿嬤\'s table and quilt, Baokaka and Mocha beside it, only 「開始」.',
+  },
+  {
+    name: 'cover-continue',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: null }, save: PLAYED },
+    note: 'The cover with a save (#97): 「繼續」 (one tap back to 1-2 「月台的縫」), then 目錄 / 相簿 / 設定.',
+  },
+  {
+    name: 'contents-ch1',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 1 } }, save: PLAYED },
+    note: 'The 目錄 (#97): the 月亮線 paper map (序 open and solved 3/12, 台北車站 open 1/18, the rest locked), chapter 1\'s page strip with the bookmark on 1-2.',
+  },
+  {
+    name: 'contents-locked',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 1, locked: 4 } }, save: PLAYED },
+    note: 'The 目錄 after tapping a station the line hasn\'t reached (西門町): 「月亮線還沒開到這裡。」',
+  },
+  {
+    name: 'page-hud',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ON_PAGE, save: PLAYED },
+    note: '1-2 in the game shell (#97): the live HUD label (台北車站「月台的縫」, 第一章 · 第 2 頁 / 6, 00:20, the 抓周 tray) and the bottom bar with its 淘氣 sticker earned.',
+  },
+  {
+    name: 'page-hud-left',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ON_PAGE, save: LEFT_HANDED },
+    note: '1-2 in 左手模式 (#97): the bottom bar mirrored, the portrait on the right, the stickers on the left.',
+  },
+  {
+    name: 'page-menu',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'page', id: 'c1p2', run: 0 }, layer: { kind: 'menu' } }, save: PLAYED },
+    note: 'The pause menu over 1-2 (#97): 繼續 / 目錄 / 設定 / 封面 on the paper sheet; the page is held.',
+  },
+  {
     name: 'c0p1-hint-how',
     page: 'c0p1',
     steps: [],
@@ -193,6 +258,17 @@ export function fixtureFrame(fixture: PopupFixture): FixtureFrame {
     events = r.events;
   }
   return { def, prev, state, events };
+}
+
+/** An in-memory store seeded with a save (screen fixtures: the real `popup.save.v1` is never touched). */
+export function fixtureStore(save: SaveV1): ProgressStore {
+  const data = new Map<string, string>([[SAVE_KEY, JSON.stringify(encodeSave(save))]]);
+  const storage: StorageLike = {
+    getItem: (key) => data.get(key) ?? null,
+    setItem: (key, value) => void data.set(key, value),
+    removeItem: (key) => void data.delete(key),
+  };
+  return new ProgressStore({ storage, visibility: null });
 }
 
 export function popupFixture(name: string): PopupFixture | undefined {

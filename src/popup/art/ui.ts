@@ -29,26 +29,44 @@ export type HudOptions = {
  * coins (filled) and blind-embossed dimples (empty). Drawn in 390-wide screen space.
  */
 export function hudLabel(ctx: KitCtx, { title, page = '', sub, time, filled = 0, moon = true }: HudOptions): string {
-  const label = `<rect x="16" y="14" width="358" height="74" rx="3"/>`;
-  const icon = moon
-    ? `<path d="M24 9a9 9 0 1 0 8 13a7 7 0 1 1 -8 -13z" fill="${ref(ctx, 'foil')}"/>`
-    : `<circle cx="24" cy="17" r="6" fill="${ref(ctx, 'foil')}"/><path d="M24 5v3M24 26v3M12 17h3M33 17h3M16 9l2 2M30 23l2 2M16 25l2 -2M30 11l2 -2" stroke="${C.gold}" stroke-width="1.6" stroke-linecap="round"/>`;
-  const slots = Array.from({ length: 9 }, (_, i) => {
-    const cx = i * 18 + 7;
-    return i < filled
-      ? `<circle cx="${cx}" r="6.5" fill="${ref(ctx, 'coin')}"/><circle cx="${cx}" r="4.6" fill="none" stroke="${C.coinRing}" stroke-width=".7" opacity=".6"/><circle cx="${cx - 2}" cy="-2" r="2" fill="${C.brassShine}" opacity=".8"/>`
-      : `<circle cx="${cx}" r="6" fill="${C.pageDark}"/><circle cx="${cx}" cy=".8" r="6" fill="none" stroke="${C.dimpleLight}" stroke-width="1"/><circle cx="${cx}" cy="-.4" r="6" fill="none" stroke="${C.dimpleShade}" stroke-width=".8"/>`;
-  }).join('');
   return `<g transform="rotate(-.6 195 50)">`
-    + depth(ctx, 2, `<rect x="16" y="14" width="358" height="74" rx="3" fill="${C.page}"${filterAttr(ctx, 'deckle')}/>`, label)
-    + fibers(18, 16, 354, 70, 70, C.pageFiber, 4, 0.22)
+    + hudPaper(ctx)
     + `<text x="32" y="50" font-family="'Noto Serif TC'" font-weight="900" font-size="27" fill="${C.ink}" letter-spacing="2">${title}`
     + (page ? `<tspan font-size="15" font-weight="700" fill="${C.sealInk}" letter-spacing="0" dx="4">「${page}」</tspan>` : '')
     + `</text><text x="33" y="75" font-size="14" font-weight="700" fill="${C.inkSoft}">${sub}</text>`
-    + `<g transform="translate(250 24)"><rect width="110" height="34" rx="17" fill="${C.cover}"/><rect x="2" y="2" width="106" height="30" rx="15" fill="none" stroke="${ref(ctx, 'foil')}" stroke-width="1.2"/>`
-    + `${icon}<text x="70" y="24" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="19" fill="${C.goldLight}">${time}</text></g>`
-    + `<g transform="translate(176 68)">${slots}<text x="188" y="5" font-size="12" font-weight="700" fill="${C.inkSoft}" text-anchor="end">抓周</text></g>`
-    + `</g>${washi(ctx, 44, 16, 50, 15, -8)}${washi(ctx, 352, 84, 46, 14, 10, C.washiCeladon)}`;
+    + `<g transform="translate(250 24)">${clockChip(ctx, 110, moon)}<text x="70" y="24" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="19" fill="${C.goldLight}">${time}</text></g>`
+    + `<g transform="translate(176 68)">${trayCoins(ctx, filled)}<text x="188" y="5" font-size="12" font-weight="700" fill="${C.inkSoft}" text-anchor="end">抓周</text></g>`
+    + `</g>${hudTape(ctx)}`;
+}
+
+/** The HUD's cream deckled paper label (358 × 74 at (16, 14)) with its fibres; no text (bible § 7). */
+export function hudPaper(ctx: KitCtx, { x = 16, y = 14, w = 358, h = 74 }: { x?: number; y?: number; w?: number; h?: number } = {}): string {
+  const label = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>`;
+  return depth(ctx, 2, `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${C.page}"${filterAttr(ctx, 'deckle')}/>`, label)
+    + fibers(x + 2, y + 2, w - 4, h - 4, 70, C.pageFiber, 4, 0.22);
+}
+
+/** The two washi strips holding the HUD label down: pink at the top left, celadon at the bottom right. */
+export function hudTape(ctx: KitCtx, w = 390, bottom = 84): string {
+  return `${washi(ctx, 44, 16, 50, 15, -8)}${washi(ctx, w - 38, bottom, 46, 14, 10, C.washiCeladon)}`;
+}
+
+/** The moon clock chip (bible § 7): a navy pill `w` × 34 with a foil rim and a foil moon or sun; the time is the caller's. */
+export function clockChip(ctx: KitCtx, w = 110, moon = true): string {
+  const icon = moon
+    ? `<path d="M24 9a9 9 0 1 0 8 13a7 7 0 1 1 -8 -13z" fill="${ref(ctx, 'foil')}"/>`
+    : `<circle cx="24" cy="17" r="6" fill="${ref(ctx, 'foil')}"/><path d="M24 5v3M24 26v3M12 17h3M33 17h3M16 9l2 2M30 23l2 2M16 25l2 -2M30 11l2 -2" stroke="${C.gold}" stroke-width="1.6" stroke-linecap="round"/>`;
+  return `<rect width="${w}" height="34" rx="17" fill="${C.cover}"/><rect x="2" y="2" width="${w - 4}" height="30" rx="15" fill="none" stroke="${ref(ctx, 'foil')}" stroke-width="1.2"/>${icon}`;
+}
+
+/** The 9-slot 抓周 tray: foil coins (filled) and blind-embossed paper dimples (empty), 18 apart from x 7. */
+export function trayCoins(ctx: KitCtx, filled: number, step = 18, r = 6): string {
+  return Array.from({ length: 9 }, (_, i) => {
+    const cx = f1(i * step + 7);
+    return i < filled
+      ? `<circle cx="${cx}" r="${f1(r + 0.5)}" fill="${ref(ctx, 'coin')}"/><circle cx="${cx}" r="${f1(r - 1.4)}" fill="none" stroke="${C.coinRing}" stroke-width=".7" opacity=".6"/><circle cx="${f1(i * step + 5)}" cy="-2" r="2" fill="${C.brassShine}" opacity=".8"/>`
+      : `<circle cx="${cx}" r="${r}" fill="${C.pageDark}"/><circle cx="${cx}" cy=".8" r="${r}" fill="none" stroke="${C.dimpleLight}" stroke-width="1"/><circle cx="${cx}" cy="-.4" r="${r}" fill="none" stroke="${C.dimpleShade}" stroke-width=".8"/>`;
+  }).join('');
 }
 
 /** A cream card disc on the cover with a ring and a label below (bible § 7 bottom bar). */

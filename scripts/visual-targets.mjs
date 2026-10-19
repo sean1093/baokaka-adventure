@@ -122,8 +122,9 @@ export const fixtureTarget = (name) => ({
 export const popupFixtureTarget = (name) => ({
   name,
   hash: `#/pagelab?fixture=${encodeURIComponent(name)}&still=1`,
-  // …once the page's character frames are decoded (#94), so no placeholder card is screenshotted
-  waitFor: `[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) svg[data-page]`,
+  // …once the page's character frames are decoded (#94), so no placeholder card is screenshotted;
+  // a screen that is not a page (the cover, the 目錄, #97) once its bitmaps are (`data-screen-ready`)
+  waitFor: `[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) :is(svg[data-page], [data-screen-ready])`,
   artlab: true,
 });
 

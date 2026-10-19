@@ -12,9 +12,11 @@
  * Landed (#90): `gestures.ts` (hit testing, magnet, threshold, snap, rotary, debounce, palm,
  * hold-to-reveal; pure, no DOM) and `useGestures.ts` (the Pointer Events plumbing in `PagePlayer`).
  *
- * Planned (GDD § 3.5): `hud/` (TopHud, BottomBar, WordRing,
- * HintLayer, StickerCard; #97) and `screens/` (Cover, 目錄, ChapterCard, Spread + photo, Album,
- * Settings, Ending).
+ * Landed (#97): `hud/` (TopHud, BottomBar), `screens/` (GameShell, Cover, Contents 目錄, PauseMenu,
+ * the album / settings stubs, paper pieces and icons) and `transitions/pageTurn.ts` (the page fold
+ * and the chapter turn).
+ * Planned (GDD § 3.5): `hud/` WordRing, HintLayer, StickerCard; `screens/` ChapterCard, Spread +
+ * photo, Album, Settings, Ending.
  */
 export { PageView } from './PageView';
 export { PagePlayer } from './PagePlayer';

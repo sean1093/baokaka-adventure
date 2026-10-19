@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { POPUP } from '../../art/palette';
 import { PAGES } from '../pages';
 import { PagePlayer } from '../view/PagePlayer';
 import { AffordanceSheet } from './AffordanceSheet';
-import { POPUP_FIXTURES, fixtureFrame, popupFixture } from './fixtures';
+import { POPUP_FIXTURES, fixtureFrame, fixtureStore, popupFixture } from './fixtures';
+import { GameShell } from '../view/screens/GameShell';
 import { SpritesAnchorsSheet } from './SpriteSheet';
 
 /**
@@ -21,6 +22,8 @@ import { SpritesAnchorsSheet } from './SpriteSheet';
 export function FixtureView({ name, still }: { name: string; still: boolean }) {
   const fixture = popupFixture(name);
   const frame = useMemo(() => (fixture ? fixtureFrame(fixture) : null), [fixture]);
+  const store = useMemo(() => (fixture?.screen ? fixtureStore(fixture.screen.save) : null), [fixture]);
+  useEffect(() => () => store?.dispose(), [store]);
   if (!fixture || !frame) {
     return (
       <main className="min-h-dvh p-6 font-body text-body" style={{ backgroundColor: POPUP.cover, color: POPUP.goldLight }}>
@@ -39,6 +42,8 @@ export function FixtureView({ name, still }: { name: string; still: boolean }) {
         <AffordanceSheet still={still} reduced={reduced} />
       ) : fixture.sheet === 'sprites-anchors' ? (
         <SpritesAnchorsSheet still={still} />
+      ) : fixture.screen && store ? (
+        <GameShell key={`${fixture.name}-${still}`} store={store} initial={fixture.screen.nav} still={still} reduced={reduced} />
       ) : (
         <PagePlayer
           key={`${fixture.name}-${still}`}

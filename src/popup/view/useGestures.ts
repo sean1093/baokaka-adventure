@@ -50,6 +50,8 @@ export interface Gestures {
   };
   /** The word ring stub is open (Baokaka was tapped) */
   readonly ring: boolean;
+  /** Opens the word ring as a tap on Baokaka does (the bottom bar's portrait, #97) */
+  readonly openRing: () => void;
 }
 
 const now = () => performance.now();
@@ -186,5 +188,7 @@ export function useGestures(
     if (settled) setHeld(null);
   }, [settled]);
 
-  return { flags: preview === flags.preview ? flags : { ...flags, preview }, handlers, ring };
+  const openRing = useCallback(() => apply([{ type: 'event', event: { type: 'wordRing' } }]), [apply]);
+
+  return { flags: preview === flags.preview ? flags : { ...flags, preview }, handlers, ring, openRing };
 }

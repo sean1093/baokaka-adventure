@@ -2,7 +2,9 @@ import { describe, expect, test } from 'vitest';
 import { ARTLAB_FIXTURES } from '../../artlab/fixtures';
 import { hashParams } from '../../shared/route';
 import { initialState } from '../core';
-import { POPUP_FIXTURES, fixtureFrame, fixtureParams, popupFixture } from './fixtures';
+import { POPUP_FIXTURES, fixtureFrame, fixtureParams, fixtureStore, popupFixture } from './fixtures';
+import { isFirstLaunch, resumeTarget } from '../game/nav';
+import { SAVE_KEY } from '../game/progress';
 
 /** The visual QA fixtures (#92): valid, unique, deterministic, and still showing what they claim. */
 
@@ -40,6 +42,30 @@ describe('POPUP_FIXTURES', () => {
     expect(frame.prev.parts.train).toBe('half');
     expect(frame.state.parts.train).toBe('out');
     expect(frame.state.baby.node).toBe(frame.prev.baby.node);
+  });
+
+  test('#97: the UI shell fixtures are there, on the screens and saves they claim', () => {
+    expect(POPUP_FIXTURES.map((f) => f.name)).toEqual(expect.arrayContaining(['cover-first', 'cover-continue', 'contents-ch1', 'page-hud']));
+    const first = popupFixture('cover-first')!.screen!;
+    expect(first.nav.base.kind).toBe('cover');
+    expect(isFirstLaunch(first.save)).toBe(true);
+    const cont = popupFixture('cover-continue')!.screen!;
+    expect(isFirstLaunch(cont.save)).toBe(false);
+    expect(resumeTarget(cont.save)).toBe('c1p2');
+    expect(popupFixture('contents-ch1')!.screen!.nav.layer).toEqual({ kind: 'contents', chapter: 1 });
+    expect(popupFixture('page-hud')!.screen!.nav.base).toEqual({ kind: 'page', id: 'c1p2', run: 0 });
+    expect(popupFixture('page-hud-left')!.screen!.save.settings.leftHand).toBe(true);
+  });
+
+  test('a fixture store is seeded in memory and loads its save back', () => {
+    const save = popupFixture('cover-continue')!.screen!.save;
+    const store = fixtureStore(save);
+    expect(store.get()).toEqual(save);
+    store.openPage('c0p1');
+    expect(store.get().current).toBe('c0p1');
+    // The real storage is never touched
+    expect(typeof localStorage === 'undefined' || localStorage.getItem(SAVE_KEY) === null).toBe(true);
+    store.dispose();
   });
 
   test('an unknown page throws', () => {

@@ -1,0 +1,27 @@
+/*
+ * 翻翻台北's screens (#97). Idle loops are CSS animations so a still (`still`, screenshots) and
+ * reduced motion stop them (handbook § 5). Baokaka sways a little on the cover while he claps.
+ */
+@keyframes cover-sway {
+  0%,
+  100% {
+    transform: rotate(-1.6deg);
+  }
+  50% {
+    transform: rotate(1.6deg);
+  }
+}
+
+.cover-sway {
+  transform-box: fill-box;
+  animation: cover-sway 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-sway {
+    animation: none;
+  }
+}
+.reduce-motion .cover-sway {
+  animation: none;
+}
