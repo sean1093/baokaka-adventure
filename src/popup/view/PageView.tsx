@@ -339,6 +339,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const goalAt = goalNode === null ? undefined : nodePos(def, state, goalNode);
   const barks = useMemo(() => barksProp ?? barksOf(prev, state, events), [barksProp, prev, state, events]);
   const beat = talk?.beat ?? null;
+  // Laid out at the tick's end positions: the layout changes once a tick, not every frame
   const said = useMemo(() => {
     const actor = (at: Pt | undefined, head: Pt, box: { x: number; y: number; w: number; h: number }): TalkActor | null =>
       at === undefined ? null : { at, head: [at[0] + head[0], at[1] + head[1]], box: { ...box, x: at[0] + box.x, y: at[1] + box.y } };
@@ -353,7 +354,6 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       beat,
       touch: beat === null ? [] : targets.map((tg) => hitBox(tg.hit)),
     });
-    // Positions at the tick's end: the layout changes once a tick, not every frame
   }, [k, state, def, bAnim.sprite, mAnim.sprite, mochaFacing, mochaHidden, showKey(show), barks, beat]);
   const babyOff: Pt = babyPose && babyEnd ? [babyPose.x - babyEnd[0], babyPose.y - babyEnd[1]] : [0, 0];
   const mochaOff: Pt = mochaPose && mochaEnd ? [mochaPose.x - mochaEnd[0], mochaPose.y - mochaEnd[1]] : [0, 0];
