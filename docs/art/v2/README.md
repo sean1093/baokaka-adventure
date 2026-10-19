@@ -176,6 +176,8 @@ Hence the bitmap pass.
   - Keep the generated files out of `src/`: emit to a `public/sprites/` folder or import them via Vite.
   - Wiring the baked output into the game is a separate step. This work did not touch `src/`.
 
+**Engineers' note (#94, D-56).** The game reads `baked/poses.json` and `baked/manifest.json` as they are. `npm run sync:sprites` (in the repo root) bakes them, with the die-cut standee border, into `src/popup/assets/sprites/`; re-run it after a re-bake here. Head and footprint points are measured automatically; hand-placed `head`/`hand` points and per-pose play settings go in `src/popup/sprites/config.ts`, so this folder needs no game-specific fields.
+
 ---
 
 ## 3. How this supersedes `art-direction.md`

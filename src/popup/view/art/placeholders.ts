@@ -392,94 +392,7 @@ export function carriage(ctx: KitCtx, w: number, dir: 1 | -1, linked: boolean): 
   return dir === 1 ? art : `<g transform="translate(${w} 0) scale(-1 1)">${art}</g>`;
 }
 
-// ——— Stand-in characters (die-cut standees, bible § 5) ———
-
-const ell = (cx: number, cy: number, rx: number, ry: number) =>
-  `M${f1(cx - rx)} ${f1(cy)}a${f1(rx)} ${f1(ry)} 0 1 0 ${f1(2 * rx)} 0a${f1(rx)} ${f1(ry)} 0 1 0 ${f1(-2 * rx)} 0Z`;
-const capsule = (x0: number, y0: number, x1: number, y1: number, r: number) => {
-  const a = Math.atan2(y1 - y0, x1 - x0) + Math.PI / 2;
-  const [dx, dy] = [Math.cos(a) * r, Math.sin(a) * r];
-  return `M${f1(x0 + dx)} ${f1(y0 + dy)}L${f1(x1 + dx)} ${f1(y1 + dy)}A${r} ${r} 0 0 0 ${f1(x1 - dx)} ${f1(y1 - dy)}L${f1(x0 - dx)} ${f1(y0 - dy)}A${r} ${r} 0 0 0 ${f1(x0 + dx)} ${f1(y0 + dy)}Z`;
-};
-
-/**
- * A die-cut standee from a silhouette `sil` and its printed `art` (local space, feet at the
- * origin): a flat stacked shadow, the 0.6 mauve cut line and the 3.2 warm-white card border, then
- * the print, over a soft floor contact ellipse. `easel` adds the fold-back tab behind the feet.
- */
-function standeeCard(ctx: KitCtx, sil: string, art: string, { w, easel = false }: { w: number; easel?: boolean }): string {
-  return softEllipse(ctx, 4, 1, w * 0.42, 3, 'shadow', 0.5)
-    + (easel ? `<path d="M-8 1L-5 -14H5L12 3Z" fill="${C.easel}" opacity=".9"/>` : '')
-    + `<path d="${sil}" fill="${C.shadow}" opacity=".28" stroke="${C.shadow}" stroke-width="7" stroke-linejoin="round" transform="translate(2.5 3.5)"/>`
-    + `<path d="${sil}" fill="${C.standeeCut}" stroke="${C.standeeCut}" stroke-width="7.6" stroke-linejoin="round"/>`
-    + `<path d="${sil}" fill="${C.standeeCard}" stroke="${C.standeeCard}" stroke-width="6.4" stroke-linejoin="round"/>`
-    + art;
-}
-
-export type BabyPose = 'crawl' | 'reach' | 'cry' | 'sit';
-
-/** The baby's pose for a sim mode (placeholder frames; #95 wires the real ones). */
-export function babyPose(mode: string): BabyPose {
-  if (mode === 'reaching' || mode === 'grabbing') return 'reach';
-  if (mode === 'crying') return 'cry';
-  if (mode === 'watching' || mode === 'cuddling' || mode === 'eating' || mode === 'done' || mode === 'looking') return 'sit';
-  return 'crawl';
-}
-
-/**
- * 寶咖咖 crawling, ~70 wide and ~58 tall, facing +x, feet at the origin: a stand-in standee in his
- * butter onesie until the v2 frames are baked (#94). `reach` lifts the near arm toward the target;
- * `cry` adds tears; `sit` sits him up.
- */
-export function babyStandee(ctx: KitCtx, pose: BabyPose = 'crawl'): string {
-  const sit = pose === 'sit';
-  const head = sit ? { x: 6, y: -50 } : { x: 20, y: -38 };
-  const arm = pose === 'reach' ? [12, -20, 33, -30] : sit ? [10, -22, 20, -8] : [12, -18, 16, -2];
-  const parts = sit
-    ? { torso: ell(-2, -24, 16, 17), knee: ell(10, -6, 13, 7), diaper: ell(-12, -10, 11, 9), foot: ell(24, -4, 6, 4) }
-    : { torso: ell(-6, -21, 21, 14), knee: ell(-20, -9, 11, 9), diaper: ell(-22, -24, 10, 10), foot: ell(-31, -4, 6, 4) };
-  const farArm = sit ? capsule(-8, -24, -14, -8, 4.5) : capsule(2, -16, 6, -1, 4.5);
-  const nearArm = capsule(arm[0], arm[1], arm[2], arm[3], 4.6);
-  const headD = ell(head.x, head.y, 16, 15.5);
-  const sil = [parts.torso, parts.knee, parts.diaper, parts.foot, farArm, nearArm, headD].join('');
-  const hair = `M${head.x - 15} ${head.y + 1}Q${head.x - 16} ${head.y - 15} ${head.x} ${head.y - 16}Q${head.x + 14} ${head.y - 16} ${head.x + 16} ${head.y - 4}Q${head.x + 8} ${head.y - 10} ${head.x + 1} ${head.y - 7}Q${head.x - 6} ${head.y - 4} ${head.x - 15} ${head.y + 1}Z`;
-  const eyeX = head.x + (sit ? 5 : 7);
-  const face = pose === 'cry'
-    ? `<path d="M${eyeX - 2.5} ${head.y + 1}q2.5 -2 5 0" stroke="${C.ink}" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M${eyeX + 1} ${head.y + 4}q2 5 0 8q-2 -3 0 -8z" fill="${C.moonRim}" stroke="${C.vellum}" stroke-width=".6"/><ellipse cx="${eyeX + 5}" cy="${head.y + 9}" rx="3" ry="3.4" fill="${C.sealDark}"/>`
-    : `<ellipse cx="${eyeX}" cy="${head.y}" rx="1.9" ry="2.5" fill="${C.ink}"/><circle cx="${eyeX + 0.6}" cy="${head.y - 0.9}" r=".7" fill="${C.cutRim}"/>`
-      + `<path d="M${eyeX + 3} ${head.y + 8}q2.2 1.8 4 -0.4" stroke="${C.sealDark}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
-  // One element per colour where the layering allows (GDD § 3.9 node budget)
-  const tuft = `M${head.x - 3} ${head.y - 15}q-2 -8 6 -9q-4 3 -3 9z`;
-  const art = `<path d="${farArm}" fill="${S.skinShade}"/>`
-    + `<path d="${parts.knee}" fill="${S.onesieShade}"/><path d="${parts.torso}" fill="${S.onesie}"/><path d="${parts.diaper}" fill="${S.diaper}"/>`
-    + `<path d="${parts.foot}${nearArm}${headD}" fill="${S.skin}"/><circle cx="${head.x - 7}" cy="${head.y + 2}" r="4" fill="${S.skinShade}"/>`
-    + `<path d="${hair}${tuft}" fill="${S.hair}"/>`
-    + `<ellipse cx="${eyeX + 1}" cy="${head.y + 6}" rx="4" ry="2.5" fill="${S.blush}" opacity=".7"/>` + face;
-  // Drawn at 58 units tall; the bible wants ~70 px crawling at 390 width (§ 5)
-  return `<g transform="scale(1.22)">${standeeCard(ctx, sil, art, { w: 64 })}</g>`;
-}
-
-/** 摩卡 sitting, ~62 tall, feet at the origin, facing the reader: a tabby stand-in standee. */
-export function mochaStandee(ctx: KitCtx): string {
-  const body = `M-14 0Q-18 -26 -8 -36Q0 -40 8 -36Q18 -26 14 0Z`;
-  const tail = `M-12 -2Q-30 -4 -28 -22Q-27 -31 -21 -29Q-23 -12 -9 -8Z`;
-  const head = ell(0, -46, 13.5, 12.5);
-  const ears = `M-12.5 -50L-10 -64L-2.5 -56Z M2.5 -56L10 -64L12.5 -50Z`;
-  const sil = body + tail + head + ears;
-  // One element per colour where the layering allows (GDD § 3.9 node budget)
-  const stripes = `M-26 -18l5 3M-27 -24l5 2M-13 -22l5 2M-14 -14l5 1M13 -22l-5 2M14 -14l-5 1M-4 -58l1.5 5M0 -59v5M4 -58l-1.5 5`;
-  const art = `<path d="${tail}${body}${ears}${head}" fill="${S.catFur}"/>`
-    + `<path d="${stripes}" stroke="${S.catFurDark}" stroke-width="1.8" stroke-linecap="round"/>`
-    + `<path d="${ell(1, -15, 7, 12)}${ell(0, -41, 7.5, 5)}" fill="${S.catBelly}"/>`
-    + `<path d="${capsule(-5, -14, -5, -2, 3.2)}${capsule(5, -14, 5, -2, 3.2)}" fill="${S.catFur}"/><path d="${ell(-5, -1.5, 3.6, 2.2)}${ell(5, -1.5, 3.6, 2.2)}" fill="${S.catBelly}"/>`
-    + `<path d="M-10.5 -52L-9.5 -60L-5 -55Z M5 -55L9.5 -60L10.5 -52Z" fill="${S.blush}" opacity=".7"/>`
-    + `<path d="${ell(-5, -47, 2.8, 3.2)}${ell(5, -47, 2.8, 3.2)}" fill="${S.catEye}"/>`
-    + `<path d="M-5 -49.5v5M5 -49.5v5M0 -41q-2 2 -3.5 1M0 -41q2 2 3.5 1" stroke="${C.ink}" stroke-width="1.1" stroke-linecap="round" fill="none"/>`
-    + `<path d="M-1.6 -43h3.2l-1.6 2z" fill="${S.catNose}"/>`
-    + `<path d="M-8 -36.5q8 3 16 0" stroke="${S.catCollar}" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="0" cy="-34" r="2" fill="${ref(ctx, 'foil')}"/>`;
-  // Drawn at 64 units tall sitting; × 1.05 lands in the bible's 56–66 px after the book scale
-  return `<g transform="scale(1.05)">${standeeCard(ctx, sil, art, { w: 40, easel: true })}</g>`;
-}
+// ——— Creatures and small things (the characters are baked sprites, #94: `src/popup/sprites/`) ———
 
 /** A creature stand-in (bible § 5: origami): a folded paper pigeon, feet at the origin, facing +x. */
 export function origamiBird(ctx: KitCtx): string {
@@ -529,12 +442,13 @@ export type BubbleShow =
 
 /**
  * The thought bubble on its spring (GDD § 2.2.6, bible § 5), in baby-local space (his feet at the
- * origin), the cloud `side` (+1 right, −1 left) of his head so it stays on the page. #98 adds the
+ * origin): the spring rises from `head` (the top of his head) to the cloud, `side` (+1 right, −1
+ * left) of it so it stays on the page. #98 adds the
  * change-of-mind pop and the spring wobble; this is the static bubble.
  */
-export function thoughtBubble(ctx: KitCtx, show: BubbleShow, side: 1 | -1 = 1): string {
-  const cx = side * 20;
-  const cy = -142;
+export function thoughtBubble(ctx: KitCtx, show: BubbleShow, side: 1 | -1 = 1, head: readonly [number, number] = [side * 8, -68]): string {
+  const cx = head[0] + side * 12;
+  const cy = head[1] - 74;
   let content: string;
   const text = (t: string, x: number, size = 22, fill: string = C.sealInk) =>
     `<text x="${x}" y="${cy + 8}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="${size}" fill="${fill}">${t}</text>`;
@@ -557,7 +471,7 @@ export function thoughtBubble(ctx: KitCtx, show: BubbleShow, side: 1 | -1 = 1): 
       content = `<path d="M${cx - 3} ${cy + 8}V${cy - 10}l10 -3v16" stroke="${C.ink}" stroke-width="2" fill="none"/><ellipse cx="${cx - 6}" cy="${cy + 8}" rx="4" ry="3" fill="${C.ink}"/><ellipse cx="${cx + 4}" cy="${cy + 5}" rx="4" ry="3" fill="${C.ink}"/>`;
       break;
   }
-  return springBubble(ctx, side * 8, -68, cx, cy, content, { w: 92, h: 46 });
+  return springBubble(ctx, head[0], head[1], cx, cy, content, { w: 92, h: 46 });
 }
 
 /** A foreground card for a near corner (bible § 2.2): a paper potted plant, its foot at the origin. */

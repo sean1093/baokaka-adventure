@@ -17,7 +17,7 @@ import { TICK_MS, type TickSpeed } from '../game/session';
  * Pure: no DOM, so it is unit-tested.
  */
 
-export const OVERLAYS = ['nodes', 'edges', 'perches', 'attractors', 'hits', 'target'] as const;
+export const OVERLAYS = ['nodes', 'edges', 'perches', 'attractors', 'hits', 'target', 'anchors'] as const;
 export type Overlay = (typeof OVERLAYS)[number];
 export const DEFAULT_OVERLAYS: readonly Overlay[] = ['nodes', 'edges', 'target'];
 

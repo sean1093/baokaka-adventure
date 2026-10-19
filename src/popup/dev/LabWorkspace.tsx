@@ -66,6 +66,7 @@ const OVERLAY_LABEL: Readonly<Record<Overlay, string>> = {
   attractors: 'attractors',
   hits: 'hit areas',
   target: 'target + path',
+  anchors: 'sprite anchors',
 };
 
 /** A titled panel on the right. */

@@ -141,6 +141,22 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
   - **Known gaps** are listed in `WAIVERS`, each with the issue that removes it. Waivers are printed on every run. Today: the static HUD and bottom bar (#97), and the bubble's 「要！」 at 375×667 (#98).
 - **`npm run check:play`** also fails when a registered page has no scenario in `SCENARIOS`.
 
+### Character sprites: `npm run sync:sprites` (#94, D-56)
+
+The game draws 寶咖咖 and 摩卡 only as baked bitmaps (Art v2 § 2.3). The character artist bakes the frames into `docs/art/v2/baked/` (`poses.json`, `manifest.json`); the game's copy, with the die-cut standee look baked in, is made by:
+
+```
+npm run sync:sprites           # bake what changed into src/popup/assets/sprites/ + src/popup/sprites/sprites.gen.ts
+npm run sync:sprites -- --force   # re-bake everything
+```
+
+- It needs Playwright's Chromium (`PLAYWRIGHT_BROWSERS_PATH`) and Python 3 with Pillow; CI needs neither, because the output is committed.
+- It is **idempotent**: a sprite whose sources, `src/popup/sprites/config.ts` entry and bake settings are unchanged is skipped, and a second run reports `0 sprite(s) baked … unchanged`. It prints the payload (core set and all, @2x and @3x).
+- `src/popup/sprites/config.ts` holds the game's readings of the poses: lazy-load group (chapter), play mode, held key frame, events, easel tab, `noMirror`, hand-placed head/hand points.
+- `src/popup/sprites/sprites.test.ts` fails when an animation references a frame missing at either scale, when the committed files and `sprites.gen.ts` disagree (names, bytes, pixel sizes), when they drift from the artist's manifests, or when the core set passes 400 KB @3x.
+- In code: `<SpriteAnim sprite="baokaka.crawl" facing="l" playing reduced x y />` (`src/popup/sprites/`), positioned by its foot anchor; `spriteHead()` gives the bubble anchor; `usePagePreload(chapter)` preloads a page's frames (`PagePlayer` marks the page `data-sprites="ready"`, which the screenshot targets wait for).
+- PageLab: the fixture `sprites-anchors` shows the sprites at map scale with their box, foot anchor, head and footprint; the lab's `anchors` overlay marks the actors on a page.
+
 ### PageLab sections (dev builds only)
 
 ### Pages in the book: `#/popup?page=<id>` (every build)

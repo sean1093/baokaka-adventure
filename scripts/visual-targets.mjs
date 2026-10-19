@@ -92,13 +92,13 @@ export const TARGETS = [
     name: 'popup-c0p1',
     // 翻翻台北 page 0-1 in the book frame (#89): the placeholder home stage, the crib rail closed, Baokaka reaching
     hash: '#/popup?page=c0p1&tick=2&paused=1',
-    waitFor: '[data-popup-page="c0p1"] [data-actor="baby"][data-mode="reaching"]',
+    waitFor: '[data-popup-page="c0p1"][data-sprites="ready"] [data-actor="baby"][data-mode="reaching"]',
   },
   {
     name: 'popup-c1p2',
     // 翻翻台北 page 1-2 (#89; proof A's page): the station stage, the train tab at `out`, Mocha on the bench, the pigeon
     hash: '#/popup?page=c1p2&tick=3&paused=1',
-    waitFor: '[data-popup-page="c1p2"] [data-actor="baby"][data-mode="reaching"]',
+    waitFor: '[data-popup-page="c1p2"][data-sprites="ready"] [data-actor="baby"][data-mode="reaching"]',
   },
 ];
 
@@ -114,7 +114,8 @@ export const fixtureTarget = (name) => ({
 export const popupFixtureTarget = (name) => ({
   name,
   hash: `#/pagelab?fixture=${encodeURIComponent(name)}&still=1`,
-  waitFor: `[data-pagelab-fixture="${name}"] svg[data-page]`,
+  // …once the page's character frames are decoded (#94), so no placeholder card is screenshotted
+  waitFor: `[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) svg[data-page]`,
   artlab: true,
 });
 
