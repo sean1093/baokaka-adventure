@@ -755,3 +755,33 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - `check:ui` no longer measures text clipped away by a scroller.
 - #105 reads `sfx` and `music` (0–100) from the save for its volumes.
 - #136: per-layer tilt parallax, and a device pass on low power and vibration.
+
+### D-68 · 2026-10-19 · Sound: the cue map, the music box and where sound lives (#105)
+
+**Context.** #105 extends `src/shared/audio.ts` with GDD § 2.12's cues, the barks as voice blips and a music-box loop for chapters 0 and 1, with the settings' volumes and the iOS unlock. The docs leave open:
+- where the sounds are triggered from, and how to keep the dev tools and the visual QA silent;
+- which event sounds a part's move (the gesture on release, or the tick that applies it a moment later);
+- the material of a pushed thing's drop and the voice of a creature (§ 2.12 names examples, the page data has no field);
+- how the turn's and the cards' sounds keep time with their animations (a hold, a skip);
+- what plays on the cover and on chapters without a loop yet;
+- how loud 0–100 is.
+
+**Decision.**
+1. **One synth, one map.** `shared/audio.ts` only synthesises: voices (an oscillator note or a filtered-noise burst, each with a click-free exponential envelope) on two buses. `popup/view/sound.ts` decides what sounds: `tickSounds(def, prev, state, events, moved)`, `gestureSounds`, `stickerSounds` — pure functions, tested row by row against § 2.12.
+2. **The shell is the only live sink.** `GameShell` provides `SoundContext` (`LIVE`); its default is `SILENT`. So the art lab, PageLab, `#/popup?page=` and every still never make a sound, with no flags to pass. The shell also unlocks audio on the first `pointerdown`, `pointerup`, `touchend` or `keydown` (capture phase; on iOS a touch only counts as a user activation as it ends), sets the volumes live and suspends the context while the tab is hidden.
+3. **A part sounds on release.** A drag's snap, or a tap on a part, sounds at once (click / ratchet / flop by preset); the tick that applies it skips that part's `partEnter` (`moved`, 1.5 s). A part moved by the world (a reaction, Mocha's weight, an emit) sounds on its tick. A wheel also ratchets at every stop it passes under the finger. A drag start swishes (not a wheel: it ratchets).
+4. **What sounds from a tick:** the word said (its motif), the target change (ding, then the new target's bark as voice blips 0.24 s later), the barks as `barksOf` chooses them (「要！要！」 the blip-blip, 哇—— the soft cry glide, the rest one voice blip per syllable; Mocha's 「喵？」 a mew, 「不要。」 a puff, 「……」 silent), looking (the up-glide), each crawl step (pat-pat, not while carried or riding), each of Mocha's nodes (a thump, heavier as he lands), a push (scrape) and a `land` (the drop), a creature's position change (its voice), a grab (the sparkle), `locked` / `jam` (the boop).
+5. **Materials and voices come from the art key** until a page needs more: a pushable whose art says coin / token clinks, pigeon / bird flaps, the rest is paper; a creature that is a pigeon coos, a goose or duck honks, a squirrel / mouse / monkey chitters, the rest chirp.
+6. **Animations time their own sounds.** The turn takes a `sound` hook and plays its cues as steps on its own clock (fold, leaf = whoosh + chime, fwump at the new pop-ups' overshoot, the card's drop, flaps and lift), so a hold waits and a skip stops them; the new page's fwump in a fold or chapter turn is set off at the swap with a delay, because its rise goes on under the card. The sticker card's slaps, the album's print and notes run on the screen's timers, cleared when it goes. Reduced motion keeps the sounds (one leaf for the cross-fade; no card drop).
+7. **Music.** The cover and the prologue play `chapter0` (an 8-bar lullaby in G, 0.42 s steps), chapter 1 `chapter1` (12 bars in C, 0.28 s). A chapter with no loop yet is silent (each chapter issue adds its own). The loop changes at the turn's swap with a 0.35 s fade. 音樂 0 stops the scheduler.
+8. **Volume** is squared: 0–100 → 0–1 gain (`volumeGain`), so the slider's middle sounds like the middle. Defaults 80 / 50 put the music box at about a quarter of the effects' peaks. Changing 音效 plays a click at the new level.
+9. **Dev hook.** In dev builds `LIVE` also pushes every sound to `window.__popupSounds` when a script set it up before load (QA, the probe used for this issue); production strips it.
+
+**Why.** A pure map is testable without WebAudio and keeps R9 honest (every cue is attached to a visual change it reads from). Making silence the default means no screenshot or lab view can ever start a sound. Sounding the player's own move on release, not a tick later, is what makes paper feel under the finger.
+
+**Consequences.**
+- Chapters 2–10: add a `chapterN` loop to `TRACKS` and `chapterTrack`.
+- New creatures and pushables: check `creatureCue` / `dropCue` pick the right voice from their art key, or add a keyword.
+- #111 prunes the RPG's tones and tracks.
+- The "record the parents' voices" stretch idea stays with the owner.
+- The bundle grew ≈ 4.5 KB gzip (all JS chunks), under the 6 KB budget.

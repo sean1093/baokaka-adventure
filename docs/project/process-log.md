@@ -590,3 +590,25 @@ Format:
   - #105 reads `settings.sfx` / `settings.music` (0–100) for its volumes.
   - #136: per-layer tilt parallax, and a device check of low power and vibration.
   - New screens should pass `check:ui:big`.
+
+### 2026-10-19 · Staff engineer · #105 Audio: the § 2.12 cues and the music box (PR #PR)
+- **Synth (`src/shared/audio.ts`).**
+  - Voices: an oscillator note (optionally gliding) or a filtered white-noise burst (optionally sweeping), each with a click-free exponential envelope. Two buses, 音效 and 音樂, with squared 0–100 volumes (`setVolumes`).
+  - The `SFX` table: 35 cues, every § 2.12 row plus the bible § 8 fwump / fold chime, the chapter card's drop / flaps / lift, the album's note pop. All under a second, dry.
+  - `motifVoices` voices `WORD_MOTIF` eight ways (嗶 square beeps, 掰掰 waving, 不要 low stomps, 哇 sweep, 抱抱 warm third, 飛機 run + whoosh up, 咻 noise sweep, 一起 a chord). `voiceVoices`: a blip per syllable (Mocha lower).
+  - Music box: `chapter0` (8-bar lullaby in G) and `chapter1` (12 bars in C) on the pentatonic sequencer; plucked two-partial tines. `stepNotes` is the pure scheduling step.
+  - `unlockAudio(make?)` takes a factory (tests pass a fake context); `suspendAudio` sleeps it while the tab is hidden. The RPG's `playTone` / tracks are unchanged in behaviour.
+- **Map (`src/popup/view/sound.ts`, pure).** `tickSounds` (word, ding + bark blips, 要！要！, look, cry, pat-pat, Mocha's thumps, scrape + drop by material, creature voices, sparkle, world-moved parts, boop), `gestureSounds` (swish, click / ratchet / flop on release, boop), `stickerSounds` (pop + 嘿嘿 / bell). `SoundContext` defaults to silence.
+- **Wiring.** `GameShell` unlocks on the first touch / click / key, sets the volumes live (a 音效 change clicks), plays the chapter's loop (the prologue's on the cover) and provides the live sink. `PagePlayer` sounds ticks, gestures, wheel steps under the finger, stickers and every hint shown. `playTurn` takes a `sound` hook (fold, leaf, fwump, card drop / flaps / lift on its own clock). The sticker card's slaps, the shutter and the album's print and notes sound on their own timers.
+- **QA.**
+  - `audio.test.ts` (fake AudioContext: buses, volumes, mute, every cue schedules, loops 8–16 bars pentatonic, the sequencer schedules ahead and keeps going, stop) and `sound.test.ts` (every § 2.12 row; both shipped pages' solutions crawl, want, grab with sound).
+  - `check:play`'s `prologue-card` now also checks the shell played the card's and the turn's sounds (`{ heard }`, dev-only `window.__popupSounds`).
+  - Rendered every cue offline in Chromium to balance levels (filtered noise needed ~3× the peak of tones). Played 0-1 → 1-2 in the shell with a probe: the chapter card, crawl, ding, blips, swish + click, sparkle, fold, slap, leaf, the chapter card again, Mocha's thump, the pigeon's coo — no console errors.
+  - Visuals are unchanged (no baselines touched). Bundle: +4.5 KB gzip over all JS chunks (budget 6 KB).
+  - Not done here: a listen on a real phone (iOS unlock, levels on a phone speaker) — for #110's playtest.
+- **Decision.** D-68. GDD § 2.12, bible § 8 and the handbook have notes.
+- **Follow-ups.**
+  - Chapters 2–10: each adds its `chapterN` loop (`TRACKS`, `chapterTrack`).
+  - New creatures / pushables: check `creatureCue` / `dropCue` keywords.
+  - #110 playtest: listen on a phone; check 「要！要！」 every 4 ticks while he reaches isn't tiring.
+  - #111: prune the RPG's tones and tracks (and the RPG's `TODO(#55)` notes go with it).

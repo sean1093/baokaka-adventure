@@ -480,6 +480,8 @@ All sound is **synthesised with WebAudio**, extending `src/shared/audio.ts` (no 
 | Shutter | Click plus flash | White flash |
 | Hint | Soft bell | Shimmer |
 
+**For engineers.** #105 built it (D-68). The synth is `src/shared/audio.ts`: two buses (音效, 音樂) with the settings' volumes, the `SFX` cue table (one row per cue, each a few oscillator notes and filtered-noise bursts), `motifVoices` for the word motifs (`WORD_MOTIF` × `MOTIF_STYLE`), `voiceVoices` for the barks (one blip per syllable) and the music-box loops `chapter0` (an 8-bar lullaby in G) and `chapter1` (12 bars in C). The map from play to cues is `src/popup/view/sound.ts`, pure and tested row by row: `tickSounds` (a tick's events and change of state), `gestureSounds`, `stickerSounds`. The shell unlocks audio on the first pointer or key, plays the chapter's loop and is the `SoundContext` for every screen; the page turn, the chapter card, the sticker card, the shutter and the album's notes sound on their own animation clocks. The art lab, PageLab, `#/popup?page=` and every still are silent. Chapters 2–10 add their loop to `TRACKS` and `chapterTrack`; new creatures and pushables get their voice from their art key (`creatureCue`, `dropCue`).
+
 ### 2.13 Screens and flow
 
 1. **Cover**: the book 《翻翻台北》 on 阿嬤's low table, with Baokaka and Mocha. Buttons: 「繼續」 (big), 「目錄」, 「相簿」, 「設定」. First launch shows only 「開始」.
