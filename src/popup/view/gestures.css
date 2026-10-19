@@ -1,0 +1,40 @@
+/*
+ * Gesture feedback (#90; GDD § 2.6, popup bible § 4.1). Minimal motion for the state flags; the
+ * full Dragging / Locked looks (lift, darken, paw badge) are #140's. Transforms only.
+ */
+
+/* A locked part wobbles when touched (± 4°, like a wheel's idle wiggle, once) */
+.gx-wobble {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gx-wobble 360ms ease-out 1;
+}
+
+@keyframes gx-wobble {
+  0% { transform: rotate(0deg); }
+  20% { transform: rotate(-4deg); }
+  45% { transform: rotate(4deg); }
+  70% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Mocha glares: a stiff lean back and a flat squash, held a moment */
+.gx-glare {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: gx-glare 700ms ease-out 1;
+}
+
+@keyframes gx-glare {
+  0% { transform: none; }
+  18%, 70% { transform: rotate(-5deg) scale(1.04, 0.95); }
+  100% { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-wobble,
+  .gx-glare { animation: none; }
+}
+
+.reduce-motion .gx-wobble,
+.reduce-motion .gx-glare { animation: none; }

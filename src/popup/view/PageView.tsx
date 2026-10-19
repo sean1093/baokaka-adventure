@@ -1,4 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
+import { POPUP } from '../../art/palette';
 import { useSvgIds } from '../../art/useSvgIds';
 import { useReducedMotion } from '../../components/motion';
 import { kitCtx, type KitCtx } from '../art';
@@ -10,7 +11,8 @@ import type { CreatureDef, Id, PageDef, PerchDef, SimState } from '../core/types
 import { Baby, Bubble, Creature, Mocha, bubbleShow, flipScale } from './actors';
 import { attractorArt, chapterSky, ledge, perchMark, perchPost, pottedPlant, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt } from './art/registry';
-import { BOOK_EXTENT, PAGE_W, type Pt } from './geometry';
+import { BOOK_EXTENT, PAGE_W, type Hit, type Pt } from './geometry';
+import { NO_GESTURE, minHit, targetsOf, type GestureFlags } from './gestures';
 import { clamp01, drawnNodePos, lerpPt, offpagePoint, partProgress, stepPose } from './interp';
 import { PRESET_Z, type LayerId } from './layers';
 import { ArtG, r2 } from './parts/common';
@@ -26,6 +28,12 @@ import { foregroundSlot, stageOf } from './stage';
  * Static layers (the backdrop, the ledges, the foreground card) are built once per page; moving
  * pieces are `data-anim` groups moved by `transform` only, with no filters (GDD § 3.9). The SVG's
  * own size is the caller's: it scales uniformly (`width`), and so do the hit areas inside it.
+ *
+ * Gestures (#90, `gestures.ts`) reach it as `gesture` flags: a part held between stops by a drag
+ * (its riders follow), the dragged and the locked part (`data-dragging`, `data-locked` and a
+ * wobble; #140 draws the full states), Mocha's glare, Baokaka watching the finger, and
+ * hold-to-reveal outlines. The hit layer draws every touchable's hit shape grown to 48 screen px
+ * (`minHit`), the same shapes `hitTest` uses.
  */
 
 /** The SVG's view box in page units: the page plus room for the floor page's widening and the page block. */
@@ -44,6 +52,8 @@ export interface PageViewProps {
   readonly scale?: number;
   /** Override the reduced-motion setting (tests, PageLab); defaults to `useReducedMotion()` */
   readonly reduced?: boolean;
+  /** What the finger is doing (#90) */
+  readonly gesture?: GestureFlags;
 }
 
 function Layer({ id, children, html }: { id: LayerId; children?: ReactNode; html?: string }) {
@@ -63,7 +73,7 @@ function creaturePoint(def: PageDef, creature: CreatureDef, state: SimState, oth
   return anchor === undefined ? null : offpagePoint(anchor);
 }
 
-export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp }: PageViewProps) {
+export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE }: PageViewProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
   const ids = useSvgIds(`pg-${def.id}`);
@@ -71,6 +81,8 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const theme = themeOf(def);
   const stage = stageOf(def);
   const t = clamp01(ms / Math.max(1, tickMs));
+  const preview = gesture.preview;
+  const locked = gesture.locked;
 
   // ——— Static layers, built once per page ———
   const statics = useMemo(() => {
@@ -95,13 +107,30 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         const from = partState(prev, part.id) ?? partState(state, part.id) ?? '';
         const to = partState(state, part.id) ?? from;
         const View = PART_VIEWS[part.preset];
-        const base: PartViewProps = { part, ctx, from, to, ms, reduced, linked: riders.has(part.id) };
+        const held = preview?.part === part.id ? preview.index : undefined;
+        const base: PartViewProps = { part, ctx, from, to, ms, reduced, linked: riders.has(part.id), preview: held };
+        let el: JSX.Element;
         if (MOVERS.has(part.preset)) {
           const Mover = View as (p: MoverProps) => JSX.Element;
-          return <Mover key={part.id} {...base} def={def} prev={prev} state={state} />;
+          el = <Mover key={part.id} {...base} def={def} prev={prev} state={state} />;
+        } else {
+          const Plain = View as (p: PartViewProps) => JSX.Element;
+          el = <Plain key={part.id} {...base} />;
         }
-        const Plain = View as (p: PartViewProps) => JSX.Element;
-        return <Plain key={part.id} {...base} />;
+        const dragging = gesture.dragging === part.id;
+        const wobble = locked?.part === part.id;
+        if (!dragging && !wobble) return el;
+        // Bible § 4.1 states as flags (#140 draws them); a locked touch wobbles (replays per touch)
+        return (
+          <g
+            key={wobble ? `${part.id}:${locked.serial}` : part.id}
+            data-dragging={dragging ? '' : undefined}
+            data-locked={wobble ? '' : undefined}
+            className={wobble && !reduced ? 'gx-wobble' : undefined}
+          >
+            {el}
+          </g>
+        );
       });
 
   // ——— Crossings: the rail folds flat and the ramp appears as the condition opens ———
@@ -131,7 +160,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     if (state.consumed.includes(a.id) || (a.goal && state.done)) return null;
     if (!holds(def, state, a.visibleWhen)) return null;
     const node = attractorNode(def, state, a);
-    const p = node === null ? undefined : drawnNodePos(def, prev, state, node, ms, reduced);
+    const p = node === null ? undefined : drawnNodePos(def, prev, state, node, ms, reduced, preview);
     if (p === undefined) return null;
     return <AttractorItem key={a.id} ctx={ctx} id={a.id} kind={a.kind} x={p[0]} y={p[1]} />;
   });
@@ -154,14 +183,19 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const mochaTo = mochaNode(def, state);
   const perch = def.perches.find((p) => p.id === state.mocha.perch);
   const mochaHidden = perch !== undefined && perchHidesMocha(def, perch) && state.mocha.path.length === 0;
-  const mochaPose = mochaHidden ? null : stepPose(def, prev, state, mochaFrom, mochaTo, t, ms, { reduced, hop: 24 });
-  const babyPose = stepPose(def, prev, state, prev.baby.node, state.baby.node, t, ms, { reduced });
+  const mochaPose = mochaHidden ? null : stepPose(def, prev, state, mochaFrom, mochaTo, t, ms, { reduced, hop: 24, preview });
+  const babyPose = stepPose(def, prev, state, prev.baby.node, state.baby.node, t, ms, { reduced, preview });
+  const finger = gesture.finger;
+  const watch = finger === null || babyPose === null ? undefined : finger[0] < babyPose.x ? -1 : 1;
   const sx = flipScale(prev.baby.facing, state.baby.facing, ms, reduced);
   const show = bubbleShow(def, state);
 
   // ——— 土地公, when his condition shows him ———
   const tdg = def.tudigong;
   const tudigongShown = holds(def, state, tdg.visibleWhen);
+
+  // ——— The hit layer: every touchable's shape, grown to 48 screen px (what hitTest uses) ———
+  const targets = targetsOf(def, state);
 
   return (
     <svg
@@ -172,6 +206,8 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       className="block font-body"
       data-page={def.id}
       data-tick={state.tick}
+      data-done={state.done ? '' : undefined}
+      data-parts={Object.entries(state.parts).sort(([a], [b]) => (a < b ? -1 : 1)).map(([id, v]) => `${id}=${v}`).join(' ')}
       role="img"
       aria-label={def.title}
     >
@@ -182,7 +218,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       </Layer>
       <Layer id="parts-mid">
         {stage.carriages.map((c) => (
-          <CarriageView key={c.part} def={def} prev={prev} state={state} carriage={c} ctx={ctx} ms={ms} reduced={reduced} />
+          <CarriageView key={c.part} def={def} prev={prev} state={state} carriage={c} ctx={ctx} ms={ms} reduced={reduced} preview={preview} />
         ))}
         {partEls('mid')}
       </Layer>
@@ -197,21 +233,33 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       </Layer>
       <Layer id="creatures">{creatures}</Layer>
       <Layer id="actors">
-        {mochaPose && <Mocha ctx={ctx} x={mochaPose.x} y={mochaPose.y} />}
-        {babyPose && <Baby ctx={ctx} x={babyPose.x} y={babyPose.y} mode={state.baby.mode} sx={sx} />}
+        {mochaPose && <Mocha ctx={ctx} x={mochaPose.x} y={mochaPose.y} glare={locked?.serial} />}
+        {babyPose && <Baby ctx={ctx} x={babyPose.x} y={babyPose.y} mode={state.baby.mode} sx={sx} watch={watch} />}
       </Layer>
       <Layer id="fx">{babyPose && show && <Bubble ctx={ctx} show={show} x={babyPose.x} y={babyPose.y} />}</Layer>
       <Layer id="foreground" html={statics.foreground} />
       <Layer id="hit">
-        {def.parts.map((p) =>
-          'r' in p.hit ? (
-            <circle key={p.id} data-hit={p.id} cx={p.hit.cx} cy={p.hit.cy} r={p.hit.r} fill="transparent" pointerEvents="none" />
-          ) : (
-            <rect key={p.id} data-hit={p.id} x={p.hit.x} y={p.hit.y} width={p.hit.w} height={p.hit.h} fill="transparent" pointerEvents="none" />
-          ),
+        {targets.map((tg) => (
+          <HitShape key={tg.key} hit={minHit(tg.hit, scale)} data-hit={tg.key} fill="transparent" />
+        ))}
+        {gesture.reveal && (
+          <g data-reveal="" fill="none" stroke={POPUP.chalk} strokeWidth={2} strokeDasharray="6 4" strokeLinecap="round">
+            {targets.map((tg) => (
+              <HitShape key={tg.key} hit={tg.hit} rx={8} vectorEffect="non-scaling-stroke" />
+            ))}
+          </g>
         )}
       </Layer>
     </svg>
+  );
+}
+
+/** A hit shape as a circle or a rectangle; never takes pointer events (`gestures.ts` hit-tests). */
+function HitShape({ hit, rx, ...rest }: { hit: Hit; rx?: number; fill?: string; vectorEffect?: 'non-scaling-stroke'; 'data-hit'?: string }) {
+  return 'r' in hit ? (
+    <circle cx={r2(hit.cx)} cy={r2(hit.cy)} r={r2(hit.r)} pointerEvents="none" {...rest} />
+  ) : (
+    <rect x={r2(hit.x)} y={r2(hit.y)} width={r2(hit.w)} height={r2(hit.h)} rx={rx} pointerEvents="none" {...rest} />
   );
 }
 

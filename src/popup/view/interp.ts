@@ -1,6 +1,7 @@
 import { nodePos } from '../core/graph';
 import type { Id, PageDef, SimState } from '../core/types';
 import type { Pt } from './geometry';
+import { previewNodePos, type PartPreview } from './gestures';
 
 /**
  * Interpolation between ticks (GDD § 3.9 Animation; popup art bible § 8). Pure functions of
@@ -10,6 +11,8 @@ import type { Pt } from './geometry';
  * - **Parts** tween to their new state over 250 ms: ease-out with a 6 % overshoot that settles
  *   back, then a 60 ms snap squash (0.97) as the stop catches.
  * - **Rides** lerp with the part: a node attached to a part is drawn where the part's tween is.
+ * - **Previews** (#90): while a drag holds a part between stops, nodes riding it are drawn at the
+ *   preview (`gestures.ts` `previewNodePos`), so the train follows the finger with its riders.
  * - **Reduced motion:** every tween is an instant swap.
  */
 
@@ -69,8 +72,10 @@ export function snapSquash(ms: number, reduced = false): number {
   return 1 - (1 - SNAP_SQUASH) * Math.sin((Math.PI * (ms - PART_TWEEN_MS)) / SNAP_SQUASH_MS);
 }
 
-/** Where node `id` is drawn `ms` into the tick: attached nodes ride their part's tween. */
-export function drawnNodePos(def: PageDef, prev: SimState, state: SimState, id: Id, ms: number, reduced = false): Pt | undefined {
+/** Where node `id` is drawn `ms` into the tick: attached nodes ride their part's tween (or a drag preview). */
+export function drawnNodePos(def: PageDef, prev: SimState, state: SimState, id: Id, ms: number, reduced = false, preview: PartPreview | null = null): Pt | undefined {
+  const held = preview === null ? undefined : previewNodePos(def, preview, id);
+  if (held !== undefined) return held;
   const to = nodePos(def, state, id);
   if (to === undefined) return undefined;
   const from = nodePos(def, prev, id) ?? to;
@@ -99,10 +104,10 @@ export function stepPose(
   to: Id | null,
   t: number,
   ms: number,
-  { reduced = false, hop = HOP_PX }: { reduced?: boolean; hop?: number } = {},
+  { reduced = false, hop = HOP_PX, preview = null }: { reduced?: boolean; hop?: number; preview?: PartPreview | null } = {},
 ): ActorPose | null {
   if (to === null) return null;
-  const end = drawnNodePos(def, prev, state, to, ms, reduced);
+  const end = drawnNodePos(def, prev, state, to, ms, reduced, preview);
   if (end === undefined) return null;
   if (from === null || from === to || reduced) return { x: end[0], y: end[1], moving: false };
   const start = nodePos(def, prev, from);

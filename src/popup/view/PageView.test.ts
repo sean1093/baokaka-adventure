@@ -4,6 +4,8 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { initialState, replay, step, withPartState } from '../core';
 import type { PageDef, SimState } from '../core/types';
 import { PAGES, pageById } from '../pages';
+import { compilePart } from '../core/presets';
+import { NO_GESTURE, targetsOf, type GestureFlags } from './gestures';
 import { ANIMATED_LAYERS, ANIMATED_NODE_BUDGET, LAYERS, type LayerId } from './layers';
 import { PageView } from './PageView';
 
@@ -20,8 +22,8 @@ afterAll(() => {
   vi.restoreAllMocks();
 });
 
-function render(def: PageDef, prev: SimState, state: SimState, ms = 0, reduced = false): string {
-  return renderToStaticMarkup(createElement(PageView, { def, prev, state, ms, tickMs: 500, reduced }));
+function render(def: PageDef, prev: SimState, state: SimState, ms = 0, reduced = false, gesture?: GestureFlags): string {
+  return renderToStaticMarkup(createElement(PageView, { def, prev, state, ms, tickMs: 500, reduced, gesture }));
 }
 
 /** Each layer's markup (layers are sibling groups, so a layer runs to the next one's start). */
@@ -102,12 +104,14 @@ describe('PageView layers and budget', () => {
     expect(counts).toMatchSnapshot();
   });
 
-  test('a hit shape for every part, in page units', () => {
+  test('a hit shape for every touchable (player-driven parts, perches, actors), in page units', () => {
     for (const def of PAGES) {
       const s = initialState(def);
       const hit = layers(render(def, s, s)).hit;
-      for (const part of def.parts) expect(hit).toContain(`data-hit="${part.id}"`);
+      for (const t of targetsOf(def, s)) expect(hit).toContain(`data-hit="${t.key}"`);
+      for (const part of def.parts.filter((p) => compilePart(p).input !== 'none')) expect(hit).toContain(`data-hit="${part.id}"`);
       expect(hit).toContain('fill="transparent"');
+      expect(hit).not.toContain('data-reveal');
     }
   });
 });
@@ -146,5 +150,42 @@ describe('PageView motion', () => {
     const fx = layers(render(def, s, s)).fx;
     expect(fx).toContain('data-bubble="want"');
     expect(fx).toContain('要！');
+  });
+});
+
+describe('PageView gesture flags (#90)', () => {
+  const def = pageById('c1p2')!;
+  const s0 = initialState(def);
+  const transformOf = (html: string, attr: string) => html.match(new RegExp(`${attr}[^>]*transform="([^"]*)"`))?.[1];
+
+  test('a drag preview holds the tab between stops and the carriage follows with its riders', () => {
+    const html = render(def, s0, s0, 0, false, { ...NO_GESTURE, preview: { part: 'train', index: 0.5 }, dragging: 'train' });
+    expect(html).toContain('data-dragging=""');
+    // Half way from out (lead node 60) to half (150): the carriage's lead rider at 105
+    expect(transformOf(html, 'data-carriage="train"')).toBe('translate(79 430)');
+    expect(transformOf(render(def, s0, s0), 'data-carriage="train"')).toBe('translate(34 430)');
+  });
+
+  test('locked parts are flagged and wobble (not under reduced motion); Mocha glares', () => {
+    const flags: GestureFlags = { ...NO_GESTURE, locked: { part: 'train', serial: 3 } };
+    const html = render(def, s0, s0, 0, false, flags);
+    expect(html).toMatch(/data-locked=""[^>]*class="gx-wobble"|class="gx-wobble"[^>]*data-locked=""/);
+    expect(html).toContain('data-glare=""');
+    expect(render(def, s0, s0, 0, true, flags)).not.toContain('gx-wobble');
+  });
+
+  test('Baokaka watches the finger; hold-to-reveal outlines every touchable', () => {
+    expect(render(def, s0, s0, 0, false, { ...NO_GESTURE, finger: [300, 200] })).toContain('data-watch="r"');
+    expect(render(def, s0, s0, 0, false, { ...NO_GESTURE, finger: [0, 200] })).toContain('data-watch="l"');
+    expect(render(def, s0, s0)).not.toContain('data-watch');
+    const reveal = layers(render(def, s0, s0, 0, false, { ...NO_GESTURE, reveal: true })).hit;
+    expect(reveal).toContain('data-reveal');
+    expect((reveal.split('data-reveal')[1].match(/<(rect|circle)/g) ?? []).length).toBe(targetsOf(def, s0).length);
+  });
+
+  test('the page reports its part states and completion for tools', () => {
+    expect(render(def, s0, s0)).toContain('data-parts="board=times train=out"');
+    const done = replay(def, def.solution).state;
+    expect(render(def, done, done)).toContain('data-done=""');
   });
 });

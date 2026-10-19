@@ -19,7 +19,7 @@ import type { Id, Input, PageDef, SimState } from '../core/types';
  *   so a finger lifting does not land on a tick.
  * - **Fast-forward:** while Baokaka walks a long way (more than 4 edges still to go on his path,
  *   moving, nothing queued), ticks run 4× faster: there is nothing to do but watch.
- * - **Inputs** queue and apply on the next tick, one per tick, in order (gestures arrive in #90).
+ * - **Inputs** queue and apply on the next tick, one per tick, in order (gestures, `view/useGestures.ts`).
  *
  * Time comes from an injectable `Clock`, so tests drive it by hand.
  */
@@ -119,6 +119,11 @@ export class PageSession {
   /** True while the clock is not running (paused, in the resume grace, or not started). */
   get paused(): boolean {
     return this.runningSince === null;
+  }
+
+  /** Inputs waiting for their tick (one is applied per tick, in order). */
+  get queued(): number {
+    return this.queue.length;
   }
 
   /** The reasons currently pausing the clock. */

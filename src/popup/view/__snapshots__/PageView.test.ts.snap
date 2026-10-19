@@ -32,7 +32,7 @@ exports[`PageView layers and budget > node counts per layer (1-2 is far below th
   },
   "hit": {
     "animated": 0,
-    "elements": 2,
+    "elements": 5,
   },
   "parts-mid": {
     "animated": 16,

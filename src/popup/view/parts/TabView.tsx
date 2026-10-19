@@ -17,17 +17,24 @@ const KNOB = 32;
 
 /** Where the card's centre is for a state: stop i evenly spaced from `track.from` to `track.to`. */
 function stopPoint(part: PartViewProps['part'], state: string): [number, number] {
+  const { index } = stateAt(part, state);
+  return indexPoint(part, index);
+}
+
+/** The card's centre at a fractional stop index (a drag preview; past the ends while rubber-banding). */
+function indexPoint(part: PartViewProps['part'], index: number): [number, number] {
   const track = part.track;
   if (track === undefined) {
     const hb = hitBox(part);
     return [hb.cx, hb.cy];
   }
-  const { t } = stateAt(part, state);
+  const { count } = stateAt(part, part.initial ?? '');
+  const t = count > 1 ? index / (count - 1) : 0;
   return [track.from[0] + (track.to[0] - track.from[0]) * t, track.from[1] + (track.to[1] - track.from[1]) * t];
 }
 
 export function TabView(props: PartViewProps) {
-  const { part, ctx, from, to, ms, reduced, linked } = props;
+  const { part, ctx, from, to, ms, reduced, linked, preview } = props;
   const slider = part.preset === 'slider';
   const [ax, ay] = part.track?.from ?? stopPoint(part, from);
   const [bx, by] = part.track?.to ?? [ax + 1, ay];
@@ -63,9 +70,10 @@ export function TabView(props: PartViewProps) {
 
   const [fx, fy] = stopPoint(part, from);
   const [tx, ty] = stopPoint(part, to);
-  const x = tweened(fx, tx, ms, reduced);
-  const y = tweened(fy, ty, ms, reduced);
-  const sq = squashFor(props);
+  const held = preview === undefined ? null : indexPoint(part, preview);
+  const x = held ? held[0] : tweened(fx, tx, ms, reduced);
+  const y = held ? held[1] : tweened(fy, ty, ms, reduced);
+  const sq = held ? 1 : squashFor(props);
   // The seal sits on the card's trailing end (tab) or above-left of the knob (slider), upright
   const [ox, oy] = slider ? [-24, -22] : [(22 - TAB.len / 2) * ux, (22 - TAB.len / 2) * uy];
   return (
