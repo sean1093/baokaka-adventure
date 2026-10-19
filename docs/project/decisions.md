@@ -367,3 +367,21 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #99 replaces the ring stub; #101 listens for `tudigong`; #105 maps `tap`/`snap`/`nope` to sounds.
 - #92 folds `npm run check:play` into visual QA.
 - The 1-2 土地公 is drawn behind the board's art, so when the board flips he is touchable but not yet visible (noted on #101).
+
+### D-52 · 2026-10-19 · PageLab: the readings #91 left open
+**Decision.** (#91, GDD § 3.10.)
+1. **Its own stepper, not `PageSession`.** The lab must load any state (a dead end, a solve's start), step exactly one tick, and keep a log, so `dev/labModel.ts` steps `core/step` directly (`labLoad`, `labStep`) and keeps the last 20 ticks' inputs and events. A step that throws (a reaction loop) leaves the state and shows the error. Ticks animate like the game's (`PageView` given the time since the tick). The palette is `candidateInputs` without the wait: exactly what the solver tries, so "every legal input" means the same thing in both.
+2. **The solver worker is PageLab's own** (`dev/solver.worker.ts` over `dev/solverJob.ts`), not #100's hint worker, which doesn't exist yet; PageLab may switch later. On load it posts the report of every lab page (`pages/report.ts`'s `reportPage`, the same judge as `pages.test.ts` and `npm run solve`) for the badges; a solve posts `SolveResult` without `nextAction` (structured clone). An edited page is sent as data; a newer request supersedes an older one's answer.
+3. **Badges:** the worst problem wins — `over cap`, then `dead-end`, `lint`, any other failure (`fail`), else `ok`; `pending` until the report arrives. The badge judges the registered page; the lint panel judges the edited copy, live.
+4. **Lab fixtures.** The page list ends with pages broken on purpose (`dev/labPages.ts`: `c1p2-broken`, 1-2 whose train locks for good if Mocha scares the pigeon while it is still `out`), so the issue's manual test — load a dead end from a broken 1-2 — runs on real data. They never enter the registry or the game.
+5. **Overlays.** Six checkboxes: `nodes`, `edges` (Baokaka's kinds), `perches` (with the cat edges `jump`/`squeeze`, and a dotted line to each `reachNode`), `attractors` (rank in § 2.2.2 order and priority; faded when he can't want it now), `hits` (the data shape and the grown 48 px shape, D-51) and `target` (line, path preview to the nearest reachable node, Mocha's trip). Edit mode always shows the nodes. Diagram colours are a dev-only `PAGELAB` group in `palette.ts` (the "no raw hex in src/popup" rule holds).
+6. **Edit mode** moves positions only (GDD: structural edits stay in code): a free node's `x`/`y`, a riding node's `attach.pos` for its part's **current** state, and either end of a part's `track`; values round to whole units. 「Copy TS」 writes the `nodes` block and one `track:` line per part (under a `// part '…'` comment) in the page files' style; the page files' inline comments aren't kept.
+7. **URL.** `page`, `overlay` (absent = `nodes,edges,target`; empty = none), `tick` (0–500 idle ticks, like `#/popup`), `speed`, `edit=1`, `view=grey,squint`, `section=kit`. Changes rewrite the hash with `replaceState` (no history entry per checkbox); a new `page` or `tick` reloads the page and drops edits.
+8. **Readability (bible § 4.2).** Greyscale is a CSS filter on the page only; squint is a second `PageView` at 0.25 scale; the count is touchable parts plus perches in the current state (`targetsOf`), flagged over 3 on pages 1–3 of a chapter. The art-key report calls a key "baked" when the registry has its own art for it (`isPlaceholder`, `hasBackdropArt`, `hasCreatureArt`), else "placeholder"; everything is a placeholder in M0. #140's affordance looks will show up in these views as they land.
+
+**Why.** Designers live in this tool (GDD § 6 risk 2): one link reproduces a view, the solver never freezes the page, and the dead-end tools can be exercised before a real page has a dead end.
+
+**Consequences.**
+- #92 adds `fixture=` targets to the lab for visual QA (the kit target's header moved, baseline updated).
+- #100 may reuse `solverJob.ts` or replace the worker with `hint.worker.ts`.
+- New page fields that move (e.g. a rotary `center`) need `labModel` edit operations and a `copyTs` line.
