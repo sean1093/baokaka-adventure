@@ -16,7 +16,9 @@
  * and the chapter turn).
  * Landed (#98): `talk/` (the thought bubble's change of mind, bark bubbles, subtitle bubbles and the
  * narration strip, placed off Baokaka and the goal; the queue is `game/talk.ts`).
- * Planned (GDD § 3.5): `hud/` WordRing, HintLayer, StickerCard; `screens/` ChapterCard, Spread +
+ * Landed (#99): `words/` (the word ring, the word card, the big speech bubble's effect ring, the
+ * 「要！」 poke and the first-use tutorial's hand).
+ * Planned (GDD § 3.5): `hud/` HintLayer, StickerCard; `screens/` ChapterCard, Spread +
  * photo, Album, Settings, Ending.
  */
 export { PageView } from './PageView';

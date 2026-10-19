@@ -41,6 +41,7 @@ import { PRESET_Z, type LayerId } from './layers';
 import { ArtG, r2 } from './parts/common';
 import { CarriageView, MOVERS, PART_VIEWS, type MoverProps, type PartViewProps } from './parts';
 import { foregroundSlot, stageOf } from './stage';
+import { SayRing } from './words/SayFx';
 import { BarkBubble, Subtitles, ThoughtBubble, barksOf, bubbleShow, goalBox, layoutTalk, showKey, talkScale, type BarkShow, type TalkActor } from './talk';
 
 /**
@@ -65,6 +66,9 @@ import { BarkBubble, Subtitles, ThoughtBubble, barksOf, bubbleShow, goalBox, lay
  * double outline, 長輩模式 seals); a dragged part is drawn last in its layer (the next z); a locked
  * touchable wears the paw badge and a solved one the done knot; a hint draws the L1 halo behind
  * its target and, at L2, the vellum ghost hand over the page.
+ *
+ * Words (#99): on a say tick the word's big speech bubble is one of his barks (`barksOf`) and its
+ * reach widens from him as the effect ring (`words/SayFx.tsx`) in the fx layer.
  */
 
 /** The SVG's view box in page units: the page plus room for the floor page's widening and the page block. */
@@ -265,7 +269,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const babyEnd = nodePos(def, state, babyTo);
   const babyEdge = babyFrom === babyTo ? null : edgeKind(def, babyFrom, babyTo);
   const riding = babyFrom === babyTo && babyStart !== undefined && babyEnd !== undefined && (babyStart[0] !== babyEnd[0] || babyStart[1] !== babyEnd[1]);
-  const bAnim = babyAnim({ mode: state.baby.mode, edge: babyEdge, riding, growth: stepGrowth(def, state), watching: finger !== null, word: sayingWord(prev, state, events) });
+  // The word he says this tick (#99: the big speech bubble is a bark, the effect ring is below)
+  const sayWord = sayingWord(prev, state, events);
+  const bAnim = babyAnim({ mode: state.baby.mode, edge: babyEdge, riding, growth: stepGrowth(def, state), watching: finger !== null, word: sayWord });
   const babyDist = babyEdge !== null && babyStart && babyEnd ? Math.hypot(babyEnd[0] - babyStart[0], babyEnd[1] - babyStart[1]) : 0;
   const bFrame = chooseFrame(bAnim, { k: kStep, dist: babyDist, tickMs, hold: held });
   let babyPose = stepPose(def, prev, state, babyFrom, babyTo, tStep, ms, { reduced, preview });
@@ -420,6 +426,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         </SpriteGrade.Provider>
       </Layer>
       <Layer id="fx">
+        {sayWord !== null && babyEnd && <SayRing word={sayWord} at={babyEnd} facing={state.baby.facing} reduced={reduced} />}
         {babyPose && babyEnd && show && said.thought && (
           <ThoughtBubble
             ctx={ctx}

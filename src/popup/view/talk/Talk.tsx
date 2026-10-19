@@ -109,15 +109,40 @@ export function ThoughtBubble({ ctx, show, was, appeared, placed, head, offset, 
   );
 }
 
+/** The 「要！」 poke's pointer (#99): a dotted chalk line from the bubble to his target, with an arrowhead. */
+function pointerPath(box: { x: number; y: number; w: number; h: number }, to: Pt): string {
+  const c: Pt = [box.x + box.w / 2, box.y + box.h / 2];
+  const dx = to[0] - c[0];
+  const dy = to[1] - c[1];
+  const len = Math.hypot(dx, dy);
+  if (len < 1) return '';
+  const ux = dx / len;
+  const uy = dy / len;
+  // Leave the bubble at its edge, stop short of the target
+  const t0 = Math.min(Math.abs(ux) > 1e-6 ? box.w / 2 / Math.abs(ux) : Infinity, Math.abs(uy) > 1e-6 ? box.h / 2 / Math.abs(uy) : Infinity) + 6;
+  const t1 = Math.max(t0 + 8, len - 22);
+  const a: Pt = [c[0] + ux * t0, c[1] + uy * t0];
+  const b: Pt = [c[0] + ux * t1, c[1] + uy * t1];
+  const head = (s: number) => `${r2(b[0] - ux * 9 + -uy * 6 * s)} ${r2(b[1] - uy * 9 + ux * 6 * s)}`;
+  return `M${r2(a[0])} ${r2(a[1])}L${r2(b[0])} ${r2(b[1])}|M${head(1)}L${r2(b[0])} ${r2(b[1])}L${head(-1)}`;
+}
+
 /** A bark bubble beside the speaker's head: pops in, holds, fades out (a fade under reduced motion). */
 export function BarkBubble({ placed, offset, k, reduced }: { placed: PlacedBark; offset: Pt; k: number; reduced: boolean }) {
   const { box, to, bark } = placed;
   const card = useMemo(() => barkCard(box, to), [box, to]);
-  const f = TALK_FONT * k;
+  const f = TALK_FONT * k * (bark.size ?? 1);
   const baby = bark.who === 'baby';
+  const [line, arrow] = bark.point ? pointerPath(box, bark.point).split('|') : [];
   return (
-    <g data-bark={bark.who} data-anim="" transform={`translate(${r2(offset[0])} ${r2(offset[1])})`}>
+    <g data-bark={bark.who} data-bark-kind={bark.bark} data-anim="" transform={`translate(${r2(offset[0])} ${r2(offset[1])})`}>
       <g key={`${bark.who}:${bark.tick}:${bark.bark}`} className={reduced ? 'tb-bark-fade' : 'tb-bark'}>
+        {line && (
+          <g data-bark-point="" fill="none" stroke={C.chalk} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
+            <path d={line} strokeDasharray="2 7" />
+            <path d={arrow} />
+          </g>
+        )}
         <ArtG html={card} />
         <text
           x={r2(box.x + box.w / 2)}

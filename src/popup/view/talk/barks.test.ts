@@ -3,7 +3,7 @@ import { initialState } from '../../core';
 import type { SimEvent } from '../../core/events';
 import type { SimState } from '../../core/types';
 import { pageById } from '../../pages';
-import { BARK_TICKS, barkLog, barksOf } from './barks';
+import { BARK_TICKS, WORD_BUBBLE, barkLog, barksOf, type BarkShow } from './barks';
 
 /** Bark bubbles (#98; GDD § 2.2.1, § 2.3): which line each character says on a tick, and how long it stays. */
 
@@ -63,4 +63,25 @@ describe('barkLog', () => {
   test('a restarted page drops barks from the future', () => {
     expect(barkLog(barksOf(at(4), at(5), [{ type: 'bark', bark: 'want' }]), [], 0)).toEqual([]);
   });
+});
+
+describe('a said word (#99)', () => {
+  test('on the say tick the word is his big speech bubble, over any other bark', () => {
+    const shown = barksOf(at(0), at(1, { mode: 'saying' }), [{ type: 'beep', id: 'A1' }, { type: 'bark', bark: 'want' }]);
+    expect(shown).toEqual([{ who: 'baby', bark: 'word', text: '嗶！', tick: 1, size: WORD_BUBBLE }]);
+    expect(WORD_BUBBLE).toBeGreaterThan(1);
+  });
+  test('不要！ (no event): read off the grown refused set', () => {
+    const shown = barksOf(at(0, { target: 'bead' }), at(1, { mode: 'saying', refused: ['bead'] }), []);
+    expect(shown.map((b) => b.text)).toEqual(['不要！']);
+  });
+});
+
+test('the 「要！」 poke holds its three ticks over his own barks (#99), not over a said word', () => {
+  const poke: BarkShow = { who: 'baby', bark: 'want', text: '要！', tick: 4, point: [300, 400] };
+  const own: BarkShow = { who: 'baby', bark: 'wantWant', text: '要！要！', tick: 5 };
+  expect(barkLog([poke], [own], 5)).toEqual([poke]);
+  expect(barkLog([poke, own], [], 7)).toEqual([own]);
+  const word: BarkShow = { who: 'baby', bark: 'word', text: '嗶！', tick: 5, size: 1.6 };
+  expect(barkLog([poke], [word], 5)).toEqual([word]);
 });

@@ -169,7 +169,7 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
     const who = bark.who === 'baby' ? baby : mocha;
     if (!who) continue;
     const s: 1 | -1 = bark.who === 'baby' ? side : who.at[0] > PAGE_W / 2 ? -1 : 1;
-    const pick = pickBox(barkCandidates(who.head, barkSize(bark.text, k), s), { hard, soft: [...soft, who.box] });
+    const pick = pickBox(barkCandidates(who.head, barkSize(bark.text, k * (bark.size ?? 1)), s), { hard, soft: [...soft, who.box] });
     barks.push({ bark, box: pick.box, to: who.head });
     soft.push(pick.box);
   }
