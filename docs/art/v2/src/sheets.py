@@ -120,7 +120,7 @@ def sheet_baokaka():
     b.append('<h2 style="left:666px;top:128px">表情集</h2>')
     for i, (e, n, t, tl) in enumerate([("neutral", "平常（嘟嘴）", 0, 0), ("laugh", "大笑", -.28, 5),
                                        ("teary", "淚汪汪", .22, 6), ("surprised", "驚訝", -.3, -3)]):
-        x = 654 + (i % 2) * 168
+        x = 676 + (i % 2) * 160
         y = 170 + (i // 2) * 184
         b.append(at(x, y, svgdoc(lambda d, e=e, t=t, tl=tl: H.head(d, e, t, tl), "-14 -40 428 480", 152, 170)))
         b.append(f'<div class="lb" style="left:{x}px;top:{y+164}px;width:152px">{n}</div>')

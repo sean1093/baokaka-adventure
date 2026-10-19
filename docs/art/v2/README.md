@@ -200,3 +200,61 @@ Hence the bitmap pass.
   - The references are hand-painted by professionals: finer strand-level hair, painterly shading and true 3/4 construction. v2 matches their *language* (line, layers, hair, eyes, folds, sheet format) but is still procedurally constructed.
   - Hair is short toddler hair with fewer strands. The turn rig is a 2.5D approximation, not a redrawn 3/4 head.
   - Fabric folds are convincing at sprite size but simpler than the references' pleats up close.
+
+---
+
+## 5. Gameplay poses (《翻翻台北》 Pop-Up Taipei)
+
+| File | What |
+|---|---|
+| `poses-baokaka.png`, `poses-mocha.png` | Labelled pose sheets. Every frame shown is the baked bitmap. |
+| `poses-cycles.png` | Contact sheet of the three cycles. Each row shows frames 1–8, then frame 1 again (green box) so the loop seam is visible, an onion skin of the last frame over the first, and the numeric loop check. |
+| `preview-baokaka-crawl.gif`, `preview-baokaka-walk.gif`, `preview-mocha-walk.gif` | Animated previews of the cycles. |
+| `baked/poses/<char>-<pose>-<i>@2x.webp` / `@3x.webp` | 31 poses and 63 frames (Baokaka 18 poses / 39 frames, Mocha 13 / 24). About 450 KB total @2x and 580 KB @3x. |
+| `baked/poses.json` | Manifest, per pose: Chinese label, `frames`, `keyframes`, `loop`, `fps`, `size_pt`, `anchor_pt` (the foot point, measured from the top-left), file names, byte count, plus the loop-check results. |
+
+**Rig** (`src/rig.py`, `src/bk_poses.py`, `src/mo_poses.py`):
+- **Approach.** A small forward-kinematics plus 2-bone IK skeleton, drawn with the same tapered-ink and cel-shading toolkit as the sheets, with the head reused from `baokaka.py` / `mocha.py` turned 3/4 by the cylindrical turn rig.
+- **Baokaka.** The torso is a pear (small chest, big belly, padded bum); legs and arms are drawn as single bending limbs. Raised arms go *behind* the head, which is the anime convention for a big-headed toddler; anatomically his raised arms barely clear the top of his head.
+- **Mocha.** A digitigrade cat: shoulder–elbow–wrist–paw at the front (elbow bends back), hip–knee–hock–paw at the back (knee forward, hock back). Paws are placed by IK, so stance paws stay planted.
+- **Gaits.**
+  - The crawl is a diagonal crawl: near hand together with far knee.
+  - The first walk is short, flat-footed steps with knees soft, arms in a low guard, and the torso swaying.
+  - The cat walk is a lateral-sequence gait: left hind → left fore → right hind → right fore, a quarter cycle apart, with a duty factor of about 0.6.
+- **Looping.** Cycles are periodic functions of phase *t*, so frame *n* equals frame 0 by construction. `bake_poses.py` also checks this numerically: the seam difference must be ≤ the largest difference between consecutive frames.
+
+**Orientation and anchor:**
+- All frames face right; the game mirrors them for left.
+- When mirroring, `anchor_x' = size_pt[0] - anchor_x`.
+- Every frame of a pose shares one box, so the anchor never jitters within a pose.
+
+**Scale:**
+- Baokaka is 0.092 pt per art unit, so he is about 70 pt tall crawling, matching GDD §3.9.
+- Mocha is 0.074 pt per unit, so a standing cat is about 0.55× the crawling baby's height, which matches the real-life ratio.
+
+**Coverage against GDD §3.9:**
+
+| GDD frame | Delivered as |
+|---|---|
+| crawl | `crawl` (8 frames; keyframes 0/2/4/6 for a 4-frame version) |
+| sit | `sit` |
+| reach | `reach` |
+| cry | `cry` (2) |
+| grab | `hold` |
+| eat | `eat` |
+| cuddle | `hug` |
+| say | `point` (mouth open) |
+| stand-cruise | `pull` / `wobble` |
+| walk | `walk` (8) |
+| Mocha sit / loaf / hop (3) / land / push (2) | `sit` / `loaf` / `jump` (3) / `jump` frame 3 / `push` (2) |
+| Mocha eye-contact | `push` frame 1 (looks at the camera) |
+| Mocha puff (wet) | `puff` |
+| Mocha walk (linked) | `walk` (8) |
+
+**Not yet drawn:**
+- Baokaka: look L/R, watch-sway, ride-giggle, carried, climb (3), touch-watch.
+- Mocha: glare, purr, in-box.
+
+Most of these are cheap with the rig (a head turn or expression swap on `sit`/`loaf`).
+
+**Rebuild:** `python3 docs/art/v2/tools/bake_poses.py` (about 2 minutes).

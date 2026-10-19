@@ -4,21 +4,21 @@
    96,
    200
   ],
-  "svg_bytes": 507088,
+  "svg_bytes": 507096,
   "files": {
    "@2x.webp": {
     "px": [
      192,
      400
     ],
-    "bytes": 17636
+    "bytes": 17432
    },
    "@3x.webp": {
     "px": [
      288,
      600
     ],
-    "bytes": 29116
+    "bytes": 29136
    }
   }
  },
@@ -27,7 +27,7 @@
    92,
    187
   ],
-  "svg_bytes": 781439,
+  "svg_bytes": 781539,
   "files": {
    "@2x.webp": {
     "px": [
@@ -50,7 +50,122 @@
    64,
    72
   ],
-  "svg_bytes": 147716,
+  "svg_bytes": 147725,
+  "files": {
+   "@2x.webp": {
+    "px": [
+     128,
+     144
+    ],
+    "bytes": 5556
+   },
+   "@3x.webp": {
+    "px": [
+     192,
+     216
+    ],
+    "bytes": 9100
+   }
+  }
+ },
+ "baokaka-head-happy": {
+  "logical": [
+   64,
+   72
+  ],
+  "svg_bytes": 148474,
+  "files": {
+   "@2x.webp": {
+    "px": [
+     128,
+     144
+    ],
+    "bytes": 5468
+   },
+   "@3x.webp": {
+    "px": [
+     192,
+     216
+    ],
+    "bytes": 8732
+   }
+  }
+ },
+ "baokaka-head-laugh": {
+  "logical": [
+   64,
+   72
+  ],
+  "svg_bytes": 126769,
+  "files": {
+   "@2x.webp": {
+    "px": [
+     128,
+     144
+    ],
+    "bytes": 5840
+   },
+   "@3x.webp": {
+    "px": [
+     192,
+     216
+    ],
+    "bytes": 9040
+   }
+  }
+ },
+ "baokaka-head-teary": {
+  "logical": [
+   64,
+   72
+  ],
+  "svg_bytes": 159059,
+  "files": {
+   "@2x.webp": {
+    "px": [
+     128,
+     144
+    ],
+    "bytes": 5588
+   },
+   "@3x.webp": {
+    "px": [
+     192,
+     216
+    ],
+    "bytes": 8928
+   }
+  }
+ },
+ "baokaka-head-surprised": {
+  "logical": [
+   64,
+   72
+  ],
+  "svg_bytes": 142622,
+  "files": {
+   "@2x.webp": {
+    "px": [
+     128,
+     144
+    ],
+    "bytes": 5720
+   },
+   "@3x.webp": {
+    "px": [
+     192,
+     216
+    ],
+    "bytes": 9026
+   }
+  }
+ },
+ "baokaka-head-cry": {
+  "logical": [
+   64,
+   72
+  ],
+  "svg_bytes": 127877,
   "files": {
    "@2x.webp": {
     "px": [
@@ -64,122 +179,7 @@
      192,
      216
     ],
-    "bytes": 9174
-   }
-  }
- },
- "baokaka-head-happy": {
-  "logical": [
-   64,
-   72
-  ],
-  "svg_bytes": 148464,
-  "files": {
-   "@2x.webp": {
-    "px": [
-     128,
-     144
-    ],
-    "bytes": 5452
-   },
-   "@3x.webp": {
-    "px": [
-     192,
-     216
-    ],
-    "bytes": 8810
-   }
-  }
- },
- "baokaka-head-laugh": {
-  "logical": [
-   64,
-   72
-  ],
-  "svg_bytes": 126761,
-  "files": {
-   "@2x.webp": {
-    "px": [
-     128,
-     144
-    ],
-    "bytes": 5832
-   },
-   "@3x.webp": {
-    "px": [
-     192,
-     216
-    ],
-    "bytes": 9178
-   }
-  }
- },
- "baokaka-head-teary": {
-  "logical": [
-   64,
-   72
-  ],
-  "svg_bytes": 159049,
-  "files": {
-   "@2x.webp": {
-    "px": [
-     128,
-     144
-    ],
-    "bytes": 5594
-   },
-   "@3x.webp": {
-    "px": [
-     192,
-     216
-    ],
-    "bytes": 9014
-   }
-  }
- },
- "baokaka-head-surprised": {
-  "logical": [
-   64,
-   72
-  ],
-  "svg_bytes": 145425,
-  "files": {
-   "@2x.webp": {
-    "px": [
-     128,
-     144
-    ],
-    "bytes": 5820
-   },
-   "@3x.webp": {
-    "px": [
-     192,
-     216
-    ],
-    "bytes": 9102
-   }
-  }
- },
- "baokaka-head-cry": {
-  "logical": [
-   64,
-   72
-  ],
-  "svg_bytes": 127868,
-  "files": {
-   "@2x.webp": {
-    "px": [
-     128,
-     144
-    ],
-    "bytes": 5578
-   },
-   "@3x.webp": {
-    "px": [
-     192,
-     216
-    ],
-    "bytes": 8780
+    "bytes": 8742
    }
   }
  },
@@ -188,21 +188,21 @@
    64,
    64
   ],
-  "svg_bytes": 219382,
+  "svg_bytes": 219482,
   "files": {
    "@2x.webp": {
     "px": [
      128,
      128
     ],
-    "bytes": 7306
+    "bytes": 7364
    },
    "@3x.webp": {
     "px": [
      192,
      192
     ],
-    "bytes": 12078
+    "bytes": 12070
    }
   }
  },
@@ -211,21 +211,21 @@
    64,
    64
   ],
-  "svg_bytes": 222585,
+  "svg_bytes": 226004,
   "files": {
    "@2x.webp": {
     "px": [
      128,
      128
     ],
-    "bytes": 6826
+    "bytes": 6948
    },
    "@3x.webp": {
     "px": [
      192,
      192
     ],
-    "bytes": 11254
+    "bytes": 11536
    }
   }
  },
@@ -234,21 +234,21 @@
    64,
    64
   ],
-  "svg_bytes": 185556,
+  "svg_bytes": 188976,
   "files": {
    "@2x.webp": {
     "px": [
      128,
      128
     ],
-    "bytes": 6596
+    "bytes": 6758
    },
    "@3x.webp": {
     "px": [
      192,
      192
     ],
-    "bytes": 10980
+    "bytes": 10976
    }
   }
  },
@@ -257,21 +257,21 @@
    64,
    64
   ],
-  "svg_bytes": 223303,
+  "svg_bytes": 226722,
   "files": {
    "@2x.webp": {
     "px": [
      128,
      128
     ],
-    "bytes": 7450
+    "bytes": 7438
    },
    "@3x.webp": {
     "px": [
      192,
      192
     ],
-    "bytes": 12088
+    "bytes": 12200
    }
   }
  }

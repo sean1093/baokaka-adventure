@@ -141,6 +141,10 @@ def eye(doc, side, mode="open"):
     elif mode == "closed":
         arc = [(X(318), 194), (X(332), 180), (X(350), 176), (X(368), 180), (X(382), 192)]
         out += P(taper(arc, 5, .15, .15), FUR_LN)
+    elif mode == "sleep":      # peaceful closed lids, curving down
+        arc = [(X(318), 186), (X(334), 196), (X(352), 198), (X(370), 194), (X(382), 184)]
+        out += P(taper(arc, 4.6, .15, .15), FUR_LN)
+        out += P(taper([(X(322), 204), (X(350), 210), (X(376), 202)], 3, .3, .3), "#E6DAC4", opacity=.7)
     return out
 
 
@@ -178,7 +182,7 @@ def whiskers(doc, side):
     return o
 
 
-EXPR = {"content": ("open", "content"), "smug": ("smug", "content"), "happy": ("closed", "open"),
+EXPR = {"sleep": ("sleep", "content"), "content": ("open", "content"), "smug": ("smug", "content"), "happy": ("closed", "open"),
         "surprised": ("wide", "o")}
 
 
@@ -188,8 +192,11 @@ def head(doc, expr="content", turn=0.0, tilt=0.0):
     E = EXPR[expr]
     o = ""
     for side in (-1, 1):
-        dx = -side * RCYL * (1 - math.cos(turn)) * .9 + (-RCYL * math.sin(turn) * .18)
-        o += f'<g transform="translate({dx:.1f},0)">{ear(doc, side)}</g>'
+        dx = -side * RCYL * (1 - math.cos(turn)) * .9 + (-RCYL * math.sin(turn) * .45)
+        far = (side > 0) == (turn < 0)
+        sx = 1 - (.25 * min(1, abs(turn) / .5) if far and abs(turn) > .1 else 0)
+        ex_ = CX + side * 90
+        o += f'<g transform="translate({dx:.1f},0) translate({ex_},0) scale({sx:.3f},1) translate({-ex_},0)">{ear(doc, side)}</g>'
     pts = M(HEAD_R)
     if turn:
         sh = -RCYL * math.sin(turn) * .35
@@ -229,6 +236,17 @@ def head(doc, expr="content", turn=0.0, tilt=0.0):
     mz = P(smooth(muz), CREAM, filter=doc.blur(1.6))
     mz += P(smooth([(300, 160), (309, 190), (306, 214), (294, 214), (291, 190)]), FUR_HL, opacity=.6, filter=doc.blur(3))
     inner += feat(300, mz)
+    if abs(turn) > .15:
+        # the side of the head comes into view: temple + cheek stripes
+        k = min(1.0, abs(turn) / .5)
+        sd = -1 if turn < 0 else 1
+        side_m = ""
+        for pts_, w in [([(232, 120), (222, 150), (220, 180)], 10), ([(206, 150), (198, 176), (200, 200)], 9),
+                        ([(194, 210), (210, 222), (236, 230)], 9), ([(186, 238), (206, 250), (234, 256)], 8),
+                        ([(258, 108), (250, 128), (248, 146)], 8)]:
+            q = [(x if sd < 0 else 2 * CX - x, y) for x, y in pts_]
+            side_m += P(strand(q, w, bulge=.25), STRIPE, opacity=.85)
+        inner += f'<g opacity="{k:.2f}">{side_m}</g>'
     inner += P(d, FUR_SH, opacity=.8, mask=doc.mask(f'<path d="{d}" fill="#fff"/><path d="{d}" fill="#000" transform="translate(-20,-8)"/>'))
     inner += f'<ellipse cx="300" cy="306" rx="80" ry="16" fill="{FUR_SH2}" opacity=".5" filter="{doc.blur(5)}"/>'
     o += clipped(doc, d, inner)

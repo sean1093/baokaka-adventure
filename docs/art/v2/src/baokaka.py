@@ -23,6 +23,7 @@ MOUTH = "#9A3E38"; TONGUE = "#F08C84"; LIP = "#EE9E94"; LIP_DK = "#D27A72"
 CX = 200
 TURN = 0.0      # head turn in radians (+ = face turns toward viewer-left)
 RCYL = 176.0
+LOOK = (0.0, 0.0)   # gaze offset in head units, set by head(look=...)
 
 
 def tx(x):
@@ -101,7 +102,7 @@ def eye(doc, mode="open", side=-1, tear=False):
         shape = upper + lower
         d = smooth(shape)
         clip = doc.clip(d)
-        ix, iy = cx - s * 1, 266
+        ix, iy = cx - s * 1 + LOOK[0], 266 + LOOK[1]
         rx, ry = 19.5, 22 + 2 * wide
         o = P(d, "#FBFAFC")
         o += f'<g clip-path="{clip}">'
@@ -144,6 +145,11 @@ def eye(doc, mode="open", side=-1, tear=False):
     elif mode == "squeeze":   # crying > <
         out += P(taper([(X(34), 258), (X(4), 268), (X(-30), 272)], 5.5, .2, .4), LASH)
         out += P(taper([(X(30), 286), (X(4), 274), (X(-28), 276)], 4.0, .2, .5), LASH)
+    elif mode == "closed":    # asleep: soft downward lid lines with lashes
+        out += P(taper([(X(32), 270), (X(10), 278), (X(-14), 279), (X(-36), 272)], 5, .2, .15), LASH)
+        for k in range(3):
+            x0 = X(-6 - k * 11)
+            out += P(taper([(x0, 278), (x0 - s * 3, 286)], 1.6, .1, .6), LASH, opacity=.8)
     elif mode == "sleepy":
         out += P(taper([(X(32), 272), (X(4), 278), (X(-36), 270)], 5.5, .2, .2), LASH)
     return out
@@ -182,7 +188,7 @@ def nose(doc):
     o += P(taper([(184, 314), (190, 318), (196, 317)], 2.2, .4, .4), SKIN_LN, opacity=.7)
     o += P(taper([(204, 317), (210, 318), (216, 314)], 2.4, .4, .4), SKIN_LN, opacity=.8)
     o += P(taper([(214, 298), (220, 308), (218, 316)], 2.0, .4, .5), SKIN_LN, opacity=.35)
-    o += f'<ellipse cx="197" cy="303" rx="7" ry="5" fill="#fff" opacity=".75" filter="{doc.blur(1.5)}"/>'
+    o += f'<ellipse cx="198" cy="304" rx="4.5" ry="3" fill="#FFF6EE" opacity=".55" filter="{doc.blur(1.4)}"/>'
     return o
 
 
@@ -272,9 +278,14 @@ def hair(doc, layer="front"):
         return o
     gH = doc.lin([(0, "#3A3744"), (.3, HAIR), (.75, HAIR), (1, HAIR_DK)], 0, 0, 0, 260, "userSpaceOnUse")
     # fine wisps escaping at the temples and over the ears (thin hairline)
-    for pts, w in [([(40, 214), (30, 240), (30, 268)], 7), ([(52, 236), (46, 258), (50, 280)], 5),
-                   ([(370, 214), (378, 240), (376, 266)], 7), ([(360, 240), (364, 262), (360, 282)], 5),
-                   ([(320, 22), (340, 6), (356, 2)], 6), ([(306, 22), (316, 0), (330, -10)], 7)]:
+    wisps = [([(40, 214), (30, 240), (30, 268)], 7), ([(52, 236), (46, 258), (50, 280)], 5),
+             ([(370, 214), (378, 240), (376, 266)], 7), ([(360, 240), (364, 262), (360, 282)], 5),
+             ([(320, 22), (340, 6), (356, 2)], 6), ([(306, 22), (316, 0), (330, -10)], 7)]
+    if TURN < -.2:      # face turned right: the right temple is behind the cheek
+        wisps = [w for w in wisps if not (w[0][0][0] > 340 and w[0][0][1] > 200)]
+    if TURN > .2:
+        wisps = [w for w in wisps if not (w[0][0][0] < 60 and w[0][0][1] > 200)]
+    for pts, w in wisps:
         o += P(strand(pts, w, bulge=.2), HAIR)
         o += P(taper(pts, 1.4, .1, .6), HAIR_LN, opacity=.8)
     o += P(whole, gH)
@@ -365,27 +376,35 @@ EXPR = {
     "surprised": dict(eyes="wide", brows="up", mouth="o", blush=.5),
     "cry": dict(eyes="squeeze", brows="worried", mouth="cry", blush=.95, tears=True),
     "sleep": dict(eyes="sleepy", brows="soft", mouth="pout", blush=.6),
+    "asleep": dict(eyes="closed", brows="soft", mouth="pout", blush=.65),
+    "wonder": dict(eyes="wide", brows="up", mouth="o", blush=.6),
+    "say": dict(eyes="open", brows="up", mouth="smile", blush=.65),
+    "refuse": dict(eyes="squeeze", brows="worried", mouth="frown", blush=.85),
+    "wail": dict(eyes="squeeze", brows="worried", mouth="cry", blush=.95, tears=True),
+    "chew": dict(eyes="smile", brows="soft", mouth="pout", blush=.75),
 }
 
 
-def head(doc, expr="happy", turn=0.0, tilt=0.0):
-    global TURN
+def head(doc, expr="happy", turn=0.0, tilt=0.0, look=(0, 0)):
+    global TURN, LOOK
     TURN = turn
+    LOOK = look
     E = EXPR[expr]
     o = ""
     fp = face_pts()
     fd = smooth(fp)
-    gS = doc.rad([(0, SKIN_HL), (.55, SKIN), (1, "#FCDDCC")], .42 - turn * .3, .38, .64)
+    gS = doc.rad([(0, "#FFF2E9"), (.55, SKIN), (1, "#FCDDCC")], .42 - turn * .3, .4, .64)
     o += P(fd, gS)
     o += cel(doc, fd, SKIN_SH, shift=(22, 4), opacity=.85,
              soft=("#E8A48E", 14, smooth([(320, 210), (366, 310), (310, 400), (250, 418), (336, 330)]), .35))
     o += forehead_shadow(doc, fd)
     # forehead sheen (the photo's glossy baby forehead) + full-cheek volume
-    o += clipped(doc, fd, f'<ellipse cx="{tx(186)}" cy="150" rx="46" ry="26" fill="#fff" opacity=".55" filter="{doc.blur(9)}"/>')
+    # forehead apex: small, warm, soft, low-opacity (a pale patch reads as a bald spot)
+    o += clipped(doc, fd, f'<ellipse cx="{tx(178)}" cy="196" rx="20" ry="10" fill="#FFF5EC" opacity=".28" filter="{doc.blur(6)}"/>')
     b = E["blush"]
     for cx in (110, 290):
         bl = f'<ellipse cx="{cx}" cy="330" rx="48" ry="30" fill="{BLUSH}" opacity="{b}" filter="{doc.blur(11)}"/>'
-        bl += f'<ellipse cx="{cx - 8}" cy="318" rx="12" ry="7" fill="#fff" opacity=".45" filter="{doc.blur(3)}"/>'
+        bl += f'<ellipse cx="{cx - 8}" cy="318" rx="9" ry="5" fill="#FFF3EA" opacity=".3" filter="{doc.blur(3)}"/>'
         if expr in ("teary", "cry", "laugh"):
             for k in range(3):
                 x = cx - 14 + k * 11
@@ -402,7 +421,7 @@ def head(doc, expr="happy", turn=0.0, tilt=0.0):
     for side in (-1, 1):
         if turn and ((side < 0) == (turn > 0)) and abs(turn) > .2:
             continue
-        dx = -side * RCYL * (1 - math.cos(turn)) * .8
+        dx = -side * RCYL * (1 - math.cos(turn)) * 1.5
         o += f'<g transform="translate({dx:.1f},0)">{ear(doc, side)}</g>'
     o += hair(doc, "front")
     for side in (-1, 1):
@@ -416,6 +435,7 @@ def head(doc, expr="happy", turn=0.0, tilt=0.0):
             tr += f'<circle cx="{x}" cy="300" r="2.2" fill="#fff"/>'
             o += feat(x, tr)
     TURN = 0.0
+    LOOK = (0.0, 0.0)
     if tilt:
         o = f'<g transform="rotate({tilt} 200 300)">{o}</g>'
     return o
