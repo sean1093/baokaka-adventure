@@ -320,7 +320,7 @@ Format:
 - **Tests:** `labParams.test.ts`, `copyTs.test.ts` (incl. evaluating the output back to the data), `labModel.test.ts`, `solverJob.test.ts` (reports, dead ends load and stay dead, from-state, edited copies, errors). Decision D-52; GDD § 3.10 engineers' note; handbook § 5.
 - **Follow-ups:** #92 adds `fixture=` screenshot targets to the lab; #100 may reuse `solverJob.ts`; #140's affordance looks will show in the readability views.
 
-### 2026-10-19 · Staff engineer · #92 Visual QA for 翻翻台北: PageLab fixtures, screenshot targets, R5/R6 UI checks (PR #PRNUM)
+### 2026-10-19 · Staff engineer · #92 Visual QA for 翻翻台北: PageLab fixtures, screenshot targets, R5/R6 UI checks (PR #159)
 - **Fixtures.** `src/popup/dev/fixtures.ts` holds `POPUP_FIXTURES`. Each fixture is a page id plus a step list, replayed through `core/step`, and pins its expected mode or event. There are three so far:
   - `c0p1-start`: idle in the crib;
   - `c1p2-reaching`: on the jammed train at the gap;
