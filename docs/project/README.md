@@ -115,6 +115,10 @@ Every merge deploys to the public site. Until the routing switch (#109) `#/` sti
 
 Every UI or art PR attaches screenshots made with this tooling (issue #4; decisions D-13, D-18, D-21). **For 翻翻台北,** #92 adds PageLab fixtures (`#/pagelab?fixture=<name>&still=1`) that the visual check picks up automatically, plus UI checks for the GDD audience rules; the RPG art lab and its targets below stay until #111 removes them.
 
+### PageLab sections (dev builds only)
+
+- **Kit** (`#/pagelab?section=kit`, since #139): proof D rebuilt from the TS kit port (`src/popup/art/`, with filters), every GDD part preset's default art in its idle state (with filters, as PageLab and the bake show it, and without, as the game draws it until bitmaps are baked), and the artist's `proof-d-swatches.png` below for comparison. Visual target `kit-swatches`.
+
 ### The art lab: `#/artlab` (dev builds only)
 
 Run `npm run dev` and open `http://localhost:5173/baokaka-adventure/#/artlab`. In a production build the hash shows the game, and the art lab code is not in the bundle at all (`src/App.tsx` drops the lazy import when `import.meta.env.DEV` is false).
