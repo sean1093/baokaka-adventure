@@ -3,7 +3,8 @@ import type { SimEvent } from '../core/events';
 import type { BabyMode, Id, LineKey, PageDef, SimState, SolutionStep } from '../core/types';
 import type { LearnKey } from '../content/words';
 import type { NavState } from '../game/nav';
-import { completePage, earnSticker, encodeSave, freshSave, ProgressStore, SAVE_KEY, updateSettings, type SaveV1, type Sticker } from '../game/progress';
+import { completePage, earnSticker, encodeSave, freshSave, keepPhoto, ProgressStore, SAVE_KEY, updateSettings, type Photo, type SaveV1, type Sticker } from '../game/progress';
+import type { PageRegistry } from '../pages';
 import type { StorageLike } from '../../shared/storage';
 import { labPageById } from './labPages';
 import type { AffordanceFlags } from '../view/affordance/look';
@@ -52,6 +53,8 @@ export interface PopupFixture {
     readonly hint?: 0 | 1 | 2;
     /** The sticker pop over the bar's tray, as if just earned (#101) */
     readonly sticker?: Sticker;
+    /** The photo moment up over a spread (#103), its slow-motion clock at `at` ms into the loop */
+    readonly photo?: { readonly at: number };
   };
   /**
    * The still's motion look: `motion` (default) draws the idle cues of full motion, `reduced` the
@@ -73,6 +76,10 @@ export interface PopupFixture {
     readonly card?: boolean;
     /** The chapter card of this chapter (#102), settled over the book on the quilt, its first beat of lines under it */
     readonly chapterCard?: number;
+    /** The album as it opens after a spread (#103), every note on; `retaken`: a second shot to choose from */
+    readonly albumAfter?: { readonly chapter: number; readonly retaken?: Photo };
+    /** Play on the registry with the lab spread as 1-6 (#103) */
+    readonly spread?: boolean;
   };
 }
 
@@ -86,8 +93,52 @@ const ON_PAGE: NavState = { base: { kind: 'page', id: 'c1p2', run: 0 }, layer: n
 const C1P2_DONE = completePage(PLAYED, 'c1p2', { mischief: true, moves: 6 });
 /** 0-1 solved without its 淘氣, 1-2 solved with it: the 目錄 shows each page's mischief (#101). */
 const MISCHIEF_LIST = completePage(completePage(FRESH, 'c0p1', { tudigong: true }), 'c1p2', { mischief: true });
+/** The album's fixtures (#103): a fixed time, so the stills never change. */
+const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
+/** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
+const ALBUM_A = keepPhoto(C1P2_DONE, 1, { frame: 'A', mocha: true, at: SHOT_AT });
+/** A Frame B photo with 摩卡 in it, then retaken as a Frame C without him (the pool's notes). */
+const ALBUM_B = keepPhoto(C1P2_DONE, 1, { frame: 'B', mocha: true, at: SHOT_AT });
+const RETAKEN_C: Photo = { frame: 'C', mocha: false, at: SHOT_AT + 60_000 };
+/** The lab spread's steps to the photo moment: the train to half, Mocha to the pillar (the pigeon flies), back to the bench (+M), the train to full. */
+const TO_PHOTO: readonly SolutionStep[] = [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { wait: 'settle' }, { mocha: 'bench' }, { wait: 'settle' }, { set: 'train', to: 'full' }];
 
 export const POPUP_FIXTURES: readonly PopupFixture[] = [
+  {
+    name: 'spread-c1',
+    page: 'lab-spread',
+    steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }],
+    note: 'A chapter spread (GDD § 2.9, #103): the same 390 × 560 page drawn as a centrefold, the spine\'s crease down the middle of the standing and the floor page; the goal is the chapter\'s treasure, 雞腿, on its foil light. Lab stage (1-2 as a spread) until #107 builds 1-6.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'photo-moment',
+    page: 'lab-spread',
+    steps: TO_PHOTO,
+    show: { photo: { at: 1800 } },
+    note: 'The photo moment (GDD § 2.9, bible § 7, #103): 2 edges from the 雞腿 the world pauses, the paper camera slides down over the spread and the marigold 咔嚓 rises under it. The viewfinder is at the peak: Frame A, arms up with the 雞腿 high, 摩卡 on the bench in the frame (+M, bottom left); the 「哇！」 meter full at its star. Live, the 3 s slow-motion loop runs (B → A → C), the viewfinder creeps in, and after 6 s it snaps B itself.',
+  },
+  {
+    name: 'album-c1',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'album' } }, save: ALBUM_A },
+    note: 'The album from the cover (GDD § 2.9, § 5.6, bible § 7, #103): 「寶咖咖一歲的相簿」 on 花磚 endpapers in the linen cover; 第一章 「便當的味道」 00:20; the Frame A + 摩卡 print with washi corners and 雞腿 written under it; 學會了 嗶！ big on its seal; the 6 × 3 sticker grid (1-2\'s 解開 and 淘氣); the four chapter 1 notes — 阿嬤 「嘴巴開開，雞腿比臉還大！」, 媽媽, 爸爸, 摩卡 「我在左下角。很帥。」; 返回 and 再拍一次.',
+  },
+  {
+    name: 'spread-shell',
+    page: 'lab-spread',
+    steps: [],
+    screen: { nav: { base: { kind: 'page', id: 'lab-spread', run: 0 }, layer: null }, save: C1P2_DONE, spread: true },
+    note: 'The lab spread as 1-6 in the game shell (#103): play it live — the photo moment, the album page, 再拍一次, 放進相簿, the sticker card, then the 目錄 (`check:play` scenario `photo-spread`).',
+  },
+  {
+    name: 'album-c1-retake',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ON_PAGE, save: ALBUM_B, albumAfter: { chapter: 1, retaken: RETAKEN_C } },
+    note: 'The album after the spread, retaken (§ 2.9 step 7, #103): the first shot (B, 摩卡 in) and the new one (C, chewing, no 摩卡) side by side, the new one chosen and printed big; the notes from the shared pool for chapter 1 Frame C (阿嬤 「怎麼拍，乖孫都古錐。」, 摩卡 out: 「大家手機裡，都是你的照片。」). 再拍一次 / 放進相簿.',
+  },
   {
     name: 'c0p1-start',
     page: 'c0p1',
@@ -425,14 +476,14 @@ export function fixtureFrame(fixture: PopupFixture): FixtureFrame {
 }
 
 /** An in-memory store seeded with a save (screen fixtures: the real `popup.save.v1` is never touched). */
-export function fixtureStore(save: SaveV1): ProgressStore {
+export function fixtureStore(save: SaveV1, registry?: PageRegistry): ProgressStore {
   const data = new Map<string, string>([[SAVE_KEY, JSON.stringify(encodeSave(save))]]);
   const storage: StorageLike = {
     getItem: (key) => data.get(key) ?? null,
     setItem: (key, value) => void data.set(key, value),
     removeItem: (key) => void data.delete(key),
   };
-  return new ProgressStore({ storage, visibility: null });
+  return new ProgressStore({ storage, visibility: null, registry });
 }
 
 export function popupFixture(name: string): PopupFixture | undefined {

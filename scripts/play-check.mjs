@@ -6,11 +6,12 @@
  * `data-done`. It also checks that a finger down pauses the world (the tick stops) and that no
  * console errors appear.
  *
- *   node scripts/play-check.mjs [--serve] [--url <base>] [--shots <dir>]
+ *   node scripts/play-check.mjs [--serve] [--url <base>] [--shots <dir>] [--only <ids>]
  *
  *   --serve    start a Vite dev server for the run
  *   --url      base URL of a server you started yourself (default http://localhost:5173/baokaka-adventure/)
  *   --shots    write a PNG per step into this directory
+ *   --only     run only these scenarios (comma-separated ids)
  *
  * It also fails when a registered page (listed at `#/pagelab?section=fixtures`) has no scenario:
  * add one with every new page. A scenario can also play a PageLab stage through a live fixture
@@ -18,7 +19,8 @@
  * push, the learn beat and its word card, the tutorial, the word ring and 嗶！ — until #107 brings
  * the real 1-3; `hints-c1p2` plays 1-2 with 提示 alone (#100: where, how, then show me until done);
  * `stickers-c1p2` earns all three of 1-2's stickers in the game shell (#101: four rides for the 淘氣,
- * the board flipped and the 土地公 tapped, the solve, the sticker card, then the 目錄's 淘氣 line).
+ * the board flipped and the 土地公 tapped, the solve, the sticker card, then the 目錄's 淘氣 line);
+ * `photo-spread` plays the lab spread in the shell (#103: the photo moment, the album, a retake).
  * Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
  * and UI checks.
  */
@@ -30,7 +32,7 @@ import { listPopupFixtures } from './popup-checks.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: args } = parseArgs({
-  options: { serve: { type: 'boolean' }, url: { type: 'string' }, shots: { type: 'string' } },
+  options: { serve: { type: 'boolean' }, url: { type: 'string' }, shots: { type: 'string' }, only: { type: 'string' } },
 });
 
 /** Page-unit gesture scripts per page (data from src/popup/pages/). */
@@ -125,10 +127,36 @@ const SCENARIOS = {
     { expect: '[data-popup-page="c0p1"] [data-narration]', timeout: 6_000 },
     { absent: '[data-chapter-board]' },
   ],
+  // The chapter spread (#103, GDD § 2.9) in the game shell, on the lab spread as 1-6: Mocha back
+  // to the bench (in the frame), the train across — 2 edges from the 雞腿 the world holds under the
+  // camera; 咔嚓, the grab, the album with its four notes; 再拍一次, 咔嚓 again, the first shot chosen
+  // back, 放進相簿, the sticker card, then the 目錄
+  'photo-spread': [
+    { wait: 'reaching' },
+    { drag: [[80, 610], [142, 610]] },
+    { settle: 1500 },
+    { tap: [280, 234] },
+    { settle: 2500 },
+    { tap: [340, 374] },
+    { settle: 2500 },
+    { drag: [[140, 610], [205, 610]] },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+    { expect: '[data-screen="album"] [data-album-note="mocha"]', timeout: 10_000 },
+    { expect: '[data-album-note="grandma"]', absent: '[data-album-choice]' },
+    { tapEl: '[data-button="retake"]' },
+    { expect: '[data-photo-moment]' },
+    { tapEl: '[data-shutter]' },
+    { expect: '[data-album-choice="1"][data-chosen]', timeout: 5_000 },
+    { tapEl: '[data-album-choice="0"]' },
+    { expect: '[data-album-choice="0"][data-chosen]' },
+    { tapEl: '[data-button="keep"]' },
+    { expect: '[data-sticker-card]', timeout: 5_000 },
+  ],
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'stickers-c1p2': '[data-screen="contents"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'photo-spread': '[data-screen="contents"]', 'stickers-c1p2': '[data-screen="contents"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
 const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]' };
 
@@ -137,6 +165,7 @@ const SCENARIO_URLS = {
   'lab-gates': '#/pagelab?fixture=word-poke',
   'hints-c1p2': '#/popup?page=c1p2&speed=fast',
   'stickers-c1p2': '#/pagelab?fixture=page-hud',
+  'photo-spread': '#/pagelab?fixture=spread-shell',
   'prologue-card': '#/popup',
 };
 
@@ -318,7 +347,7 @@ async function main() {
     for (const kind of ['mouse', 'touch']) {
       for (const viewport of VIEWPORTS) {
         const context = await browser.newContext({ viewport, deviceScaleFactor: 2, hasTouch: kind === 'touch', isMobile: kind === 'touch' });
-        for (const id of Object.keys(SCENARIOS)) {
+        for (const id of Object.keys(SCENARIOS).filter((k) => !args.only || args.only.split(',').includes(k))) {
           const page = await context.newPage();
           const errors = [];
           page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
