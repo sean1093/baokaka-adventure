@@ -865,8 +865,8 @@ Validated with a type guard on load. A bad or missing save means a fresh save, a
 
 | Character | Frames needed |
 |---|---|
-| **Baokaka** | crawl cycle (6) · sit · reach (2) · look L/R · cry (2) · grab · eat · watch-sway (2) · cuddle · say (mouth open) · ride-giggle · carried · climb (3) · stand-cruise (4) · walk (6, wobbly) · touch-watch head turn |
-| **Mocha** | sit · loaf · hop (3) · land · eye-contact · push (2) · glare · puff (wet) · purr · in-box · walk (linked mode, 6) |
+| **Baokaka** | crawl cycle (8) · sit · reach (2) · look L/R · cry (2) · grab · eat · watch-sway (2) · cuddle · say (mouth open) · ride-giggle · carried · climb (3) · stand-cruise (4) · walk (8, wobbly) · touch-watch head turn |
+| **Mocha** | sit · loaf · hop (3) · land · eye-contact · push (2) · glare · puff (wet) · purr · in-box · walk (linked mode, 8) |
 
 All frames are at map scale (~70 px tall for Baokaka crawling, at 390-wide).
 
@@ -876,6 +876,8 @@ All frames are at map scale (~70 px tall for Baokaka crawling, at 390-wide).
 - **Readings** in D-50.
 
 **For engineers.** #94 put the baked frames in the build (D-56): `npm run sync:sprites` bakes `docs/art/v2/baked` with the standee look into `src/popup/assets/sprites/` and the typed `src/popup/sprites/sprites.gen.ts`; `src/popup/sprites/` holds the loader (@2x for DPR ≤ 2, else @3x; `img.decode()`; a placeholder card until decoded; per-chapter groups) and `<SpriteAnim>` (one `<image>`, one shared rAF clock, `once` reports done, reduced motion holds the key frame, mirrored about the foot anchor). `view/actors/` draws 寶咖咖 and 摩卡 with it (a first mode mapping; #95 completes it). The core set every page preloads is 383.5 KB @3x.
+
+**For engineers.** #95 mapped every mode to its frames (D-57): `view/actors/animMap.ts` holds the table (Art v2 § 5 names: grab → `hold`, cuddle → `hug`, say → `point`, stand-cruise → `pull`/`wobble`, Mocha hop/land → `jump`, eye contact → `push` frame 1), the fallbacks for frames #141 still draws, the growth guard and the missing-frame report (`#/pagelab?section=sprites`); `view/actors/standee.ts` the card motion (lean, landing wobble, look flips, reduced motion's fade-slide). Cycles are 8 frames (the table above says so since #95). The crawl stride is synced to the step's lerp (whole strides per edge; the 4-frame `key` cycle above 24 fps). Frames needed only from M3/M4 (carried, climb, stand-cruise, walk, Mocha's linked walk) are `later` in the report. The core set is now 396.6 KB @3x (`hug` joined it as the cuddle frame).
 
 **Performance budget:**
 - 60 fps on a mid-range phone (2021 Android).

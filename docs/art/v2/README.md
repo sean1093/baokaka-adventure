@@ -259,4 +259,6 @@ Hence the bitmap pass.
 
 Most of these are cheap with the rig (a head turn or expression swap on `sit`/`loaf`).
 
+**Engineers' note (#95, D-57).** The game maps its modes onto these poses in `src/popup/view/actors/animMap.ts` and shows a fallback for each frame not drawn yet (look L/R, watch-sway, ride-giggle, touch-watch, Mocha glare, purr, in-box; also `reach` has 1 of the GDD's 2 frames). `#/pagelab?section=sprites` lists every GDD § 3.9 frame as ✓ / ✗ / later, so you can see what is left. Cycles are 8 frames; the GDD table now says so.
+
 **Rebuild:** `python3 docs/art/v2/tools/bake_poses.py` (about 2 minutes).
