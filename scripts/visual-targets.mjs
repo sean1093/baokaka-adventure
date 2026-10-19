@@ -4,7 +4,9 @@
  * `fullPage` captures the whole scrollable page instead of the viewport.
  *
  * Every art lab fixture (src/artlab/fixtures.ts, ARTLAB_FIXTURES) is added automatically through
- * fixtureTarget(), read from the art lab's own index, so a new fixture needs no change here.
+ * fixtureTarget(), read from the art lab's own index, and every 翻翻台北 visual QA fixture
+ * (src/popup/dev/fixtures.ts, POPUP_FIXTURES; #92) through popupFixtureTarget(), read from
+ * PageLab's `#/pagelab?section=fixtures`, so a new fixture needs no change here.
  */
 
 export const VIEWPORTS = [
@@ -105,6 +107,14 @@ export const fixtureTarget = (name) => ({
   name,
   hash: `#/artlab?section=fixtures&only=${encodeURIComponent(name)}&still=1`,
   waitFor: `[data-artlab-fixture="${name}"] main`,
+  artlab: true,
+});
+
+/** The screenshot target for one 翻翻台北 fixture: full screen, no lab chrome, held still (#92). */
+export const popupFixtureTarget = (name) => ({
+  name,
+  hash: `#/pagelab?fixture=${encodeURIComponent(name)}&still=1`,
+  waitFor: `[data-pagelab-fixture="${name}"] svg[data-page]`,
   artlab: true,
 });
 

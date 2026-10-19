@@ -1,6 +1,8 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import { POPUP } from '../../art/palette';
 import { hashParams } from '../../shared/route';
+import { FixtureIndex, FixtureView } from './FixtureView';
+import { fixtureParams } from './fixtures';
 import { KitSection } from './KitSection';
 import { LabWorkspace } from './LabWorkspace';
 import { labHash, parseLabParams, type LabParams } from './labParams';
@@ -13,8 +15,8 @@ import { labHash, parseLabParams, type LabParams } from './labParams';
  *   readability views and the art-key report, edit mode with 「Copy TS」, and the state inspector.
  *   Its settings live in the hash (`labParams.ts`), e.g. `#/pagelab?page=c1p2&overlay=nodes,edges&tick=12`.
  * - `section=kit` (#139): the paper kit port beside proof D and every part preset's default art.
- *
- * The visual QA fixtures (`fixture=`) arrive with #92.
+ * - Visual QA fixtures (#92, `fixtures.ts`): `fixture=<name>` shows one full screen with no lab
+ *   chrome (`still=1` for screenshots), and `section=fixtures` lists them for the QA scripts.
  */
 
 const subscribe = (onChange: () => void) => {
@@ -24,8 +26,10 @@ const subscribe = (onChange: () => void) => {
 const readHash = () => window.location.hash;
 
 export default function PageLab() {
-  const params = parseLabParams(hashParams(useSyncExternalStore(subscribe, readHash)));
+  const query = hashParams(useSyncExternalStore(subscribe, readHash));
+  const params = parseLabParams(query);
   const section = params.section;
+  const { fixture, still } = fixtureParams(query);
 
   // Settings changes rewrite the hash in place (no history entry per checkbox) and re-read it
   const setParams = useCallback(
@@ -37,6 +41,8 @@ export default function PageLab() {
     },
     [],
   );
+
+  if (fixture) return <FixtureView name={fixture} still={still} />;
 
   return (
     <main className="min-h-dvh font-body" style={{ backgroundColor: section === 'kit' ? POPUP.page : POPUP.cover, color: section === 'kit' ? POPUP.ink : POPUP.goldLight }} lang="zh-Hant">
@@ -50,9 +56,12 @@ export default function PageLab() {
           <a href="#/pagelab?section=kit" style={{ color: 'inherit' }} aria-current={section === 'kit' ? 'page' : undefined}>
             紙材套件 kit
           </a>
+          <a href="#/pagelab?section=fixtures" style={{ color: 'inherit' }} aria-current={section === 'fixtures' ? 'page' : undefined}>
+            QA fixtures
+          </a>
         </nav>
       </header>
-      {section === 'kit' ? <KitSection /> : <LabWorkspace params={params} setParams={setParams} />}
+      {section === 'kit' ? <KitSection /> : section === 'fixtures' ? <FixtureIndex /> : <LabWorkspace params={params} setParams={setParams} />}
     </main>
   );
 }

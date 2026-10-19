@@ -20,7 +20,7 @@ export function seal(ctx: KitCtx, x: number, y: number, glyph: string, r = 13): 
   return `<g transform="${translate(x, y)}">`
     + `<rect x="${f1(-r)}" y="${f1(-r)}" width="${f1(2 * r)}" height="${f1(2 * r)}" rx="${f1(r * 0.32)}" fill="${C.seal}"${filterAttr(ctx, 'deckle')}/>`
     + `<rect x="${f1(-inset)}" y="${f1(-inset)}" width="${f1(2 * inset)}" height="${f1(2 * inset)}" rx="${f1(r * 0.22)}" fill="none" stroke="${C.sealHairline}" stroke-width="1" opacity=".75"/>`
-    + `<text y="${f1(r * 0.38)}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="${f1(r * 1.12)}" fill="${C.sealGlyph}">${glyph}</text></g>`;
+    + `<text data-art-text="" y="${f1(r * 0.38)}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="${f1(r * 1.12)}" fill="${C.sealGlyph}">${glyph}</text></g>`;
 }
 
 /**

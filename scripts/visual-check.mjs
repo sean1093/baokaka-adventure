@@ -4,7 +4,8 @@
  *
  *   node scripts/visual-check.mjs [--serve] [--url <base>] [--update] [--perf] [--only a,b]
  *
- * Screenshots every target in scripts/visual-targets.mjs (plus every art lab fixture) at each
+ * Screenshots every target in scripts/visual-targets.mjs (plus every art lab fixture and every
+ * 翻翻台北 PageLab fixture, #92) at each
  * viewport into artifacts/visual/<viewport>/<name>.png, then either diffs them against
  * tests/visual-baseline/ (default; writes <name>.diff.png and exits 1 on a failure) or, with
  * --update, copies them over the baselines.
@@ -28,7 +29,8 @@ import { parseArgs } from 'node:util';
 import pixelmatch from 'pixelmatch';
 import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
-import { PERF_FIXTURE, TARGETS, VIEWPORTS, fixtureTarget } from './visual-targets.mjs';
+import { listPopupFixtures } from './popup-checks.mjs';
+import { PERF_FIXTURE, TARGETS, VIEWPORTS, fixtureTarget, popupFixtureTarget } from './visual-targets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'artifacts', 'visual');
@@ -234,11 +236,13 @@ async function main() {
   try {
     const probe = await browser.newPage();
     const fixtures = await listFixtures(probe, base);
+    const popup = fixtures ? await listPopupFixtures(probe, base) : null;
     await probe.close();
     if (!fixtures) console.warn('No art lab at this URL (production build?): only non-art-lab targets will run.');
+    else if (!popup) throw new Error('PageLab lists no 翻翻台北 fixtures at #/pagelab?section=fixtures');
 
     const only = args.only ? new Set(args.only.split(',')) : null;
-    const targets = [...TARGETS, ...(fixtures ?? []).map(fixtureTarget)]
+    const targets = [...TARGETS, ...(fixtures ?? []).map(fixtureTarget), ...(popup?.fixtures ?? []).map(popupFixtureTarget)]
       .filter((target) => fixtures || !target.artlab)
       .filter((target) => !only || only.has(target.name));
     if (targets.length === 0) throw new Error('No targets to run');

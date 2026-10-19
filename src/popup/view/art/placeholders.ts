@@ -181,7 +181,7 @@ function landmark(ctx: KitCtx, place: string): string {
   // The name plate in foil
   s += depth(ctx, 3, `<rect x="135" y="${body + 4}" width="120" height="22" rx="2" fill="${C.printDark}"/>`, `<rect x="135" y="${body + 4}" width="120" height="22" rx="2"/>`)
     + `<rect x="137.5" y="${body + 6.5}" width="115" height="17" rx="1" fill="none" stroke="${ref(ctx, 'foil')}" stroke-width=".8"/>`
-    + `<text x="195" y="${body + 20}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="13" fill="${ref(ctx, 'foilH')}" letter-spacing="5">${place}</text>`;
+    + `<text data-art-text="" x="195" y="${body + 20}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="13" fill="${ref(ctx, 'foilH')}" letter-spacing="5">${place}</text>`;
   // 重簷: the lower roof with upturned eaves, the drum, the upper roof with a gold ridge
   const lower = `M${x0 - 18} ${top + 48}Q${x0 - 6} ${top + 40} ${x0 + 14} ${top + 26}L${x1 - 14} ${top + 26}Q${x1 + 6} ${top + 40} ${x1 + 18} ${top + 48}Q${x1} ${top + 44} ${x1 - 8} ${top + 46}H${x0 + 8}Q${x0} ${top + 44} ${x0 - 18} ${top + 48}Z`;
   s += depth(ctx, 3, `<path d="${lower}" fill="${ref(ctx, 'roof')}"/><path d="${Array.from({ length: 24 }, (_, i) => `M${f1(x0 + 18 + i * 12.3)} ${top + 28}L${f1(x0 + 14 + i * 12.5)} ${top + 45}`).join('')}" stroke="${S.roofTile}" stroke-width="1.2" opacity=".7"/>`
