@@ -105,6 +105,9 @@ export function attractorNode(def: PageDef, state: SimState, a: AttractorDef): I
     return a.node;
   }
   if (a.heldBy !== undefined) {
+    // Dropped by its creature (§ 2.4 掰掰, `creatures.ts`): it stays where it fell.
+    const dropped = state.dropped?.[a.id];
+    if (dropped !== undefined) return dropped;
     const creature = def.creatures.find((c) => c.id === a.heldBy);
     const pos = creature === undefined ? undefined : state.creatures[creature.id];
     const node = creature === undefined || pos === undefined ? undefined : creature.positions[pos];

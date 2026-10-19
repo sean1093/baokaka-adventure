@@ -72,9 +72,15 @@ export interface PerchDef {
   blockedWhen?: Cond;
 }
 
+/**
+ * Which events a reaction listens to: a type, or a type narrowed by radius (`within`: units from
+ * the event origin, default per event, GDD § 2.4), by the event's subject (`id`: the part, node,
+ * perch, creature or attractor it is about) and, for `partEnter`, by the state entered (D-45).
+ */
+export type ReactionOn = EventType | { type: EventType; within?: number; id?: Id; state?: string };
+
 export type Reaction = {
-  /** within: units from event origin (default per event) */
-  on: EventType | { type: EventType; within?: number };
+  on: ReactionOn;
   when?: Cond;
   to: string | 'next' | 'prev' | 'toggle';
   setFlag?: Id;
@@ -165,7 +171,8 @@ export interface CreatureDef {
   winged?: boolean;
   lonely?: boolean;
   fleesFromCat?: { nearPerches: Id[]; to: string };
-  react?: { on: EventType; within?: number; when?: Cond; to: string; drop?: Id }[];
+  /** `to` is a position name; `drop` releases a `heldBy` attractor at the creature's node first. */
+  react?: { on: ReactionOn; within?: number; when?: Cond; to: string; drop?: Id }[];
   art: string;
 }
 
@@ -292,7 +299,15 @@ export interface SimState {
   pushables: Record<Id, 'onPerch' | 'falling' | 'landed'>;
   consumed: Id[];
   flags: Id[];
-  /** for mischief predicates (e.g. ride count) */
+  /**
+   * Attractors a creature has dropped (`drop`, § 2.4 掰掰) → the node they lie on. Absent until
+   * something drops (D-45).
+   */
+  dropped?: Record<Id, Id>;
+  /**
+   * For mischief and line predicates (`predicateKey` → matching events so far, capped at the
+   * predicate's count, so the state space stays finite), plus `LEARNED_KEY` once `learns` fired (D-45).
+   */
   counters: Record<string, number>;
   done: boolean;
 }

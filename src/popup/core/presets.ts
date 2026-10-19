@@ -125,3 +125,25 @@ export function tapTarget(part: CompiledPart, current: string): string | null {
   }
 }
 
+
+/**
+ * The state a reaction's `to` (GDD § 3.2 `Reaction`) leads to from `current`: `next` / `prev` step
+ * through the states, wrapping (so every reaction is reversible); `toggle` swaps the first two
+ * states (any other state goes to the first, as a tap does); anything else must name a state.
+ * Null when it names none.
+ */
+export function reactionTarget(part: CompiledPart, current: string, to: string): string | null {
+  const { states } = part;
+  switch (to) {
+    case 'next':
+      return nextState(states, current);
+    case 'prev': {
+      const i = states.indexOf(current);
+      return i < 0 ? states[0] : states[(i - 1 + states.length) % states.length];
+    }
+    case 'toggle':
+      return current === states[0] ? (states[1] ?? current) : states[0];
+    default:
+      return states.includes(to) ? to : null;
+  }
+}
