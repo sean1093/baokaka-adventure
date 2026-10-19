@@ -86,14 +86,22 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   const [turning, setTurning] = useState(false);
   const size = useSyncExternalStore(subscribeResize, readSize, () => '390x844');
 
-  useEffect(() => () => turnRef.current?.skip(), []);
+  const holdTimer = useRef(0);
+  useEffect(
+    () => () => {
+      window.clearTimeout(holdTimer.current);
+      turnRef.current?.skip();
+    },
+    [],
+  );
 
   const onDone = useCallback(
     (from: PageDef) => {
       store.completePage(from.id);
       const next = reg.nextPage(from.id);
       setTurning(true);
-      window.setTimeout(() => {
+      window.clearTimeout(holdTimer.current);
+      holdTimer.current = window.setTimeout(() => {
         const book = bookRef.current, overlay = overlayRef.current, top = topRef.current;
         if (next === null || !book || !overlay || !top) {
           setTurning(false);
