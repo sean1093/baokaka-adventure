@@ -122,7 +122,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
   - `fixtures.test.ts` fails if a fixture stops showing it. When that happens, fix the steps, not the expectation.
   - Today's fixtures: `c0p1-start`, `c1p2-reaching` (on the jammed train at the gap) and `c1p2-riding` (the train carries him back: a `ride`).
 - **Viewing a fixture.**
-  - `#/pagelab?fixture=<name>&still=1` shows the fixture full screen as a player sees it, with no lab chrome. The clock is held, the frame is drawn at its tick's end, and `[data-still]` turns off every CSS animation and transition. **Idle loops must be CSS or Web Animations animations** so that stills stop them.
+  - `#/pagelab?fixture=<name>&still=1` shows the fixture full screen as a player sees it, with no lab chrome. The clock is held, the frame is drawn at its tick's end, and `[data-still]` turns off every CSS animation and transition. **Idle loops must be CSS animations** (not rAF or `element.animate()`) so that stills stop them.
   - Without `still`, the fixture opens playing its last tick (`PagePlayer`/`PageSession` `prev`) and can be played on from there.
   - `#/pagelab?section=fixtures` lists every fixture with still and live links, plus the registered pages.
 - **Add a fixture for every new screen or state.** Later issues add theirs: cover, word ring, hint hand, sticker card, photo, album, settings, chapter card. If a screen is not a page state, give the fixture what it needs (e.g. a screen id) in the same file.

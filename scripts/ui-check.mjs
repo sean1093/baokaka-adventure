@@ -295,18 +295,18 @@ try {
   if (args.popup) {
     await checkPopup(browser, base, VIEWPORTS, { pass, fail });
   } else {
-  const index = await browser.newPage();
-  await index.goto(new URL('#/artlab?section=fixtures', base).href, { waitUntil: 'load' });
-  await index.waitForSelector('[data-fixture]', { timeout: 20000 });
-  const fixtures = await index.$$eval('[data-fixture]', (items) => items.map((item) => item.getAttribute('data-fixture')));
-  await index.close();
+    const index = await browser.newPage();
+    await index.goto(new URL('#/artlab?section=fixtures', base).href, { waitUntil: 'load' });
+    await index.waitForSelector('[data-fixture]', { timeout: 20000 });
+    const fixtures = await index.$$eval('[data-fixture]', (items) => items.map((item) => item.getAttribute('data-fixture')));
+    await index.close();
 
-  await checkTyping(browser, base);
-  await checkTargets(browser, base, fixtures);
-  await checkReducedMotion(browser, base, fixtures);
-  await checkStage(browser, base);
-  await checkFx(browser, base);
-  await checkPopup(browser, base, VIEWPORTS, { pass, fail });
+    await checkTyping(browser, base);
+    await checkTargets(browser, base, fixtures);
+    await checkReducedMotion(browser, base, fixtures);
+    await checkStage(browser, base);
+    await checkFx(browser, base);
+    await checkPopup(browser, base, VIEWPORTS, { pass, fail });
   }
 } finally {
   await browser.close();
