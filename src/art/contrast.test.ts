@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { CHAPTER_CLOCK } from '../quest/engine/clock';
-import { CARD_SCRIM, MIN_CONTRAST, TEXT_PAIRS, contrastRatio, luminance } from './contrast';
-import { UI, mixHex, skyAt, withAlpha } from './palette';
+import { CARD_SCRIM, MIN_CONTRAST, POPUP_TEXT_PAIRS, TEXT_PAIRS, contrastRatio, luminance } from './contrast';
+import { POPUP, UI, mixHex, skyAt, withAlpha } from './palette';
 
 describe('contrastRatio', () => {
   test('matches the WCAG reference values', () => {
@@ -27,6 +27,22 @@ describe('§ 3.3 contrast rules', () => {
       expect(UI[pair.text]).toMatch(/^#[0-9A-F]{6}$/);
       expect(UI[pair.on]).toMatch(/^#[0-9A-F]{6}$/);
     }
+  });
+});
+
+describe('翻翻台北 POPUP contrast (GDD § 1.3: every text ≥ 7:1)', () => {
+  test.each(POPUP_TEXT_PAIRS.map((pair) => [`${pair.text} on ${pair.on} (${pair.use})`, pair] as const))('%s', (_name, pair) => {
+    expect(contrastRatio(POPUP[pair.text], POPUP[pair.on])).toBeGreaterThanOrEqual(MIN_CONTRAST.body);
+  });
+
+  test('every POPUP token is a solid colour', () => {
+    for (const hex of Object.values(POPUP)) expect(hex).toMatch(/^#[0-9A-F]{6}$/);
+  });
+
+  test('the page and the cover both carry text', () => {
+    const surfaces = new Set(POPUP_TEXT_PAIRS.map((pair) => pair.on));
+    expect(surfaces).toContain('page');
+    expect(surfaces).toContain('cover');
   });
 });
 

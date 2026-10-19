@@ -11,6 +11,7 @@
  *   light fixtures and sky art (§ 2.7, § 4.4), graded per clock by `gradeTiles()`.
  * - `UI`: the navy-glass and gold interface, mirrored into Tailwind (`tailwind.config.ts`).
  * - `MRT`: the five 月亮線 line colours.
+ * - `POPUP`: 翻翻台北's pop-up book (navy linen cover, gold foil, cream page, ink); #139 extends it.
  * - `SKY_KEYS` / `skyAt()` / `gradeTokens()` / `gradeCharacter()`: the night clock (§ 3.2).
  *
  * Pure TypeScript with no imports, so the Tailwind config, the engine and tests can all load it.
@@ -626,6 +627,37 @@ export const MRT = {
   green: '#008659',
   orange: '#F8B61C',
   brown: '#C48C31',
+} as const;
+
+// ---------------------------------------------------------------------------------------------
+// 翻翻台北 Pop-Up Taipei
+
+/**
+ * The pop-up book's core tokens (popup art bible § 3, § 7; `docs/art/popup/src/kit.js` `C`):
+ * the navy linen cover with gold foil, the cream page, and the ink printed on it. The scaffold
+ * (#79) seeds the group with what the placeholder screen needs; the kit port (#139) adds the
+ * paper stocks, marigold, seal red, foil and the chapter colour clock. Text pairs and their
+ * ≥ 7:1 check live in `contrast.ts` (`POPUP_TEXT_PAIRS`).
+ */
+export const POPUP = {
+  /** Navy linen cover: the screen around the book, and the bottom bar */
+  cover: '#1B2052',
+  coverDark: '#121638',
+  coverLight: '#2A3170',
+  /** Gold foil trim on the cover */
+  gold: '#E8C77A',
+  goldLight: '#FFE9B0',
+  goldDeep: '#B8893A',
+  /** The cream page and its shaded band and cut edge */
+  page: '#F3E6CC',
+  pageDark: '#E2D0AE',
+  pageEdge: '#D8C59F',
+  /** The paper core catching light on a cut edge, drawn at 42 % on the top-left (bible § 2.2) */
+  cutRim: '#FFF8E8',
+  /** Text printed on paper */
+  ink: '#2E2235',
+  /** Indigo shadow: shadows are never black (bible § 2.2) */
+  shadow: '#140C34',
 } as const;
 
 // ---------------------------------------------------------------------------------------------

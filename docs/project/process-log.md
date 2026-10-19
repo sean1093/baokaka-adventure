@@ -204,3 +204,11 @@ Format:
 - Kept #68 (font payload), rewritten for the new game and moved to M5. Closed #17–#58 as not planned with a comment each; closed epic #1 as not planned (superseded), with a banner and comment.
 - Rewrote `README.md` (§1, sources, architecture, conventions, definition of done; process unchanged except "roadmap order" instead of "lowest number") and `roadmap.md` (new milestones, ordered table, dependency graph; the RPG plan collapsed under *Superseded plan*).
 - Next: #79 (scaffold), then the M0 order in `roadmap.md`.
+
+### 2026-10-19 · Staff engineer · #79 Scaffold src/popup/, #/popup and the dev-only #/pagelab
+- `src/popup/` with the GDD §3.5 folders (`core/`, `pages/`, `content/`, `game/`, `view/`, `dev/`, `workers/`), each with an `index.ts` comment listing what goes there; `PopupGame.tsx` is a placeholder (a cream page with 《翻翻台北》 / Pop-Up Taipei on the navy linen cover, 「開發中」 in gold) and `dev/PageLab.tsx` a dev-only placeholder.
+- Routes: `parseRoute` returns `popup` and `pagelab` (with or without a trailing slash or `?params`). App serves `PopupGame` at `#/popup` in every build (lazy chunk, 0.75 KB gzip) and `PageLab` at `#/pagelab` in dev only (dropped from the production bundle; `#/pagelab` shows the RPG there). `#/` is unchanged. Main JS 176.93 → 177.12 KB gzip.
+- Palette: `POPUP` group (cover, gold, page, ink, shadow from `kit.js`), `POPUP_TEXT_PAIRS` in `contrast.ts`, all ≥ 7:1 in `contrast.test.ts`.
+- Tests: route cases for the new routes; `src/popup/core/boundary.test.ts` scans every non-test file in `core/` (imports only within core or `src/shared/random.ts`; no DOM globals, timers, wall clock or `Math.random`) and tests the checker itself on good and bad samples.
+- Screenshots in `docs/screenshots/79/`. Decision D-39. No visual baseline changes (the art lab is untouched).
+- Follow-ups: #139 extends `POPUP` and mirrors it into Tailwind; PopupGame becomes the real cover/screens from #97 on.

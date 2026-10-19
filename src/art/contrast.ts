@@ -1,4 +1,4 @@
-import { UI } from './palette';
+import { POPUP, UI } from './palette';
 
 /**
  * WCAG 2 contrast for the UI's text tokens (art direction § 3.3). `TEXT_PAIRS` lists every text
@@ -59,4 +59,20 @@ export const TEXT_PAIRS: readonly TextPair[] = [
   ...PANEL.map((on): TextPair => ({ text: 'hpCritTo', on, level: 'body', use: 'HP number under 20%, with the ❗ mark' })),
   { text: 'inkOnDark', on: 'scrim', level: 'body', use: 'chapter title on its scrim, text over the dialogue scrim' },
   { text: 'ink', on: 'parchment', level: 'body', use: '集章本 and sheets on parchment' },
+];
+
+export type PopupTextPair = { readonly text: keyof typeof POPUP; readonly on: keyof typeof POPUP; readonly use: string };
+
+/**
+ * 翻翻台北's text pairs (GDD § 1.3: contrast ≥ 7:1 for every text, no muted level). Text sits on
+ * paper or on the navy cover, never on art (popup art bible § 7). Add a pair whenever a popup
+ * screen puts a text colour on a new surface; `contrast.test.ts` holds each to 7:1.
+ */
+export const POPUP_TEXT_PAIRS: readonly PopupTextPair[] = [
+  { text: 'ink', on: 'page', use: 'text printed on the page, labels and cards' },
+  { text: 'ink', on: 'pageDark', use: 'text on the shaded band of a page or card' },
+  { text: 'goldLight', on: 'cover', use: 'titles in gold foil on the cover' },
+  { text: 'gold', on: 'cover', use: 'captions in gold on the cover' },
+  { text: 'goldLight', on: 'coverDark', use: 'titles on the cover vignette' },
+  { text: 'page', on: 'cover', use: 'cream labels under the bottom-bar discs' },
 ];
