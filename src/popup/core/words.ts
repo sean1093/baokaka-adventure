@@ -35,6 +35,9 @@ export const WORD_EVENT: Readonly<Record<Word, EventType | null>> = {
   together: 'together',
 };
 
+/** Every word, in the order of GDD § 2.4's schedule table (the solver tries them in this order). */
+export const WORDS: readonly Word[] = ['beep', 'bye', 'no', 'wow', 'hug', 'plane', 'whoosh', 'together'];
+
 /** 咻——'s cone: 90° in total, centred on his facing (GDD § 2.4). */
 export const WHOOSH_CONE_DEGREES = 90;
 
