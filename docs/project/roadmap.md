@@ -24,7 +24,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | **M0 · Core and tools** | | | | |
 | [79](https://github.com/sean1093/baokaka-adventure/issues/79) | Scaffold src/popup/, the #/popup route and the dev-only #/pagelab route | chore, engine, m0 | — | done |
 | [139](https://github.com/sean1093/baokaka-adventure/issues/139) | Port the pop-up art kit (docs/art/popup/src/kit.js) to TypeScript under src/popup/art/ as default placeholder art | art, ui, m0 | #79 | done (#144) |
-| [80](https://github.com/sean1093/baokaka-adventure/issues/80) | Core types, conditions and part presets (src/popup/core/types.ts, cond.ts, presets.ts) | engine, m0 | #79 | in progress |
+| [80](https://github.com/sean1093/baokaka-adventure/issues/80) | Core types, conditions and part presets (src/popup/core/types.ts, cond.ts, presets.ts) | engine, m0 | #79 | done (#145) |
 | [81](https://github.com/sean1093/baokaka-adventure/issues/81) | Walk graph: BFS, reach sets and distance tie-breaks (core/graph.ts) | engine, m0 | #80 | todo |
 | [82](https://github.com/sean1093/baokaka-adventure/issues/82) | Baokaka's decision loop: desires, targets, reaching, looking and crying (core/baby.ts) | engine, m0 | #81 | todo |
 | [83](https://github.com/sean1093/baokaka-adventure/issues/83) | Mocha: perch pathing, arrival actions (push, onPart, set, flee), pet and cat rules (core/mocha.ts) | engine, m0 | #81 | todo |

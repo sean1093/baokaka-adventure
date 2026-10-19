@@ -221,7 +221,7 @@ Format:
 - Tests: `src/popup/art/kit.test.ts` (snapshots for every helper with/without filters and every preset; determinism; no filter in game; depth-filter formula; scoped ids and resolving refs; marigold only on touchables; registry fallback; palette data; no raw hex in `src/popup`). 798 tests. Main bundle unchanged.
 - Follow-ups: #80 should own the preset list (art imports the core type then); #96 bakes with `kitCtx(scope, { filters: true })`; #89 renders parts through `renderPart`; #140 adds the ghost hand, idle wiggle and real state visuals (proof D's state row is static here).
 
-### 2026-10-19 · Staff engineer · #80 Core types, conditions and part presets
+### 2026-10-19 · Staff engineer · #80 Core types, conditions and part presets (PR #145)
 - `src/popup/core/types.ts`: every GDD §3.2 type (plus `LineKey`, `PartPreset`/`PART_PRESETS`, `PartInput`, `DefinePage`, `BabyMode`/`BABY_MODES`). Core now owns the preset list; `src/popup/art/presets.ts` re-exports it (the D-40 follow-up).
 - `cond.ts`: `evalCond(def, state, cond)` for all ten variants incl. nested `all/any/not`, `holds` for optional conds, `partState` (parts, then pushables). `presets.ts`: `PRESETS` table (default states, default and allowed inputs, tap rule; documented in the file header), `compilePart`, `tapTarget`, `nextState`. `state.ts`: `initialState(def)`, `stableStringify`, `canonicalKey` (sorted keys; `refused`, `consumed`, `flags` sorted). `define.ts`: `definePage`, re-exported by `pages/`.
 - Fixture `core/fixtures/c1p2.ts` = GDD §3.4 verbatim plus the `board` prop; it type-checks as a `PageDef`.
