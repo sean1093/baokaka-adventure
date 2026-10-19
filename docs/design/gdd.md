@@ -839,6 +839,8 @@ interface SaveV1 {
 
 Validated with a type guard on load. A bad or missing save means a fresh save, and the game goes on (the same pattern as `loadJson`). There is a migration hook for `v: 2`.
 
+**For engineers.** `src/popup/game/progress.ts` (#93) implements this: `loadSave` / `saveNow`, the guard `isStoredSave`, the migration ladder `UPGRADES`, the pure rules (`completePage`, `earnSticker`, `keepPhoto`, `updateSettings`, `openPage`, `resetSave`, `isUnlocked`, `isChapterUnlocked`, `ownedAbilities`, `pageAbilities`) and the live `ProgressStore`, which writes on every change and on `visibilitychange: hidden`. On disk each page record is packed into a short code (`'smt12'`), so a complete game is about 1.7 KB, not 5.2 KB. Reset keeps the settings. A replayed page keeps its designed growth as well as its words. The RPG saves are detected and retired by `hadRpgSave` / `retireRpgSave` (`src/shared/legacy.ts`); #109 calls them. Readings in D-55.
+
 ### 3.9 Rendering and art integration
 
 **Layers per page:**

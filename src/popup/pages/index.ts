@@ -82,6 +82,9 @@ export function buildRegistry(authored: readonly PageDef[]): PageRegistry {
 
 const REGISTRY = buildRegistry(AUTHORED);
 
+/** The game's registry, for code that takes one as a parameter (`game/progress.ts`). */
+export const registry: PageRegistry = REGISTRY;
+
 /** Every page in play order (prologue first), defaults filled in. */
 export const PAGES: readonly PageDef[] = REGISTRY.pages;
 export const pageById = REGISTRY.pageById;

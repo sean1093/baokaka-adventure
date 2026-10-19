@@ -438,3 +438,26 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 **Consequences.**
 - New art must mark its cues (`data-seal`, `data-grip`, `data-cue`) and any non-touchable marigold (`data-affordance`), or the lint fails the page.
 - #100 drives `affordance.hint` (and "Mocha looks at it"); #106 uses the L2 hand for the 0-1 tutorial; #108's art passes the affordance lint and the squint test.
+
+### D-55 · 2026-10-19 · The save `popup.save.v1`: the readings #93 left open
+
+**Context.** GDD § 2.10 and § 3.8 define `SaveV1`, the save triggers and the unlock and ability rules; #93 asks for a complete game to save in under 4 KB. Several details were open, and one conflicts.
+
+**Decision.**
+1. **Packed page records on disk.** Stored literally, a complete game (65 pages, every sticker and best, 11 photos) is about 5.2 KB, over the 4 KB budget. In memory the save is `SaveV1` exactly; on disk each page record is a short code (`'smt12'` = solved, 淘氣, 土地公, best 12 moves; `'t'` = only 土地公). Everything else is stored as `SaveV1` has it. A complete game is about 1.7 KB.
+2. **`bestPar`** is the fewest **moves** (non-wait inputs, the solver's par unit, § 3.7) the player solved the page in; it only improves. 0 is allowed (trivial tutorial beats).
+3. **The guard is strict** (`isStoredSave`): every field must be well formed or the whole save is fresh. Our own writer is the only source. Then the save is **reconciled with the registry**: records of pages no longer registered are dropped; `furthest` is at least the page after the last solved one (pages added between visits open in order); `current` must be unlocked, else it is `furthest`.
+4. **Migration:** the version stays in the record (`v`) under the same key. `UPGRADES[n]` upgrades a record from `n` to `n + 1`; a newer save than the game knows reads as fresh (it is not overwritten until the next save trigger).
+5. **Abilities.** Owned words and growth come from the furthest point (every page before `furthest`, plus solved pages). A page plays with its **designed** words and growth from the registry. Later words appear only with `laterWords` (GDD: "hidden by default"). Growth always stays as designed: extra edge kinds change where Baokaka can walk and what he wants, so only the designed growth is the state the solver proved.
+6. **Unlocks** are linear over the registry's play order, which runs across chapters. A chapter is open when its first page is. Completing a page makes the next one current (replays resume after the replayed page); completing the furthest page unlocks the next.
+7. **Save triggers:** `ProgressStore` writes on every change that alters the save (page complete, sticker, photo, settings, and opening a page, since `current` is the resume point) and again on `visibilitychange: hidden`. Changes that change nothing write nothing.
+8. **Reset keeps the settings.** 「重新開始」 is "play the story again", not "forget that 阿嬤 needs 大字".
+9. **The RPG saves.** `src/shared/legacy.ts` holds the RPG key list (`baokaka.quest`, `.v2`–`.v6`) plus a `baokaka.quest*` prefix scan when the storage can list keys. `hadRpgSave` detects them. `cleanupLegacyStorage(storage, { rpg: true })` deletes them, and `retireRpgSave` does both and answers whether the cover shows 「寶咖咖的新冒險開始了！」 (`RPG_FAREWELL`) once. Boot still calls `cleanupLegacyStorage` without `rpg`; #109 switches it.
+
+**Why.** The packed code is the smallest change that meets the 4 KB budget: the shape and names everyone reads stay as the GDD has them. A strict guard plus reconciliation keeps the loader simple and safe; growing the game never strands a player.
+
+**Consequences.**
+- #97 uses `ProgressStore` (`useSyncExternalStore(store.subscribe, store.get)`) for the cover, 目錄 and resume. It maps `settings.speed` 0/1/2 to the session's `slow`/`normal`/`fast`.
+- #101 calls `completePage(id, { mischief, tudigong, moves })` and `earnSticker`. #103 calls `keepPhoto`. #104 calls `updateSettings` and `reset` behind the 3-second hold.
+- #109 calls `retireRpgSave()` at boot instead of the RPG-preserving cleanup.
+- The bonus page 「象山的日出」 (all 65 土地公) is not in the registry yet; its unlock lands with #135.
