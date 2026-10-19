@@ -132,9 +132,9 @@ Each preset compiles to the generic FSM in §3.2 and has a matching view compone
 | `gate` | `closed` / `open` | None (event-driven) | Fare gates (嗶！), the balcony door (crying), shop shutters |
 | `button` | `up` / `down` | None; pressed by weight (Baokaka or Mocha on its node or perch), or by a landed pushable | Elevator calls, a card reader, a pressure plate |
 | `lift` | `floor0 … floorN` | None; driven by a button, a perch action or an event | Elevators, steam vents, balloon baskets, 101's elevator |
-| `loop` (conveyor) | `0 … N-1`; attached nodes rotate around N positions | Tap or drag on a crank (if `crank: true`), or event-driven | The baggage carousel, gondolas, a lazy susan |
+| `loop` (conveyor) | `0 … N-1`; attached nodes rotate around N positions | Tap or drag on a crank (if it has one: `input: 'drag-rotary'` or `'tap-cycle'`), or event-driven | The baggage carousel, gondolas, a lazy susan |
 | `pushable` | `onPerch` / `falling` / `landed` (one-way per page, see §3.6) | None; Mocha pushes it | A pigeon, a 悠遊卡, a bead, a coin, a lantern |
-| `light` | `off` / `on` | Tap (if `tappable`), or event (哇！) | Neon, lamps, a TV standby light, a music box. It owns a `light` attractor. |
+| `light` | `off` / `on` | Tap (if tappable: `input: 'tap-toggle'`), or event (哇！) | Neon, lamps, a TV standby light, a music box. It owns a `light` attractor. |
 | `blowable` | `0 … N-1` | None; advanced by 咻—— | Steam clouds, paper boats, pinwheels, sails |
 | `carrier` | `idle` / `carrying@k` / `done`; walks a fixed route | None; triggered by 抱抱 within reach | 夜市阿姨, a bear, the 101 cleaning 阿伯 |
 | `prop` | Any named states; tap cycles through them | Tap | Purely for fun, 淘氣 or 土地公 (a mobile, a TV, a split-flap board) |
@@ -505,6 +505,7 @@ export type Kind = 'shiny' | 'mocha' | 'snack' | 'light';
 export type Word = 'beep' | 'bye' | 'no' | 'wow' | 'hug' | 'plane' | 'whoosh' | 'together';   // 嗶 掰掰 不要 哇 抱抱 飛機 咻 一起
 export type Growth = 0 | 1 | 2 | 3;                  // crawl, climb, cruise(stand), walk
 export type EdgeKind = 'crawl' | 'climb' | 'cruise' | 'walk' | 'jump' | 'squeeze';
+export type LineKey = string;                        // e.g. 'c1.intro.2' (§5.1); content/script.ts narrows it
 
 export type Cond =
   | { part: Id; in: string[] }              // part state is one of
@@ -540,13 +541,17 @@ export type Reaction = {
   setFlag?: Id;
 };
 
+export const PART_PRESETS = ['tab', 'slider', 'wheel', 'flap', 'section', 'gate', 'button', 'lift', 'loop',
+  'pushable', 'light', 'blowable', 'carrier', 'prop'] as const;               // core owns the list; art imports it
+export type PartPreset = (typeof PART_PRESETS)[number];
+export type PartInput = 'drag-linear' | 'drag-rotary' | 'tap-toggle' | 'tap-cycle' | 'none';
+
 export interface PartDef {
   id: Id;
-  preset: 'tab' | 'slider' | 'wheel' | 'flap' | 'section' | 'gate' | 'button' | 'lift' | 'loop'
-        | 'pushable' | 'light' | 'blowable' | 'carrier' | 'prop';
-  states: string[];
-  initial: string;
-  input?: 'drag-linear' | 'drag-rotary' | 'tap-toggle' | 'tap-cycle' | 'none';
+  preset: PartPreset;
+  states?: string[];                // omit only where the preset has defaults (core/presets.ts)
+  initial?: string;                 // defaults to the first state
+  input?: PartInput;                // defaults per preset; a loop's crank / a tappable light opt in here
   track?: { from: [number, number]; to: [number, number] };   // linear parts: stop i is evenly spaced
   center?: [number, number]; radius?: number;                 // rotary parts
   hit: { x: number; y: number; w: number; h: number } | { cx: number; cy: number; r: number };
@@ -611,7 +616,14 @@ export type SolutionStep =
 export type EventType = 'beep' | 'wave' | 'wow' | 'hug' | 'sky' | 'whoosh' | 'together' | 'cry'
   | 'catArrive' | 'catLeave' | 'push' | 'land' | 'babyEnter' | 'ride' | 'grab' | 'eat' | 'partEnter';
 export type EventPredicate = { type: EventType; id?: Id; count?: number; when?: Cond };
+export type DefinePage = (def: PageDef) => PageDef;   // core/define.ts, re-exported by pages/
+
+// §2.2.7; looking(n) → baby.lookCount, carried(by, k) → baby.carriedBy, saying(word) is a 1-tick mode
+export type BabyMode = 'idle' | 'moving' | 'reaching' | 'looking' | 'crying' | 'watching' | 'cuddling'
+  | 'eating' | 'grabbing' | 'saying' | 'carried' | 'linked' | 'done';
 ```
+
+**Preset defaults** (`core/presets.ts`): `flap`/`gate` default to `closed`/`open`, `button` to `up`/`down`, `pushable` to `onPerch`/`falling`/`landed`, `light` to `off`/`on`, `carrier` to `idle`, `carrying@0 … carrying@(route length − 1)`, `done`; the count-based presets (`tab`, `slider`, `wheel`, `section`, `lift`, `loop`, `blowable`) and `prop` must list their states. Default inputs: `tab`/`slider` `drag-linear`, `wheel` `drag-rotary`, `flap` `tap-toggle`, `prop` `tap-cycle`, everything else `none`. A tap advances a tab or slider one stop (cycling), rotates a wheel one step clockwise (states are listed clockwise), toggles a flap or tappable light, and cycles a prop or a loop's crank. The table with each preset's allowed inputs is in the header of `core/presets.ts`.
 
 **Runtime state** (plain JSON, structurally comparable; it hashes to a string key for the solver):
 
@@ -623,8 +635,8 @@ export interface SimState {
           carriedBy?: { id: Id; k: number }; linked: boolean };
   mocha: { perch: Id | null; path: Id[]; floorNode?: Id };    // floorNode in linked mode
   creatures: Record<Id, string>;
-  pushables: Record<Id, 'onPerch' | 'falling' | 'landed'>;
-  consumed: Id[]; flags: Id[];
+  pushables: Record<Id, 'onPerch' | 'falling' | 'landed'>;   // pushable parts live here, not in `parts`
+  consumed: Id[]; flags: Id[];          // refused, consumed and flags are sets: canonicalKey sorts them
   counters: Record<string, number>;     // for mischief predicates (e.g. ride count)
   done: boolean;
 }
