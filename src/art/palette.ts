@@ -169,6 +169,41 @@ export const DEV = {
 } as const;
 
 /**
+ * PageLab's overlays and badges (dev only, #91): loud diagram colours that never appear in the game,
+ * picked to stay apart from each other and readable on the night stage and the cream page.
+ */
+export const PAGELAB = {
+  /** Node dots by height: 0 floor, 1 ledge, 2 high */
+  height0: '#2E9E6A',
+  height1: '#2F6FD0',
+  height2: '#B0329C',
+  /** Edges by kind */
+  crawl: '#2E9E6A',
+  climb: '#C27A12',
+  cruise: '#1F8CA8',
+  walk: '#5A6B2A',
+  jump: '#B0329C',
+  squeeze: '#7A4FD0',
+  /** The halo under every overlay mark, so it reads on dark and light art */
+  halo: '#FFFFFF',
+  label: '#1A1430',
+  /** Baokaka's target line and path preview; Mocha's trip */
+  target: '#FF3D6E',
+  mochaPath: '#7A4FD0',
+  /** Hit areas: the data's shape and the grown 48 px shape */
+  hit: '#00B3C7',
+  /** Attractors */
+  attractor: '#E0A100',
+  /** Edit handles (nodes and track ends) */
+  handle: '#FF6A00',
+  /** Page list badges */
+  badgeOk: '#3FA86A',
+  badgeBad: '#D8342A',
+  badgeWarn: '#C27A12',
+  badgePending: '#8F8296',
+} as const;
+
+/**
  * Rim and highlight lights on characters (§ 2.4, § 3.2): `warm` on the lit cheek, `moon` on the
  * back edge, `lamp` near street lamps, then the pre-dawn `violet`, `dawn` and sunrise `gold`.
  */
