@@ -307,6 +307,11 @@ describe('search options', () => {
     const fresh = solve(deadEnd, undefined, { cap: 1 });
     const rocked = run(deadEnd, [{ t: 'mocha', perch: 'shelf2' }, { t: 'none' }, { t: 'none' }]);
     expect(fresh.nextAction(rocked)).toBeNull();
+    // After a capped search, an expanded state with no known way out is solved afresh, not given up on.
+    const tiny = solve(c1p2, undefined, { cap: 80 });
+    expect(tiny.solvable).toBe(false);
+    const near = run(c1p2, [{ t: 'mocha', perch: 'pillar' }, { t: 'none' }, { t: 'none' }]);
+    expect(tiny.nextAction(near)).toEqual({ t: 'set', part: 'train', to: 'full' });
     // A done state needs nothing.
     expect(partial.nextAction({ ...far, done: true })).toBeNull();
   });

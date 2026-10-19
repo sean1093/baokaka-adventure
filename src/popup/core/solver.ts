@@ -99,8 +99,8 @@ export interface SolveResult {
   /**
    * The first input of a shortest way (fewest moves, then fewest ticks) from `state` to a done
    * state, `none` meaning "wait"; null when `state` is done or no done state is reachable from it.
-   * A state the search didn't explore gets a fresh `solve` from it (same options, stopping at the
-   * goal).
+   * A state the search didn't expand — or, after an incomplete search, one with no known way to the
+   * goal — gets a fresh `solve` from it (same options, stopping at the goal).
    */
   nextAction(state: SimState): Input | null;
 }
@@ -491,9 +491,8 @@ export function solve(def: PageDef, from: SimState = initialState(def), opts: So
     for (let qi = 0; qi < curIds.length; qi++) {
       const u = curIds[qi];
       if (flags[u] & FLAG_EXPANDED || moves.data[u] !== layer) continue;
-      flags[u] |= FLAG_EXPANDED;
-      const state = curStates[qi];
       if (flags[u] & FLAG_DONE) {
+        flags[u] |= FLAG_EXPANDED;
         if (goal === -1) goal = u;
         if (opts.stopAtGoal) {
           stop = 'goal';
@@ -501,6 +500,7 @@ export function solve(def: PageDef, from: SimState = initialState(def), opts: So
         }
         continue;
       }
+      // Checked before marking `u` expanded, so a stopped search never claims to know u's edges.
       if (ids.size > cap) {
         stop = 'cap';
         break search;
@@ -509,6 +509,8 @@ export function solve(def: PageDef, from: SimState = initialState(def), opts: So
         stop = 'time';
         break search;
       }
+      flags[u] |= FLAG_EXPANDED;
+      const state = curStates[qi];
 
       edgeStart.data[u] = edgeTo.length;
       const seen = new Set<number>([u]);
@@ -589,12 +591,14 @@ export function solve(def: PageDef, from: SimState = initialState(def), opts: So
   const nextAction = (state: SimState): Input | null => {
     if (state.done) return null;
     const u = ids.get(solverKey(def, state));
-    if (u === undefined || !(flags[u] & FLAG_EXPANDED)) {
+    const afresh = () => {
       const sub = solve(def, state, { ...opts, stopAtGoal: true });
       return sub.solvable ? sub.nextAction(state) : null;
-    }
+    };
+    if (u === undefined || !(flags[u] & FLAG_EXPANDED)) return afresh();
     cost ??= goalCost(graph, rev);
-    if (cost[u] === Infinity) return null;
+    // On a partial graph "no way found" may just mean "not explored yet".
+    if (cost[u] === Infinity) return complete ? null : afresh();
     // cost[u] is finite, so one of u's edges realises it; the first in candidate order wins.
     const weight = (e: number) => (inputs[graph.edgeInput[e]].t === 'none' ? 0 : TICK_SPAN) + 1;
     let e = graph.edgeStart[u];
