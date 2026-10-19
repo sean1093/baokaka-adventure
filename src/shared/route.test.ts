@@ -18,6 +18,16 @@ describe('parseRoute', () => {
     ['#/artlab/', 'artlab'],
     ['#/artlab?section=sprites&bg=night', 'artlab'],
     ['#/artlabs', 'game'],
+    ['#/popup', 'popup'],
+    ['#/popup/', 'popup'],
+    ['#/popup?x=1', 'popup'],
+    ['#popup', 'popup'],
+    ['#/popups', 'game'],
+    ['#/popup/1-2', 'game'],
+    ['#/pagelab', 'pagelab'],
+    ['#/pagelab/', 'pagelab'],
+    ['#/pagelab?page=1-2&overlay=nodes', 'pagelab'],
+    ['#/pagelabs', 'game'],
   ])('%j -> %s', (hash, route) => {
     expect(parseRoute(hash)).toBe(route);
   });
