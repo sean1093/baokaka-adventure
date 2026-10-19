@@ -32,7 +32,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [85](https://github.com/sean1093/baokaka-adventure/issues/85) | Solver: BFS over step(), par, dead-end analysis, mischief/土地公 reachability, nextAction (core/solver.ts) | engine, m0 | #84 | done (#150) |
 | [86](https://github.com/sean1093/baokaka-adventure/issues/86) | Page lint: all GDD §3.6 rules (core/lint.ts) | engine, m0 | #84 | done (#151) |
 | [87](https://github.com/sean1093/baokaka-adventure/issues/87) | Page registry, definePage and the first pages 0-1 and 1-2 as data, with pages.test.ts | engine, content, m0 | #85, #86 | done (#152) |
-| [88](https://github.com/sean1093/baokaka-adventure/issues/88) | npm run solve: solver report for all pages (scripts/solve-pages.ts) | chore, engine, m0 | #87 | todo |
+| [88](https://github.com/sean1093/baokaka-adventure/issues/88) | npm run solve: solver report for all pages (scripts/solve-pages.ts) | chore, engine, m0 | #87 | done |
 | [89](https://github.com/sean1093/baokaka-adventure/issues/89) | PageView: book frame and page renderer with the bible's z-layer table, gutter AO, V-fold crease, floor perspective, interpolation and session runner | ui, engine, m0 | #84, #139 | todo |
 | [90](https://github.com/sean1093/baokaka-adventure/issues/90) | Gestures: tap, one-finger drag, magnet, snap, debounce, locked wobble and touch-pauses-the-world | ui, m0 | #89 | todo |
 | [91](https://github.com/sean1093/baokaka-adventure/issues/91) | PageLab at #/pagelab: overlays, step/play, solver panel, state inspector, edit mode | chore, ui, m0 | #90, #85, #87 | todo |

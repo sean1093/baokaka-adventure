@@ -52,7 +52,7 @@ Work is tracked as GitHub issues on `sean1093/baokaka-adventure`, ordered in [`r
 2. **Sync** the working branch: `git checkout claude/cool-maxwell-my8tf1 && git fetch origin && git merge --ff-only origin/main`. The branch must equal `main` before starting.
 3. **Read** the issue, every doc section it links, and the code it names. Read the latest `docs/design/gdd.md`, and for any art or UI work the latest `docs/art/popup/README.md` and `docs/art/v2/README.md`.
 4. **Implement** on `claude/cool-maxwell-my8tf1`. Commit in small logical steps (see conventions). Push often (`git push -u origin claude/cool-maxwell-my8tf1`) so work survives a disconnect.
-5. **Verify** locally: `npm test` (includes the page solver proofs), `npm run build`, `npm run solve` (from #88, when pages changed), and the visual check (`npm run visual`, see § 5) for anything visible.
+5. **Verify** locally: `npm test` (includes the page solver proofs), `npm run build`, `npm run solve` (when pages changed; see § 6), and the visual check (`npm run visual`, see § 5) for anything visible.
 6. **Open a PR** from `claude/cool-maxwell-my8tf1` to `main`. Title = conventional commit style summary; body = what/why, `Closes #N`, test evidence, screenshots (390×844) for UI/art work, any doc inconsistencies you resolved, and the Claude Code footer.
 7. **Self-review** the diff on GitHub as if reviewing a colleague: correctness, scope creep, tests, leftover debug code, secrets, file size limits, zh-Hant text ≤ 30 characters per line (GDD §5.1). Leave a review (a `COMMENT` review is fine; GitHub does not allow approving your own PR). Fix anything found and push.
 8. **Merge** with merge method **"merge"** (not squash or rebase, so the branch stays fast-forwardable). Then `git fetch origin main && git merge --ff-only origin/main && git push` so the branch equals `main` again.
@@ -154,3 +154,31 @@ node scripts/visual-check.mjs --url http://localhost:5173/baokaka-adventure/   #
 - **Fonts.** Since #10 the game uses web fonts from Google Fonts, so the check needs network access to `fonts.googleapis.com`/`fonts.gstatic.com`; without it screens fall back to system fonts and diff. Baselines were made in the agent environment (Linux Chromium); emoji and font rendering still differ slightly across OSes, so on another machine run `npm run visual:update` first and don't commit those baselines.
 - **`npm run check:ui`** (`scripts/ui-check.mjs`, #12) checks in the browser that dialogue typing never changes the box height, that every visible button/link/switch/tab on every fixture is at least 44×44 px (battle commands exactly 70 px) at both viewports, and that reduced motion (the OS setting, and the 「減少動態」 toggle via `chapter-card-reduced`) leaves no looping, flipping or drawing animation running. Since #14 it also plays three turns of `battle-4v3` and fails if the static backdrop (`[data-stage-static]`) is mutated or remounted, or if any animating element in the battle has a CSS filter, and checks the 布袋戲 frame shows on `battle-boss`/`battle-final` only. Since #15 it plays `battle-fx` (an all-target skill on three foes) and fails if more than 40 FX nodes are in flight, and, under reduced motion, if anything in the battle moves (a running animation whose keyframes change `transform`) or flashes (a blink, a wash or a `steps()` timing), or if the effects play anything but the `fx-still` fade. Run it with the visual check for UI work.
 - **`--perf`** walks the party around the `world` fixture (or `--perf-fixture <name>`) at 4× CPU throttle for 3 s and prints the median/p95/max rAF interval, the main-thread time per frame (CDP `TaskDuration`), the DOM node count, the number of ground SVGs and how many times the ground was mutated while walking (must be 0, #13) against art direction § 8.5. It runs on the dev build (React development mode), so numbers are pessimistic, and rAF intervals bottom out at the 16.7 ms vsync floor. It reports only; #57 makes it a gate.
+
+---
+
+## 6. Solver: `npm run solve`
+
+The one-command overview of every page (issue #88; GDD § 3.7). For each registered page (`src/popup/pages/index.ts`, play order) it runs the lint, replays the authored solution and runs a complete solve, judges the page by the same rules as `pages.test.ts`, and prints one row per page plus the total runtime against the 60 s CI budget.
+
+```sh
+npm run solve                       # every page
+npm run solve -- --page c1p2        # one page (by id)
+npm run solve -- --chapter 1        # one chapter (0 = the prologue)
+npm run solve -- --json             # the same report as JSON (for tools)
+npm run solve -- --cap 50000        # a lower state cap than the default 2,000,000
+```
+
+```
+page  title     diff  par  states  ms  dead  trivial  淘氣  土地公  lint   result
+────  ────────  ────  ───  ──────  ──  ────  ───────  ────  ──────  ─────  ──────
+c0p1  嬰兒床    1     1 ✓  22      4   0     no       ✓     ✓       0E 0W  ok
+c1p2  月台的縫  2     2 ✓  182     25  0     no       ✓     ✓       0E 0W  ok
+
+OK: 2 pages, 0 failing · total 0.04 s of the 60 s budget (0.1 %)
+```
+
+- **Columns:** page id, title, difficulty, par with the band check (`✓` inside the § 3.7 band, `! lo–hi` outside: a warning; `-` unsolved), states explored, solver ms, dead-end count (`?` when the search stopped early), trivial (`YES` fails; `yes (ok)` with `allowTrivial`), 淘氣 and 土地公 reachable (✓/✗; `?` when a capped search didn't find them), lint errors/warnings, result.
+- **Below the table:** one `✗` line per failure (lint errors, a solution that doesn't reach `done`, the state cap, a cascade overflow, unsolvable, dead ends with the first one's input path, trivial, 淘氣/土地公 unreachable) and one `!` line per warning (lint warnings, par out of band).
+- **Exit code:** 0 when every page is green and the total is under 60 s; 1 on any failure or over budget; 2 on bad arguments or a filter that matches no page. A page that exceeds its state cap **stops the run at once**, naming the page (simplify it, GDD § 3.7).
+- The logic is `src/popup/pages/report.ts` (unit-tested in `report.test.ts`; `pages.test.ts` prints the same table when a page fails); `scripts/solve-pages.ts` is the thin CLI, run with `vite-node` like `npm run sim`. Paste the table into PRs that add or change pages (§ 4).
