@@ -7,6 +7,7 @@ import { partLocked } from '../core/step';
 import { bottomBar, cover, hudLabel, kitCtx, kitDefs, type KitCtx } from '../art';
 import type { Input, PageDef, SimState } from '../core/types';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
+import { usePagePreload } from '../sprites';
 import { chapterSky } from './art/placeholders';
 import { BAR_H, HUD_H, bookLayout, toScreen, type BookLayout } from './geometry';
 import { wearsMarigold, type AffordanceFlags } from './affordance/look';
@@ -15,7 +16,6 @@ import type { GestureEvent, GestureFlags } from './gestures';
 import './gestures.css';
 import { PART_SETTLE_MS } from './interp';
 import { PageView, VIEW_BOX } from './PageView';
-import { usePagePreload } from '../sprites';
 import { useGestures } from './useGestures';
 
 /**
