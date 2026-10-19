@@ -191,3 +191,16 @@ Format:
 - Art lab `section=heroes` (visual target `artlab-heroes`); baselines regenerated for every screen with the heroes (two runs, 0 px apart); screenshots and side-by-sides with the approved sheets in `docs/screenshots/16/`. `npm run check:ui` passes.
 - Tests: `src/art/characters/heroes.test.ts` (budgets for every pose × expression × LOD, anatomy rules, actionPose, backlights, the flipbook CSS), sprite lint per drawing and the map flipbook shape. 578 tests.
 - Follow-ups: the story ending should pass `lock`; #17/#18 reuse `kit.tsx` and add their action poses to `actionPose`; main JS bundle +12.8 KB gzip (consider lazy-loading character art with #57's perf gate).
+
+### 2026-10-19 · Owner · Pivot: from the RPG to 《翻翻台北》 Pop-Up Taipei
+- After #16 (heroes I) shipped, the owner judged the option-D character art poor ("蠻差的") and the game still too shaped by the old 仙劍-style RPG design, and stopped engineering: #17 was put on hold.
+- A designer wrote three fresh concepts (`docs/design/concepts.md`, mocks in `docs/design/mocks/`); the owner chose concept A, 《翻翻台北》 Pop-Up Taipei, and the designer wrote the GDD (`docs/design/gdd.md` v1.0): rules, the deterministic sim + solver architecture, 65 pages, the zh-Hant script, milestones M0–M5 and success metrics.
+- A character artist redrew 寶咖咖 and 摩卡 from the owner's real photos in an anime style (`docs/art/v2/`: sheets, likeness check, author-in-SVG → bake-to-WebP pipeline, 31 gameplay poses in `baked/poses.json`).
+- An environment artist wrote the pop-up paper-craft art bible (`docs/art/popup/README.md`, proofs A–D, `src/kit.js`).
+- Decisions D-34–D-38.
+
+### 2026-10-19 · PM · New plan: epic #78, 63 issues, old issues closed
+- Created epic [#78](https://github.com/sean1093/baokaka-adventure/issues/78) and issues #79–#141 from GDD §7 and the art bible's §10 build list: M0 core + solver + PageLab + kit port (#79–#92, #139), M1 vertical slice with affordances, bitmap pipeline, standees, art extras, bake script, UI shell, words, hints, stickers, photo/album, settings, audio, prologue + ch1 pages and art, routing switch, playtest and RPG deletion (#93–#111, #140, #141), M2–M4 engine features plus a pages issue and an art issue per chapter and the ending (#112–#135), M5 perf/a11y, solver tuning and launch (#136–#138). Each issue is self-contained (context, linked doc sections, scope, requirements, acceptance criteria, testing plan, dependencies, notes) and is a sub-issue of #78.
+- Kept #68 (font payload), rewritten for the new game and moved to M5. Closed #17–#58 as not planned with a comment each; closed epic #1 as not planned (superseded), with a banner and comment.
+- Rewrote `README.md` (§1, sources, architecture, conventions, definition of done; process unchanged except "roadmap order" instead of "lowest number") and `roadmap.md` (new milestones, ordered table, dependency graph; the RPG plan collapsed under *Superseded plan*).
+- Next: #79 (scaffold), then the M0 order in `roadmap.md`.

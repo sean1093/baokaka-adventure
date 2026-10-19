@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>Pop-Up Taipei: Taipei 101</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Chiron+GoRound+TC:wght@500;700;900&family=Fredoka:wght@500;600;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#1B2052}
+  svg{display:block;font-family:'Chiron GoRound TC','Noto Sans TC',sans-serif}
+</style>
+<script src="kit.js"></script>
+</head><body>
+<svg id="s" width="390" height="844" viewBox="0 0 390 844"></svg>
+<script>
+const { bead, C, defs, grain, fibers, scallopBand, skyline, pinholes, sparkle, seal, brad, springBubble, standee, ghostHand, cover, washi, hud, bookBlock, tray, rng, f1 } = K;
+const SPR = 'sprites/';
+const PX0 = 18, PX1 = 372, PT = 102, GUT = 604, FB = 694, FX0 = 8, FX1 = 382;
+const CX = 195;
+
+// 05:10 colour script: violet sky warming to peach at the horizon, dawn light from the right (east)
+const extra = `
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#2A2F72"/><stop offset=".35" stop-color="#4A4592"/><stop offset=".62" stop-color="#8A68AA"/><stop offset=".85" stop-color="#D88EA6"/><stop offset="1" stop-color="#F4B49A"/></linearGradient>
+<radialGradient id="dawn" cx=".85" cy="1" r=".9"><stop offset="0" stop-color="#FFD49A" stop-opacity=".75"/><stop offset=".5" stop-color="#F6A29A" stop-opacity=".25"/><stop offset="1" stop-color="#F6A29A" stop-opacity="0"/></radialGradient>
+<linearGradient id="mt1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7A5E9E"/><stop offset="1" stop-color="#6A5290"/></linearGradient>
+<linearGradient id="mt2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A4682"/><stop offset="1" stop-color="#4A3A74"/></linearGradient>
+<linearGradient id="mt3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3E3268"/><stop offset="1" stop-color="#33295C"/></linearGradient>
+<linearGradient id="glassF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4E8E96"/><stop offset="1" stop-color="#2E5E74"/></linearGradient>
+<linearGradient id="glassL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E4A7A"/><stop offset="1" stop-color="#22386A"/></linearGradient>
+<linearGradient id="glassR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E6A89A"/><stop offset="1" stop-color="#B8808E"/></linearGradient>
+<linearGradient id="podium" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3A4A7A"/><stop offset=".5" stop-color="#5A6A94"/><stop offset="1" stop-color="#C69A9E"/></linearGradient>
+<linearGradient id="street" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A5E8E"/><stop offset="1" stop-color="#4A3E70"/></linearGradient>
+<linearGradient id="gutterAO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0A0624" stop-opacity="0"/><stop offset=".5" stop-color="#0A0624" stop-opacity=".5"/><stop offset="1" stop-color="#0A0624" stop-opacity="0"/></linearGradient>
+<linearGradient id="vellum" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F2E6F4" stop-opacity=".45"/><stop offset="1" stop-color="#FFE2D0" stop-opacity=".7"/></linearGradient>
+<clipPath id="backClip"><rect x="${PX0}" y="${PT}" width="${PX1 - PX0}" height="${GUT - PT}" rx="5"/></clipPath>
+<clipPath id="floorClip"><path d="M${PX0} ${GUT}L${PX1} ${GUT}L${FX1} ${FB}L${FX0} ${FB}Z"/></clipPath>
+`;
+
+let s = defs(extra) + cover();
+s += hud({ title: '台北101', page: '八節', sub: '第十章 · 第 3 頁 / 6', time: '05:10', filled: 9 });
+s += bookBlock(FX0, FX1, FB);
+
+// ================= backdrop =================
+let back = `<rect x="${PX0}" y="${PT}" width="${PX1 - PX0}" height="${GUT - PT}" fill="url(#sky)"/>
+  <rect x="${PX0}" y="${PT}" width="${PX1 - PX0}" height="${GUT - PT}" fill="url(#dawn)"/>`;
+back += pinholes(PX0, PT, PX1 - PX0, 200, 34, 4);
+// setting crescent moon, low-left, foil
+back += `<g filter="url(#z1)"><path d="M70 214a20 20 0 1 0 22 24a16 16 0 1 1 -22 -24z" fill="#FFF4D8"/></g><circle cx="74" cy="232" r="34" fill="#FFF0D0" opacity=".12" filter="url(#blur8)"/>`;
+// vellum (tracing-paper) clouds: separate puffy pieces, the sky shows through
+const cloud = (x, y, w, sc = 1) => `<g filter="url(#z1)" transform="translate(${x} ${y}) scale(${sc})"><path d="M0 0q-2 -12 12 -12q4 -14 22 -10q10 -12 26 -4q18 -6 22 8q14 0 12 14z" transform="scale(${w / 96} 1)" fill="url(#vellum)"/></g>`;
+back += cloud(222, 236, 120) + cloud(30, 318, 100, .9) + cloud(268, 352, 110) + cloud(120, 410, 80, .8);
+// 象山 and the basin mountains, three cut layers
+back += `<g filter="url(#z1)"><path d="${scallopBand(PX0 - 4, PX1 + 4, 440, GUT, 61, 18, 70)}" fill="url(#mt1)"/></g>`;
+back += `<g filter="url(#z2)"><path d="M${PX0 - 4} ${GUT}V470Q60 430 110 470Q130 486 150 490H240Q262 470 300 444Q340 420 ${PX1 + 4} 452V${GUT}Z" fill="url(#mt2)"/></g>`;
+const sk = skyline(PX0, PX1, GUT, 77, { minH: 14, maxH: 48, winP: .1 });
+back += `<g filter="url(#z2)"><path d="${sk.d}" fill="#3A2E66"/>${sk.wins}</g>`;
+back += `<g filter="url(#z3)"><path d="${scallopBand(PX0 - 4, PX1 + 4, 540, GUT + 4, 90, 6, 18)}" fill="url(#mt3)"/></g>`;
+s += `<g clip-path="url(#backClip)">${back}</g>`;
+
+// ================= floor page: 信義 streets =================
+let floor = `<path d="M${PX0} ${GUT}L${PX1} ${GUT}L${FX1} ${FB}L${FX0} ${FB}Z" fill="url(#street)"/>`;
+floor += [0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => `<path d="M${120 + i * 18} ${GUT + 34}L${108 + i * 22} ${GUT + 74}" stroke="#D8CCE4" stroke-width="7" opacity=".45"/>`).join('');
+floor += `<path d="M${PX0} ${GUT + 30}H${PX1}M${FX0} ${GUT + 80}H${FX1}" stroke="#8A7EAE" stroke-width="2" opacity=".6"/>`;
+floor += `<ellipse cx="300" cy="${GUT + 20}" rx="160" ry="40" fill="#FFC89A" opacity=".18" filter="url(#blur8)"/>`;
+s += `<g clip-path="url(#floorClip)">${floor}</g>`;
+s += `<rect x="${PX0}" y="${GUT - 8}" width="${PX1 - PX0}" height="16" fill="url(#gutterAO)"/>`;
+
+// ================= the tower: a pop-up of 8 rotating sections =================
+const SEG_H = 40, SEG_B = 538, NB = 90, NT = 126;   // section height, first section bottom y, bottom/top widths
+const secB = (i) => SEG_B - i * SEG_H, secT = (i) => secB(i) - SEG_H;
+// podium + lower trunk
+s += `<g filter="url(#z3)"><path d="M${CX - 86} ${GUT + 6}V${GUT - 30}H${CX + 86}V${GUT + 6}Z" fill="url(#podium)"/>
+  ${[0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="${CX - 76 + i * 20}" y="${GUT - 22}" width="10" height="20" rx="1" fill="#FFD98A" opacity=".85"/>`).join('')}
+  <path d="M${CX - 52} ${GUT - 30}L${CX - 44} ${SEG_B}H${CX + 44}L${CX + 52} ${GUT - 30}Z" fill="url(#glassF)"/>
+  <path d="M${CX + 16} ${GUT - 30}L${CX + 14} ${SEG_B}H${CX + 44}L${CX + 52} ${GUT - 30}Z" fill="url(#glassR)" opacity=".85"/>
+  <path d="M${CX - 52} ${GUT - 30}L${CX - 44} ${SEG_B}H${CX - 18}L${CX - 20} ${GUT - 30}Z" fill="url(#glassL)"/></g>`;
+
+const hwAt = (i, y) => (NB + (NT - NB) * ((secB(i) - 10 - y) / (SEG_H - 10))) / 2;
+const X = (i, fr, y) => f1(CX + fr * hwAt(i, y));
+function rampEnds(i, split, ramp) {
+  const yb = secB(i) - 10, yt = secT(i);
+  const pad = .1;
+  const L = split[0] + pad, R = split[1] - pad;
+  return ramp > 0 ? [[+X(i, L, yb), yb], [+X(i, R, yt + 2), yt + 2]] : [[+X(i, R, yb), yb], [+X(i, L, yt + 2), yt + 2]];
+}
+// section renderer. split = front facet edges as fractions (-1..1); ramp = 1 (up-right) / -1 (up-left) / 0 (blank wall)
+function section(i, { split = [-0.42, 0.42], ramp = 1, state = 'idle', wheel = false }) {
+  const b = secB(i), yb = b - 10, yt = secT(i);
+  const facet = (a, c, fill) => `<path d="M${X(i, a, yb)} ${yb}L${X(i, a, yt)} ${yt}L${X(i, c, yt)} ${yt}L${X(i, c, yb)} ${yb}Z" fill="${fill}"/>`;
+  let g = facet(-1, split[0], 'url(#glassL)') + facet(split[0], split[1], 'url(#glassF)') + facet(split[1], 1, 'url(#glassR)');
+  for (let k = 1; k < 4; k++) { const y = yt + k * (yb - yt) / 4; g += `<path d="M${X(i, -1, y)} ${y}H${X(i, 1, y)}" stroke="#A8F0EC" stroke-width=".6" opacity=".32"/>`; }
+  g += `<path d="M${X(i, split[0], yb)} ${yb}L${X(i, split[0], yt)} ${yt}M${X(i, split[1], yb)} ${yb}L${X(i, split[1], yt)} ${yt}" stroke="#FFF4E8" stroke-width=".9" opacity=".55"/>`;
+  g += `<path d="M${X(i, -1, yt)} ${yt}H${X(i, 1, yt)}" stroke="#8AF0E0" stroke-width="1.8"/>`;
+  if (state === 'turning') {   // onion-skin ghosts of the facet edges it just left
+    for (const d of [0.16, 0.32]) g += `<path d="M${X(i, split[0] + d, yb)} ${yb}L${X(i, split[0] + d, yt)} ${yt}M${X(i, split[1] + d, yb)} ${yb}L${X(i, split[1] + d, yt)} ${yt}" stroke="#FFF4E8" stroke-width="1" opacity="${0.4 - d}"/>`;
+  }
+  if (ramp) {
+    const [[x0, y0], [x1, y1]] = rampEnds(i, split, ramp);
+    const n = 6; let st = `M${x0} ${y0}`;
+    for (let k = 1; k <= n; k++) st += `V${f1(y0 - (y0 - y1) * k / n)}H${f1(x0 + (x1 - x0) * k / n)}`;
+    g += `<path d="${st}V${y0}Z" fill="#F3E6CC"/><path d="${st}" fill="none" stroke="#FFFFFF" stroke-width="1.1"/>`;
+  } else {
+    const mx = (+X(i, split[0], yb) + +X(i, split[1], yb)) / 2;
+    g += `<path d="M${mx - 9} ${(yt + yb) / 2 + 4}q9 -13 18 0q-9 -5 -18 0z" fill="#E8C77A" opacity=".85"/>`;
+  }
+  const bw = NB / 2 + 4;
+  const ring = wheel ? `<g filter="url(#z4)"><rect x="${CX - bw}" y="${b - 10}" width="${2 * bw}" height="11" rx="3" fill="url(#tabG)"/>
+    <rect x="${CX - bw + 5}" y="${b - 8.5}" width="${2 * bw - 10}" height="8" fill="url(#ridges)"/>
+    <rect x="${CX - bw}" y="${b - 10}" width="${2 * bw}" height="11" rx="3" fill="none" stroke="#FFF6D6" stroke-width=".8" opacity=".8"/></g>
+    ${state === 'locked' ? `<rect x="${CX - bw}" y="${b - 10}" width="${2 * bw}" height="11" rx="3" fill="#3A2E66" opacity=".35"/>` : ''}`
+    : `<g filter="url(#z3)"><rect x="${CX - bw + 4}" y="${b - 9}" width="${2 * bw - 8}" height="9" rx="2" fill="#8E86A8"/><path d="M${CX - bw + 4} ${b - 9}H${CX + bw - 4}" stroke="#C9C2DE" stroke-width="1"/></g>`;
+  const lift = state === 'turning' ? -3 : 0;
+  const halo = state === 'turning' ? `<ellipse cx="${CX}" cy="${b - 22}" rx="${NT / 2 + 20}" ry="30" fill="${C.tab}" opacity=".3" filter="url(#blur8)"/>` : '';
+  const ok = state === 'solved' ? `<g transform="translate(${CX - bw - 11} ${b - 4})"><circle r="6.5" fill="#3FA86A" stroke="#FFF" stroke-width="1.2"/><path d="M-3 0l2 2.4l4 -4.6" fill="none" stroke="#FFF" stroke-width="1.8" stroke-linecap="round"/></g>` : '';
+  return `${halo}<g transform="translate(0 ${lift})"><g filter="url(#${state === 'turning' ? 'z5' : 'z3'})">${g}</g>${ring}</g>${ok}`;
+}
+
+// 10-3: sections 2·3·4 are the three coupled wheels; the rest are printed (fixed) sections
+const plan = [
+  { ramp: 1 }, { ramp: -1 }, { ramp: 1, state: 'solved', wheel: true },
+  { ramp: 1, state: 'turning', split: [-0.86, 0.02], wheel: true },
+  { ramp: 1, split: [-0.3, 0.55], state: 'locked', wheel: true }, { ramp: 0 }, { ramp: 0, split: [-0.6, 0.3] }, { ramp: 0, split: [-0.5, 0.5] },
+];
+// back half of the rotation arrow (behind the tower)
+const a3 = secB(3) - 22;
+s += `<path d="M${CX - NT / 2 - 18} ${a3}Q${CX} ${a3 - 30} ${CX + NT / 2 + 18} ${a3}" fill="none" stroke="${C.tabL}" stroke-width="2.2" stroke-dasharray="2 6" stroke-linecap="round" opacity=".8"/>`;
+for (let i = 0; i < 8; i++) s += section(i, plan[i]);
+// crown + spire
+const topY = secT(7);
+s += `<g filter="url(#z3)"><path d="M${CX - 40} ${topY}L${CX - 32} ${topY - 22}H${CX + 32}L${CX + 40} ${topY}Z" fill="url(#glassF)"/>
+  <path d="M${CX + 12} ${topY}L${CX + 10} ${topY - 22}H${CX + 32}L${CX + 40} ${topY}Z" fill="url(#glassR)"/>
+  <path d="M${CX - 40} ${topY}L${CX - 32} ${topY - 22}H${CX - 14}L${CX - 16} ${topY}Z" fill="url(#glassL)"/>
+  <path d="M${CX - 20} ${topY - 22}L${CX - 15} ${topY - 40}H${CX + 15}L${CX + 20} ${topY - 22}Z" fill="url(#glassL)"/>
+  <path d="M${CX - 20} ${topY - 22}H${CX + 20}M${CX - 40} ${topY}H${CX + 40}" stroke="#8AF0E0" stroke-width="1.6"/>
+  <rect x="${CX - 3.5}" y="${topY - 78}" width="7" height="40" fill="#B8C2E0"/><rect x="${CX - 1.5}" y="${topY - 100}" width="3" height="24" fill="#D8DEF0"/></g>
+  <circle cx="${CX}" cy="${topY - 101}" r="2.4" fill="#FF6A6A" filter="url(#glowS)"/>`;
+
+// coupling: paper linkage strips with brads tie ring 2↔3 (right side) and 3↔4 (left side)
+const link = (x, y0, y1) => `<g filter="url(#z4)"><rect x="${x - 3.5}" y="${y0}" width="7" height="${y1 - y0}" rx="3.5" fill="#E8D4A8"/></g>${brad(x, y0 + 3, 3.4)}${brad(x, y1 - 3, 3.4)}`;
+s += link(CX + NB / 2 + 2, secB(3) - 8, secB(2) - 3) + link(CX - NB / 2 - 2, secB(4) - 8, secB(3) - 3);
+// front half of the rotation arrow + seal + wiggle ticks
+s += `<g fill="none" stroke="${C.tabL}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M${CX - NT / 2 - 18} ${a3}Q${CX} ${a3 + 40} ${CX + NT / 2 + 18} ${a3}"/><path d="M${CX + NT / 2 + 6} ${a3 + 10}L${CX + NT / 2 + 19} ${a3}L${CX + NT / 2 + 8} ${a3 - 10}"/></g>
+  ${seal(CX - NT / 2 - 26, a3 - 18, '轉', 14)}
+  <g stroke="${C.tabL}" stroke-width="1.8" stroke-linecap="round" opacity=".9"><path d="M${CX - NT / 2 - 10} ${a3 + 18}l-5 4M${CX - NT / 2 - 6} ${a3 + 26}l-4 6"/></g>`;
+
+// chalk intention line along the solved ramps; it dead-ends where section 3 is wrong
+const P = [];
+for (let i = 0; i < 3; i++) { const [p0, p1] = rampEnds(i, plan[i].split || [-0.42, 0.42], plan[i].ramp); P.push(p0, p1); }
+s += `<path d="M${CX - 70} ${secB(0) + 2}L${P.map((p) => p.map(f1).join(' ')).join('L')}" stroke="#2A1C50" stroke-width="5" stroke-dasharray="1.5 6" stroke-linecap="round" fill="none" opacity=".35"/><path d="M${CX - 70} ${secB(0) + 2}L${P.map((p) => p.map(f1).join(' ')).join('L')}" stroke="#FFFBEA" stroke-width="3" stroke-dasharray="1.5 6" stroke-linecap="round" fill="none"/>`;
+
+// Mocha on the top-left lip of section 5 (cats like high places); Baokaka waits on the top-right lip of section 2
+s += standee(SPR + 'mocha-sit@3x.webp', CX - 30, secB(4) - 9, 56, 92 / 176, { shadowW: 22 });
+s += `<g transform="translate(${CX - NB / 2 - 18} ${secB(4) - 5})"><circle r="9" fill="#3A2E66" stroke="#FFF7E0" stroke-width="1.2"/>
+  <g fill="#FFF7E0"><ellipse cx="0" cy="1.6" rx="3" ry="2.4"/><circle cx="-3.4" cy="-2" r="1.3"/><circle cx="-1.1" cy="-3.6" r="1.3"/><circle cx="1.4" cy="-3.6" r="1.3"/><circle cx="3.6" cy="-2" r="1.3"/></g></g>`;
+s += `<g filter="url(#z4)"><path d="M${CX + 52} ${secT(2) - 1}H${CX + 98}l-4 6H${CX + 56}z" fill="#F3E6CC"/></g>`;
+s += standee(SPR + 'baokaka-stand@3x.webp', CX + 78, secT(2) + 1, 72, 96 / 200, { glow: '#FFD98A', shadowW: 26 });
+s += `<g filter="url(#z5)"><path d="M${CX + 54} ${secT(2) - 1}V${secT(2) - 30}M${CX + 100} ${secT(2) - 1}V${secT(2) - 30}" stroke="#D8DEF0" stroke-width="2.4"/>
+  <rect x="${CX + 50}" y="${secT(2) - 33}" width="54" height="4.5" rx="2" fill="#E8EDF8"/></g>`;
+// thought bubble: he wants the cat (priority 2) because the treasure is hidden behind the crown
+const bxC = CX + 112, byC = secT(5) - 2;
+s += springBubble(CX + 84, secT(2) - 70, bxC, byC, `
+  <g transform="translate(${bxC - 22} ${byC})"><circle r="9" fill="url(#foil)"/><circle cx="-3" cy="-3" r="2.6" fill="#FFFBEA"/></g>
+  <text x="${bxC + 14}" y="${byC + 7}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="20" fill="${C.seal}">要！</text>`, { w: 96, h: 46 });
+
+// goal: 金珠珠 on the top-right lip of section 4 (reachable once 3 is aligned and 4 stays put)
+s += bead(CX + 52, secT(4) - 10, 9);
+
+// foreground layer: dark cut-paper street trees in the near corners (tunnel-book frame)
+const tree = (x, y, sc, seed) => { const r = rng(seed); const pts = []; for (let k = 0; k < 7; k++) pts.push([f1((r() - .5) * 46), f1(-30 - r() * 34), f1(14 + r() * 9)]);
+  return `<g filter="url(#z5)" transform="translate(${x} ${y}) scale(${sc})"><rect x="-3" y="-30" width="6" height="34" fill="#2A2050"/>
+  <g fill="#2E3A66">${pts.map(([a, b, c]) => `<circle cx="${a}" cy="${b}" r="${c}"/>`).join('')}</g>
+  <g fill="#5A6A9A" opacity=".5">${pts.slice(0, 4).map(([a, b, c]) => `<circle cx="${a - 3}" cy="${b - 4}" r="${c * .55}"/>`).join('')}</g></g>`; };
+s += tree(40, FB - 6, 1.05, 3) + tree(352, FB - 2, 1.15, 8);
+
+s += ghostHand(CX - 40, a3 + 6, .66, 20);
+s += grain();
+s += tray(SPR, { done: [0, 1, 0] });
+
+document.getElementById('s').innerHTML = s;
+</script>
+</body></html>

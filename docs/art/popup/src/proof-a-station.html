@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>Pop-Up Taipei: Taipei Main Station</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Chiron+GoRound+TC:wght@500;700;900&family=Fredoka:wght@500;600;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#1B2052}
+  svg{display:block;font-family:'Chiron GoRound TC','Noto Sans TC',sans-serif}
+</style>
+<script src="kit.js"></script>
+</head><body>
+<svg id="s" width="390" height="844" viewBox="0 0 390 844"></svg>
+<script>
+const { hud, tray, bead, crawlBaby, C, defs, grain, fibers, scallopBand, skyline, pinholes, sparkle, seal, brad, pullTab, springBubble, standee, ghostHand, cover, washi, rng, f1 } = K;
+const SPR = 'sprites/'; // snapshot of docs/art/v2/baked (placeholder until v2 is final)
+
+// ---- page geometry (top-bound book opened to 90°: backdrop stands, floor lies) ----
+const PX0 = 18, PX1 = 372, PT = 102, GUT = 446, FB = 694;    // backdrop top, gutter, floor bottom
+const FX0 = 8, FX1 = 382;                                     // floor page widens toward camera
+
+const extra = `
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#0D123C"/><stop offset=".45" stop-color="#1A2464"/><stop offset=".8" stop-color="#2E3482"/><stop offset="1" stop-color="#4A3F8E"/></linearGradient>
+<linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26307A"/><stop offset="1" stop-color="#1C2468"/></linearGradient>
+<linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#343C8C"/><stop offset="1" stop-color="#252C74"/></linearGradient>
+<radialGradient id="moonG" cx=".42" cy=".38" r=".7"><stop offset="0" stop-color="#FFFBEA"/><stop offset=".7" stop-color="#FFF0BE"/><stop offset="1" stop-color="#F2D98E"/></radialGradient>
+<linearGradient id="facade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8A7790"/><stop offset=".55" stop-color="#B89A8C"/><stop offset="1" stop-color="#E8C394"/></linearGradient>
+<linearGradient id="roofG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A3446"/><stop offset="1" stop-color="#3A2236"/></linearGradient>
+<linearGradient id="drum" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C6A86"/><stop offset="1" stop-color="#9C8590"/></linearGradient>
+<linearGradient id="winG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1C4"/><stop offset=".6" stop-color="#FFD27A"/><stop offset="1" stop-color="#FFB45A"/></linearGradient>
+<linearGradient id="brick" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B85A4E"/><stop offset="1" stop-color="#8A3E40"/></linearGradient>
+<linearGradient id="platTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B8A6A4"/><stop offset="1" stop-color="#D9C3A6"/></linearGradient>
+<linearGradient id="pillar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D8BFA0"/><stop offset=".5" stop-color="#C2A88E"/><stop offset="1" stop-color="#8E7A86"/></linearGradient>
+<linearGradient id="gutterAO" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0A0624" stop-opacity="0"/><stop offset=".5" stop-color="#0A0624" stop-opacity=".55"/><stop offset="1" stop-color="#0A0624" stop-opacity="0"/></linearGradient>
+<radialGradient id="lampPool" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFD98A" stop-opacity=".55"/><stop offset=".6" stop-color="#FFB45A" stop-opacity=".18"/><stop offset="1" stop-color="#FFB45A" stop-opacity="0"/></radialGradient>
+<linearGradient id="train" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4EEE0"/><stop offset="1" stop-color="#C9C2C8"/></linearGradient>
+<linearGradient id="floorDark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A2260" stop-opacity=".15"/><stop offset="1" stop-color="#1A1440" stop-opacity=".5"/></linearGradient>
+<clipPath id="pageClip"><rect x="${PX0}" y="0" width="${PX1-PX0}" height="844"/></clipPath>
+<clipPath id="floorClipWide"><rect x="${PX0+4}" y="300" width="${PX1-PX0-8}" height="400"/></clipPath>
+<clipPath id="stClip"><rect x="46" y="344" width="298" height="110"/><rect x="118" y="300" width="154" height="30"/>
+  <path d="M28 348L60 326H330L362 348Z"/><path d="M92 306L122 284H268L298 306Z"/></clipPath>
+<clipPath id="btnClip"><circle r="27"/></clipPath>
+<clipPath id="backClip"><rect x="${PX0}" y="${PT}" width="${PX1 - PX0}" height="${GUT - PT}" rx="5"/></clipPath>
+<clipPath id="floorClip"><path d="M${PX0} ${GUT}L${PX1} ${GUT}L${FX1} ${FB}L${FX0} ${FB}Z"/></clipPath>
+`;
+
+let s = defs(extra);
+s += cover();
+
+s += hud({ title: '台北車站', sub: '第一章 · 第 2 頁 / 6', page: '月台的縫', time: '00:20', filled: 0 });
+
+// ================= the book block (page edges = thickness) =================
+s += `<g>
+  <rect x="6" y="94" width="378" height="614" rx="8" fill="${C.coverD}"/>
+  ${[0, 1, 2, 3, 4].map((i) => `<path d="M${FX0 - 1 + i * 0.4} ${FB + 2 + i * 2.4}H${FX1 + 1 - i * 0.4}" stroke="${i % 2 ? '#CDB993' : '#EADBBB'}" stroke-width="2"/>`).join('')}
+</g>`;
+
+// ================= BACKDROP PAGE (stands vertically) =================
+let back = `<rect x="${PX0}" y="${PT}" width="${PX1 - PX0}" height="${GUT - PT}" fill="url(#sky)"/>`;
+back += pinholes(PX0, PT, PX1 - PX0, 260, 70, 9);
+// moon: backlit vellum disc with embossed craters + foil ring
+back += `<circle cx="312" cy="168" r="74" fill="#FFE9A8" opacity=".12" filter="url(#blur18)"/>
+  <circle cx="312" cy="168" r="44" fill="#FFF2C4" opacity=".16" filter="url(#blur8)"/>
+  <g filter="url(#z2)"><circle cx="312" cy="168" r="30" fill="url(#moonG)"/></g>
+  <circle cx="303" cy="160" r="7" fill="#F2DC9C" opacity=".6"/><circle cx="321" cy="178" r="5" fill="#F2DC9C" opacity=".55"/><circle cx="322" cy="157" r="3" fill="#F2DC9C" opacity=".5"/>
+  <circle cx="312" cy="168" r="33.5" fill="none" stroke="url(#foil)" stroke-width="1" opacity=".7"/>`;
+// cut-paper cloud bands (each one its own card, stacked shadow)
+back += `<g filter="url(#z1)"><path d="${scallopBand(PX0 - 4, PX1 + 4, 266, 320, 21, 9, 34)}" fill="url(#sky2)" opacity=".95"/></g>`;
+// tracing-paper cloud drifting over the moon
+back += `<g filter="url(#z1)" opacity=".5"><path d="M230 198q10 -18 30 -10q14 -16 34 -4q20 -8 30 8q24 0 22 16H226q-12 -2 4 -10z" fill="#DCD8F4"/></g>`;
+// far skyline incl. a tiny 101 (foreshadowing the finale)
+const sk = skyline(PX0, PX1, 372, 33, { minH: 18, maxH: 56, winP: .14 });
+back += `<g filter="url(#z1)"><path d="${sk.d}" fill="#1E2260"/>${sk.wins}
+  <g transform="translate(64 372)"><path d="M-6 0V-64L-4 -66V-80H-3V-92H3V-80H4V-66L6 -64V0Z" fill="#1E2260"/>
+  ${[0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<path d="M-7 ${-14 - i * 6.5}H7" stroke="#8AF0E0" stroke-width=".7" opacity=".55"/>`).join('')}
+  <circle cx="0" cy="-94" r="1.4" fill="#FF6A6A" filter="url(#glowS)"/></g></g>`;
+back += `<g filter="url(#z1)"><path d="${scallopBand(PX0 - 4, PX1 + 4, 362, 400, 44, 6, 40)}" fill="url(#sky3)"/></g>`;
+
+// ---- the station: a pop-up box standing just in front of the backdrop ----
+let st = '';
+const bx0 = 46, bx1 = 344, by0 = 300, byB = GUT + 4;
+// lamp glow on the facade from the street
+st += `<g filter="url(#z2)">
+  <rect x="${bx0}" y="${by0 + 44}" width="${bx1 - bx0}" height="${byB - by0 - 44}" fill="url(#facade)"/>
+  ${Array.from({ length: 9 }, (_, i) => `<rect x="${bx0 + 14 + i * 32}" y="${by0 + 70}" width="16" height="${byB - by0 - 86}" rx="2" fill="#4E3A5A"/>`).join('')}
+</g>`;
+// lit windows = cut holes backed with glowing vellum
+st += `<g filter="url(#glowS)">${Array.from({ length: 9 }, (_, i) => `<rect x="${bx0 + 16 + i * 32}" y="${by0 + 72}" width="12" height="${byB - by0 - 90}" rx="1.5" fill="url(#winG)"/>
+  <path d="M${bx0 + 22 + i * 32} ${by0 + 72}V${byB - 18}M${bx0 + 16 + i * 32} ${by0 + 100}H${bx0 + 28 + i * 32}" stroke="#B88A50" stroke-width=".8" opacity=".6"/>`).join('')}</g>`;
+// entrance arcade
+st += `<g filter="url(#z3)"><rect x="150" y="${byB - 38}" width="90" height="38" fill="#5A4462"/>
+  ${[0, 1, 2].map((i) => `<path d="M${158 + i * 28} ${byB}V${byB - 22}a10 10 0 0 1 20 0V${byB}Z" fill="url(#winG)" filter="url(#glowS)"/>`).join('')}</g>`;
+// sign plate
+st += `<g filter="url(#z3)"><rect x="140" y="${by0 + 50}" width="110" height="22" rx="2" fill="#2A1C38"/>
+  <rect x="142" y="${by0 + 52}" width="106" height="18" rx="1" fill="none" stroke="url(#foil)" stroke-width=".8"/>
+  <text x="195" y="${by0 + 66}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="14" fill="url(#foilH)" letter-spacing="6">台北車站</text></g>`;
+// lower roof (重簷 lower tier) with upturned eaves
+st += `<g filter="url(#z3)"><path d="M${bx0 - 18} ${by0 + 48}Q${bx0 - 6} ${by0 + 40} ${bx0 + 14} ${by0 + 26}L${bx1 - 14} ${by0 + 26}Q${bx1 + 6} ${by0 + 40} ${bx1 + 18} ${by0 + 48}Q${bx1} ${by0 + 44} ${bx1 - 8} ${by0 + 46}H${bx0 + 8}Q${bx0} ${by0 + 44} ${bx0 - 18} ${by0 + 48}Z" fill="url(#roofG)"/>
+  ${Array.from({ length: 24 }, (_, i) => `<path d="M${bx0 + 18 + i * 11.4} ${by0 + 28}L${bx0 + 14 + i * 11.6} ${by0 + 45}" stroke="#7A4A5A" stroke-width="1.2" opacity=".7"/>`).join('')}
+  <path d="M${bx0 + 14} ${by0 + 26}H${bx1 - 14}" stroke="#C9A04A" stroke-width="2"/></g>`;
+// upper drum + upper roof
+st += `<g filter="url(#z3)"><rect x="118" y="${by0 + 2}" width="154" height="26" fill="url(#drum)"/>
+  ${Array.from({ length: 8 }, (_, i) => `<rect x="${126 + i * 18.5}" y="${by0 + 8}" width="9" height="14" rx="1" fill="url(#winG)" opacity=".95"/>`).join('')}</g>`;
+st += `<g filter="url(#z4)"><path d="M92 ${by0 + 6}Q104 ${by0 - 2} 122 ${by0 - 16}L268 ${by0 - 16}Q286 ${by0 - 2} 298 ${by0 + 6}Q284 ${by0 + 2} 276 ${by0 + 4}H114Q106 ${by0 + 2} 92 ${by0 + 6}Z" fill="url(#roofG)"/>
+  ${Array.from({ length: 14 }, (_, i) => `<path d="M${126 + i * 10.6} ${by0 - 14}L${122 + i * 10.9} ${by0 + 3}" stroke="#7A4A5A" stroke-width="1.2" opacity=".7"/>`).join('')}
+  <path d="M122 ${by0 - 16}H268" stroke="#E2BC62" stroke-width="2.2"/>
+  <path d="M118 ${by0 - 16}q-6 -6 -2 -11M272 ${by0 - 16}q6 -6 2 -11" stroke="#E2BC62" stroke-width="2" fill="none"/></g>`;
+back += `<g>${st}
+  <g clip-path="url(#stClip)"><rect x="195" y="270" width="160" height="190" fill="#140C34" opacity=".26"/>
+  <rect x="160" y="270" width="35" height="190" fill="#FFF4DA" opacity=".05"/></g>
+  <path d="M195 ${by0 - 16}V${byB}" stroke="#FFF4DA" stroke-width=".8" opacity=".35"/></g>`;
+
+// hidden 土地公 peeking from behind the board (the per-page secret sticker)
+back += `<g filter="url(#z2)" transform="translate(246 200) rotate(14)"><circle r="7.5" fill="#F6D2B8"/><path d="M-7 -2a7.5 7.5 0 0 1 14 0z" fill="#C8342C"/><rect x="-8.5" y="-3.5" width="17" height="3" rx="1.5" fill="#E8B83A"/>
+  <path d="M-6 2q6 12 12 0q-2 3 -6 3q-4 0 -6 -3z" fill="#FBF6EC"/><circle cx="-2.6" cy="0" r=".9" fill="#2E2235"/><circle cx="2.6" cy="0" r=".9" fill="#2E2235"/></g>`;
+// split-flap departure board hanging on cords (decorative print)
+const flap = (x, y, ch, col, fs = 15, fam = "'Chiron GoRound TC'") => `<g transform="translate(${x} ${y})"><rect width="19" height="24" rx="2" fill="#20264E"/>
+  <rect width="19" height="12" rx="2" fill="#2A3160"/><path d="M0 12H19" stroke="#0B0E28" stroke-width="1"/>
+  <text x="9.5" y="18" text-anchor="middle" font-family="${fam}" font-weight="700" font-size="${fs}" fill="${col}">${ch}</text></g>`;
+back += `<path d="M78 ${PT}V144M222 ${PT}V144" stroke="#0A0C26" stroke-width="1.4" opacity=".8"/>
+  <g filter="url(#z3)"><rect x="56" y="140" width="188" height="68" rx="5" fill="#141A3E"/>
+  <rect x="58.5" y="142.5" width="183" height="63" rx="4" fill="none" stroke="url(#foil)" stroke-width="1"/>
+  ${[...'月亮線'].map((c, i) => flap(66 + i * 21, 149, c, '#FFC94A')).join('')}
+  ${[...'00:20'].map((c, i) => flap(140 + i * 19.5, 149, c, '#FFC94A', 16, 'Fredoka')).join('')}
+  ${[...'往寶咖咖的家'].map((c, i) => flap(66 + i * 21, 177, c, '#F4EEDC', 14)).join('')}
+  <circle cx="226" cy="189" r="4" fill="#5CF08A" filter="url(#glowS)"/></g>`;
+
+s += `<g clip-path="url(#backClip)">${back}
+  <rect x="${PX0}" y="${GUT - 40}" width="${PX1 - PX0}" height="40" fill="#FFB45A" opacity=".12" filter="url(#blur8)"/></g>`;
+
+// ================= FLOOR PAGE (perspective checker = the station hall floor) =================
+const yh = 275, KP = (FB - yh), zf = KP / (GUT - yh); // y = yh + KP/z
+const yOf = (z) => yh + KP / z, xOf = (u, z) => 195 + (u * 30) / z;
+let floor = `<path d="M${PX0} ${GUT}L${PX1} ${GUT}L${FX1} ${FB}L${FX0} ${FB}Z" fill="#D6C6B4"/>`;
+const zs = []; for (let z = zf; z >= 0.98; z /= 1.11) zs.push(z); zs.push(1);
+for (let r = 0; r < zs.length - 1; r++) for (let u = -12; u < 12; u++) {
+  if ((u + r) % 2) continue;
+  const za = zs[r], zb = zs[r + 1];
+  floor += `<path d="M${f1(xOf(u, za))} ${f1(yOf(za))}L${f1(xOf(u + 1, za))} ${f1(yOf(za))}L${f1(xOf(u + 1, zb))} ${f1(yOf(zb))}L${f1(xOf(u, zb))} ${f1(yOf(zb))}Z" fill="#8C82A4"/>`;
+}
+floor += `<rect x="0" y="${GUT}" width="390" height="${FB-GUT}" fill="url(#floorDark)"/><ellipse cx="108" cy="${GUT + 26}" rx="120" ry="40" fill="url(#lampPool)"/><ellipse cx="350" cy="${GUT + 26}" rx="110" ry="38" fill="url(#lampPool)"/><ellipse cx="195" cy="${GUT + 10}" rx="90" ry="22" fill="url(#lampPool)"/>`;
+floor += `<rect x="0" y="${GUT}" width="390" height="${FB - GUT}" fill="url(#hatch)" opacity=".25"/>`;
+s += `<g clip-path="url(#floorClip)">${floor}</g>`;
+// gutter: the fold — AO on both sides + a lit crease ridge
+s += `<rect x="${PX0}" y="${GUT - 9}" width="${PX1 - PX0}" height="18" fill="url(#gutterAO)"/>
+  <path d="M${PX0} ${GUT + .5}H${PX1}" stroke="#FFF4DA" stroke-width=".6" opacity=".35"/>`;
+
+
+// paper street lamps: card posts + glowing vellum lanterns, light pools painted on the floor page
+const lampPost = (x, top, foot) => `<circle cx="${x}" cy="${top + 6}" r="34" fill="#FFD98A" opacity=".22" filter="url(#blur8)"/>
+  <g filter="url(#z3)"><rect x="${x - 2}" y="${top + 12}" width="4" height="${foot - top - 12}" fill="#2A2346"/><path d="M${x - 7} ${foot}h14l-2 -6h-10z" fill="#2A2346"/>
+  <path d="M${x - 9} ${top + 2}h18l-3 12h-12z" fill="#FFE7A8"/><path d="M${x - 11} ${top + 2}h22l-11 -8z" fill="#2A2346"/></g>
+  <path d="M${x - 7} ${top + 4}h14l-2 9h-10z" fill="#FFF6D8" filter="url(#glowS)"/>`;
+s += lampPost(36, 392, GUT + 18) + lampPost(372, 384, GUT + 22);
+
+// ================= GAMEPLAY LAYER (z3–z5) =================
+const PL = 514; // platform top line
+// track pit between platforms (printed recess)
+s += `<path d="M150 ${PL + 8}L240 ${PL + 8}L246 ${FB}L144 ${FB}Z" fill="#1C1840" opacity=".9"/>
+  <path d="M168 ${PL + 10}L160 ${FB}M222 ${PL + 10}L230 ${FB}" stroke="#7A7FA8" stroke-width="2"/>
+  ${[0, 1, 2, 3, 4, 5, 6].map((i) => { const y = PL + 22 + i * i * 3.4 + i * 10; return `<path d="M${164 - i * .6} ${y}H${226 + i * .6}" stroke="#4A4878" stroke-width="${2 + i * .4}"/>`; }).join('')}`;
+
+// pillar standing on platform 2's back edge (Mocha's perch)
+s += `<g filter="url(#z3)"><rect x="262" y="318" width="30" height="${PL - 318}" fill="url(#pillar)"/>
+  <rect x="256" y="306" width="42" height="14" rx="2" fill="#E2CBA8"/><rect x="258" y="318" width="38" height="4" fill="#9C8590"/></g>
+  ${brad(277, 330, 0)}`;
+// the pillar capital is an empty Mocha PERCH: faint chalk paw print (GDD §2.1 visual rule)
+s += `<g transform="translate(277 300)" opacity=".9"><ellipse rx="22" ry="7" fill="${C.tab}" opacity=".25" filter="url(#blur3)"/>
+  <g fill="#FFF7E0"><ellipse cx="0" cy="1" rx="4.6" ry="3.6"/><circle cx="-5.5" cy="-4" r="1.9"/><circle cx="-1.8" cy="-6.4" r="1.9"/><circle cx="2.2" cy="-6.4" r="1.9"/><circle cx="5.8" cy="-4" r="1.9"/></g></g>`;
+
+// train: the linked moved part, slid in from the left behind platform 1
+s += `<g clip-path="url(#floorClipWide)"><g filter="url(#z3)"><path d="M-20 ${PL - 4}H186q14 0 18 14V${PL + 66}H-20Z" fill="url(#train)"/>
+  <rect x="-20" y="${PL + 26}" width="224" height="9" fill="#2F5FB0"/><rect x="-20" y="${PL + 37}" width="224" height="3" fill="#E8932E"/>
+  ${[0, 1, 2].map((i) => `<rect x="${110 + i * 26}" y="${PL + 4}" width="18" height="16" rx="3" fill="url(#winG)"/>`).join('')}
+  <path d="M190 ${PL + 2}q8 2 10 14h-12z" fill="#2A3366"/></g>
+  </g>${brad(170, PL + 54, 4.5, true)}`;
+
+// platform boxes
+const VP = [195, -360], tv = .02;
+const bk = (x, y) => [f1(x + (VP[0] - x) * tv), f1(y + (VP[1] - y) * tv)];
+const plat = (x0, x1, n, inner) => { const [ax, ay] = bk(x0, PL), [bx, by] = bk(x1, PL), [cx, cy] = bk(inner, PL + 69);
+  const side = inner === x1 ? `<path d="M${x1} ${PL}L${bx} ${by}L${cx} ${cy}L${x1} ${PL + 69}Z" fill="#5E2A3A"/>` : `<path d="M${x0} ${PL}L${ax} ${ay}L${cx} ${cy}L${x0} ${PL + 69}Z" fill="#5E2A3A"/>`;
+  return `<g filter="url(#z4)">
+  ${side}
+  <path d="M${ax} ${ay}H${bx}L${x1} ${PL}H${x0}Z" fill="url(#platTop)"/>
+  <path d="M${ax} ${ay}H${bx}" stroke="#8C7C8E" stroke-width="1" opacity=".6"/>
+  <rect x="${x0}" y="${PL - 4}" width="${x1 - x0}" height="5" fill="#F0BE3A"/>
+  ${Array.from({ length: Math.floor((x1 - x0) / 7) }, (_, i) => `<circle cx="${x0 + 4 + i * 7}" cy="${PL - 1.5}" r="1" fill="#B88A1A"/>`).join('')}
+  <path d="M${x0} ${PL + 1}H${x1}" stroke="#FFF4DA" stroke-width="1" opacity=".7"/>
+  <rect x="${x0}" y="${PL + 1}" width="${x1 - x0}" height="68" fill="url(#brick)"/>
+  <rect x="${x0}" y="${PL + 1}" width="${x1 - x0}" height="8" fill="#2A1030" opacity=".22"/>
+  ${[0, 1, 2, 3, 4].map((r) => `<path d="M${x0} ${PL + 13 + r * 12}H${x1}" stroke="#6E2E36" stroke-width="1" opacity=".55"/>` +
+    Array.from({ length: Math.ceil((x1 - x0) / 22) }, (_, i) => `<path d="M${x0 + (r % 2 ? 11 : 0) + i * 22} ${PL + 1 + r * 12}v12" stroke="#6E2E36" stroke-width="1" opacity=".45"/>`).join('')).join('')}
+  </g>
+  <g filter="url(#z5)"><rect x="${(x0 + x1) / 2 - 13}" y="${PL + 22}" width="26" height="22" rx="4" fill="#F4EEDC"/>
+  <text x="${(x0 + x1) / 2}" y="${PL + 39}" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="17" fill="#2F5FB0">${n}</text></g>`; };
+s += plat(PX0 - 6, 150, 1, 150) + plat(240, PX1 + 6, 2, 240);
+
+// pigeon (creature) sitting in the track slot: it is what jams the tab at `half`
+s += `<g filter="url(#z4)" transform="translate(214 ${PL + 18})"><path d="M0 0L14 -10L22 -4L30 -12L28 0L18 6Z" fill="#E6E2F2"/><path d="M14 -10L18 6L22 -4Z" fill="#B7B0D0"/><path d="M28 0l6 -2l-5 4z" fill="#F2A23A"/><circle cx="25" cy="-4" r=".9" fill="#2E2235"/></g>
+  <g stroke="#FFF7E0" stroke-width="1.6" stroke-linecap="round" opacity=".85"><path d="M206 ${PL + 2}l-4 -5M212 ${PL - 2}l0 -6M219 ${PL + 1}l4 -5"/></g>`;
+// bench on platform 2 with Mocha (his start perch), goal bead at the platform's far end
+s += `<g filter="url(#z4)"><rect x="262" y="${PL - 26}" width="58" height="6" rx="2" fill="#6A4A3A"/><rect x="262" y="${PL - 40}" width="58" height="5" rx="2" fill="#7A5644"/>
+  <path d="M268 ${PL - 20}V${PL - 4}M314 ${PL - 20}V${PL - 4}" stroke="#4A3028" stroke-width="3.5"/></g>`;
+s += standee(SPR + 'mocha-sit@3x.webp', 291, PL - 25, 66, 92 / 176, { shadowW: 26 });
+s += bead(350, PL - 14, 9);
+
+// Baokaka (v2 crawl frame as a standee) at the platform edge, reaching; thought bubble on a spring
+s += crawlBaby(SPR, 110, PL - 2, 70);
+s += springBubble(124, PL - 68, 128, 398, `
+  <g transform="translate(106 398)"><circle r="9" fill="url(#foil)"/><circle cx="-3" cy="-3" r="2.6" fill="#FFFBEA"/></g>
+  <text x="140" y="405" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="20" fill="${C.seal}">要！</text>`, { w: 92, h: 46 });
+
+// floor-page front edge: the pull-tab rides a slot cut into the page
+s += `<path d="M30 ${FB - 14}H210" stroke="#3A2C4A" stroke-width="3" stroke-linecap="round" opacity=".6"/>`;
+s += pullTab(66, FB - 22, { w: 112, h: 46, track: 40 });
+s += ghostHand(162, FB - 4, .78, -18);
+
+// global grain over the book, vignette
+s += grain();
+
+s += tray(SPR);
+
+document.getElementById('s').innerHTML = s;
+</script>
+</body></html>

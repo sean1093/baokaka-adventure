@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>Pop-Up Taipei: Materials and Affordances</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&family=Chiron+GoRound+TC:wght@500;700;900&family=Fredoka:wght@500;600;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#F3E6CC}
+  svg{display:block;font-family:'Chiron GoRound TC','Noto Sans TC',sans-serif}
+</style>
+<script src="kit.js"></script>
+</head><body>
+<svg id="s" width="390" height="844" viewBox="0 0 390 844"></svg>
+<script>
+const { C, defs, grain, fibers, scallopBand, pinholes, sparkle, seal, brad, pullTab, wheel, flap, slider, perch, standee, crawlBaby, washi, rng, f1 } = K;
+const SPR = 'sprites/';
+const extra = `
+<linearGradient id="kraft" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C49A6C"/><stop offset="1" stop-color="#A97E52"/></linearGradient>
+<linearGradient id="nightCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E3482"/><stop offset="1" stop-color="#1A2464"/></linearGradient>
+<linearGradient id="winG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1C4"/><stop offset=".6" stop-color="#FFD27A"/><stop offset="1" stop-color="#FFB45A"/></linearGradient>
+<linearGradient id="glassine" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/><stop offset=".4" stop-color="#E8E4F8" stop-opacity=".25"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity=".6"/><stop offset="1" stop-color="#D8D2F0" stop-opacity=".3"/></linearGradient>
+<linearGradient id="foldL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E9DCC0"/><stop offset="1" stop-color="#F8EEDA"/></linearGradient>
+<linearGradient id="foldR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#B9A888"/><stop offset="1" stop-color="#D6C6A6"/></linearGradient>
+<radialGradient id="lampPool" cx=".5" cy=".3" r=".7"><stop offset="0" stop-color="#FFD98A" stop-opacity=".8"/><stop offset="1" stop-color="#FFB45A" stop-opacity="0"/></radialGradient>
+<pattern id="tiles" width="30" height="30" patternUnits="userSpaceOnUse"><rect width="30" height="30" fill="#1E2558"/>
+  <path d="M15 3l12 12l-12 12l-12 -12z" fill="none" stroke="#E8C77A" stroke-width="1" opacity=".7"/><circle cx="15" cy="15" r="3.5" fill="#E8C77A" opacity=".6"/>
+  ${[[0, 0], [30, 0], [0, 30], [30, 30]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.5" fill="#C8546A" opacity=".6"/>`).join('')}</pattern>
+<pattern id="corr" width="6" height="40" patternUnits="userSpaceOnUse"><rect width="6" height="40" fill="#B98A5E"/><rect width="3" height="40" fill="#A37448"/><rect x="3" width="1" height="40" fill="#D8AE80"/></pattern>
+<clipPath id="tileClip"><rect width="87" height="50" rx="3"/></clipPath>
+`;
+let s = defs(extra);
+s += `<rect width="390" height="844" fill="${C.page}"/>` + fibers(0, 0, 390, 844, 500, '#A88A5E', 2, .2);
+const H = (y, zh, en) => `<text x="14" y="${y}" font-family="'Noto Serif TC'" font-weight="900" font-size="14" fill="${C.ink}">${zh}<tspan font-family="Fredoka" font-weight="500" font-size="11" fill="${C.inkSoft}" dx="6">${en}</tspan></text>
+  <path d="M14 ${y + 5}H376" stroke="#C9B48C" stroke-width=".8"/>`;
+const L = (x, y, t, a = 'middle', size = 10.5, col = C.inkSoft) => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="${size}" font-weight="700" fill="${col}">${t}</text>`;
+
+// header band = the navy linen cover
+s += `<rect width="390" height="50" fill="url(#linen)"/><path d="M0 50H390" stroke="url(#foilH)" stroke-width="2"/>
+  <text x="14" y="32" font-family="'Noto Serif TC'" font-weight="900" font-size="19" fill="${C.goldL}" letter-spacing="1">翻翻台北 · 材質與機關</text>
+  <text x="376" y="31" text-anchor="end" font-family="Fredoka" font-weight="500" font-size="11" fill="#BFC2EA">materials &amp; affordances v1</text>`;
+
+// ---------- A. paper materials ----------
+s += H(70, '紙材', 'paper materials');
+const tile = (i, name, en, inner) => { const x = 12 + (i % 4) * 93, y = 78 + Math.floor(i / 4) * 76;
+  return `<g transform="translate(${x} ${y})"><g filter="url(#z2)"><rect width="87" height="50" rx="3" fill="#FFF"/></g><g clip-path="url(#tileClip)">${inner}</g>
+    ${L(43.5, 62, name, 'middle', 11, C.ink)}${L(43.5, 72, en, 'middle', 8.5)}</g>`; };
+s += tile(0, '卡紙', 'card stock (night)', `<rect width="87" height="56" fill="url(#nightCard)"/>${pinholes(0, 0, 87, 56, 12, 3)}<rect width="87" height="56" filter="url(#grain)" opacity=".9" style="mix-blend-mode:soft-light"/>`);
+s += tile(1, '牛皮紙', 'kraft', `<rect width="87" height="56" fill="url(#kraft)"/>${fibers(0, 0, 87, 56, 50, '#6E4A2A', 7, .45)}<rect width="87" height="56" filter="url(#grain)" style="mix-blend-mode:multiply" opacity=".5"/>`);
+s += tile(2, '和紙', 'washi (fibres)', `<rect width="87" height="56" fill="#F6EEE2"/>${fibers(0, 0, 87, 56, 90, '#B9A88E', 9, .55)}<rect width="87" height="56" fill="#E9A9A0" opacity=".25"/>`);
+s += tile(3, '描圖紙', 'tracing / vellum', `<rect width="87" height="56" fill="url(#nightCard)"/><rect x="10" y="10" width="20" height="30" fill="url(#winG)"/><rect x="40" y="16" width="20" height="30" fill="url(#winG)"/>
+  <path d="M-4 30q16 -22 40 -10q20 -18 44 -4q16 -6 12 14V60H-4z" fill="#ECE8FA" opacity=".62"/>`);
+s += tile(4, '燙金', 'gold foil', `<rect width="87" height="56" fill="#1E2558"/><rect x="8" y="10" width="71" height="36" rx="4" fill="url(#foil)"/><text x="43.5" y="35" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="16" fill="#7A5410">金珠珠</text>`);
+s += tile(5, '玻璃紙', 'glassine (gloss)', `<rect width="87" height="56" fill="url(#tiles)"/><rect width="87" height="56" fill="url(#glassine)"/><path d="M10 0L30 56M48 0L60 56" stroke="#FFF" stroke-width="2" opacity=".55"/>`);
+s += tile(6, '瓦楞紙', 'corrugated (props)', `<rect width="87" height="56" fill="url(#corr)"/><rect width="87" height="9" fill="#C9A070"/>`);
+s += tile(7, '花磚', 'endpaper motif', `<rect width="87" height="56" fill="url(#tiles)"/>`);
+
+// ---------- B. edges, folds, depth ----------
+s += H(240, '邊 · 摺 · 層', 'cut edge · crease · stacked depth');
+// stacked cards z0..z4
+const zc = ['#3A4290', '#4A52A0', '#6068B4', '#7C82C6', '#A0A4DA'];
+s += `<rect x="12" y="250" width="160" height="94" rx="3" fill="#1A2464"/>`;
+zc.forEach((c, i) => { s += `<g filter="url(#z${i})"><rect x="${20 + i * 22}" y="${257 + i * 11}" width="70" height="44" rx="2" fill="${c}"/></g>${L(30 + i * 22, 269 + i * 11, 'z' + i, 'start', 9, '#FFF')}`; });
+s += L(92, 356, '每層 = 接觸影 + 柔影 + 切邊亮線', 'middle', 9.5);
+// mountain / valley crease + AO
+s += `<g transform="translate(186 248)"><path d="M0 22L42 4L84 22V92L42 74L0 92Z" fill="url(#foldL)"/><path d="M42 4L84 22V92L42 74Z" fill="url(#foldR)"/>
+  <path d="M42 4V74" stroke="#FFF8E8" stroke-width="1.4"/><path d="M43.4 4V74" stroke="#8A7656" stroke-width=".8" opacity=".6"/>
+  ${L(42, 108, '山摺 mountain', 'middle', 9.5)}</g>`;
+s += `<g transform="translate(284 248)"><path d="M0 4L42 22L84 4V74L42 92L0 74Z" fill="url(#foldL)"/><path d="M42 22L84 4V74L42 92Z" fill="url(#foldR)"/>
+  <rect x="34" y="20" width="16" height="72" fill="#3A2C1A" opacity=".18" filter="url(#blur3)"/><path d="M42 22V92" stroke="#7A6646" stroke-width="1"/>
+  ${L(42, 108, '谷摺 + AO valley', 'middle', 9.5)}</g>`;
+
+// ---------- C. light on paper ----------
+s += H(376, '夜光', 'light on paper at night');
+const lt = (x, name, inner) => `<g transform="translate(${x} 386)"><g filter="url(#z2)"><rect width="116" height="56" rx="3" fill="#141A40"/></g>${inner}${L(58, 70, name, 'middle', 10.5, C.ink)}</g>`;
+s += lt(12, '月光：冷邊光 + 長影', `<circle cx="22" cy="18" r="9" fill="#FFF2C4" filter="url(#glowS)"/><g filter="url(#z3)"><path d="M46 56V28l18 -10l18 10v28z" fill="#5A5E9A"/></g><path d="M46 28l18 -10" stroke="#CFEAFF" stroke-width="1.4"/>`);
+s += lt(137, '燈：描圖紙透光', `<ellipse cx="58" cy="46" rx="56" ry="22" fill="url(#lampPool)"/><g filter="url(#z3)"><rect x="34" y="12" width="48" height="40" fill="#4E3A5A"/></g>
+  ${[0, 1, 2].map((i) => `<rect x="${39 + i * 14}" y="18" width="10" height="28" rx="1" fill="url(#winG)" filter="url(#glowS)"/>`).join('')}`);
+s += lt(262, '霓虹：發光墨 + 溢色', `<rect x="20" y="10" width="76" height="40" rx="6" fill="#FF6FAE" opacity=".18" filter="url(#blur8)"/>
+  <text x="58" y="40" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="24" fill="${C.neonPink}" filter="url(#glowS)">冰果室</text>`);
+
+// ---------- D. touchables ----------
+s += H(476, '機關', 'touchables: marigold card + red verb seal + motion cue');
+s += `<rect x="12" y="484" width="366" height="118" rx="4" fill="#1A2464"/>${pinholes(12, 484, 366, 118, 18, 5)}`;
+s += `<g transform="scale(.78) translate(${22 / .78} ${496 / .78})">${pullTab(0, 0, { w: 104, h: 42, track: 30 })}</g>${L(56, 596, '拉 pull-tab', 'middle', 10.5, '#F4EEDC')}`;
+s += wheel(160, 530, 24, { teeth: 16 }) + L(160, 596, '轉 wheel', 'middle', 10.5, '#F4EEDC');
+s += flap(214, 504, 50, 40, { face: '#6A4A9A' }) + L(240, 596, '翻 flap', 'middle', 10.5, '#F4EEDC');
+s += slider(306, 556, 58, .25) + L(336, 596, '推 slider', 'middle', 10.5, '#F4EEDC');
+s += perch(76, 566, .8) + L(122, 570, '摩卡停點', 'start', 9, '#FFF7E0');
+s += brad(364, 500, 4.5, true) + L(354, 504, '連動', 'end', 9, '#FFF7E0');
+
+// ---------- E. states ----------
+s += H(616, '狀態', 'one tab, five states');
+const st = (x, lbl, extraSvg, op = 1, dy = 0, z = 3) => `<g transform="translate(${x} ${640 + dy})" opacity="${op}">${extraSvg}
+  <g filter="url(#z${z})"><rect width="58" height="26" rx="9" fill="url(#tabG)"/><rect x="38" y="4" width="14" height="18" rx="3" fill="url(#ridges)"/></g>
+  ${seal(13, 13, '拉', 8)}</g>${L(x + 29, 682, lbl, 'middle', 10)}`;
+s += st(14, '待機 idle', `<g stroke="${C.tabEdge}" stroke-width="1.6" stroke-linecap="round"><path d="M-6 4l-5 -3M-7 13h-6M-6 22l-5 3"/></g>`);
+s += st(88, '提示 hint', `<rect x="-6" y="-6" width="70" height="38" rx="14" fill="${C.tab}" opacity=".55" filter="url(#blur3)"/>`);
+s += st(162, '拖曳 drag', '', 1, -5, 5);
+s += st(236, '鎖住 locked', `<g transform="translate(46 -4)"><circle r="8" fill="#3A2E66"/><g fill="#FFF7E0"><ellipse cx="0" cy="1.6" rx="2.6" ry="2"/><circle cx="-3" cy="-1.8" r="1.1"/><circle cx="-1" cy="-3.2" r="1.1"/><circle cx="1.2" cy="-3.2" r="1.1"/><circle cx="3.2" cy="-1.8" r="1.1"/></g></g>`, .55);
+s += st(310, '完成 done', `<g transform="translate(64 0)"><circle r="7" fill="#3FA86A" stroke="#FFF" stroke-width="1.2"/><path d="M-3 0l2 2.4l4 -4.6" fill="none" stroke="#FFF" stroke-width="1.8" stroke-linecap="round"/></g>`, .8);
+
+// ---------- F. decorative vs touchable, standee ----------
+s += H(702, '裝飾 vs 機關 · 角色立牌', 'printed vs touchable · standee');
+s += `<g transform="translate(14 712)"><rect width="176" height="84" rx="3" fill="#1A2464"/>
+  <g transform="translate(14 22)"><rect width="56" height="22" rx="6" fill="#9A8650"/><rect x="10" y="-10" width="30" height="12" rx="3" fill="#8A7848"/><circle cx="12" cy="24" r="5" fill="#2A2346"/><circle cx="44" cy="24" r="5" fill="#2A2346"/></g>
+  ${L(42, 78, '印刷・無印章', 'middle', 9.5, '#C9CBEF')}
+  <g transform="scale(.6) translate(${100 / .6} ${18 / .6})">${pullTab(0, 0, { w: 100, h: 40, track: 10, wiggle: false })}</g>
+  ${L(134, 78, '機關・金盞黃+印章', 'middle', 9.5, '#FFE38C')}</g>`;
+s += `<g transform="translate(200 712)"><rect width="176" height="84" rx="3" fill="#2E3482"/>
+  <image href="${SPR}mocha-sit@3x.webp" x="14" y="6" width="30" height="58"/>${L(30, 78, '原圖', 'middle', 8.5, '#C9CBEF')}
+  ${standee(SPR + 'mocha-sit@3x.webp', 80, 64, 58, 92 / 176, { shadowW: 22 })}${L(80, 78, '立牌', 'middle', 8.5, '#C9CBEF')}
+  ${crawlBaby(SPR, 140, 64, 52)}${L(140, 78, '爬行', 'middle', 8.5, '#C9CBEF')}</g>`;
+
+// ---------- G. colour script strip (chapter clock) ----------
+const chips = [['序', '00:00', '#0A1034', '#3A3A86'], ['1', '00:20', '#0B1238', '#40408E'], ['3', '01:20', '#0C1440', '#5A4E9C'], ['4', '01:50', '#0C1440', '#6A5AA4'],
+  ['6', '02:50', '#101848', '#8A6AB0'], ['8', '04:00', '#16205A', '#A878B8'], ['9', '04:40', '#1E2A66', '#C88AB8'], ['10', '05:10', '#3A3A80', '#F4B49A'], ['E', '10:00', '#8EC8E8', '#FFF0C8']];
+s += chips.map(([c, t, a, b], i) => `<linearGradient id="ch${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>
+  <g transform="translate(${14 + i * 40.6} 823)"><rect width="38" height="18" rx="2" fill="url(#ch${i})"/></g>
+  <text x="${33 + i * 40.6}" y="819" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="8.5" fill="${C.inkSoft}">${c} ${t}</text>`).join('');
+s += grain(390, 844, .3);
+document.getElementById('s').innerHTML = s;
+</script>
+</body></html>

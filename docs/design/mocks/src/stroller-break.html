@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>推車大逃脫 mock</title>
+<style>
+  html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#2a2033}
+  svg{display:block;font-family:'WenQuanYi Zen Hei','Noto Sans TC',sans-serif}
+</style>
+<script src="parts.js"></script>
+</head><body>
+<svg id="s" width="390" height="844" viewBox="0 0 390 844"></svg>
+<script>
+const {babyCrawl, catSit, bubble, INK} = P;
+
+function person({x,y,s=1,shirt='#6aa6d8',pants='#3d4a6b',hair='#3a2a22',skin='#f6caa8',look='front',bald=false,apron=null,arms='down'}){
+  return `<g transform="translate(${x} ${y}) scale(${s})" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+    <ellipse cx="0" cy="2" rx="22" ry="6" fill="#000" opacity=".25" stroke="none"/>
+    <path d="M-12 0 L-10 -40 L10 -40 L12 0" fill="${pants}"/>
+    <path d="M-1 -40 L-1 -2" stroke-width="1.6"/>
+    <path d="M-18 -38 Q-20 -76 0 -80 Q20 -76 18 -38 Z" fill="${shirt}"/>
+    ${apron?`<path d="M-12 -70 L12 -70 L14 -36 L-14 -36 Z" fill="${apron}"/>`:''}
+    ${arms==='phone'?`<path d="M-16 -70 Q-14 -54 -4 -60 M16 -70 Q14 -54 4 -60" fill="none" stroke-width="7"/><rect x="-8" y="-72" width="16" height="12" rx="2" fill="#bfe8ff" stroke-width="2"/><path d="M-8 -66 L-30 -102 L30 -102 L8 -66" fill="#bfe8ff" opacity=".18" stroke="none"/>`:''}
+    ${arms==='down'?`<path d="M-17 -68 L-22 -42 M17 -68 L22 -42" stroke-width="7"/>`:''}
+    ${arms==='reach'?`<path d="M-17 -68 L-34 -86 M17 -68 L24 -44" stroke-width="7"/>`:''}
+    <circle cx="0" cy="-96" r="18" fill="${skin}"/>
+    ${bald?`<path d="M-17 -100 Q-14 -112 -6 -108 M17 -100 Q14 -112 6 -108" stroke="#ddd" stroke-width="5"/><path d="M-12 -104 L-3 -102 M3 -102 L12 -104" stroke="#fff" stroke-width="4"/>`
+          :`<path d="M-18 -98 Q-20 -118 0 -116 Q20 -118 18 -98 Q10 -108 -18 -98 Z" fill="${hair}"/>`}
+    ${look==='down'?`<path d="M-8 -92 L-3 -92 M3 -92 L8 -92" stroke-width="2.4"/>`:`<circle cx="-6" cy="-94" r="2.2" fill="${INK}" stroke="none"/><circle cx="6" cy="-94" r="2.2" fill="${INK}" stroke="none"/><path d="M-5 -86 Q0 -82 5 -86" fill="none" stroke-width="2"/>`}
+  </g>`;
+}
+function stall({x,y,w,h,sign,awn1,awn2,body='#8b5a3c',signFill='#e7473c',signText='#fff'}){
+  const n=Math.floor(w/24);
+  return `<g stroke="${INK}" stroke-width="2.4" stroke-linejoin="round">
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${body}"/>
+    <rect x="${x+6}" y="${y+10}" width="${w-12}" height="${h-44}" fill="#3a2a30"/>
+    <rect x="${x-4}" y="${y+h-36}" width="${w+8}" height="14" fill="#d9c3a3"/>
+    <rect x="${x}" y="${y+h-22}" width="${w}" height="22" fill="${body}"/>
+    ${Array.from({length:n},(_,i)=>`<path d="M${x-6+i*(w+12)/n} ${y-22} L${x-6+(i+1)*(w+12)/n} ${y-22} L${x-6+(i+1)*(w+12)/n} ${y-4} Q${x-6+(i+.5)*(w+12)/n} ${y+6} ${x-6+i*(w+12)/n} ${y-4} Z" fill="${i%2?awn2:awn1}"/>`).join('')}
+    <rect x="${x+w/2-44}" y="${y-56}" width="88" height="30" rx="6" fill="${signFill}"/>
+    <text x="${x+w/2}" y="${y-34}" text-anchor="middle" font-size="18" font-weight="700" fill="${signText}" stroke="none">${sign}</text>
+  </g>`;
+}
+const lantern=(x,y)=>`<g stroke="${INK}" stroke-width="1.8"><ellipse cx="${x}" cy="${y}" rx="9" ry="11" fill="#ff5a4a"/><path d="M${x-6} ${y-11} L${x+6} ${y-11} M${x-6} ${y+11} L${x+6} ${y+11}" stroke-width="2.6"/></g><circle cx="${x}" cy="${y}" r="20" fill="#ffb36b" opacity=".18"/>`;
+const check=(x,y,on)=>`<rect x="${x}" y="${y}" width="18" height="18" rx="4" fill="${on?'#ffd34d':'#fff'}" stroke="${INK}" stroke-width="2"/>`+
+  (on?`<path d="M${x+4} ${y+9} L${x+8} ${y+13} L${x+15} ${y+4}" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`:'');
+
+let svg = `
+<defs>
+  <radialGradient id="pool" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffcf8a" stop-opacity=".45"/><stop offset="1" stop-color="#ffcf8a" stop-opacity="0"/></radialGradient>
+  <linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2350"/><stop offset="1" stop-color="#4a2f52"/></linearGradient>
+</defs>
+<rect width="390" height="844" fill="url(#night)"/>
+<!-- street floor -->
+<path d="M0 372 L390 372 L390 740 L0 740 Z" fill="#5a4552"/>
+${Array.from({length:9},(_,i)=>`<path d="M0 ${392+i*40} L390 ${392+i*40}" stroke="#4d3a47" stroke-width="2"/>`).join('')}
+${Array.from({length:10},(_,i)=>`<path d="M${i*44} 372 L${i*44-20} 740" stroke="#4d3a47" stroke-width="2"/>`).join('')}
+<ellipse cx="110" cy="420" rx="120" ry="60" fill="url(#pool)"/>
+<ellipse cx="290" cy="430" rx="130" ry="64" fill="url(#pool)"/>
+<ellipse cx="220" cy="640" rx="160" ry="70" fill="url(#pool)"/>
+
+<!-- lantern string -->
+<path d="M0 214 Q195 250 390 214" stroke="#222" stroke-width="2" fill="none"/>
+${[30,90,150,210,270,330].map((x,i)=>lantern(x,226+Math.sin((x/390)*Math.PI)*16))}
+
+<!-- back row stalls -->
+${stall({x:12,y:290,w:110,h:100,sign:'大雞排',awn1:'#ffd34d',awn2:'#fff3c4',signFill:'#ffd34d',signText:INK})}
+${stall({x:142,y:290,w:110,h:100,sign:'雞蛋糕',awn1:'#e7473c',awn2:'#fff3c4'})}
+${stall({x:272,y:290,w:110,h:100,sign:'射氣球',awn1:'#3d72c9',awn2:'#fff3c4',signFill:'#3d72c9'})}
+<!-- balloon wall -->
+${[[288,312,'#ff6f8a'],[306,318,'#ffd34d'],[324,312,'#7dd87d'],[342,318,'#6ab0ff'],[360,312,'#ff9a4d'],[296,334,'#b28dff'],[316,340,'#ff6f8a'],[336,334,'#ffd34d'],[356,340,'#7dd87d']].map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="8" fill="${c}" stroke="${INK}" stroke-width="1.6"/>`).join('')}
+<!-- chicken cutlet steam -->
+<path d="M50 300 Q44 288 52 278 M70 300 Q64 286 72 274" stroke="#fff" stroke-width="2.4" fill="none" opacity=".6"/>
+<!-- egg-cake vendor behind counter -->
+${person({x:196,y:362,s:.7,shirt:'#fff',apron:'#e7473c',bald:true,look:'front',arms:'reach'})}
+<!-- egg-cake mold on counter + Mocha sitting on it -->
+<rect x="164" y="350" width="64" height="12" rx="3" fill="#6a6a72" stroke="${INK}" stroke-width="2"/>
+${catSit({x:214,y:358,s:.5,look:'side'})}
+${bubble({x:150,y:200,w:118,h:34,text:'欸，貓仔！',fs:16,tail:'br'})}
+
+<!-- massage chair -->
+<g transform="translate(-302 168)" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round">
+  <path d="M320 470 Q320 430 346 428 Q372 430 372 470 L372 520 L320 520 Z" fill="#7a5ab0"/>
+  <rect x="312" y="500" width="68" height="34" rx="10" fill="#9a7ad0"/>
+  <rect x="334" y="402" width="34" height="18" rx="4" fill="#ffd34d"/>
+  <text x="351" y="416" text-anchor="middle" font-size="11" font-weight="700" fill="${INK}" stroke="none">10元</text>
+</g>
+
+<!-- students queue (legs) -->
+${person({x:296,y:452,s:.62,shirt:'#ff9a4d',hair:'#222'})}
+${person({x:330,y:470,s:.62,shirt:'#7dd87d',hair:'#5a3a2a'})}
+
+<!-- Dad on phone + empty stroller -->
+<g stroke="${INK}" stroke-width="2.4" stroke-linejoin="round">
+  <ellipse cx="60" cy="560" rx="40" ry="8" fill="#000" opacity=".25" stroke="none"/>
+  <path d="M28 470 Q40 440 76 450 L84 520 L36 524 Z" fill="#2f5d8c"/>
+  <rect x="32" y="500" width="56" height="34" rx="8" fill="#5d8bbd"/>
+  <path d="M84 504 L110 470" stroke-width="4"/>
+  <circle cx="40" cy="552" r="8" fill="#333"/><circle cx="82" cy="552" r="8" fill="#333"/>
+  <path d="M40 534 L40 544 M82 534 L82 544" stroke-width="3"/>
+</g>
+<text x="58" y="490" text-anchor="middle" font-size="12" fill="#cfe2ff">（空的）</text>
+${person({x:140,y:556,s:.95,shirt:'#4e8f6a',pants:'#2f3550',look:'down',arms:'phone'})}
+${bubble({x:14,y:398,w:112,h:30,text:'滑手機中…',fs:14,fill:'#e9f3ff',tail:'br'})}
+<g transform="translate(142 413)"><circle r="13" fill="#2b2350" stroke="#cfe2ff" stroke-width="2"/><path d="M-7 1 Q0 6 7 1" stroke="#cfe2ff" stroke-width="2.4" fill="none"/></g>
+
+<!-- Grandma bargaining, looking around (yellow cone) -->
+<path d="M332 560 L236 500 L246 600 Z" fill="#ffd34d" opacity=".16"/>
+${person({x:340,y:622,s:.82,shirt:'#c9527a',hair:'#d8d8d8',look:'front'})}
+${bubble({x:350,y:494,w:36,h:28,text:'？',fs:16,fill:'#fff6c9',tail:'bl'})}
+
+<!-- crawl trail from stroller to under the counter -->
+<path d="M90 560 Q140 610 200 590 Q236 560 214 440" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="2 10" stroke-linecap="round" opacity=".85"/>
+<!-- Baokaka (active) -->
+<ellipse cx="208" cy="452" rx="44" ry="11" fill="none" stroke="#ffd34d" stroke-width="3"/>
+${babyCrawl({x:196,y:452,s:.62})}
+${bubble({x:222,y:384,w:72,h:30,text:'掰掰！',fs:15,fill:'#fff',tail:'bl'})}
+
+<!-- to-do list card -->
+<g transform="translate(12 18) rotate(-1)">
+  <rect x="0" y="0" width="306" height="168" rx="8" fill="#fffaf0" stroke="${INK}" stroke-width="2.4"/>
+  <path d="M0 40 L306 40" stroke="#f0c9c9" stroke-width="2"/>
+  ${[64,94,124,154].map(y=>`<path d="M12 ${y+6} L288 ${y+6}" stroke="#d8e6f5" stroke-width="1.5"/>`).join('')}
+  <text x="14" y="28" font-size="18" font-weight="700" fill="${INK}">士林夜市・淘氣清單</text>
+  <text x="294" y="28" text-anchor="end" font-size="13" fill="#8a6a55">2 / 8</text>
+  ${check(14,48,true)}<text x="40" y="63" font-size="15" fill="#9a8a80">從推車溜出來</text><path d="M40 58 L140 58" stroke="#9a8a80" stroke-width="2"/>
+  ${check(14,78,true)}<text x="40" y="93" font-size="15" fill="#9a8a80">讓摩卡坐上雞蛋糕模</text><path d="M40 88 L186 88" stroke="#9a8a80" stroke-width="2"/>
+  <rect x="8" y="104" width="284" height="28" rx="6" fill="#fff0b0"/>
+  ${check(14,108,false)}<text x="40" y="123" font-size="15" font-weight="700" fill="${INK}">讓阿伯送你一塊雞蛋糕</text>
+  ${check(14,138,false)}<text x="40" y="153" font-size="15" fill="${INK}">坐上按摩椅（不用錢！）</text>
+</g>
+<!-- tiny peek of rest of list -->
+<g transform="translate(352 100)">
+  <text y="-34" text-anchor="middle" font-size="11" fill="#e9e0f0">抓周</text>
+  <circle r="24" fill="#fffaf0" stroke="${INK}" stroke-width="2.4" stroke-dasharray="4 3"/>
+  <g stroke="${INK}" stroke-width="2" opacity=".55"><ellipse cx="-3" cy="-3" rx="11" ry="9" fill="#d98b3a" transform="rotate(-35)"/><path d="M5 5 L12 12" stroke-width="5"/><circle cx="13" cy="11" r="3" fill="#fff"/><circle cx="11" cy="14" r="3" fill="#fff"/></g>
+  <text y="44" text-anchor="middle" font-size="13" font-weight="700" fill="#ffd34d">雞腿</text>
+</g>
+
+<!-- bottom HUD -->
+<rect x="0" y="738" width="390" height="106" fill="#1f1828"/>
+<rect x="0" y="738" width="390" height="3" fill="#ffd34d" opacity=".6"/>
+<g transform="translate(46 792)">
+  <circle r="32" fill="#ffe7c2" stroke="#ffd34d" stroke-width="4"/>
+  ${babyCrawl({x:-6,y:22,s:.42})}
+  <text y="46" text-anchor="middle" font-size="12" font-weight="700" fill="#ffd34d">寶咖咖</text>
+</g>
+<g transform="translate(110 800)" opacity=".85">
+  <circle r="22" fill="#3a2f45" stroke="#7a6a8a" stroke-width="2.4"/>
+  ${catSit({x:0,y:18,s:.32})}
+  <text y="38" text-anchor="middle" font-size="11" fill="#cbbcd8">摩卡</text>
+</g>
+<path d="M78 800 L90 800 M86 795 L91 800 L86 805" stroke="#cbbcd8" stroke-width="2" fill="none"/>
+${[['抓','#7dd87d','grab'],['掰掰','#ffd34d','wave'],['按住 哭','#ff6f8a','cry']].map(([t,c,k],i)=>`
+ <g transform="translate(${190+i*70} 790)">
+   <circle r="28" fill="${c}" stroke="${INK}" stroke-width="2.6" ${k==='wave'?'stroke-width="4" stroke="#fff"':''}/>
+   ${k==='grab'?`<path d="M-10 6 Q-14 -8 -6 -10 L-6 -2 L-2 -14 L2 -2 L6 -12 L8 0 Q14 -6 14 4 Q12 14 0 14 Q-8 14 -10 6 Z" fill="#ffd8c2" stroke="${INK}" stroke-width="2"/>`:''}
+   ${k==='wave'?`<path d="M-8 12 L-10 -6 Q-10 -12 -5 -11 L-4 -2 L-2 -16 Q2 -18 3 -14 L3 -2 L7 -14 Q11 -14 10 -9 L8 2 L13 -4 Q16 -2 14 3 L6 13 Z" fill="#ffd8c2" stroke="${INK}" stroke-width="2"/><path d="M14 -16 Q20 -12 18 -4 M-16 -14 Q-20 -6 -16 0" stroke="${INK}" stroke-width="2" fill="none"/>`:''}
+   ${k==='cry'?`<circle r="12" fill="#ffd8c2" stroke="${INK}" stroke-width="2"/><path d="M-6 -3 L-2 -1 M6 -3 L2 -1" stroke="${INK}" stroke-width="2"/><ellipse cy="5" rx="4" ry="3" fill="#c9524a"/><path d="M-8 1 Q-10 8 -8 10" stroke="#6ab0ff" stroke-width="2.6" fill="none"/><circle r="20" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="3 3"/>`:''}
+   <text y="46" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${t}</text>
+ </g>`).join('')}
+`;
+document.getElementById('s').innerHTML = svg;
+</script>
+</body></html>
