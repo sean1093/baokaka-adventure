@@ -178,7 +178,7 @@ c1p2  月台的縫  2     2 ✓  182     25  0     no       ✓     ✓       0E
 OK: 2 pages, 0 failing · total 0.04 s of the 60 s budget (0.1 %)
 ```
 
-- **Columns:** page id, title, difficulty, par with the band check (`✓` inside the § 3.7 band, `! lo–hi` outside: a warning), states explored, solver ms, dead-end count (`?` when the search stopped early), trivial (`YES` fails; `yes (ok)` with `allowTrivial`), 淘氣 and 土地公 reachable (✓/✗), lint errors/warnings, result.
+- **Columns:** page id, title, difficulty, par with the band check (`✓` inside the § 3.7 band, `! lo–hi` outside: a warning; `-` unsolved), states explored, solver ms, dead-end count (`?` when the search stopped early), trivial (`YES` fails; `yes (ok)` with `allowTrivial`), 淘氣 and 土地公 reachable (✓/✗; `?` when a capped search didn't find them), lint errors/warnings, result.
 - **Below the table:** one `✗` line per failure (lint errors, a solution that doesn't reach `done`, the state cap, a cascade overflow, unsolvable, dead ends with the first one's input path, trivial, 淘氣/土地公 unreachable) and one `!` line per warning (lint warnings, par out of band).
 - **Exit code:** 0 when every page is green and the total is under 60 s; 1 on any failure or over budget; 2 on bad arguments or a filter that matches no page. A page that exceeds its state cap **stops the run at once**, naming the page (simplify it, GDD § 3.7).
 - The logic is `src/popup/pages/report.ts` (unit-tested in `report.test.ts`; `pages.test.ts` prints the same table when a page fails); `scripts/solve-pages.ts` is the thin CLI, run with `vite-node` like `npm run sim`. Paste the table into PRs that add or change pages (§ 4).

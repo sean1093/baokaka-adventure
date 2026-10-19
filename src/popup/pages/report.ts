@@ -201,7 +201,8 @@ export function displayWidth(s: string): number {
 }
 
 const padTo = (s: string, n: number) => s + ' '.repeat(Math.max(0, n - displayWidth(s)));
-const mark = (ok: boolean) => (ok ? '✓' : '✗');
+/** ✓ reachable, ✗ not, `?` not found by an incomplete search. */
+const found = (r: PageReport, ok: boolean) => (ok ? '✓' : r.stop === null ? '✗' : '?');
 
 const COLUMNS = ['page', 'title', 'diff', 'par', 'states', 'ms', 'dead', 'trivial', '淘氣', '土地公', 'lint', 'result'] as const;
 
@@ -211,13 +212,13 @@ function cells(r: PageReport): string[] {
     r.id,
     r.title,
     String(r.difficulty),
-    `${r.par ?? '-'} ${r.parInBand ? '✓' : `! ${r.band[0]}–${r.band[1]}`}`,
+    r.par === null ? '-' : `${r.par} ${r.parInBand ? '✓' : `! ${r.band[0]}–${r.band[1]}`}`,
     r.states.toLocaleString('en-US'),
     String(Math.round(r.ms)),
     r.deadEnds === null ? '?' : String(r.deadEnds),
     r.trivial ? (r.allowTrivial ? 'yes (ok)' : 'YES') : 'no',
-    mark(r.mischief),
-    mark(r.tudigong),
+    found(r, r.mischief),
+    found(r, r.tudigong),
     `${r.lintErrors}E ${r.lintWarnings}W`,
     r.failures.length === 0 ? 'ok' : r.stop === 'cap' ? 'FAIL cap' : 'FAIL',
   ];
@@ -225,8 +226,8 @@ function cells(r: PageReport): string[] {
 
 /**
  * The report table: a header, a rule and one aligned row per page (columns: id, title, difficulty,
- * par with its band check — `✓` in band, `! lo–hi` outside —, states, solver ms, dead ends,
- * trivial, 淘氣 ✓/✗, 土地公 ✓/✗, lint errors/warnings, result).
+ * par with its band check — `✓` in band, `! lo–hi` outside, `-` unsolved —, states, solver ms,
+ * dead ends, trivial, 淘氣 and 土地公 ✓/✗ (`?` = not found by an incomplete search), lint errors/warnings, result).
  */
 export function formatTable(rows: readonly PageReport[]): string {
   const body = rows.map(cells);

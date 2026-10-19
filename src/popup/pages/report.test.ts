@@ -106,7 +106,7 @@ describe('formatTable', () => {
   const bad = judge({ ...c1p2, id: 'c9p9', title: '壞', difficulty: 1 }, { errors: [issue('error', 'L01')], warnings: [] }, solved({ par: 4, deadEndCount: 2, mischiefReachable: false, statesExplored: 12345 }), {
     replayOk: true,
   });
-  const capped = judge({ ...c1p2, id: 'c9p8' }, CLEAN, solved({ complete: false, stop: 'cap', deadEndCount: null, par: null, solvable: false }), { replayOk: true });
+  const capped = judge({ ...c1p2, id: 'c9p8' }, CLEAN, solved({ complete: false, stop: 'cap', deadEndCount: null, par: null, solvable: false, mischiefReachable: false, tudigongReachable: false }), { replayOk: true });
 
   test('renders the header, a rule and one aligned row per page', () => {
     expect(formatTable([green, bad, capped])).toMatchInlineSnapshot(`
@@ -114,7 +114,7 @@ describe('formatTable', () => {
       ────  ────────  ────  ───────  ──────  ──  ────  ───────  ────  ──────  ─────  ────────
       c1p2  月台的縫  2     2 ✓      182     25  0     no       ✓     ✓       0E 0W  ok
       c9p9  壞        1     4 ! 1–2  12,345  25  2     no       ✗     ✓       1E 0W  FAIL
-      c9p8  月台的縫  2     - ! 2–3  182     25  ?     no       ✓     ✓       0E 0W  FAIL cap"
+      c9p8  月台的縫  2     -        182     25  ?     no       ?     ?       0E 0W  FAIL cap"
     `);
   });
 
