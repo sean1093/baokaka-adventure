@@ -90,44 +90,47 @@ def frame(x, y, w, h, svg):
 def sheet_baokaka():
     b = []
     b.append('<h1>寶咖咖<small>角色設定・BAOKAKA</small></h1>'
-             '<div class="sub">明天就滿一歲的台灣男寶寶｜約 3.3 頭身（真人比例）｜主角・全隊前排｜還不太會走，第一次站起來的樣子</div>')
-    # ---- centre: full body
-    fig = svgdoc(lambda d: B.figure(d, "happy"), "-140 -60 680 1420", 380, 794)
+             '<div class="sub">一歲的台灣男寶寶｜約 3.2 頭身（真人比例）｜主角・全隊前排｜黑直細髮、圓臉肉頰、細長丹鳳眼</div>')
+    s_ = 380 / 680
+    fig = svgdoc(lambda d: B.figure(d, "happy"), "-140 -40 680 1420", 380, 794)
     b.append(at(308, 112, fig, 2))
-    hd = 794 / 1420 * 410   # one head in px
-    top = 112 + (60 - 4) * 794 / 1420
-    b.append(f'<div class="ruler" style="left:302px;top:{top:.0f}px;height:{hd*3.27:.0f}px">' +
+    hd = s_ * 414
+    top = 112 + (40 + 10) * s_
+    b.append(f'<div class="ruler" style="left:302px;top:{top:.0f}px;height:{hd*3.2:.0f}px">' +
              "".join(f'<div style="top:{hd*i:.0f}px"></div><span style="top:{hd*i-7:.0f}px">{i}</span>' for i in range(4)) +
-             f'<div style="top:{hd*3.27:.0f}px"></div><span style="top:{hd*3.27-16:.0f}px;left:12px">3.3 頭身</span></div>')
+             f'<div style="top:{hd*3.2:.0f}px"></div><span style="top:{hd*3.2-16:.0f}px;left:12px">3.2 頭身</span></div>')
     b.append('<div class="lb" style="left:380px;top:906px;width:240px">正面全身・學步站姿<i>雙手張開保持平衡（終章「勇敢的第一步」）</i></div>')
-    # ---- left: outfit layers
     b.append('<h2 style="left:36px;top:128px">服裝分層</h2>')
-    flat = svgdoc(lambda d: B.figure(d, flat=True), "-110 380 620 990", 230, 367)
-    b.append(at(30, 170, flat))
-    b.append('<div class="lb" style="left:24px;top:540px;width:250px">星星連身包腳睡衣<i>刷毛布・米白羅紋領口與袖口・前襟暗扣<br>腳底米色止滑點・胸前小熊不織布貼</i></div>')
-    b.append(at(26, 600, svgdoc(Pr.bib, "30 20 340 240", 130, 92)))
-    b.append('<div class="lb" style="left:20px;top:694px;width:140px">口水巾<i>阿嬤給的初期裝備</i></div>')
-    b.append(at(170, 604, svgdoc(Pr.bracelet_big, "40 110 320 200", 112, 70)))
-    b.append('<div class="lb" style="left:158px;top:682px;width:140px">紅線手環<i>右手腕・金珠一顆（保平安）</i></div>')
-    b.append(at(40, 742, svgdoc(Pr.gold_lock, "60 10 280 270", 112, 108)))
-    b.append('<div class="lb" style="left:156px;top:770px;width:140px">金鎖片<i>阿嬤的禮物<br>劇情道具・終章才戴上</i></div>')
-    # ---- right: expressions
+    b.append(at(22, 168, svgdoc(B.figure, "-110 380 620 520", 150, 126, flat="top") if False else svgdoc(lambda d: B.figure(d, flat="top"), "-110 370 620 520", 150, 126)))
+    b.append(at(160, 168, svgdoc(lambda d: B.figure(d, flat="pants"), "30 770 340 440", 110, 142)))
+    b.append('<div class="lb" style="left:20px;top:300px;width:150px">芥末黃棉上衣<i>米白圓領・肩扣・月亮刺繡</i></div>')
+    b.append('<div class="lb" style="left:160px;top:316px;width:120px">灰白格紋褲<i>鬆緊褲頭・束口褲腳</i></div>')
+    b.append('<div class="lb" style="left:24px;top:362px;width:250px">兩件式套裝（上衣＋褲子）<i>黃色＋灰白格在深藍夜景裡最醒目<br>米白襪子・右手紅線手環</i></div>')
+    b.append(at(26, 440, svgdoc(Pr.bib, "30 20 340 240", 130, 92)))
+    b.append('<div class="lb" style="left:20px;top:534px;width:140px">格紋口水巾<i>照片裡那條・初期裝備</i></div>')
+    b.append(at(170, 444, svgdoc(Pr.bracelet_big, "40 110 320 200", 112, 70)))
+    b.append('<div class="lb" style="left:158px;top:522px;width:140px">紅線手環<i>右手腕・金珠一顆（保平安）</i></div>')
+    b.append(at(40, 600, svgdoc(Pr.gold_lock, "60 10 280 270", 112, 108)))
+    b.append('<div class="lb" style="left:156px;top:628px;width:140px">金鎖片<i>阿嬤的禮物<br>劇情道具・終章才戴上</i></div>')
+    b.append('<div class="notes" style="left:36px;top:730px;width:256px"><b>長相重點（照片）</b>'
+             '・黑色直細髮，從右上髮旋往左下斜梳的瀏海，額頭高、兩側髮際稀疏<br>'
+             '・超圓的臉、肉肉大臉頰、下巴有一圈肉<br>'
+             '・細長杏仁形單眼皮、內眼角褶、深黑瞳孔<br>'
+             '・短而淡的平眉、小而寬的鈕扣鼻、嘟嘟的小嘴</div>')
     b.append('<h2 style="left:666px;top:128px">表情集</h2>')
-    for i, (e, n, t, tl) in enumerate([("happy", "開心（預設）", .3, -4), ("laugh", "大笑", -.28, 5),
-                                       ("teary", "淚汪汪", .22, 6), ("surprised", "驚訝", -.32, -3)]):
+    for i, (e, n, t, tl) in enumerate([("neutral", "平常（嘟嘴）", 0, 0), ("laugh", "大笑", -.28, 5),
+                                       ("teary", "淚汪汪", .22, 6), ("surprised", "驚訝", -.3, -3)]):
         x = 654 + (i % 2) * 168
         y = 170 + (i // 2) * 184
-        b.append(at(x, y, svgdoc(lambda d, e=e, t=t, tl=tl: H.head(d, e, t, tl), "-14 -44 428 460", 152, 163)))
-        b.append(f'<div class="lb" style="left:{x}px;top:{y+160}px;width:152px">{n}</div>')
-    # ---- right: material close-ups
+        b.append(at(x, y, svgdoc(lambda d, e=e, t=t, tl=tl: H.head(d, e, t, tl), "-14 -40 428 480", 152, 170)))
+        b.append(f'<div class="lb" style="left:{x}px;top:{y+164}px;width:152px">{n}</div>')
     b.append('<h2 style="left:666px;top:556px">材質特寫</h2>')
-    for i, (fn, n, sub) in enumerate([(Pr.sw_fleece, "刷毛睡衣", "柔霧暖黃＋淡色星星印花"), (Pr.sw_rib, "羅紋領口・袖口", "米白針織直紋"),
-                                      (Pr.sw_felt, "小熊不織布貼", "毛氈顆粒＋手縫線"), (Pr.sw_cord, "紅線編繩", "斜紋麻花編")]):
+    for i, (fn, n, sub) in enumerate([(Pr.sw_fleece, "棉質上衣", "芥末黃針織＋月亮刺繡"), (Pr.sw_rib, "羅紋領口・袖口", "米白針織直紋"),
+                                      (Pr.sw_felt, "格紋褲", "灰白格紋（呼應口水巾）"), (Pr.sw_cord, "紅線編繩", "斜紋麻花編")]):
         x = 660 + (i % 2) * 166
         y = 600 + (i // 2) * 150
         b.append(frame(x, y, 148, 100, swatch(fn, 148, 104)))
         b.append(f'<div class="lb" style="left:{x-6}px;top:{y+104}px;width:160px">{n}<i>{sub}</i></div>')
-    # ---- bottom: props
     b.append('<h2 style="left:36px;top:944px">關聯物品</h2>')
     b.append(at(40, 986, svgdoc(Pr.blocks, "20 0 380 290", 190, 145)))
     b.append('<div class="lb" style="left:50px;top:1132px;width:170px">玩具積木<i>武器・「丟積木」</i></div>')
@@ -135,21 +138,21 @@ def sheet_baokaka():
     b.append('<div class="lb" style="left:244px;top:1132px;width:140px">集章本<i>捷運十站紀念章</i></div>')
     b.append(at(400, 1000, svgdoc(Pr.ticket, "30 70 340 200", 170, 100)))
     b.append('<div class="lb" style="left:400px;top:1132px;width:170px">月亮票<i>月亮線車票（第 3 章）</i></div>')
-    # notes
     b.append('<div class="notes" style="left:604px;top:948px;width:370px"><b>設計重點</b>'
              '・真人一歲比例：頭大、幾乎沒有脖子、圓肚子、短腿微 O 型<br>'
-             '・線條：細而有收尖，背光側加粗；顏色取各材質的深色（髮＝深咖啡、膚＝紅棕）<br>'
-             '・頭髮：大塊髮束＋缺口分線，頭頂「天使環」鋸齒高光，呆毛一根<br>'
-             '・眼睛：多層虹膜（上暗下亮）、眼瞼陰影、兩顆反光、睫毛只在上緣加重<br>'
-             '・布料：底色＋賽璐璐陰影＋柔和環境漸層，皺褶在肘、膝、腳踝堆積<br>'
+             '・眼睛：保留細長單眼皮與深黑瞳色，只放大、加光澤，不畫成圓滾滾的萌系大眼<br>'
+             '・黑髮：主色帶紫灰，靠冷色天使環高光與細髮絲才讀得出層次<br>'
+             '・線條：細而有收尖，背光側加粗；顏色取各材質的深色<br>'
+             '・布料：底色＋賽璐璐陰影＋柔和漸層，皺褶在肘、膝、褲腳堆積<br>'
              '・光源固定左上，影子落在右下</div>')
-    b.append(pal([("#FFD660", "睡衣"), ("#F0AE48", "睡衣影"), ("#FFE8DA", "膚色"), ("#F3BCA6", "膚影"), ("#6B4231", "髮色"),
-                  ("#B4866A", "髮高光"), ("#7E4421", "瞳色"), ("#D9372E", "紅線"), ("#8C5320", "布線稿")], 36, 1200))
+    b.append(pal([("#F6C24E", "上衣"), ("#E09E3A", "上衣影"), ("#8E959D", "格紋"), ("#FFEADF", "膚色"), ("#F4978C", "腮紅"),
+                  ("#25222A", "髮色"), ("#5C6276", "髮高光"), ("#251A1A", "瞳色"), ("#D9372E", "紅線")], 36, 1200))
     b.append(arrows([
-        [(246, 360), (330, 352), (440, 420)],                 # pajama flat -> body
-        [(250, 628), (300, 610), (360, 530)],                 # bracelet -> wrist (viewer left)
-        [(656, 640), (600, 610), (548, 560)],                 # fleece -> torso
-        [(900, 596), (800, 560), (648, 516)],                 # rib -> cuff
+        [(138, 220), (230, 200), (420, 420)],                 # top flat -> body
+        [(270, 240), (290, 560), (440, 680)],                 # pants flat -> pants
+        [(282, 470), (318, 500), (356, 522)],                 # bracelet -> wrist
+        [(656, 640), (600, 610), (548, 560)],                 # jersey -> torso
+        [(744, 742), (640, 800), (560, 760)],                 # gingham -> pants
     ]))
     return page("Baokaka v2 sheet", "".join(b))
 
@@ -157,32 +160,34 @@ def sheet_baokaka():
 def sheet_mocha():
     b = []
     b.append('<h1>摩卡貓<small>角色設定・MOCHA</small></h1>'
-             '<div class="sub">七歲棕色鯖魚紋虎斑公貓｜寶咖咖的「大哥」｜快攻＋單體治療｜口頭禪「……好啦。」</div>')
-    fig = svgdoc(lambda d: Mo.figure(d, "content"), "110 20 380 690", 400, 726)
+             '<div class="sub">灰棕色虎斑公貓（鯖魚紋）｜寶咖咖的「大哥」｜快攻＋單體治療｜口頭禪「……好啦。」</div>')
+    fig = svgdoc(lambda d: Mo.figure(d, "content"), "110 -30 380 720", 360, 682)
     b.append(at(300, 130, fig, 2))
     b.append('<div class="lb" style="left:390px;top:866px;width:240px">正面坐姿<i>戰鬥待機・尾巴繞到前腳前面</i></div>')
     b.append('<h2 style="left:36px;top:128px">配件分解</h2>')
-    b.append(at(30, 176, svgdoc(Pr.bandana_flat, "20 30 360 220", 250, 153)))
-    b.append('<div class="lb" style="left:30px;top:334px;width:250px">捷運藍點點領巾<i>棉布・在左側打結・尖端掛名牌</i></div>')
-    b.append(at(80, 392, svgdoc(Pr.fish_tag, "100 20 200 220", 130, 143)))
-    b.append('<div class="lb" style="left:50px;top:538px;width:190px">小魚金牌<i>掛在領巾尖端（不是鈴鐺，安靜派）</i></div>')
-    b.append('<div class="notes" style="left:36px;top:600px;width:250px"><b>結構重點</b>'
-             '・真貓骨架：耳朵大、臉頰有公貓的腮幫毛<br>'
-             '・眼睛杏仁形、直立瞳孔、眼角延伸出淚線紋<br>'
-             '・坐姿：前腳直立靠攏，大腿肉團在兩側後方，後腳掌從前面露出<br>'
-             '・白襪四腳、胸口奶油色圍兜毛（毛尖鋸齒邊）<br>'
-             '・額頭 M 字、臉頰兩道眼線紋、前腳橫紋、尾巴環紋＋深色尾尖<br>'
+    b.append(at(30, 190, svgdoc(Pr.bandana_flat, "20 90 360 90", 250, 63)))
+    b.append('<div class="lb" style="left:30px;top:262px;width:250px">捷運藍細項圈<i>白點點・不遮住胸前的項鍊紋</i></div>')
+    b.append(at(80, 330, svgdoc(Pr.fish_tag, "100 20 200 220", 120, 132)))
+    b.append('<div class="lb" style="left:50px;top:466px;width:190px">小魚金牌<i>掛在項圈上（不是鈴鐺，安靜派）</i></div>')
+    b.append('<div class="notes" style="left:36px;top:552px;width:256px"><b>長相重點（照片）</b>'
+             '・灰棕底色帶暖淺褐，黑色粗條紋（不是橘貓）<br>'
+             '・額頭 M 字＋往頭頂的直條、眼角延伸過臉頰的黑線<br>'
+             '・鬍鬚墊有黑色小點、下巴與嘴邊奶油白<br>'
+             '・粉紅鼻頭＋深色鼻緣、黃綠色大圓眼、瞳孔偏大<br>'
+             '・大而高的耳朵、內側淺色長毛<br>'
+             '・大圓臉、壯壯的，毛很蓬<br>'
+             '・胸前橫向「項鍊紋」、腳有橫紋，沒有白襪<br>'
              '・尾巴語言：上翹捲＝開心，炸毛＝驚訝，低掃＝不爽</div>')
     b.append('<h2 style="left:666px;top:128px">表情集</h2>')
     for i, (e, n, t, tl) in enumerate([("content", "平常", .12, 0), ("smug", "得意（翻譯時）", .3, -5),
                                        ("happy", "開心", -.25, 6), ("surprised", "驚訝", .18, 3)]):
         x = 654 + (i % 2) * 168
-        y = 172 + (i // 2) * 176
-        b.append(at(x, y, svgdoc(lambda d, e=e, t=t, tl=tl: Mo.head(d, e, t, tl), "140 20 320 300", 152, 142)))
-        b.append(f'<div class="lb" style="left:{x}px;top:{y+148}px;width:152px">{n}</div>')
+        y = 168 + (i // 2) * 178
+        b.append(at(x, y, svgdoc(lambda d, e=e, t=t, tl=tl: Mo.head(d, e, t, tl), "140 0 320 320", 152, 152)))
+        b.append(f'<div class="lb" style="left:{x}px;top:{y+150}px;width:152px">{n}</div>')
     b.append('<h2 style="left:666px;top:556px">毛色特寫</h2>')
-    for i, (fn, n, sub) in enumerate([(Pr.sw_mfur, "額頭 M 字", "虎斑的招牌"), (Pr.sw_stripes, "鯖魚紋＋奶油白肚", "細直條紋、毛流向下"),
-                                      (Pr.sw_tail, "環紋尾巴", "深色尾尖"), (Pr.sw_beans, "粉紅肉球", "白襪腳掌")]):
+    for i, (fn, n, sub) in enumerate([(Pr.sw_mfur, "額頭 M 字＋直條", "虎斑的招牌"), (Pr.sw_stripes, "鯖魚紋＋項鍊紋", "黑色粗紋、毛流向下"),
+                                      (Pr.sw_tail, "環紋尾巴", "深色尾尖"), (Pr.sw_beans, "腳掌", "橫紋＋深色肉球")]):
         x = 660 + (i % 2) * 166
         y = 600 + (i // 2) * 150
         b.append(frame(x, y, 148, 100, swatch(fn, 148, 104)))
@@ -193,19 +198,19 @@ def sheet_mocha():
     b.append(at(250, 978, svgdoc(Pr.catnip, "100 20 200 280", 90, 126)))
     b.append('<div class="lb" style="left:225px;top:1112px;width:140px">貓草<i>才藝「貓草狂歡」</i></div>')
     b.append(at(380, 1004, svgdoc(Pr.bowl, "50 90 300 150", 180, 90)))
-    b.append('<div class="lb" style="left:384px;top:1100px;width:170px">藍點點飯碗<i>和領巾同款</i></div>')
+    b.append('<div class="lb" style="left:384px;top:1100px;width:170px">藍點點飯碗<i>和項圈同款</i></div>')
     b.append('<div class="notes" style="left:604px;top:948px;width:370px"><b>個性</b>'
              '嘴硬心軟、討厭水，會「翻譯」寶咖咖的一個字。尾巴說的比嘴巴誠實。<br><br><b>畫法</b>'
-             '・毛的輪廓線在臉頰、胸口、後腿用短鋸齒表現毛簇<br>'
-             '・條紋是有厚度的筆刷形（中粗兩端尖），跟著身體曲面彎<br>'
+             '・灰棕底＋暖褐暗部，黑紋是有厚度的筆刷形（中粗兩端尖），跟著身體曲面彎<br>'
+             '・毛的蓬鬆感：臉頰鋸齒毛簇＋短毛筆觸紋理<br>'
              '・底色＋賽璐璐陰影（右下）＋柔和漸層；眼睛下緣打亮</div>')
-    b.append(pal([("#C99566", "毛色"), ("#9E6A43", "毛影"), ("#5B3522", "條紋"), ("#FFF4E3", "白毛"), ("#A9C24A", "眼睛"),
-                  ("#4A8BDA", "領巾"), ("#F1C24A", "金牌"), ("#EE9C98", "肉球"), ("#3B2216", "線稿")], 36, 1200))
+    b.append(pal([("#9A8A76", "毛色"), ("#6C5F51", "毛影"), ("#BFA07C", "暖褐"), ("#1F1A17", "條紋"), ("#F1E8D8", "嘴邊白"),
+                  ("#B4BE6C", "眼睛"), ("#E9A79A", "鼻子"), ("#4A8BDA", "項圈"), ("#1A1613", "線稿")], 36, 1200))
     b.append(arrows([
-        [(282, 252), (318, 420), (424, 458)],     # bandana -> chest
-        [(214, 470), (330, 470), (478, 540)],     # tag -> tag
-        [(656, 640), (628, 470), (650, 360)],     # M -> cheek / head side
-        [(660, 800), (640, 812), (620, 800)],     # tail swatch -> tail
+        [(270, 226), (318, 480), (440, 472)],     # collar -> collar
+        [(206, 420), (330, 512), (466, 508)],     # tag -> tag
+        [(656, 640), (640, 490), (604, 390)],     # M/stripes -> cheek lines
+        [(660, 806), (644, 806), (616, 788)],     # tail swatch -> tail
     ]))
     return page("Mocha v2 sheet", "".join(b))
 

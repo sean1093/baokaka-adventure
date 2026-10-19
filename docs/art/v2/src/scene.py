@@ -155,17 +155,17 @@ def char_layers():
     import baokaka_body as Bm
     out = []
     s = 540 / 1400
-    vb = (-140, -60, 680, 1420)
+    vb = (-140, -40, 680, 1420)
     w, h = round(vb[2] * s), round(vb[3] * s)
     d = Doc(0, 0, " ".join(map(str, vb)))
     d.add(Bm.figure(d, "happy", shadow=False))
-    out.append(("bk", d.svg(), 142, 1492 - round((1322 + 60) * s), w, h, (200 * s + 150 - 0, 1494, 240 * s)))
+    out.append(("bk", d.svg(), 142, 1492 - round((1336 + 40) * s), w, h, (200 * s + 150 - 0, 1494, 240 * s)))
     m = 360 / 660
-    vbm = (130, 20, 360, 680)
+    vbm = (130, -30, 360, 730)
     w2, h2 = round(vbm[2] * m), round(vbm[3] * m)
     d = Doc(0, 0, " ".join(map(str, vbm)))
     d.add(Mo.figure(d, "smug", shadow=False))
-    out.append(("mo", d.svg(), 420, 1488 - round((690 - 20) * m), w2, h2, (420 + (300 - 130) * m, 1490, 200 * m)))
+    out.append(("mo", d.svg(), 420, 1488 - round((690 + 30) * m), w2, h2, (420 + (300 - 130) * m, 1490, 200 * m)))
     return out
 
 

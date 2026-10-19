@@ -18,11 +18,11 @@ import baokaka as H, baokaka_body as B, mocha as Mo
 RENDER = os.path.join(HERE, "render.mjs")
 # name -> (builder, viewBox, logical width in CSS px / pt; height follows the viewBox)
 SPRITES = {
-    "baokaka-stand":        (lambda d: B.figure(d, "happy"), "-140 -60 680 1420", 96),
-    "mocha-sit":            (lambda d: Mo.figure(d, "content"), "130 20 360 690", 92),
-    **{f"baokaka-head-{e}": (lambda d, e=e, t=t: H.head(d, e, t), "-14 -44 428 460", 64)
-       for e, t in [("happy", .2), ("laugh", -.2), ("teary", .2), ("surprised", -.25), ("cry", .1)]},
-    **{f"mocha-head-{e}":   (lambda d, e=e, t=t: Mo.head(d, e, t), "140 20 320 300", 64)
+    "baokaka-stand":        (lambda d: B.figure(d, "happy"), "-140 -40 680 1420", 96),
+    "mocha-sit":            (lambda d: Mo.figure(d, "content"), "130 -30 360 730", 92),
+    **{f"baokaka-head-{e}": (lambda d, e=e, t=t: H.head(d, e, t), "-14 -40 428 480", 64)
+       for e, t in [("neutral", 0), ("happy", .2), ("laugh", -.2), ("teary", .2), ("surprised", -.25), ("cry", .1)]},
+    **{f"mocha-head-{e}":   (lambda d, e=e, t=t: Mo.head(d, e, t), "140 0 320 320", 64)
        for e, t in [("content", .12), ("smug", .3), ("happy", -.25), ("surprised", .18)]},
 }
 SCALES = (2, 3)

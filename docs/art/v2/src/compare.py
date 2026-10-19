@@ -54,7 +54,7 @@ def main(out):
     c = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(c)
     d.text((40, 30), "v2 角色畫風 vs 參考設定稿", fill=INK, font=font(56))
-    d.text((40, 104), "上排：同高並排整張設定稿　下排：放大到同一臉寬的細節（臉、眼、頭髮、布料）", fill=(122, 90, 62), font=font(28))
+    d.text((40, 104), "上排：參考稿＋遊戲內樣貌　中排：舊版與 v2 設定稿　下排：細節。（照片僅作參考，不收錄於此）", fill=(122, 90, 62), font=font(28))
     # ---- row 1: references, row 1b: old + v2 sheets, all at the same height
     y, h = 170, 820
     x = 40
@@ -83,9 +83,9 @@ def main(out):
         r3 = refs[1]
         crops.append((r3.crop((290, 30, 479, 220)), "參考B 表情頭", ""))
     sb = new_b.width / 1000
-    crops.append((new_b.crop((int(380 * sb), int(110 * sb), int(640 * sb), int(330 * sb))), "v2 寶咖咖 正面頭", ""))
+    crops.append((new_b.crop((int(380 * sb), int(120 * sb), int(620 * sb), int(360 * sb))), "v2 寶咖咖 正面頭", "黑直髮・圓臉・細長單眼皮"))
     crops.append((new_b.crop((int(650 * sb), int(165 * sb), int(980 * sb), int(345 * sb))), "v2 表情頭（轉頭＋側傾）", ""))
-    crops.append((new_m.crop((int(370 * sb), int(150 * sb), int(640 * sb), int(400 * sb))), "v2 摩卡貓 頭部", ""))
+    crops.append((new_m.crop((int(330 * sb), int(140 * sb), int(650 * sb), int(440 * sb))), "v2 摩卡貓 頭部", "灰棕虎斑・M 字・黃綠圓眼"))
     so = old_b.width / 1000
     crops.append((old_b.crop((int(420 * so), int(110 * so), int(600 * so), int(250 * so))), "舊版 頭部", ""))
     x = 40
@@ -103,8 +103,8 @@ def main(out):
     if refs:
         fab.append((refs[0].crop((180, 250, 300, 380)), "參考A 布料（裙褶、雙色陰影）"))
         fab.append((refs[1].crop((180, 210, 300, 330)) if len(refs) > 1 else refs[0], "參考B 布料"))
-    fab.append((new_b.crop((int(400 * sb), int(380 * sb), int(600 * sb), int(640 * sb))), "v2 睡衣（皺褶、賽璐璐影、印花）"))
-    fab.append((new_m.crop((int(340 * sb), int(560 * sb), int(660 * sb), int(830 * sb))), "v2 摩卡貓 毛色與條紋"))
+    fab.append((new_b.crop((int(390 * sb), int(400 * sb), int(610 * sb), int(800 * sb))), "v2 兩件式"))
+    fab.append((new_m.crop((int(320 * sb), int(480 * sb), int(660 * sb), int(800 * sb))), "v2 摩卡貓 毛色"))
     fab.append((old_b.crop((int(400 * so), int(280 * so), int(600 * so), int(480 * so))), "舊版 睡衣"))
     for im, lab in fab:
         im = fit_box(im, 520, 380)

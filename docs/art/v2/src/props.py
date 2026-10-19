@@ -17,10 +17,12 @@ def _doc_wrap(fn, vb):
 
 
 # ------------------------------------------------------------ Baokaka
-def pajama_flat(doc):
-    """the footie pajama laid flat (figure minus head, hands, bracelet)"""
-    o = B.figure(doc, flat=True)
-    return o
+def top_flat(doc):
+    return B.figure(doc, flat="top")
+
+
+def pants_flat(doc):
+    return B.figure(doc, flat="pants")
 
 
 def blocks(doc):
@@ -57,28 +59,18 @@ def blocks(doc):
 
 
 def bib(doc):
+    """grey-white gingham bib (the one in his photo) - equipment, not worn on the sprite"""
     pts = [(60, 40), (100, 60), (200, 92), (300, 60), (340, 40), (356, 90), (344, 160), (300, 218), (200, 246), (100, 218),
            (56, 160), (44, 90)]
     neck = [(110, 66), (200, 100), (290, 66), (270, 120), (200, 140), (130, 120)]
     d = smooth(pts)
-    o = P(d, H.SKIN.replace("#FFE8DA", "#FFF8EC"))
-    o += cel(doc, d, "#EDDCC0", shift=(14, 8))
-    # scalloped lace edge
-    for k in range(18):
-        t = k / 17
-        a = math.pi * (0.05 + .9 * t)
-        x, y = 200 - 150 * math.cos(a), 120 + 118 * math.sin(a)
-        o += f'<circle cx="{x}" cy="{y}" r="9" fill="#FFF8EC" stroke="#C8A57E" stroke-width="1.4"/>'
-    o += P(d, "#FFF8EC")
-    o += cel(doc, d, "#EDDCC0", shift=(14, 8))
-    o += P(smooth(neck), "#F5F0E6")
-    o += P(outline(neck, 1.8, 1), "#A88A66")
-    # embroidered star + stitch line
-    o += P(B.star(200, 186, 26, 0), "#F2C14A") + P(B.star(200, 186, 26, 0), "none", stroke="#B57F1E", stroke_width="1.6")
-    o += P(smooth([(80, 100), (200, 140), (320, 100), (306, 170), (200, 222), (94, 170)]), "none", stroke="#E0B985", stroke_width="1.6", stroke_dasharray="5 5")
-    o += P(outline(pts, 2.4, 1.4), "#8E6E4C")
-    # snap tabs
-    o += f'<circle cx="74" cy="58" r="7" fill="#F2C14A" stroke="#9C7015" stroke-width="1.6"/>'
+    o = P(d, B.gingham(doc, 0, 34))
+    o += cel(doc, d, B.PANTS_SH, shift=(14, 8), opacity=.4)
+    o += P(smooth(neck), "#F5F3EE") + P(outline(neck, 1.8, 1), B.PANTS_LN)
+    o += P(smooth([(64, 52), (200, 104), (336, 52), (344, 90), (334, 158), (292, 210), (200, 236), (108, 210), (66, 158), (56, 90)]),
+           "none", stroke="#FFFFFF", stroke_width="5", opacity=".8")
+    o += P(outline(pts, 2.4, 1.4), B.PANTS_LN)
+    o += f'<circle cx="74" cy="58" r="7" fill="#F2F2EE" stroke="#7A8088" stroke-width="1.6"/>'
     return o
 
 
@@ -151,18 +143,15 @@ def ticket(doc):
 
 # ------------------------------------------------------------ swatches
 def sw_fleece(doc):
+    """mustard cotton jersey with the embroidered moon"""
     W, Hh = 300, 220
-    o = f'<rect width="{W}" height="{Hh}" fill="{B.PJ}"/>'
-    o += f'<filter id="fz"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .6  0 0 0 0 .4  0 0 0 0 .1  0 0 0 .35 0"/></filter>'
-    o += f'<rect width="{W}" height="{Hh}" filter="url(#fz)" opacity=".7"/>'
-    # a soft fold running across
-    o += P(smooth([(-10, 120), (80, 96), (180, 130), (310, 100), (310, 170), (180, 196), (80, 160), (-10, 190)]), B.PJ_SH, opacity=.7, filter=doc.blur(10))
-    o += P(taper([(-10, 118), (80, 98), (180, 128), (310, 102)], 2, 0, 0), B.PJ_LN, opacity=.35)
-    o += P(smooth([(0, 30), (120, 10), (300, 40), (300, 80), (120, 60), (0, 80)]), B.PJ_HL, opacity=.7, filter=doc.blur(12))
-    rnd = random.Random(5)
-    for x, y in [(50, 50), (150, 70), (250, 40), (90, 150), (210, 170), (280, 140), (30, 200)]:
-        r = rnd.uniform(14, 20)
-        o += P(B.star(x + 2, y + 3, r, rnd.uniform(-.3, .3)), B.PJ_SH, opacity=.6) + P(B.star(x, y, r, rnd.uniform(-.3, .3)), "#FFF7D6")
+    o = f'<rect width="{W}" height="{Hh}" fill="{B.TOP}"/>'
+    for y in range(4, Hh, 9):          # jersey knit: rows of tiny Vs
+        for x in range(0, W, 8):
+            o += P(taper([(x, y), (x + 4, y + 6), (x + 8, y)], 1.1, .2, .2), B.TOP_SH, opacity=.45)
+    o += P(smooth([(-10, 150), (80, 120), (180, 150), (310, 120), (310, 200), (180, 220), (80, 190), (-10, 220)]), B.TOP_SH, opacity=.6, filter=doc.blur(10))
+    o += P(smooth([(0, 20), (120, 0), (300, 30), (300, 70), (120, 50), (0, 70)]), B.TOP_HL, opacity=.7, filter=doc.blur(12))
+    o += f'<g transform="translate(-112,-440) scale(1.9)">{B.motif(doc, 140, 280, 1)}</g>'
     return o
 
 
@@ -178,13 +167,11 @@ def sw_rib(doc):
 
 
 def sw_felt(doc):
+    """grey-white gingham (pants)"""
     W, Hh = 300, 220
-    o = f'<rect width="{W}" height="{Hh}" fill="{B.BEAR}"/>'
-    o += f'<filter id="ft"><feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="3" seed="9"/><feColorMatrix values="0 0 0 0 .3  0 0 0 0 .18  0 0 0 0 .1  0 0 0 .55 0"/></filter>'
-    o += f'<rect width="{W}" height="{Hh}" filter="url(#ft)"/>'
-    o += f'<path d="M-10,60 C80,40 220,40 310,64" fill="none" stroke="{B.BEAR_LT}" stroke-width="5" stroke-dasharray="14 10" stroke-linecap="round"/>'
-    o += f'<path d="M-10,64 C80,44 220,44 310,68" fill="none" stroke="#5A3420" stroke-width="2" stroke-dasharray="14 10" opacity=".4" transform="translate(1,4)"/>'
-    o += f'<ellipse cx="150" cy="160" rx="200" ry="70" fill="#fff" opacity=".12" filter="{doc.blur(18)}"/>'
+    o = f'<rect width="{W}" height="{Hh}" fill="{B.gingham(doc, 0, 44)}"/>'
+    o += P(smooth([(-10, 120), (100, 96), (200, 130), (310, 104), (310, 170), (200, 196), (100, 160), (-10, 190)]), B.PANTS_SH, opacity=.35, filter=doc.blur(10))
+    o += P(taper([(-10, 118), (100, 98), (200, 128), (310, 106)], 2, 0, 0), B.PANTS_LN, opacity=.3)
     return o
 
 
@@ -204,21 +191,13 @@ def sw_cord(doc):
 
 # ------------------------------------------------------------ Mocha
 def bandana_flat(doc):
-    tri = [(30, 40), (200, 50), (370, 40), (330, 90), (260, 170), (200, 230), (140, 170), (70, 90)]
-    d = smooth(tri)
-    o = P(d, Mo.BLUE)
-    inner = ""
-    rnd = random.Random(2)
-    for y in range(56, 220, 30):
-        for x in range(30 + (y // 30 % 2) * 18, 380, 36):
-            inner += f'<circle cx="{x}" cy="{y}" r="6" fill="#fff"/>'
-    inner += P(d, Mo.BLUE_SH, opacity=.7, mask=doc.mask(f'<path d="{d}" fill="#fff"/><path d="{d}" fill="#000" transform="translate(-12,-12)"/>'))
-    inner += P(taper([(80, 60), (160, 120), (200, 220)], 10, .2, .3), Mo.BLUE_SH, opacity=.5)
-    inner += P(taper([(320, 60), (240, 120), (200, 220)], 10, .2, .3), Mo.BLUE_SH, opacity=.5)
-    o += clipped(doc, d, inner)
-    o += P(smooth([(40, 46), (200, 56), (360, 46)], closed=False), "none", stroke="#9CC2F0", stroke_width="2", stroke_dasharray="6 5")
-    o += P(outline(tri, 2.4, 1.3), Mo.BLUE_LN)
-    o += f'<circle cx="200" cy="238" r="5" fill="none" stroke="{Mo.GOLD_DK}" stroke-width="2.4"/>'
+    """slim MRT-blue collar laid flat, with buckle and the fish-tag ring"""
+    o = f'<rect x="30" y="110" width="340" height="34" rx="17" fill="{Mo.BLUE}"/>'
+    o += f'<rect x="30" y="128" width="340" height="16" rx="8" fill="{Mo.BLUE_SH}" opacity=".6"/>'
+    o += "".join(f'<circle cx="{x}" cy="124" r="4" fill="#fff"/>' for x in range(70, 330, 30))
+    o += f'<rect x="300" y="104" width="34" height="46" rx="6" fill="none" stroke="#C9CED6" stroke-width="5"/>'
+    o += f'<rect x="30" y="110" width="340" height="34" rx="17" fill="none" stroke="{Mo.BLUE_LN}" stroke-width="2.4"/>'
+    o += f'<circle cx="200" cy="158" r="8" fill="none" stroke="{Mo.GOLD_DK}" stroke-width="3.4"/>'
     return o
 
 
@@ -289,7 +268,8 @@ def sw_mfur(doc):
     o = f'<rect width="{W}" height="{Hh}" fill="{Mo.FUR}"/>'
     o += fur_tex(doc, W, Hh, 11)
     for pts_, w in [([(80, 200), (96, 110), (120, 50)], 26), ([(120, 54), (136, 100), (150, 150)], 20),
-                    ([(220, 200), (204, 110), (180, 50)], 26), ([(180, 54), (164, 100), (150, 150)], 20)]:
+                    ([(220, 200), (204, 110), (180, 50)], 26), ([(180, 54), (164, 100), (150, 150)], 20),
+                    ([(150, 110), (150, 50), (150, -10)], 26), ([(118, 40), (116, 10), (116, -10)], 20), ([(182, 40), (184, 10), (184, -10)], 20)]:
         o += P(strand(pts_, w, bulge=.2), Mo.STRIPE, opacity=.9)
     return o
 
@@ -313,8 +293,9 @@ def sw_stripes(doc):
     for k in range(6):
         x = 20 + k * 52
         o += P(strand([(x + 10, Hh + 10), (x + 4, Hh / 2), (x, -10)], 22, bulge=.3, tip=.3), Mo.STRIPE, opacity=.85)
-    o += f'<rect y="160" width="{W}" height="70" fill="{Mo.CREAM}"/>'
-    o += fur_tex(doc, W, 60, 13, col=Mo.CREAM_SH, n=40).replace('opacity=".55"', 'opacity=".5"').replace("<path", '<path transform="translate(0,160)"')
+    o += f'<rect y="150" width="{W}" height="80" fill="#AE9B84"/>'
+    for y in (168, 200):
+        o += P(strand([(-10, y - 6), (150, y + 10), (310, y - 6)], 14, bulge=.2, tip=.2), Mo.STRIPE, opacity=.9)
     return o
 
 
@@ -337,15 +318,18 @@ def sw_tail(doc):
 
 
 def sw_beans(doc):
+    """grey tabby paw: banded fur, dark brown-black pads"""
     W, Hh = 300, 220
-    o = f'<rect width="{W}" height="{Hh}" fill="{Mo.CREAM}"/>'
-    o += fur_tex(doc, W, Hh, 14, col=Mo.CREAM_SH, n=90)
-    main = [(150, 110), (196, 130), (204, 170), (170, 196), (130, 196), (96, 170), (104, 130)]
-    g = doc.rad([(0, "#F9C2BC"), (1, Mo.PINK_DK)], .4, .35, .7)
-    o += P(smooth(main), g) + P(outline(main, 2, 1.2), "#9A4E48")
-    for cx, cy in [(92, 92), (130, 66), (172, 66), (210, 92)]:
-        t = ellipse_pts(cx, cy, 20, 24, 10)
-        o += P(smooth(t), g) + P(outline(t, 2, 1.2), "#9A4E48")
-        o += f'<ellipse cx="{cx-5}" cy="{cy-8}" rx="6" ry="4" fill="#fff" opacity=".6"/>'
-    o += f'<ellipse cx="138" cy="140" rx="16" ry="8" fill="#fff" opacity=".5"/>'
+    o = f'<rect width="{W}" height="{Hh}" fill="{Mo.FUR}"/>'
+    o += fur_tex(doc, W, Hh, 14, n=120)
+    for y in (24, 52):
+        o += P(strand([(-10, y), (150, y + 8), (310, y)], 12, bulge=.2, tip=.3), Mo.STRIPE, opacity=.85)
+    g = doc.rad([(0, "#5A4640"), (1, "#2A201C")], .4, .35, .7)
+    main = [(150, 120), (196, 138), (204, 176), (170, 200), (130, 200), (96, 176), (104, 138)]
+    o += P(smooth(main), g) + P(outline(main, 2, 1.2), "#140E0C")
+    for cx, cy in [(92, 104), (130, 80), (172, 80), (210, 104)]:
+        t = ellipse_pts(cx, cy, 19, 22, 10)
+        o += P(smooth(t), g) + P(outline(t, 2, 1.2), "#140E0C")
+        o += f'<ellipse cx="{cx-5}" cy="{cy-8}" rx="5" ry="3.5" fill="#fff" opacity=".35"/>'
+    o += f'<ellipse cx="138" cy="148" rx="14" ry="7" fill="#fff" opacity=".25"/>'
     return o

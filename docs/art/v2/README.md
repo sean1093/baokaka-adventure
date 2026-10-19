@@ -1,5 +1,13 @@
 # Character art v2: TV-anime character style (寶咖咖 and 摩卡貓)
 
+> **Revision 2 (likeness pass).** The owner supplied real photos of both characters and two corrections, and both designs were redrawn to match:
+> - **寶咖咖:** now has straight jet-black hair, a very round face, narrow dark almond monolid eyes, and a **two-piece outfit** (mustard top and grey-white gingham pants) instead of a onesie.
+> - **摩卡貓:** now a **grey-brown tabby**, not orange, with no white socks or bib.
+>
+> See `likeness-check.md`. Where this README still mentions the footie onesie, brown hair or an orange cat, `likeness-check.md` and the code in `src/` take precedence. Palette values in §1.2 and §1.5–1.7 are superseded by the palettes printed on the new sheets.
+>
+> The photos are **not** stored in the repo. They were used only as visual reference.
+
 The owner judged the option-D character art "still quite poor" (蠻差的): flat fills, thick uniform outlines, chibi clip-art proportions. v2 follows the owner's three reference character sheets instead. Those sheets are TV-anime / light-novel illustration quality, so v2 uses:
 
 - thin, tapered, light-weighted line art in dark tinted colours;
