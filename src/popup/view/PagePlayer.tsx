@@ -1,17 +1,20 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type Ref } from 'react';
 import { POPUP, withAlpha } from '../../art/palette';
 import { useSvgIds } from '../../art/useSvgIds';
 import { useReducedMotion } from '../../components/motion';
 import { nodePos } from '../core/graph';
 import { partLocked } from '../core/step';
-import { bottomBar, cover, hudLabel, kitCtx, kitDefs, type KitCtx } from '../art';
+import { cover, kitCtx, kitDefs, type KitCtx } from '../art';
+import { chapterInfo, chapterLine as contentChapterLine } from '../content';
 import type { Input, PageDef, SimState } from '../core/types';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
 import { usePagePreload } from '../sprites';
 import { usePageArt } from '../env/loader';
 import { nextPage } from '../pages';
 import { chapterSky } from './art/placeholders';
-import { BAR_H, HUD_H, bookLayout, toScreen, type BookLayout } from './geometry';
+import { bookLayout, toScreen, type BookLayout } from './geometry';
+import { BottomBar } from './hud/BottomBar';
+import { TopHud } from './hud/TopHud';
 import { wearsMarigold, type AffordanceFlags } from './affordance/look';
 import { useIdleWiggle } from './affordance/useIdleWiggle';
 import type { GestureEvent, GestureFlags } from './gestures';
@@ -25,7 +28,10 @@ import { useGestures } from './useGestures';
  * on top, the book in the middle at ≈ 0.91 scale, the bottom-bar slot on the cover, and a
  * `PageSession` ticking the simulation while `PageView` draws it.
  *
- * The HUD and the bottom bar are the kit's static look in their slots; #97 makes them live.
+ * The HUD and the bottom bar (#97, `hud/`) are live: the landmark, page title, chapter line, moon
+ * clock and 抓周 tray on the paper label; the portrait (opens the word ring), 提示, 重來 and 選單
+ * discs and the page's stickers on the cover, mirrored in 左手模式. `hold` holds the session while
+ * a layer (the menu, the 目錄 …) is open over the page; `onDone` hears the page complete once.
  * Gestures (#90, `useGestures`): the whole screen takes pointers; a finger down anywhere pauses
  * the world, taps and drags on the page become queued inputs, and tapping Baokaka opens the word
  * ring stub (a dimmed page and an empty ring; #99 fills it).
@@ -57,13 +63,22 @@ function useBookLayout(): BookLayout {
   }, [size]);
 }
 
-/** Chinese numerals for chapter lines (第一章 …). */
-const NUMERALS = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
-
 /** The HUD's chapter line, e.g. 「第一章 · 第 2 頁 / 6」 (the prologue is 序章, 4 pages). */
 export function chapterLine(def: Pick<PageDef, 'chapter' | 'index'>): string {
-  const chapter = def.chapter === 0 ? '序章' : `第${NUMERALS[def.chapter] ?? def.chapter}章`;
-  return `${chapter} · 第 ${def.index} 頁 / ${def.chapter === 0 ? 4 : 6}`;
+  return contentChapterLine(def.chapter, def.index);
+}
+
+/** What the HUD and the bottom bar show besides the page itself (#97). */
+export interface PageChrome {
+  /** Treasures found: the 抓周 tray's coins */
+  readonly coins?: number;
+  /** The page's stickers so far: 解開, 淘氣, 土地公 */
+  readonly stickers?: readonly [boolean, boolean, boolean];
+  /** 左手模式: the bottom bar mirrored */
+  readonly leftHand?: boolean;
+  readonly onHint?: () => void;
+  readonly onRetry?: () => void;
+  readonly onMenu?: () => void;
 }
 
 export interface PagePlayerProps {
@@ -94,9 +109,17 @@ export interface PagePlayerProps {
   readonly showGesture?: Partial<GestureFlags>;
   /** Override the reduced-motion setting (visual QA stills pin the full-motion or the reduced look) */
   readonly reduced?: boolean;
+  /** Hold the session: a layer (the menu, the 目錄, the settings) is open over the page (GDD § 2.6) */
+  readonly hold?: boolean;
+  /** The page was completed (its goal grabbed): called once per session */
+  readonly onDone?: (state: SimState) => void;
+  /** The HUD's and the bottom bar's state and buttons (#97) */
+  readonly chrome?: PageChrome;
+  /** The book's page box (the page fold and the chapter turn animate inside it, #97) */
+  readonly pageRef?: Ref<HTMLDivElement>;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
   const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev }), [def, speed, from, prev, still]);
@@ -132,6 +155,26 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
       raf.current = 0;
     };
   }, [session, paused, script]);
+
+  // A layer over the page holds the world; closing it resumes where it was
+  useEffect(() => {
+    if (!hold) return undefined;
+    session.pause('layer');
+    return () => session.resume('layer');
+  }, [session, hold]);
+
+  // The page completes once per session
+  const doneFired = useRef(false);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+  useEffect(() => {
+    doneFired.current = false;
+  }, [session]);
+  useEffect(() => {
+    if (!frame.state.done || doneFired.current || still) return;
+    doneFired.current = true;
+    onDoneRef.current?.(frame.state);
+  }, [frame.state, still]);
 
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
@@ -169,10 +212,8 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
     const defs = kitDefs(ctx, ['linen', 'vign', 'foil', 'coin', 'softShadow', 'softMarigold']);
     return {
       cover: defs + cover(ctx, layout.vw, layout.vh),
-      hud: hudLabel(ctx, { title: sky.place, page: def.title, sub: chapterLine(def), time: sky.time }),
-      bar: bottomBar(ctx, { y: 60 }),
     };
-  }, [ctx, layout.vw, layout.vh, sky, def]);
+  }, [ctx, layout.vw, layout.vh]);
 
   const { scale } = layout;
   const page: CSSProperties = {
@@ -193,7 +234,8 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
     background: POPUP.coverDark,
     boxShadow: `0 ${6 * scale}px ${18 * scale}px ${POPUP.vignette}`,
   };
-  const hudScale = Math.min(1, layout.vw / 390);
+  // The HUD and the bar keep their 390 box (and their 20 px text, R5) down to 360 px wide, overhanging a few px of cover
+  const hudScale = Math.min(1, layout.vw / 360);
   // The word ring stub circles Baokaka (#99 builds the ring itself)
   const babyAt = nodePos(def, frame.state, frame.state.baby.node);
   const ringAt = gestures.ring && babyAt ? toScreen(layout, [babyAt[0], babyAt[1] - 30]) : null;
@@ -210,29 +252,26 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
     >
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
       <div style={block} aria-hidden="true" />
-      <div style={page}>
+      <div style={page} ref={pageRef} data-page-box="">
         <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still} events={frame.events} />
       </div>
-      <svg
-        className="absolute left-1/2 top-0 font-body"
-        style={{ transform: 'translateX(-50%)' }}
-        width={390 * hudScale}
-        height={HUD_H * hudScale}
-        viewBox={`0 0 390 ${HUD_H}`}
-        role="img"
-        aria-label={`${sky.place}「${def.title}」${chapterLine(def)}`}
-        data-slot="hud"
-        dangerouslySetInnerHTML={{ __html: chrome.hud }}
+      <TopHud
+        landmark={chapterInfo(def.chapter).landmark}
+        title={def.title}
+        chapter={def.chapter}
+        index={def.index}
+        time={sky.time}
+        coins={pageChrome?.coins ?? 0}
+        scale={hudScale}
       />
-      <svg
-        className="absolute bottom-0 left-1/2 font-body"
-        style={{ transform: 'translateX(-50%)' }}
-        width={390 * hudScale}
-        height={BAR_H * hudScale}
-        viewBox={`0 0 390 ${BAR_H}`}
-        aria-hidden="true"
-        data-slot="bottom-bar"
-        dangerouslySetInnerHTML={{ __html: chrome.bar }}
+      <BottomBar
+        scale={hudScale}
+        stickers={pageChrome?.stickers}
+        leftHand={pageChrome?.leftHand}
+        onPortrait={gestures.openRing}
+        onHint={pageChrome?.onHint}
+        onRetry={pageChrome?.onRetry}
+        onMenu={pageChrome?.onMenu}
       />
       {ringAt && (
         <div className="pointer-events-none absolute inset-0" style={{ background: withAlpha(POPUP.shadow, 0.3) }} data-overlay="word-ring" aria-hidden="true">

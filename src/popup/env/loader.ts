@@ -71,6 +71,13 @@ export function cutoutImage(key: string, m: EnvManifest = ENV_MANIFEST): EnvImag
   return e === undefined || url === undefined ? null : { url, box: e.box };
 }
 
+/** A screen's baked art (#97: 'quilt', 'cover-scene', 'map-sheet'), or null. */
+export function screenImage(key: string, m: EnvManifest = ENV_MANIFEST): EnvImage | null {
+  const e = m.screens[key];
+  const url = e === undefined ? undefined : envUrl(e.file);
+  return e === undefined || url === undefined ? null : { url, box: e.box };
+}
+
 /** Every bitmap URL a page draws: its backdrop, every state of its parts, its cut-outs. */
 export function pageArtUrls(def: Pick<PageDef, 'backdrop' | 'parts' | 'cutouts'>, m: EnvManifest = ENV_MANIFEST): string[] {
   const stems: string[] = [];

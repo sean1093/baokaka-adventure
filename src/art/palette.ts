@@ -832,6 +832,29 @@ export const POPUP = {
   bulbInk: '#8A5E1E',
   /** The 土地公 sticker's hat */
   hatRed: '#C8342C',
+
+  // Outside the book (bible § 3.1 花布, § 7 cover screen; #97): 阿嬤's quilt and low table
+  /** The 花布 quilt: plum ground, three peony reds (outer → heart), the stamen, the leaf */
+  quilt: '#3A1838',
+  peonyDeep: '#7A2440',
+  peony: '#9A3050',
+  peonyLight: '#C04A62',
+  peonyHeart: '#D4A65A',
+  quiltLeaf: '#2E6A5A',
+  /** The night over the quilt (indigo at 55 %) and its darkest corners */
+  quiltNight: '#1A1048',
+  quiltVignette: '#05030F',
+  /** 阿嬤's low table: lacquered wood, its lit edge and its grain */
+  wood: '#5A2E24',
+  woodDeep: '#3A1C18',
+  woodEdge: '#8A4E38',
+  woodGrain: '#6E3A2C',
+  /** The ribbon bookmark (the cover book) and the 月亮線 on the 目錄 map */
+  ribbon: '#B8322C',
+  ribbonDeep: '#7E1E1A',
+  /** The paper map's printed river and streets (目錄) */
+  mapRiver: '#A8C4D8',
+  mapStreet: '#D9C7A2',
 } as const;
 
 /**

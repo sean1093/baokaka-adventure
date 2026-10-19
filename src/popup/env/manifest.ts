@@ -17,6 +17,8 @@ import type { PartPreset } from '../core/types';
  *   their own page).
  * - **Cut-outs** (GDD § 3.9 layer 2): a static bitmap a page places with `PageDef.cutouts`; `box`
  *   in its local space, the origin where the page puts it. Graded with its chapter.
+ * - **Screens** (#97): the art outside the pages (the 花布 quilt, the cover scene, the 目錄 map),
+ *   `box` in CSS px on a 390-wide phone. Not graded (they are drawn at night already).
  */
 
 /** px per page unit in every environment bitmap (bible § 9.1: WebP @2x). */
@@ -67,12 +69,19 @@ export interface CutoutEntry extends EnvFile {
   readonly source: string;
 }
 
+/** A screen's bitmap (#97): the quilt, the cover scene, the 目錄 map; `box` in CSS px on a 390-wide phone. */
+export interface ScreenEntry extends EnvFile {
+  readonly box: EnvBox;
+  readonly source: string;
+}
+
 export interface EnvManifest {
   readonly version: 1;
   readonly scale: typeof ENV_SCALE;
   readonly backdrops: Readonly<Record<string, BackdropEntry>>;
   readonly parts: Readonly<Record<string, PartEntry>>;
   readonly cutouts: Readonly<Record<string, CutoutEntry>>;
+  readonly screens: Readonly<Record<string, ScreenEntry>>;
 }
 
 /** The file name of a baked bitmap (`ENV_SCALE` is in the name, as the sprites' `@2x`). */
@@ -87,6 +96,7 @@ export function manifestFiles(m: EnvManifest): EnvFile[] {
     ...Object.values(m.backdrops),
     ...Object.values(m.parts).flatMap((p) => [...Object.values(p.states), ...Object.values(p.lifted ?? {})]),
     ...Object.values(m.cutouts),
+    ...Object.values(m.screens),
   ];
 }
 
@@ -98,6 +108,7 @@ export function validateEnvManifest(m: EnvManifest): string[] {
   if (m.scale !== ENV_SCALE) out.push(`scale ${m.scale} is not ${ENV_SCALE}`);
   for (const [key, b] of Object.entries(m.backdrops)) if (!isBox(b.box)) out.push(`backdrop ${key}: bad box`);
   for (const [key, c] of Object.entries(m.cutouts)) if (!isBox(c.box)) out.push(`cutout ${key}: bad box`);
+  for (const [key, c] of Object.entries(m.screens)) if (!isBox(c.box)) out.push(`screen ${key}: bad box`);
   for (const [key, p] of Object.entries(m.parts)) {
     if (!isBox(p.box)) out.push(`part ${key}: bad box`);
     if (Object.keys(p.states).length === 0) out.push(`part ${key}: no states`);

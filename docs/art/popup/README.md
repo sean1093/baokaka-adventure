@@ -395,6 +395,8 @@ Each chapter has **2 dominant hues + 1 accent**, a **signature material**, and a
 
 **Cover screen:** the closed book 《翻翻台北》 on 阿嬤's low table and 花布, with Baokaka and Mocha standees and a gold-foil title.
 
+**Engineers' note (#97, D-60).** The HUD and bottom bar are live (`src/popup/view/hud/`) with every word ≥ 20 px: the landmark 25 px serif, the page title, chapter line, clock and disc labels 20 px; the tray's 「抓周」 and the stickers' names are accessible names only. The cover scene (table, closed book, debossed foil title), the quilt and the 目錄's folded map are baked (`src/popup/env/art/screens.ts`); the cover's standees are the live sprites. The pause menu is a cream paper sheet. The page fold and chapter turn (§ 2.4) are `src/popup/view/transitions/pageTurn.ts`: the pop-ups fold and rise as a `scaleY` about each layer's base in five depth groups, the leaf is three nested strips textured with the two pages' baked backdrops, the chapter turn moves the whole book with one transform over the quilt and hangs a simple card (#102 replaces it with the departure board).
+
 ---
 
 ## 8. Motion and sound feel

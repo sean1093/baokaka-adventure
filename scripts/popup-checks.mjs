@@ -9,7 +9,8 @@
  *                  from computed styles (`color`, or `fill` for SVG; a stroke drawn under the fill
  *                  counts as its background), the background is read off a screenshot taken with all
  *                  text hidden, and 90 % of the pixels behind the run must meet 7:1.
- *   R6 hit areas   every touchable (`[data-hit]`, the page's grown hit shapes) and every button, link,
+ *   R6 hit areas   every touchable (`[data-hit]`, the page's grown hit shapes; a screen that is not a
+ *                  page, `[data-screen]`, has none) and every button, link,
  *                  switch, tab or slider is ≥ 48×48 CSS px. At 390×844 (the reference book scale,
  *                  ≈ 0.91) no page hit shape may need growing (`[data-hit-grown]`): each touchable's
  *                  own hit area is ≥ 48 px after the book scale (popup art bible § 4.2, #140).
@@ -17,6 +18,9 @@
  *                  Web Animations animation changes anything but opacity (fades are allowed).
  *   Flashing       with the fixture live and motion on, no animation flashes above 3 Hz (opacity or
  *                  luminance swings of ≥ 10 %, counted per second of the animation's run).
+ *
+ * Text outside an open modal dialog (`aria-modal`, the pause menu) is inert under its scrim and is
+ * not checked; the dialog's own text is.
  *
  * Lettering that is part of a picture (a station's name plate, a split-flap digit, a verb seal's
  * glyph) is marked `data-art-text` in the art and is not text in the R5 sense: the game never asks
@@ -43,12 +47,6 @@ export const MAX_FLASH_HZ = 3;
  * the rule ids waived there. Remove an entry in the issue it names.
  */
 export const WAIVERS = [
-  {
-    selector: '[data-slot="hud"], [data-slot="bottom-bar"]',
-    rules: ['text-size', 'contrast'],
-    issue: '#97',
-    why: "the static kit HUD and bottom bar (proof labels at 12–19 px); #97 rebuilds them live with text ≥ 20 px at 7:1",
-  },
   {
     selector: '[data-bubble]',
     rules: ['text-size'],
@@ -81,7 +79,7 @@ export async function listPopupFixtures(page, base) {
 export async function openPopupFixture(page, base, name, still = true) {
   await page.goto('about:blank');
   await page.goto(popupFixtureUrl(base, name, still), { waitUntil: 'load' });
-  await page.waitForSelector(`[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) svg[data-page]`, { timeout: 20000 });
+  await page.waitForSelector(`[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) :is(svg[data-page], [data-screen-ready])`, { timeout: 20000 });
   await page.evaluate(() => document.fonts.ready);
 }
 
@@ -142,6 +140,9 @@ function collect({ waivers, artText, minText, minTextBig }) {
 
   const texts = [];
   let art = 0;
+  // While a modal dialog is open (the pause menu, #97) everything outside it is inert, dimmed under
+  // its scrim, and not text to read: only the dialog's own text is checked
+  const modal = document.querySelector('[aria-modal="true"]');
   const seen = new Set();
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -153,6 +154,7 @@ function collect({ waivers, artText, minText, minTextBig }) {
       art += 1;
       continue;
     }
+    if (modal && !modal.contains(el)) continue;
     const opacity = opacityOf(el);
     if (opacity < 0.05) continue;
     const box = el.getBoundingClientRect();
@@ -193,8 +195,10 @@ function collect({ waivers, artText, minText, minTextBig }) {
     if (box.width === 0 && box.height === 0) continue;
     hits.push({ label: label(el), w: Math.round(box.width * 10) / 10, h: Math.round(box.height * 10) / 10, page: el.hasAttribute('data-hit'), grown: el.hasAttribute('data-hit-grown'), waived: waivedFor(el, 'hit') });
   }
-  // A specimen sheet with nothing to touch (the #94 sprite sheet) says so; pages never do
-  const hitless = document.querySelector('[data-pagelab-fixture] [data-specimen-hitless]') !== null;
+  // A specimen sheet with nothing to touch (the #94 sprite sheet) says so; pages never do. A screen
+  // that is not a page (the cover, the 目錄, #97) has buttons, not page touchables
+  const hitless = document.querySelector('[data-pagelab-fixture] [data-specimen-hitless]') !== null
+    || (document.querySelector('[data-hit]') === null && document.querySelector('[data-pagelab-fixture] [data-screen]') !== null);
   return { texts, hits, art, hitless };
 }
 

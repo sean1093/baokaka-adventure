@@ -10,13 +10,13 @@ import { backdropArt, backdropBitmap, cutoutBitmap, isPlaceholder, partArt, part
 import { placeholderBackdrop } from '../view/art/placeholders';
 import { PageView } from '../view/PageView';
 import { PAGE_VIEW_BOX } from '../view/geometry';
-import { backdropHash, cutoutHash, envHash, partHash } from './bake';
+import { backdropHash, cutoutHash, envHash, partHash, screenHash } from './bake';
 import { ENV_MANIFEST } from './env.gen';
 import { envGrade, gradeKey, gradeSvg, isIdentity, keepColours, standeeGrade } from './grade';
-import { backdropImage, bundledEnvFiles, cutoutImage, envUrl, pageArtUrls, partImage } from './loader';
+import { backdropImage, bundledEnvFiles, cutoutImage, envUrl, pageArtUrls, partImage, screenImage } from './loader';
 import { ENV_SCALE, envFile, manifestFiles, validateEnvManifest, type EnvManifest } from './manifest';
 import { FIRST_LOAD_BUDGET, PAGE_ART_BUDGET, firstLoad, formatReport, pageArt } from './report';
-import { PART_SOURCES, backdropSources, cutoutSources, partSources } from './sources';
+import { PART_SOURCES, SCREEN_SOURCES, backdropSources, cutoutSources, partSources } from './sources';
 
 /**
  * #96: the baked environment. The committed bitmaps, `env.gen.ts` and the sources must agree
@@ -48,11 +48,13 @@ const FILES: Record<string, Uint8Array> = Object.fromEntries(list('').map((f) =>
 const ascii = (b: Uint8Array, from: number, to: number) => String.fromCharCode(...b.subarray(from, to));
 const u24 = (b: Uint8Array, at: number) => b[at] | (b[at + 1] << 8) | (b[at + 2] << 16);
 
-/** Canvas size of a VP8X (alpha) WebP. */
+/** Canvas size of a VP8X (alpha) WebP, or of a plain lossy one (an opaque screen: the quilt). */
 function webpSize(buf: Uint8Array): [number, number] {
   expect(ascii(buf, 0, 4)).toBe('RIFF');
   expect(ascii(buf, 8, 12)).toBe('WEBP');
-  expect(ascii(buf, 12, 16)).toBe('VP8X');
+  const chunk = ascii(buf, 12, 16);
+  expect(['VP8X', 'VP8 ']).toContain(chunk);
+  if (chunk === 'VP8 ') return [(buf[26] | (buf[27] << 8)) & 0x3fff, (buf[28] | (buf[29] << 8)) & 0x3fff];
   return [u24(buf, 24) + 1, u24(buf, 27) + 1];
 }
 
@@ -72,6 +74,7 @@ describe('manifest ↔ committed files ↔ sources', () => {
   test('every bitmap is a WebP of its box at @2x', () => {
     for (const b of Object.values(M.backdrops)) expect(webpSize(FILES[envFile(b.file)]), b.file).toEqual([b.box.w * ENV_SCALE, b.box.h * ENV_SCALE]);
     for (const c of Object.values(M.cutouts)) expect(webpSize(FILES[envFile(c.file)]), c.file).toEqual([c.box.w * ENV_SCALE, c.box.h * ENV_SCALE]);
+    for (const c of Object.values(M.screens)) expect(webpSize(FILES[envFile(c.file)]), c.file).toEqual([c.box.w * ENV_SCALE, c.box.h * ENV_SCALE]);
     for (const p of Object.values(M.parts)) {
       for (const f of [...Object.values(p.states), ...Object.values(p.lifted ?? {})]) expect(webpSize(FILES[envFile(f.file)]), f.file).toEqual([p.box.w * ENV_SCALE, p.box.h * ENV_SCALE]);
     }
@@ -97,6 +100,17 @@ describe('manifest ↔ committed files ↔ sources', () => {
     const cutouts = cutoutSources(PAGES);
     expect(Object.keys(M.cutouts).sort()).toEqual(cutouts.map(([k]) => k).sort());
     for (const [key, src] of cutouts) expect(M.cutouts[key].source, key).toBe(cutoutHash(key, src));
+    // The screens (#97) are always baked
+    expect(Object.keys(M.screens).sort()).toEqual(Object.keys(SCREEN_SOURCES).sort());
+    for (const [key, src] of Object.entries(SCREEN_SOURCES)) {
+      expect(M.screens[key].source, key).toBe(screenHash(key, src));
+      expect(M.screens[key].box).toEqual(src.box);
+    }
+  });
+
+  test('the screens resolve to their bitmaps (#97); an unknown screen is null', () => {
+    for (const key of ['quilt', 'cover-scene', 'map-sheet']) expect(screenImage(key)?.url, key).toBeTruthy();
+    expect(screenImage('nope')).toBeNull();
   });
 
   test('the hash is stable and sensitive', () => {
@@ -142,6 +156,7 @@ const FAKE: EnvManifest = {
     },
   },
   cutouts: { 'x/lamp': { file: 'cutouts/x/lamp', bytes: 3000, chapter: 1, grade: [1, 1, 1], box: { x: -5, y: -60, w: 10, h: 60 }, source: 's' } },
+  screens: {},
 };
 
 describe('registry resolution', () => {

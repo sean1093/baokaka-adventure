@@ -13,6 +13,7 @@
  *   drawn (whole units), with its cut-edge rim and stacked shadow baked in; draggable presets also
  *   get a lifted variant per state (risen, scaled, over a dropped shadow: bible § 4.1);
  * - each **cut-out** a page places (`CUTOUT_SOURCES`), graded like its chapter;
+ * - each **screen** (`SCREEN_SOURCES`, #97: the 花布 quilt, the cover scene, the 目錄 map);
  *
  * then encodes WebP with Pillow (`method=6`; D-56: ≈ 40 % smaller than Chromium's encoder) and
  * writes `src/popup/assets/env/**` and the typed `src/popup/env/env.gen.ts`, and prints the
@@ -35,11 +36,11 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Page } from 'playwright';
 import { PNG } from 'pngjs';
-import { ENCODE, backdropHash, backdropSvg, cutoutHash, cutoutSvg, paddedBox, partHash, partVariants } from '../src/popup/env/bake';
+import { ENCODE, backdropHash, backdropSvg, cutoutHash, cutoutSvg, paddedBox, partHash, partVariants, screenHash, screenSvg } from '../src/popup/env/bake';
 import { envGrade } from '../src/popup/env/grade';
-import { ENV_SCALE, envFile, type BackdropEntry, type CutoutEntry, type EnvBox, type EnvFile, type EnvManifest, type PartEntry } from '../src/popup/env/manifest';
+import { ENV_SCALE, envFile, type BackdropEntry, type CutoutEntry, type EnvBox, type EnvFile, type EnvManifest, type PartEntry, type ScreenEntry } from '../src/popup/env/manifest';
 import { formatReport } from '../src/popup/env/report';
-import { backdropSources, cutoutSources, partSources } from '../src/popup/env/sources';
+import { SCREEN_SOURCES, backdropSources, cutoutSources, partSources } from '../src/popup/env/sources';
 import { PAGES } from '../src/popup/pages';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -237,6 +238,25 @@ async function bakeCutouts(page: Page, prev: EnvManifest | null): Promise<[Recor
   return [out, baked];
 }
 
+async function bakeScreens(page: Page, prev: EnvManifest | null): Promise<[Record<string, ScreenEntry>, number]> {
+  const out: Record<string, ScreenEntry> = {};
+  let baked = 0;
+  for (const [key, src] of Object.entries(SCREEN_SOURCES)) {
+    const svg = screenSvg(src);
+    const source = screenHash(key, src, svg);
+    const old = prev?.screens?.[key];
+    if (old && old.source === source && fileOk(old)) {
+      out[key] = old;
+      continue;
+    }
+    process.stdout.write(`bake screen ${key}\n`);
+    const [webp] = pillowWebp([await renderPng(page, svg, src.box)], ENCODE.screen);
+    out[key] = { ...write(stemOf('screens', key), webp), box: src.box, source };
+    baked++;
+  }
+  return [out, baked];
+}
+
 // ——— Output ———
 
 function listFiles(dir: string): string[] {
@@ -262,18 +282,21 @@ async function main() {
   try {
     const [backdrops, nb] = await bakeBackdrops(page, prev);
     const [parts, np] = await bakeParts(page, prev);
-    const [cutouts, nc] = await bakeCutouts(page, prev);
-    const manifest: EnvManifest = { version: 1, scale: ENV_SCALE, backdrops, parts, cutouts };
+    const [cutouts, nc0] = await bakeCutouts(page, prev);
+    const [screens, ns] = await bakeScreens(page, prev);
+    const nc = nc0 + ns;
+    const manifest: EnvManifest = { version: 1, scale: ENV_SCALE, backdrops, parts, cutouts, screens };
     const keep = new Set<string>();
     for (const e of Object.values(backdrops)) keep.add(join(OUT, envFile(e.file)));
     for (const e of Object.values(cutouts)) keep.add(join(OUT, envFile(e.file)));
+    for (const e of Object.values(screens)) keep.add(join(OUT, envFile(e.file)));
     for (const p of Object.values(parts)) for (const f of [...Object.values(p.states), ...Object.values(p.lifted ?? {})]) keep.add(join(OUT, envFile(f.file)));
     let removed = 0;
     for (const f of listFiles(OUT)) if (!keep.has(f)) (rmSync(f), removed++);
     const text = render(manifest);
     const changed = !existsSync(GEN) || readFileSync(GEN, 'utf8') !== text;
     if (changed) writeFileSync(GEN, text);
-    const total = Object.keys(backdrops).length + Object.keys(parts).length + Object.keys(cutouts).length;
+    const total = Object.keys(backdrops).length + Object.keys(parts).length + Object.keys(cutouts).length + Object.keys(screens).length;
     console.log(`${nb + np + nc} item(s) baked, ${total - nb - np - nc} unchanged, ${removed} stale file(s) removed; ${relative(ROOT, GEN)} ${changed ? 'written' : 'unchanged'}`);
     console.log('');
     console.log(formatReport(PAGES, manifest));

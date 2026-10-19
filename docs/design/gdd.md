@@ -479,6 +479,8 @@ All sound is **synthesised with WebAudio**, extending `src/shared/audio.ts` (no 
 7. **Settings**: §2.11.
 8. **Ending**: the interactive 抓周 (page E, §4.4), then credits over album photos, then the 土地公 post-credits.
 
+**For engineers (#97, D-60).** `src/popup/game/nav.ts` is the flow as a pure state machine (a base: the cover or a page; one layer over it: the menu, the 目錄, the album, the settings; a layer over a page holds its session). `GameShell` renders it on one `ProgressStore`. The cover's 「繼續」 opens `save.current` in one tap; the page fold and the chapter turn are `view/transitions/pageTurn.ts`.
+
 Dialogue appears in **short subtitle bubbles over the page** (≤ 30 chars, max 3 per beat, tap to advance). There is no dialogue box covering the play.
 
 ---

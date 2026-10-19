@@ -54,5 +54,40 @@ export const ENV_MANIFEST: EnvManifest = {
       "source": "433f96f301c24ce8"
     }
   },
-  "cutouts": {}
+  "cutouts": {},
+  "screens": {
+    "quilt": {
+      "file": "screens/quilt",
+      "bytes": 47010,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 430,
+        "h": 932
+      },
+      "source": "0c38e55b49ea5d5f"
+    },
+    "cover-scene": {
+      "file": "screens/cover-scene",
+      "bytes": 75754,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 470
+      },
+      "source": "f74f081715b3095b"
+    },
+    "map-sheet": {
+      "file": "screens/map-sheet",
+      "bytes": 31484,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 362,
+        "h": 430
+      },
+      "source": "251546322d9d7a2c"
+    }
+  }
 };

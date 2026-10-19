@@ -31,6 +31,23 @@
   pointer-events: none;
 }
 
+/*
+ * The same panel as 翻翻台北's cream paper (popup art bible § 7, #97): a die-cut card on the cover,
+ * its cut-edge rim and indigo shadow, a gold-foil hairline instead of glass. Popup tokens only.
+ */
+.kit-panel--paper {
+  border-color: theme('colors.popup.goldDeep');
+  background: linear-gradient(175deg, theme('colors.popup.foldLitHigh'), theme('colors.popup.page') 45%, theme('colors.popup.pageDark'));
+  color: theme('colors.popup.ink');
+  box-shadow:
+    inset 1px 1px 0 theme('colors.popup.cutRim / 60%'),
+    0 -6px 24px -6px theme('colors.popup.shadow / 70%');
+}
+
+.kit-panel--paper::before {
+  border-color: theme('colors.popup.goldDeep / 45%');
+}
+
 /* A quieter surface inside a panel: list rows, party cards, stat boxes */
 .kit-inset {
   position: relative;
