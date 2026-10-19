@@ -1,13 +1,20 @@
-import { useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import { POPUP } from '../../art/palette';
 import { hashParams } from '../../shared/route';
 import { KitSection } from './KitSection';
+import { LabWorkspace } from './LabWorkspace';
+import { labHash, parseLabParams, type LabParams } from './labParams';
 
 /**
  * PageLab, `#/pagelab` (GDD § 3.10; dev builds only — App never loads this chunk in production).
- * Sections so far: `section=kit` (#139), the paper kit port beside proof D and every part preset's
- * default art. The page list, overlays, step/play controls, solver panel, editor and state
- * inspector arrive with #91 (and its fixtures with #92).
+ *
+ * - The lab (#91, `LabWorkspace.tsx`): the page list with solver badges, the page with overlays,
+ *   step/play controls and the input palette, the solver panel (in a worker), live lint,
+ *   readability views and the art-key report, edit mode with 「Copy TS」, and the state inspector.
+ *   Its settings live in the hash (`labParams.ts`), e.g. `#/pagelab?page=c1p2&overlay=nodes,edges&tick=12`.
+ * - `section=kit` (#139): the paper kit port beside proof D and every part preset's default art.
+ *
+ * The visual QA fixtures (`fixture=`) arrive with #92.
  */
 
 const subscribe = (onChange: () => void) => {
@@ -17,22 +24,35 @@ const subscribe = (onChange: () => void) => {
 const readHash = () => window.location.hash;
 
 export default function PageLab() {
-  const section = hashParams(useSyncExternalStore(subscribe, readHash)).get('section');
+  const params = parseLabParams(hashParams(useSyncExternalStore(subscribe, readHash)));
+  const section = params.section;
+
+  // Settings changes rewrite the hash in place (no history entry per checkbox) and re-read it
+  const setParams = useCallback(
+    (patch: Partial<LabParams>) => {
+      const next = labHash({ ...parseLabParams(hashParams(window.location.hash)), ...patch });
+      const { pathname, search } = window.location;
+      window.history.replaceState(window.history.state, '', `${pathname}${search}${next}`);
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    },
+    [],
+  );
+
   return (
-    <main className="min-h-dvh font-body" style={{ backgroundColor: POPUP.page, color: POPUP.ink }} lang="zh-Hant">
-      <header className="p-4">
+    <main className="min-h-dvh font-body" style={{ backgroundColor: section === 'kit' ? POPUP.page : POPUP.cover, color: section === 'kit' ? POPUP.ink : POPUP.goldLight }} lang="zh-Hant">
+      <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1 p-4">
         <h1 className="font-serif text-title">PageLab</h1>
-        <p className="text-label">《翻翻台北》頁面工作台 · 開發中</p>
-        <nav className="mt-2 flex gap-3 text-caption">
-          <a href="#/pagelab" style={{ color: POPUP.ink }} aria-current={section ? undefined : 'page'}>
-            總覽
+        <p className="text-label">《翻翻台北》頁面工作台</p>
+        <nav className="flex gap-3 text-caption">
+          <a href="#/pagelab" style={{ color: 'inherit' }} aria-current={section ? undefined : 'page'}>
+            頁面 lab
           </a>
-          <a href="#/pagelab?section=kit" style={{ color: POPUP.ink }} aria-current={section === 'kit' ? 'page' : undefined}>
+          <a href="#/pagelab?section=kit" style={{ color: 'inherit' }} aria-current={section === 'kit' ? 'page' : undefined}>
             紙材套件 kit
           </a>
         </nav>
       </header>
-      {section === 'kit' ? <KitSection /> : <p className="px-4 text-caption">#/pagelab · dev builds only</p>}
+      {section === 'kit' ? <KitSection /> : <LabWorkspace params={params} setParams={setParams} />}
     </main>
   );
 }
