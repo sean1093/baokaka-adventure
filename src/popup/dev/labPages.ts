@@ -1,3 +1,4 @@
+import c1p3 from '../core/fixtures/c1p3';
 import type { Id, PageDef } from '../core/types';
 import { PAGES, pageById } from '../pages';
 
@@ -90,8 +91,21 @@ const characterStages: PageDef[] = [
       ]),
 ];
 
+/**
+ * 1-3 「嗶！閘門」 as the engine tests lay it out (`core/fixtures/c1p3.ts`), so the word ring, the
+ * learn beat and the 嗶！ tutorial (#99) can be played end to end before #107 builds the real page
+ * (with its art and lines); then the `word-*` fixtures move onto `c1p3`. Placeholder art.
+ */
+// The engine tests' robot hit (48 units) is under 48 px at the book scale (R6): grown for the stage
+const gatesPage: PageDef = { ...c1p3, id: 'lab-gates', parts: c1p3.parts.map((p) => (p.id === 'robot' ? { ...p, hit: { x: 202, y: 492, w: 56, h: 56 } } : p)) };
+const gates: PageDef[] = [
+  gatesPage,
+  // Every word at once (no `words` restriction): the full word ring, eight words and 「好了」
+  { ...gatesPage, id: 'lab-words', title: '八個字', words: undefined },
+];
+
 /** Lab-only fixture pages (not in the registry). */
-export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...characterStages];
+export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...characterStages, ...gates];
 
 /** Every page the lab lists, registered pages first. */
 export const LAB_PAGES: readonly PageDef[] = [...PAGES, ...LAB_FIXTURES];

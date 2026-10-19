@@ -46,7 +46,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [96](https://github.com/sean1093/baokaka-adventure/issues/96) | Bake pipeline scripts/bake-popup.mjs: page backdrops, parts and character frames to WebP with manifests, CI size check, and the bitmap registry | art, engine, m1 | #89 | done (#165) |
 | [97](https://github.com/sean1093/baokaka-adventure/issues/97) | UI shell: cover on the quilt, book frame, HUD label, bottom bar, page fold and chapter turn (proof C), 目錄 (ch0–1), 左手模式 | ui, m1 | #93, #90 | done (#166) |
 | [98](https://github.com/sean1093/baokaka-adventure/issues/98) | Thought bubble with change-of-mind animation, barks, subtitle bubbles and narration strips | ui, m1 | #89 | done (#167) |
-| [99](https://github.com/sean1093/baokaka-adventure/issues/99) | Word ring, word cards, learn beat, Mocha's translations and the 嗶！ first-use tutorial | ui, engine, m1 | #98, #90 | todo |
+| [99](https://github.com/sean1093/baokaka-adventure/issues/99) | Word ring, word cards, learn beat, Mocha's translations and the 嗶！ first-use tutorial | ui, engine, m1 | #98, #90 | done (#168) |
 | [100](https://github.com/sean1093/baokaka-adventure/issues/100) | Hint system via the solver: levels 0–3, hint worker, ghost hand, 「等等看」 | engine, ui, m1 | #85, #90, #97, #140 | todo |
 | [101](https://github.com/sean1093/baokaka-adventure/issues/101) | Page completion, sticker card, 淘氣 detection and 土地公 tap | ui, engine, m1 | #97 | todo |
 | [102](https://github.com/sean1093/baokaka-adventure/issues/102) | Chapter card (departure board) and all prologue + chapter 1 lines in content/script.ts | ui, content, m1 | #97, #98 | todo |

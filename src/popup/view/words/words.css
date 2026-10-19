@@ -1,0 +1,74 @@
+/*
+ * The word ring, the word card and the say effect (#99; GDD § 2.4; popup art bible § 7, § 8).
+ * Transforms and opacity only, no filters, every one a CSS animation so a screenshot still
+ * (`[data-still]`, gestures.css) stops it and shows the settled look. The `-fade` classes are the
+ * reduced-motion versions (the OS setting or 減少動態): opacity only. The one loop, the new word's
+ * glow, breathes at 0.6 Hz (≤ 3 Hz) and holds still under reduced motion.
+ */
+
+/* The ring opens like a volvelle turning: each disc swings round from 「好了」 to its place, the
+   next a beat later. The wrapper turns about the ring's centre; the disc counter-turns to stay upright. */
+.wr-turn { animation: wr-turn 300ms cubic-bezier(0.2, 0.9, 0.3, 1.12) backwards; }
+.wr-upright { animation: wr-upright 300ms cubic-bezier(0.2, 0.9, 0.3, 1.12) backwards; }
+.wr-pop { animation: wr-pop 300ms ease-out backwards; }
+@keyframes wr-turn {
+  from { transform: rotate(var(--from)); }
+  to { transform: rotate(var(--to)); }
+}
+@keyframes wr-upright {
+  from { transform: translateX(var(--r)) rotate(calc(-1 * var(--from))); }
+  to { transform: translateX(var(--r)) rotate(calc(-1 * var(--to))); }
+}
+@keyframes wr-pop {
+  0% { transform: scale(0.55); opacity: 0; }
+  40% { opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.wr-fade { animation: wr-fade 200ms ease-out backwards; }
+@keyframes wr-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* The band (the volvelle's paper wheel) and the dimmed page */
+.wr-band { animation: wr-fade 220ms ease-out both; }
+
+/* A newly learned word glows until it is first said (§ 2.4) */
+.wr-glow { animation: wr-glow 1600ms ease-in-out infinite; }
+@keyframes wr-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* The portrait in the bottom bar glows during the first-use tutorial */
+.wr-portrait-glow { animation: wr-glow 1600ms ease-in-out infinite; }
+
+/* The word card drops in on its tape and swings to rest (bible § 7 chapter card's motion, smaller) */
+.wc-drop { transform-origin: 50% 0; animation: wc-drop 520ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both; }
+@keyframes wc-drop {
+  0% { transform: translateY(-60px) rotate(-6deg); opacity: 0; }
+  35% { opacity: 1; }
+  60% { transform: translateY(6px) rotate(2deg); }
+  80% { transform: translateY(-2px) rotate(-1deg); }
+  100% { transform: translateY(0) rotate(0deg); opacity: 1; }
+}
+
+/* The say effect: the word's reach widens from Baokaka and fades (page units, about his feet: the group's origin) */
+.ws-ring { animation: ws-ring 520ms ease-out both; }
+@keyframes ws-ring {
+  0% { transform: scale(0.18); opacity: 0.95; }
+  70% { opacity: 0.6; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.ws-ring-fade { animation: ws-ring-fade 520ms ease-out both; }
+@keyframes ws-ring-fade {
+  0% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+/* The 「要！」 poke's pointer draws toward his target, holds and fades with its bark */
+.wp-point { animation: wp-point 1400ms ease-out forwards; }
+@keyframes wp-point {
+  0% { opacity: 0; }
+  15%, 78% { opacity: 1; }
+  100% { opacity: 0; }
+}

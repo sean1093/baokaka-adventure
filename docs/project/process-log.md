@@ -441,3 +441,29 @@ Format:
 - **Tests.** `place.test.ts` (scale at 5 viewports, flip, fallback, raise, HUD edge, wrapping), `layout.test.ts` (a full beat at both viewports never covers him or the goal), `barks.test.ts`, `game/talk.test.ts` (max 3, advance, event lines once), `content/script.test.ts` (lengths, speakers, label contrast, lint rule 10), and PageView change-of-mind classes (motion, reduced, still, growth).
 - **Decision.** D-61. Handbook § 5, GDD § 2.2.6 / § 2.13 and the bible § 5 have engineers' notes.
 - **Follow-ups.** #102 fills `SCRIPT` and plays intros through the queue. #106 adds `c0p2-change-of-mind` on the real 0-2. #99 can reuse `barkCard` / `layoutTalk` for word bubbles.
+
+### 2026-10-19 · Staff engineer · #99 Word ring, word cards, learn beat, Mocha's translations and the 嗶！ first-use tutorial (PR #168)
+- **Word ring (`view/words/`).**
+  - A kraft volvelle wheel round Baokaka with 72 px cream discs. Each disc has the word's icon on a torn-edge seal in its own colour (palette `word*`) and a 20 px serif glyph.
+  - 「好了」 sits under him. The words start beside it on the thumb's side, mirrored in 左手模式, and close the circle at eight. The ring slides in from screen edges, and on a 320 px phone a full ring closes its gaps.
+  - Opening it: the discs swing round from 「好了」, the page dims 30 % with a pool of light on him, and the world holds (`ring`).
+  - It is an `aria-modal` dialog. Tapping off the discs, 「好了」 or Escape closes it.
+  - Saying a word queues a `say`. On the say tick he shows a 1.6× speech bubble and the word's reach widens in its seal colour. `onSay(word, motif)` and `WORD_MOTIF` are the audio hook.
+- **Logic (`game/words.ts`).**
+  - `ringWords` returns exactly what step accepts, so a replay hides later words.
+  - The learn beat runs the source, Baokaka and Mocha lines through the subtitle queue, then shows the **word card** (the world holds until it is tapped; the card ignores the ghost click a touch synthesizes).
+  - `firstUseLine` gives the one-time translation per word per page; on the learn page it is the follow-up line.
+  - The tutorial runs on the first word's page: the portrait glows, the ghost hand taps him once he is stuck, then the word's disc.
+  - Text: `content/words.ts` holds all 11 § 5.4 beats and cards, and the `learn.*` lines are in `content/script.ts`.
+- **Before any word**, tapping him shows 「要！」 with a chalk pointer to his target (`poke.ts`). It holds 3 ticks over his own barks.
+- **Lab stages and fixtures.**
+  - `lab-gates` is 1-3 as the engine tests lay it out, with the robot hit grown to 56 for R6. `lab-words` makes every word available.
+  - Fixtures: `word-poke`, `word-card-beep`, `word-ring-open`, `word-ring-full`, `word-say-beep`.
+  - `check:play` plays the 1-3 word flow end to end (`SCENARIO_URLS`, `tapEl`, `expect`, and checks that the world holds under the card and the ring).
+- **Checks.** `npm test` (2091), `npm run build`, `npm run visual` (existing targets 0 px, 10 new baselines), `check:ui --popup` and `check:play` 12/12 all pass.
+- **Screenshots.** `docs/screenshots/99/`.
+- **Decision.** D-62. The handbook § 5, GDD § 2.4 and bible § 7 have engineers' notes.
+- **Follow-ups.**
+  - #107: register 1-3, then move the `word-*` fixtures and the play scenario onto `c1p3`.
+  - #105: play the word motifs.
+  - Learn lines advance only on a tap (as all subtitles do), so the card waits for that tap. Playtest (#110) should check that players find it.

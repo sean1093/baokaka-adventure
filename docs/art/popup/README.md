@@ -377,6 +377,8 @@ Each chapter has **2 dominant hues + 1 accent**, a **signature material**, and a
 - Each disc has a word icon and a serif glyph, and is stamped with its own seal colour.
 - The simulation pauses (GDD); the page dims 30%.
 
+*Engineers' note (#99, D-62):* the ring is drawn round Baokaka (a tap on him or on the portrait opens the same ring): a kraft volvelle wheel with a printed scale and a dotted gold track, 72 px cream discs with the word's icon on a torn-edge seal in its own colour (palette `word*` tokens) and a 20 px serif glyph, 「好了」 under him. The discs swing round from 「好了」 as it opens. The new word wears the marigold halo until first said. The page dims 30 % except a pool of light on him. The word card is a taped cream index card with the seal, the word in 52 px red serif and its effect.
+
 **Chapter card** (GDD §2.13):
 - A paper card hung from two strings that **drops and swings in**, as in proof C.
 - A red spine bar, 「第N章 · title」, the landmark in 36 px serif, the time chip and a 翻 seal.

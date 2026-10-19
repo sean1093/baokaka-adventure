@@ -24,8 +24,10 @@ import { partProgress } from './interp';
  * The React plumbing for `gestures.ts` (GDD § 2.6): Pointer Events only (mouse, touch and pen take
  * the same path; no touch-specific code), client px → page units through the current book layout,
  * pointer capture so a drag keeps its part off the hit area, the 600 ms hold timer, and the
- * effects applied to the session — `pause('finger')` / `resume('finger')`, queued inputs, and the
- * word ring stub (`pause('ring')`, #99 builds the ring).
+ * effects applied to the session — `pause('finger')` / `resume('finger')` and queued inputs. A tap
+ * on Baokaka (or the portrait, `openRing`) is handed up as the `wordRing` event: `PagePlayer` opens
+ * the word ring (#99, `view/words/`), which pauses the world itself; while it is open (`ringOpen`)
+ * the page has no targets and hold-to-reveal is off.
  *
  * A released drag's snapped stop is held (`settlePreview`) until the tick that applies its input,
  * then glides to where the state really landed, so the part never jumps back under the finger.
@@ -48,9 +50,7 @@ export interface Gestures {
     onPointerUp(e: ReactPointerEvent<Element>): void;
     onPointerCancel(e: ReactPointerEvent<Element>): void;
   };
-  /** The word ring stub is open (Baokaka was tapped) */
-  readonly ring: boolean;
-  /** Opens the word ring as a tap on Baokaka does (the bottom bar's portrait, #97) */
+  /** Asks for the word ring as a tap on Baokaka does (the bottom bar's portrait, #97) */
   readonly openRing: () => void;
 }
 
@@ -63,21 +63,20 @@ export function useGestures(
   frame: { readonly serial: number; readonly state: SimState },
   ms: number,
   reduced: boolean,
+  ringOpen: boolean,
   onGesture?: (event: GestureEvent) => void,
 ): Gestures {
   const tracker = useMemo(() => new GestureTracker(), [session]);
   const [flags, setFlags] = useState<GestureFlags>(NO_GESTURE);
   const [held, setHeld] = useState<Held | null>(null);
-  const [ring, setRing] = useState(false);
   // Pointer handlers read the latest of these without re-binding
-  const live = useRef({ layout, held, ring, onGesture });
-  live.current = { layout, held, ring, onGesture };
+  const live = useRef({ layout, held, ring: ringOpen, onGesture });
+  live.current = { layout, held, ring: ringOpen, onGesture };
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setFlags(NO_GESTURE);
     setHeld(null);
-    setRing(false);
     return () => {
       if (holdTimer.current !== null) clearTimeout(holdTimer.current);
     };
@@ -115,10 +114,6 @@ export function useGestures(
         // The input was queued just before this event: it applies on the tick that drains the queue to it
         if (ev.type === 'snap') setHeld({ part: ev.part, index: ev.index, applyAt: session.frame().serial + session.queued });
         if (ev.type === 'dragStart') setHeld(null);
-        if (ev.type === 'wordRing') {
-          setRing(true);
-          session.pause('ring');
-        }
         live.current.onGesture?.(ev);
       }
     }
@@ -139,13 +134,7 @@ export function useGestures(
         } catch {
           // A synthetic or already-released pointer can't be captured; the gesture still works
         }
-        const ringOpen = live.current.ring;
         apply(tracker.down(e.pointerId, toPage(e), now(), world()));
-        if (ringOpen) {
-          // Any touch closes the stub ring with no effect (GDD § 2.4: tapping outside closes it)
-          setRing(false);
-          session.resume('ring');
-        }
         if (tracker.holdPending) {
           if (holdTimer.current !== null) clearTimeout(holdTimer.current);
           holdTimer.current = setTimeout(() => {
@@ -168,7 +157,7 @@ export function useGestures(
         apply(tracker.cancel(e.pointerId));
       },
     }),
-    [apply, tracker, world, session],
+    [apply, tracker, world],
   );
 
   // The held stop after a release: until its tick, then a glide to where the state landed
@@ -190,5 +179,5 @@ export function useGestures(
 
   const openRing = useCallback(() => apply([{ type: 'event', event: { type: 'wordRing' } }]), [apply]);
 
-  return { flags: preview === flags.preview ? flags : { ...flags, preview }, handlers, ring, openRing };
+  return { flags: preview === flags.preview ? flags : { ...flags, preview }, handlers, openRing };
 }

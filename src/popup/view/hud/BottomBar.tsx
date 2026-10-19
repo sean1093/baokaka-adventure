@@ -5,6 +5,7 @@ import { kitCtx, kitDefs, ref, type KitCtx } from '../../art';
 import { UI } from '../../content';
 import { deviceScale, frameUrl, spriteDef } from '../../sprites';
 import { BAR_H } from '../geometry';
+import '../words/words.css';
 
 /**
  * The bottom bar on the cover (GDD § 2.1; popup art bible § 7; #97): [寶咖咖's portrait → the word
@@ -15,6 +16,7 @@ import { BAR_H } from '../geometry';
  *   halo: it is a touchable (bible § 4).
  * - The stickers are blind-embossed navy dimples with a dashed gold ring when empty and foil discs
  *   with their icon when earned (✓, 嘿, a 土地公 hat); their names are their accessible names.
+ * - During the first-use tutorial (#99) the portrait glows (`glow`: a breathing marigold halo).
  * - **左手模式** (§ 2.11) mirrors the bar: the portrait on the right, the stickers on the left.
  *
  * Laid out in a 390 × 120 box, scaled like the HUD on narrow phones.
@@ -25,6 +27,10 @@ export interface BottomBarProps {
   readonly stickers?: readonly [boolean, boolean, boolean];
   readonly leftHand?: boolean;
   readonly scale?: number;
+  /** The portrait glows (the first-use tutorial, #99) */
+  readonly glow?: boolean;
+  /** Reduced motion: the glow holds still */
+  readonly reduced?: boolean;
   readonly onPortrait?: () => void;
   readonly onHint?: () => void;
   readonly onRetry?: () => void;
@@ -66,7 +72,7 @@ function BarButton({ label, onClick, children, testId }: { label: string; onClic
   );
 }
 
-export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, onPortrait, onHint, onRetry, onMenu }: BottomBarProps) {
+export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow = false, reduced = false, onPortrait, onHint, onRetry, onMenu }: BottomBarProps) {
   const ids = useSvgIds('bar');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('bar'), id: ids }), [ids]);
   const head = useMemo(() => {
@@ -84,7 +90,8 @@ export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, onPort
   );
   const clip = ctx.id('portrait');
   const portrait = (
-    <svg width={64} height={64} viewBox="-32 -32 64 64" aria-hidden="true" className="overflow-visible">
+    <svg width={64} height={64} viewBox="-32 -32 64 64" aria-hidden="true" className="overflow-visible" data-glow={glow ? '' : undefined}>
+      {glow && <circle r={46} fill={`url(#${ctx.id('softMarigold')})`} className={reduced ? undefined : 'wr-portrait-glow'} />}
       <circle r={34} fill={`url(#${ctx.id('softMarigold')})`} opacity={0.35} />
       <g dangerouslySetInnerHTML={{ __html: discSvg(ctx, '', C.marigold, 29) }} />
       <clipPath id={clip}>

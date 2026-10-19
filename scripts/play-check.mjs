@@ -13,7 +13,10 @@
  *   --shots    write a PNG per step into this directory
  *
  * It also fails when a registered page (listed at `#/pagelab?section=fixtures`) has no scenario:
- * add one with every new page. Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
+ * add one with every new page. A scenario can also play a PageLab stage through a live fixture
+ * (`SCENARIO_URLS`): `lab-gates` plays 1-3's word flow end to end (#99) — the 「要！」 poke, Mocha's
+ * push, the learn beat and its word card, the tutorial, the word ring and 嗶！ — until #107 brings
+ * the real 1-3. Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
  * and UI checks.
  */
 import { mkdir } from 'node:fs/promises';
@@ -44,6 +47,27 @@ const SCENARIOS = {
     // half → full
     { drag: [[140, 610], [205, 610]] },
   ],
+  // 1-3's words (#99), on the lab stage: elements are tapped where they are drawn (`tapEl`)
+  'lab-gates': [
+    // The fixture opens on its own poke: let it fade, then poke him for real (no word yet: no ring)
+    { settle: 2000 },
+    { tapEl: '[data-actor="baby"]' },
+    { expect: '[data-bark-kind="want"]', absent: '[data-word-ring]' },
+    { settle: 600 },
+    // Mocha to the counter: the card hits the reader, gate A opens, he learns 嗶！
+    { tap: [100, 294] },
+    { tapEl: '[data-subtitle]' },
+    { tapEl: '[data-word-card]', paused: true },
+    { wait: 'reaching' },
+    { expect: '[data-glow]' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="beep"]', paused: true },
+  ],
+};
+
+/** Scenarios that start somewhere other than `#/popup?page=<id>`: a PageLab stage, live. */
+const SCENARIO_URLS = {
+  'lab-gates': '#/pagelab?fixture=word-poke',
 };
 
 const VIEWPORTS = [
@@ -94,7 +118,7 @@ const tickOf = (page) => page.evaluate(() => Number(document.querySelector('svg[
 
 async function run(page, base, id, kind, viewport, shots) {
   await page.setViewportSize(viewport);
-  await page.goto(`${base}#/popup?page=${id}&speed=fast`);
+  await page.goto(`${base}${SCENARIO_URLS[id] ?? `#/popup?page=${id}&speed=fast`}`);
   await page.waitForSelector('svg[data-page]');
   await page.evaluate(() => document.fonts.ready);
   const toClient = await mapper(page);
@@ -111,6 +135,25 @@ async function run(page, base, id, kind, viewport, shots) {
       await page.waitForSelector(`[data-actor="baby"][data-mode="${stepDef.wait}"]`, { timeout: 10_000 });
     } else if (stepDef.settle) {
       await page.waitForTimeout(stepDef.settle);
+    } else if (stepDef.tapEl) {
+      // Tap an element where it is drawn (a character, a subtitle, an overlay button)
+      const el = await page.waitForSelector(stepDef.tapEl, { timeout: 15_000 });
+      await page.waitForTimeout(400);
+      if (stepDef.paused) {
+        // The word ring and the word card hold the world while they are up (GDD § 2.4)
+        const before = await tickOf(page);
+        await page.waitForTimeout(900);
+        if ((await tickOf(page)) !== before) throw new Error(`the world ticked under ${stepDef.tapEl}`);
+      }
+      const box = await el.boundingBox();
+      if (!box) throw new Error(`${stepDef.tapEl} has no box`);
+      await input.down([box.x + box.width / 2, box.y + box.height / 2]);
+      await page.waitForTimeout(60);
+      await input.up();
+      await shot('tap');
+    } else if (stepDef.expect) {
+      await page.waitForSelector(stepDef.expect, { timeout: 5_000 });
+      if (stepDef.absent && (await page.$(stepDef.absent))) throw new Error(`${stepDef.absent} should not be there`);
     } else if (stepDef.tap) {
       await input.down(toClient(stepDef.tap));
       await page.waitForTimeout(60);

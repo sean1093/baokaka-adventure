@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type Ref } from 'react';
-import { POPUP, withAlpha } from '../../art/palette';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type Ref } from 'react';
+import { POPUP } from '../../art/palette';
 import { useSvgIds } from '../../art/useSvgIds';
 import { useReducedMotion } from '../../components/motion';
 import { nodePos } from '../core/graph';
@@ -7,10 +7,12 @@ import { partLocked } from '../core/step';
 import { cover, kitCtx, kitDefs, type KitCtx } from '../art';
 import { chapterInfo, chapterLine as contentChapterLine } from '../content';
 import type { SimEvent } from '../core/events';
-import type { Input, LineKey, PageDef, SimState } from '../core/types';
+import type { Input, LineKey, PageDef, SimState, Word } from '../core/types';
 import { loadLines } from '../content/script';
+import type { LearnKey } from '../content/words';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
 import { EMPTY_TALK, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
+import { WORD_MOTIF, firstUseLine, learnLines, learnedNow, ringWords, tutorialShow, tutorialWord } from '../game/words';
 import { usePagePreload } from '../sprites';
 import { usePageArt } from '../env/loader';
 import { nextPage } from '../pages';
@@ -26,6 +28,8 @@ import { PART_SETTLE_MS } from './interp';
 import { PageView, VIEW_BOX } from './PageView';
 import { useGestures } from './useGestures';
 import { barkLog, barksOf, type BarkShow } from './talk';
+import { sayingWord } from './actors';
+import { WordCard, WordRing, ringSafeArea, wantPoke } from './words';
 
 /**
  * One page, played (GDD § 2.1 page anatomy; bible § 2.1, § 7): the navy-linen cover, the HUD slot
@@ -37,8 +41,18 @@ import { barkLog, barksOf, type BarkShow } from './talk';
  * discs and the page's stickers on the cover, mirrored in 左手模式. `hold` holds the session while
  * a layer (the menu, the 目錄 …) is open over the page; `onDone` hears the page complete once.
  * Gestures (#90, `useGestures`): the whole screen takes pointers; a finger down anywhere pauses
- * the world, taps and drags on the page become queued inputs, and tapping Baokaka opens the word
- * ring stub (a dimmed page and an empty ring; #99 fills it).
+ * the world, taps and drags on the page become queued inputs, and tapping Baokaka (or the portrait)
+ * opens the word ring.
+ *
+ * Words (#99, GDD § 2.4, § 5.4; `game/words.ts`, `words/`): the ring offers the words the page
+ * allows (`ringWords`; none yet → a 「要！」 bubble pointing at his target instead) and pauses the
+ * world while open (`ring`); a word is said as a queued `say`, the ring closes, and on the say tick
+ * the big speech bubble and the effect ring show (`onSay` hears it, with the word's motif, for the
+ * audio). A `learn` event plays the learn beat: the source, Baokaka's and Mocha's lines through the
+ * subtitle queue, then the word card (the world waits, `card`) until tapped. The first time a word
+ * is said on a page Mocha's translation plays once. On the player's first word's page the first-use
+ * tutorial runs: the portrait glows, the ghost hand taps Baokaka once he is stuck, then the word's
+ * disc; the new word glows in the ring until it is first said.
  *
  * Animation runs on `requestAnimationFrame` only while something moves (an actor mid-step, a part
  * mid-tween) and sleeps between ticks.
@@ -126,11 +140,15 @@ export interface PagePlayerProps {
   readonly onDone?: (state: SimState) => void;
   /** The HUD's and the bottom bar's state and buttons (#97) */
   readonly chrome?: PageChrome;
+  /** Visual QA fixtures (#99): open the word ring, put a word card up, show the 「要！」 poke */
+  readonly showWords?: { readonly ring?: boolean; readonly card?: LearnKey; readonly poke?: boolean };
+  /** A word was said (its say tick): the word and its sound motif (`WORD_MOTIF`) for the audio (#105) */
+  readonly onSay?: (word: Word, motif: readonly number[]) => void;
   /** The book's page box (the page fold and the chapter turn animate inside it, #97) */
   readonly pageRef?: Ref<HTMLDivElement>;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, onSay }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
   const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev, events }), [def, speed, from, prev, still, events]);
@@ -191,16 +209,74 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   // bubble advances) and the barks of the last few ticks
   const [talk, setTalk] = useState<TalkQueue>(EMPTY_TALK);
   const [barks, setBarks] = useState<readonly BarkShow[]>([]);
+  // Words (#99): the ring, the learn beat in progress, the words said on this page
+  const [ringOpen, setRingOpen] = useState(false);
+  const [learning, setLearning] = useState<{ readonly key: LearnKey; readonly stage: 'lines' | 'card' } | null>(null);
+  const [used, setUsed] = useState<readonly Word[]>([]);
+  const learnRef = useRef(learning);
+  learnRef.current = learning;
+  const usedRef = useRef(used);
+  usedRef.current = used;
+  const onSayRef = useRef(onSay);
+  onSayRef.current = onSay;
   useEffect(() => {
     const open = openLines !== undefined ? loadLines(openLines) : from === undefined ? introLines(def) : [];
     setTalk(enqueue(EMPTY_TALK, open));
-    setBarks([]);
-  }, [session, def, from, openLines]);
+    setBarks(showWords?.poke ? [wantPoke(def, session.frame().state)] : []);
+    setRingOpen(showWords?.ring === true);
+    const card = showWords?.card;
+    learnRef.current = card === undefined ? null : { key: card, stage: 'card' };
+    setLearning(learnRef.current);
+    usedRef.current = [];
+    setUsed([]);
+  }, [session, def, from, openLines, showWords?.ring, showWords?.card, showWords?.poke]);
   useEffect(() => {
-    const fired = firedLines(def, frame.prev, frame.state, frame.events);
-    if (fired.length > 0) setTalk((q) => enqueue(q, fired));
+    const lines = firedLines(def, frame.prev, frame.state, frame.events);
+    // The learn beat (§ 5.4): its lines now, the word card once they have been read
+    const learnt = learnedNow(frame.events);
+    if (learnt !== null && learnRef.current?.key !== learnt) {
+      learnRef.current = { key: learnt, stage: 'lines' };
+      setLearning(learnRef.current);
+      lines.push(...loadLines(learnLines(learnt)));
+    }
+    // A word said: its one-time translation on this page, and the audio's motif
+    const word = sayingWord(frame.prev, frame.state, frame.events);
+    if (word !== null) {
+      if (!usedRef.current.includes(word)) {
+        usedRef.current = [...usedRef.current, word];
+        setUsed(usedRef.current);
+        const joke = firstUseLine(def, word);
+        if (joke !== null) lines.push(...loadLines([joke]));
+      }
+      onSayRef.current?.(word, WORD_MOTIF[word]);
+    }
+    if (lines.length > 0) setTalk((q) => enqueue(q, lines));
     setBarks((log) => barkLog(log, barksOf(frame.prev, frame.state, frame.events), frame.state.tick));
   }, [def, frame]);
+  // The learn beat's lines read (or none): the word card comes up
+  useEffect(() => {
+    if (learning?.stage !== 'lines') return;
+    const keys = new Set(learnLines(learning.key));
+    if (!talk.beats.some((b) => b.some((l) => keys.has(l.key)))) setLearning({ key: learning.key, stage: 'card' });
+  }, [learning, talk]);
+  // The ring and the card hold the world while they are up (GDD § 2.4)
+  useEffect(() => {
+    if (!ringOpen) return undefined;
+    session.pause('ring');
+    return () => session.resume('ring');
+  }, [session, ringOpen]);
+  const carding = learning?.stage === 'card';
+  useEffect(() => {
+    if (!carding) return undefined;
+    session.pause('card');
+    return () => session.resume('card');
+  }, [session, carding]);
+  const say = useCallback((word: Word) => {
+    session.input({ t: 'say', word });
+    setRingOpen(false);
+  }, [session]);
+  const closeRing = useCallback(() => setRingOpen(false), []);
+  const cardDone = useCallback(() => setLearning(null), []);
   const onAdvance = useMemo(() => () => setTalk(advance), []);
   const talkView = useMemo(() => ({ beat: currentBeat(talk), serial: talk.serial, onAdvance }), [talk, onAdvance]);
 
@@ -216,16 +292,37 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         const part = def.parts.find((p) => p.id === event.target.id);
         if (part !== undefined && !wearsMarigold(part)) idle.poke(part.id);
       }
+      if (event.type === 'wordRing') {
+        // The ring, or before any word is learned, 「要！」 pointing at what he wants (GDD § 6 risk 1)
+        const now = session.frame().state;
+        if (!now.done && learnRef.current?.stage !== 'card') {
+          if (ringWords(def, now).length > 0) setRingOpen(true);
+          else setBarks((log) => barkLog(log, [wantPoke(def, now)], now.tick));
+        }
+      }
       onGesture?.(event);
     },
-    [def, locked, idle.poke, onGesture],
+    [def, session, locked, idle.poke, onGesture],
   );
-  const gestures = useGestures(def, session, layout, frame, ms, reduced, onEvent);
+  const gestures = useGestures(def, session, layout, frame, ms, reduced, ringOpen, onEvent);
   const live = gestures.flags;
   const flags = showGesture ? { ...live, ...showGesture } : live;
   const down = live.finger !== null || live.dragging !== null;
   useEffect(() => setFingerDown(down), [down]);
-  const pageAffordance = useMemo(() => ({ ...affordance, wiggle: idle.wiggle }), [affordance, idle.wiggle]);
+  // The first-use tutorial (§ 2.4; 1-3): the portrait glows, the ghost hand taps him, then the word
+  const tWord = useMemo(() => tutorialWord(def), [def]);
+  const tutorial = tutorialShow({
+    word: tWord,
+    state: frame.state,
+    used: tWord !== null && used.includes(tWord),
+    busy: learning !== null,
+    ringOpen,
+  });
+  const tutorialHint = tutorial.baby && !affordance?.hint;
+  const pageAffordance = useMemo(
+    () => ({ ...affordance, wiggle: idle.wiggle, ...(tutorialHint ? { hint: { level: 2 as const, key: 'baby:baby' } } : {}) }),
+    [affordance, idle.wiggle, tutorialHint],
+  );
 
   // The page's character frames (#94) and environment bitmaps (#96): preloaded and decoded as it
   // opens (placeholders until then); once they are in, the next page's backdrop is preloaded too
@@ -264,9 +361,11 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   };
   // The HUD and the bar keep their 390 box (and their 20 px text, R5) down to 360 px wide, overhanging a few px of cover
   const hudScale = Math.min(1, layout.vw / 360);
-  // The word ring stub circles Baokaka (#99 builds the ring itself)
+  // The word ring opens round Baokaka's middle; the word card hangs over the middle of the page
   const babyAt = nodePos(def, frame.state, frame.state.baby.node);
-  const ringAt = gestures.ring && babyAt ? toScreen(layout, [babyAt[0], babyAt[1] - 30]) : null;
+  const ringAt = ringOpen ? toScreen(layout, babyAt ? [babyAt[0], babyAt[1] - 26] : [195, 400]) : null;
+  const words = useMemo(() => ringWords(def, frame.state), [def, frame.state]);
+  const fresh = def.learns?.word !== undefined && words.includes(def.learns.word) && !used.includes(def.learns.word) ? def.learns.word : null;
 
   return (
     <main
@@ -296,18 +395,27 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         scale={hudScale}
         stickers={pageChrome?.stickers}
         leftHand={pageChrome?.leftHand}
+        glow={tutorial.portrait}
+        reduced={reduced}
         onPortrait={gestures.openRing}
         onHint={pageChrome?.onHint}
         onRetry={pageChrome?.onRetry}
         onMenu={pageChrome?.onMenu}
       />
       {ringAt && (
-        <div className="pointer-events-none absolute inset-0" style={{ background: withAlpha(POPUP.shadow, 0.3) }} data-overlay="word-ring" aria-hidden="true">
-          <svg className="absolute inset-0 h-full w-full">
-            <circle cx={ringAt[0]} cy={ringAt[1]} r={84 * Math.max(0.75, scale)} fill="none" stroke={POPUP.marigold} strokeWidth={3} strokeDasharray="10 8" strokeLinecap="round" />
-          </svg>
-        </div>
+        <WordRing
+          around={ringAt}
+          words={words}
+          safe={ringSafeArea(layout)}
+          leftHand={pageChrome?.leftHand}
+          fresh={fresh}
+          hand={tutorial.disc}
+          reduced={reduced}
+          onSay={say}
+          onClose={closeRing}
+        />
       )}
+      {learning?.stage === 'card' && <WordCard learn={learning.key} vw={layout.vw} cy={toScreen(layout, [195, 300])[1]} reduced={reduced} onDone={cardDone} />}
     </main>
   );
 }
