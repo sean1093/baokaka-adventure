@@ -1,19 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { ReducedMotionContext, usePrefersReducedMotion } from '../../../components/motion';
-import { chapterInfo, chapterName, UI } from '../../content';
+import { cardLines, chapterName, loadLines, UI } from '../../content';
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
-import { COVER, holdsPage, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
+import { COVER, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
 import { ProgressStore, type PageResult } from '../../game/progress';
 import type { TickSpeed } from '../../game/session';
+import { EMPTY_TALK, advance, currentBeat, enqueue, type TalkQueue } from '../../game/talk';
 import { registry as gameRegistry, type PageRegistry } from '../../pages';
 import { autoHintMs } from '../affordance/ladder';
 import { bookLayout } from '../geometry';
 import { PagePlayer } from '../PagePlayer';
 import { PAGE_VIEW_BOX } from '../geometry';
+import { BOARD_H, CardTalk, ChapterBoard } from '../hud/ChapterBoard';
 import { CARD_OUT_MS, StickerCard, cardMs } from '../hud/StickerCard';
-import { playTurn, turnPlan, type TurnRun } from '../transitions/pageTurn';
+import { CAMERA_ORIGIN, cameraTransform, playTurn, turnPlan, type TurnInterlude, type TurnKind, type TurnRun } from '../transitions/pageTurn';
 import { Contents } from './Contents';
 import { Cover } from './Cover';
 import { PauseMenu } from './PauseMenu';
@@ -36,6 +38,11 @@ import './screens.css';
  *   slap on) until `cardMs` passes or a tap, then the leaf turns and the next page unfolds. The
  *   solve is saved at once with the attempt's stickers and moves; 淘氣 and 土地公 earned mid-page are
  *   saved the moment they are earned (`store.earnSticker`).
+ * - **The chapter card** (GDD § 2.13, § 5.2; #102): a chapter turn drops the departure board in
+ *   over the book on the quilt; once it has settled its lines (`cardLines`) play under it, a tap a
+ *   beat, then it lifts away and the camera comes back in. Opening a chapter's first page from the
+ *   cover or the 目錄 (「開始」 included) plays the same card first (a chapter open). A tap before
+ *   the lines skips the whole turn. The new page's own intro waits for the turn to end.
  * - Any layer over a page (the menu, the 目錄, the settings) and a turn in progress hold the page's
  *   session (§ 2.6).
  * - Settings read from the save: tick speed (0/1/2 → slow/normal/fast), 左手模式, 減少動態 (null
@@ -55,11 +62,15 @@ export interface GameShellProps {
   readonly reduced?: boolean;
   /** Visual QA fixtures (#101): the page folded flat under its sticker card */
   readonly stickerCard?: boolean;
+  /** Visual QA fixtures (#102): the chapter card of this chapter hanging over the book on the quilt, its first beat of lines under it */
+  readonly chapterCard?: number;
 }
 
 const SPEEDS: readonly TickSpeed[] = ['slow', 'normal', 'fast'];
 /** After the goal is grabbed (「這個！」, the sparkle) the page holds this long before it folds (GDD § 2.8). */
 export const GRAB_HOLD_MS = 900;
+/** The chapter card hangs this far below the safe area's top (#102) */
+const BOARD_TOP = 14;
 
 const subscribeResize = (onChange: () => void) => {
   window.addEventListener('resize', onChange);
@@ -74,7 +85,7 @@ interface CardShow {
   readonly end: () => void;
 }
 
-export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false }: GameShellProps) {
+export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard }: GameShellProps) {
   const [store] = useState(() => given ?? new ProgressStore({ registry: reg }));
   useEffect(() => (given ? undefined : () => store.dispose()), [given, store]);
   const save = useSyncExternalStore(store.subscribe, store.get);
@@ -97,7 +108,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   // ——— The page fold and the chapter turn ———
   const bookRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const topRef = useRef<HTMLDivElement>(null);
+  const boardLayerRef = useRef<HTMLDivElement>(null);
   const pageBoxRef = useRef<HTMLDivElement | null>(null);
   const turnRef = useRef<TurnRun | null>(null);
   const [turning, setTurning] = useState(false);
@@ -144,6 +155,84 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
     [],
   );
 
+  // ——— The chapter card (#102): the board hanging in a chapter turn, and its lines ———
+  const [board, setBoard] = useState<number | null>(chapterCard ?? null);
+  const [cardTalk, setCardTalk] = useState<TalkQueue>(() => (chapterCard === undefined ? EMPTY_TALK : enqueue(EMPTY_TALK, loadLines(cardLines(chapterCard)))));
+  const cardTalkRef = useRef(cardTalk);
+  cardTalkRef.current = cardTalk;
+  /** Resolves the turn's hold once the last beat is tapped away */
+  const linesDone = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (currentBeat(cardTalk) !== null || linesDone.current === null) return;
+    const done = linesDone.current;
+    linesDone.current = null;
+    done();
+  }, [cardTalk]);
+  const cardHold = useCallback(
+    (chapter: number): TurnInterlude => ({
+      run: () =>
+        new Promise<void>((resolve) => {
+          const lines = loadLines(cardLines(chapter));
+          if (lines.length === 0) return resolve();
+          linesDone.current = resolve;
+          setCardTalk(enqueue(EMPTY_TALK, lines));
+        }),
+    }),
+    [],
+  );
+
+  /**
+   * Plays a turn to `next`: a page fold, a chapter turn (with the card) or a chapter open (`from`
+   * null: the card over the book on the quilt). `swap` puts the new page in. False when there is no
+   * book to turn.
+   */
+  const startTurn = useCallback(
+    (kind: TurnKind, next: PageDef, from: PageDef | null, swap: () => void, interlude?: TurnInterlude): boolean => {
+      const book = bookRef.current, overlay = overlayRef.current;
+      if (!book || !overlay) return false;
+      const [vw, vh] = readSize().split('x').map(Number);
+      const layout = bookLayout(vw, vh);
+      const withCard = kind !== 'fold';
+      if (withCard) setBoard(next.chapter);
+      const run = playTurn(
+        turnPlan(kind, reduced),
+        { book, overlay, pageBox: () => pageBoxRef.current, scale: layout.scale, at: { x: layout.x + PAGE_VIEW_BOX.x * layout.scale, y: layout.y + PAGE_VIEW_BOX.y * layout.scale } },
+        {
+          fromBackdrop: from ? (backdropImage(from.backdrop)?.url ?? null) : null,
+          toBackdrop: backdropImage(next.backdrop)?.url ?? null,
+          card: withCard ? () => boardLayerRef.current?.querySelector<HTMLElement>('[data-chapter-board]') ?? null : undefined,
+        },
+        swap,
+        { interlude, card: withCard ? cardHold(next.chapter) : undefined },
+      );
+      turnRef.current = run;
+      setTurning(true);
+      void run.finished.then(() => {
+        if (turnRef.current === run) turnRef.current = null;
+        // Skipped mid-card: put the cards away too
+        clearCardTimers();
+        setCard(null);
+        setBoard(null);
+        linesDone.current = null;
+        setCardTalk(EMPTY_TALK);
+        setTurning(false);
+      });
+      return true;
+    },
+    [reduced, cardHold],
+  );
+
+  // A chapter's first page opened from the cover or the 目錄 (not by a turn, not 重來): the card first
+  const prevBase = useRef(base);
+  const opening =
+    base !== prevBase.current && base.kind === 'page' && !still && turnRef.current === null
+    && !(prevBase.current.kind === 'page' && prevBase.current.id === base.id) && opensChapter(base.id, reg);
+  useLayoutEffect(() => {
+    prevBase.current = base;
+    const opened = base.kind === 'page' ? reg.pageById(base.id) : undefined;
+    if (opening && opened) startTurn('open', opened, null, () => undefined);
+  }, [base, reg, opening, startTurn]);
+
   const onDone = useCallback(
     (from: PageDef, result: PageResult) => {
       store.completePage(from.id, result);
@@ -151,48 +240,27 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
       setTurning(true);
       window.clearTimeout(holdTimer.current);
       holdTimer.current = window.setTimeout(() => {
-        const book = bookRef.current, overlay = overlayRef.current, top = topRef.current;
-        if (next === null || !book || !overlay || !top) {
+        const kind = next !== null && next.chapter !== from.chapter ? 'chapter' : 'fold';
+        if (next === null || !startTurn(kind, next, from, () => go({ t: 'next', id: next.id }), { run: () => showCard(from.id) })) {
           // The last page (or no book to turn): the card, then the 目錄
           void showCard(from.id).then(() => {
             setTurning(false);
             go({ t: 'next', id: next?.id ?? null });
           });
-          return;
         }
-        const [vw, vh] = readSize().split('x').map(Number);
-        const layout = bookLayout(vw, vh);
-        const kind = next.chapter !== from.chapter ? 'chapter' : 'fold';
-        const info = chapterInfo(next.chapter);
-        const run = playTurn(
-          turnPlan(kind, reduced),
-          { book, overlay, top, pageBox: () => pageBoxRef.current, scale: layout.scale, at: { x: layout.x + PAGE_VIEW_BOX.x * layout.scale, y: layout.y + PAGE_VIEW_BOX.y * layout.scale } },
-          {
-            fromBackdrop: backdropImage(from.backdrop)?.url ?? null,
-            toBackdrop: backdropImage(next.backdrop)?.url ?? null,
-            card: { chapter: chapterName(next.chapter), title: info.title, landmark: info.landmark, time: info.time },
-          },
-          () => go({ t: 'next', id: next.id }),
-          { run: () => showCard(from.id) },
-        );
-        turnRef.current = run;
-        void run.finished.then(() => {
-          if (turnRef.current === run) turnRef.current = null;
-          // Skipped mid-card: put the card away too
-          clearCardTimers();
-          setCard(null);
-          setTurning(false);
-        });
       }, GRAB_HOLD_MS);
     },
-    [store, reg, go, reduced, showCard],
+    [store, reg, go, showCard, startTurn],
   );
   const onSticker = useCallback((id: string, sticker: 'mischief' | 'tudigong') => store.earnSticker(id, sticker), [store]);
-  // A tap while the card is up turns the page on; any other tap in the turn skips it
+  // A tap while the sticker card is up turns the page on; while the chapter card's lines play it is
+  // the next beat; any other tap in the turn skips it
   const onSkip = useCallback(() => {
     const c = cardRef.current;
     if (c !== null && !c.leaving) c.end();
-    else if (c === null) turnRef.current?.skip();
+    else if (c !== null) return;
+    else if (currentBeat(cardTalkRef.current) !== null) setCardTalk(advance);
+    else turnRef.current?.skip();
   }, []);
 
   const chrome = useMemo(
@@ -209,6 +277,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
     [def, save, go],
   );
 
+  /** The chapter card's lines are up (#102) */
+  const reading = board !== null && currentBeat(cardTalk) !== null;
   const resumeId = resumeTarget(save, reg);
   const resumeDef = reg.pageById(resumeId);
   const layer = nav.layer;
@@ -234,14 +304,24 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
           <>
             {/* The quilt under the book: seen when the camera pulls back in a chapter turn */}
             <Quilt />
-            <div ref={bookRef} className="fixed inset-0" data-book="" data-size={size} data-folded={stickerCard ? '' : undefined} style={covered ? { visibility: 'hidden' } : undefined}>
+            <div
+              ref={bookRef}
+              className="fixed inset-0"
+              data-book=""
+              data-size={size}
+              data-folded={stickerCard ? '' : undefined}
+              aria-hidden={reading ? true : undefined}
+              // The chapter card's still: the camera pulled back to the book on the quilt
+              style={{ ...(covered ? { visibility: 'hidden' } : {}), ...(chapterCard !== undefined ? { transform: cameraTransform(true), transformOrigin: CAMERA_ORIGIN } : {}) }}
+            >
               <PagePlayer
                 key={`${def.id}-${base.run}`}
                 def={def}
                 speed={speed}
                 still={still}
                 reduced={reduced}
-                hold={holdsPage(nav) || turning}
+                // A page that opens with its chapter card is held from its first frame (its intro waits for the card)
+                hold={holdsPage(nav) || turning || opening || chapterCard !== undefined}
                 onDone={(_, result) => onDone(def, result)}
                 onSticker={(sticker) => onSticker(def.id, sticker)}
                 chrome={chrome || undefined}
@@ -249,11 +329,27 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
               />
               <div ref={overlayRef} className="pointer-events-none absolute inset-0" data-turn-overlay="" />
             </div>
-            <div ref={topRef} className="pointer-events-none fixed inset-0 z-30" aria-hidden="true" />
+            {/* The chapter card hangs above the camera, never tilted; its lines under it */}
+            {/* While its lines play, the card is a modal: the book under it is out of reach, a tap is the next beat */}
+            <div
+              ref={boardLayerRef}
+              className={`pointer-events-none fixed inset-0 ${reading ? 'z-[45]' : 'z-30'}`}
+              data-board-layer=""
+              data-still={still ? '' : undefined}
+              role={reading ? 'dialog' : undefined}
+              aria-modal={reading ? true : undefined}
+              aria-label={reading && board !== null ? chapterName(board) : undefined}
+            >
+              {board !== null && <ChapterBoard key={board} chapter={board} hidden={chapterCard === undefined} top={BOARD_TOP} />}
+              <div className="absolute inset-x-0 flex justify-center" style={{ top: `calc(${BOARD_TOP + BOARD_H + 4}px + env(safe-area-inset-top))` }}>
+                <CardTalk beat={currentBeat(cardTalk)} serial={cardTalk.serial} width={Math.min(Number(size.split('x')[0]) - 24, 366)} reduced={reduced} />
+              </div>
+              {reading && <button type="button" className="pointer-events-auto absolute inset-0 cursor-default opacity-0" aria-label={UI.chapterCard.more} onClick={onSkip} data-card-next="" />}
+            </div>
             {(card !== null || stickerCard) && (
               <CardLayer title={reg.pageById(card?.id ?? def.id)?.title ?? def.title} stickers={pageStickers(save, card?.id ?? def.id)} leaving={card?.leaving ?? false} reduced={reduced} still={still} />
             )}
-            {turning && <button type="button" className="fixed inset-0 z-40 cursor-default opacity-0" aria-label={card ? UI.card.next : '跳過'} onClick={onSkip} data-turn-skip="" />}
+            {turning && !reading && <button type="button" className="fixed inset-0 z-40 cursor-default opacity-0" aria-label={card ? UI.card.next : UI.chapterCard.skip} onClick={onSkip} data-turn-skip="" />}
           </>
         )}
         <PauseMenu

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { PageDef } from '../core/types';
 import { buildRegistry, registry } from '../pages';
-import { COVER, holdsPage, homeChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from './nav';
+import { COVER, holdsPage, homeChapter, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from './nav';
 import { completePage, freshSave, openPage, type SaveV1 } from './progress';
 
 /** The navigation state machine (#97; GDD § 2.13): cover → page → menu → contents, and the resume target. */
@@ -113,6 +113,19 @@ describe('navigate', () => {
     const save = completePage(freshSave(reg), 'a', {}, reg);
     expect(resumeTarget(save, reg)).toBe('b');
     expect(isFirstLaunch(freshSave(reg), reg)).toBe(true);
+  });
+});
+
+describe('opensChapter (#102: the chapter card comes first)', () => {
+  test('a chapter\'s first registered page opens it; the others and unknown ids do not', () => {
+    expect(opensChapter('c0p1', registry)).toBe(true);
+    // 1-1 is not built yet: 1-2 stands in as chapter 1's first page
+    expect(opensChapter('c1p2', registry)).toBe(true);
+    const page = (id: string, chapter: number, index: number) => ({ ...registry.pageById('c0p1')!, id, chapter, index });
+    const reg = buildRegistry([page('c0p1', 0, 1), page('c0p2', 0, 2), page('c1p1', 1, 1)]);
+    expect(opensChapter('c0p2', reg)).toBe(false);
+    expect(opensChapter('c1p1', reg)).toBe(true);
+    expect(opensChapter('nope', reg)).toBe(false);
   });
 });
 

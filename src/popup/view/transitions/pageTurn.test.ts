@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { CHAPTER_MS, FOLD_EACH_MS, FOLD_GROUPS, FOLD_MS, FOLD_STAGGER_MS, POPUP_LAYERS, REDUCED_MS, RISE_EACH_MS, RISE_GROUPS, STAGGER_MS, turnPlan } from './pageTurn';
+import { CARD_MS, CHAPTER_MS, FOLD_EACH_MS, FOLD_GROUPS, FOLD_MS, FOLD_STAGGER_MS, POPUP_LAYERS, REDUCED_MS, RISE_EACH_MS, RISE_GROUPS, STAGGER_MS, turnPlan } from './pageTurn';
 import { LAYERS } from '../layers';
 
 /** The page fold and the chapter turn's timelines (#97), pinned to popup art bible § 2.4 and § 8. */
@@ -31,6 +31,7 @@ describe('turnPlan', () => {
     expect(p.camera).not.toBeNull();
     expect(p.camera!.outEnd).toBeLessThan(p.leaf!.start);
     expect(p.camera!.inStart).toBeGreaterThanOrEqual(p.rise.start);
+    expect(p.camera!.inEnd).toBe(p.end);
     // The leaf is slower than the page fold's 300 ms
     expect(p.leaf!.duration).toBeGreaterThan(turnPlan('fold', false).leaf!.duration * 2);
     expect(p.swapAt).toBe(p.leaf!.start);
@@ -38,14 +39,35 @@ describe('turnPlan', () => {
     expect(p.card!.leave).toBeLessThan(p.end);
     // The card waits for any interlude at the swap (the sticker card, #101) before it drops
     expect(p.card!.start).toBeGreaterThan(p.swapAt);
-    expect(p.card!.start).toBeLessThan(p.card!.leave);
+    // #102: it drops and swings, settles (its lines hold the turn there), then lifts before the camera comes in
+    expect(p.card!.settle - p.card!.start).toBe(CARD_MS.drop);
+    expect(p.card!.settle).toBeLessThan(p.card!.leave);
+    expect(p.card!.settle).toBeLessThan(p.camera!.inStart);
+    expect(p.card!.leave).toBeLessThanOrEqual(p.camera!.inStart);
   });
 
-  test('reduced motion: a 0.25 s cross-fade, no fold, no leaf, no camera, no card', () => {
-    for (const kind of ['fold', 'chapter'] as const) {
+  test('the chapter open (#102): the book starts on the quilt, the card drops at once, the pop-ups rise as the camera comes in', () => {
+    const p = turnPlan('open', false);
+    expect(p).toMatchObject({ kind: 'open', swapAt: 0, fold: null, leaf: null });
+    expect(p.camera!.outEnd).toBe(0);
+    expect(p.card!.start).toBeLessThan(300);
+    expect(p.card!.settle).toBeLessThan(p.camera!.inStart);
+    expect(p.card!.leave).toBeLessThanOrEqual(p.camera!.inStart);
+    expect(p.rise.start).toBeGreaterThanOrEqual(p.camera!.inStart);
+    expect(p.camera!.inEnd).toBeLessThanOrEqual(p.end);
+    expect(p.rise.start + (RISE_GROUPS.length - 1) * p.rise.stagger + p.rise.each).toBeLessThanOrEqual(p.end);
+    expect(p.end).toBeLessThanOrEqual(2000);
+  });
+
+  test('reduced motion: a 0.25 s cross-fade, no fold, no leaf, no camera; a chapter card fades in and out', () => {
+    const fold = turnPlan('fold', true);
+    expect(fold).toMatchObject({ reduced: true, swapAt: 0, fold: null, leaf: null, camera: null, card: null, end: REDUCED_MS });
+    expect(REDUCED_MS).toBe(250);
+    for (const kind of ['chapter', 'open'] as const) {
       const p = turnPlan(kind, true);
-      expect(p).toMatchObject({ reduced: true, swapAt: 0, fold: null, leaf: null, camera: null, card: null, end: REDUCED_MS });
-      expect(REDUCED_MS).toBe(250);
+      expect(p).toMatchObject({ reduced: true, swapAt: 0, fold: null, leaf: null, camera: null, rise: { start: 0, each: REDUCED_MS } });
+      expect(p.card).toEqual({ start: 0, settle: CARD_MS.fade, leave: CARD_MS.fade });
+      expect(p.end).toBeGreaterThan(p.card!.leave + CARD_MS.fade);
     }
   });
 

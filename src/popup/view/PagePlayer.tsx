@@ -8,7 +8,7 @@ import { cover, kitCtx, kitDefs, type KitCtx } from '../art';
 import { chapterInfo, chapterLine as contentChapterLine } from '../content';
 import type { SimEvent } from '../core/events';
 import type { Input, LineKey, PageDef, SimState, Word } from '../core/types';
-import { loadLines } from '../content/script';
+import { loadLines, type TalkLine } from '../content/script';
 import type { LearnKey } from '../content/words';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
 import { EMPTY_TALK, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
@@ -274,9 +274,21 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   usedRef.current = used;
   const onSayRef = useRef(onSay);
   onSayRef.current = onSay;
+  // The opening lines wait while the page is held at its start (a turn bringing it in, #102: the
+  // chapter card's lines play first)
+  const holdRef = useRef(hold);
+  holdRef.current = hold;
+  const pendingIntro = useRef<readonly TalkLine[] | null>(null);
+  useEffect(() => {
+    if (hold || pendingIntro.current === null) return;
+    const lines = pendingIntro.current;
+    pendingIntro.current = null;
+    setTalk((q) => enqueue(q, lines));
+  }, [hold]);
   useEffect(() => {
     const open = openLines !== undefined ? loadLines(openLines) : from === undefined ? introLines(def) : [];
-    setTalk(enqueue(EMPTY_TALK, open));
+    pendingIntro.current = holdRef.current ? open : null;
+    setTalk(pendingIntro.current === null ? enqueue(EMPTY_TALK, open) : EMPTY_TALK);
     setBarks(showWords?.poke ? [wantPoke(def, session.frame().state)] : []);
     setRingOpen(showWords?.ring === true);
     const card = showWords?.card;

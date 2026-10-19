@@ -18,10 +18,20 @@ import type { LayerId } from '../layers';
  *
  * **Chapter turn** (a new chapter, ≈ 2.4 s, tap to skip): the camera dollies back to a 3/4 view of
  * the open book on 阿嬤's quilt (one transform on the book), the same fold with a slower leaf
- * (1.4 s), the chapter card dropping in on two strings and swinging, then the camera dollies back in.
+ * (1.4 s), the chapter card (the departure board, `hud/ChapterBoard.tsx`, #102) dropping in on two
+ * strings and swinging twice while its split-flap row flips in, then the camera dollies back in.
+ *
+ * **Chapter open** (#102: a chapter's first page opened from the cover or the 目錄, ≈ 1.9 s): the
+ * same without an old page — the book already lies on the quilt in the 3/4 view with its pop-ups
+ * flat, the card drops in and swings, lifts away, the camera dollies in and the pop-ups rise.
+ *
+ * **The card's lines** (#102, GDD § 5.2): once the card has settled the turn can hold again, as for
+ * the interlude, while the card's narration plays under it tap by tap. Only the camera, the card
+ * and what has not started yet are held: what is already moving (the leaf, the confetti, the new
+ * page rising under the card in a chapter turn) finishes.
  *
  * **Reduced motion:** a 0.25 s cross-fade plus a single 4 px rise of the new layers: no camera, no
- * leaf, no confetti.
+ * leaf, no confetti, no flaps. The chapter card fades in, holds for its lines and fades out.
  *
  * **The interlude** (#101, GDD § 2.8): a turn can stop at `swapAt` — the old pop-ups folded flat,
  * the leaf not yet lifted (with reduced motion: before the fade) — and wait for something to happen
@@ -35,14 +45,22 @@ import type { LayerId } from '../layers';
  * held for the whole turn and the new page starts when it ends.
  */
 
-export type TurnKind = 'fold' | 'chapter';
+export type TurnKind = 'fold' | 'chapter' | 'open';
 
 /** The bible § 2.4 timing table, in ms from the start of the turn. */
 export const FOLD_MS = { settle: 150, foldEnd: 600, leafEnd: 900, end: 1500 } as const;
 export const CHAPTER_MS = { dolly: 450, leafStart: 450 + 450, leaf: 1400, end: 2400 } as const;
+/** The chapter open (#102): the card drops at once over the book on the quilt; the camera comes in after it lifts. */
+export const OPEN_MS = { card: 200, dollyIn: 1200, end: 1900 } as const;
 export const REDUCED_MS = 250;
 /** The chapter card starts dropping this long after the leaf starts to lift (#101). */
 export const CARD_AFTER_LEAF_MS = 60;
+/**
+ * The chapter card's motion (bible § 2.4 "drops in on two strings, swings twice and settles"): the
+ * drop and swings, the pause before it lifts away, the lift; its split-flap tiles flip in one after
+ * another (each 2 × 110 ms, 70 ms apart) while it swings. Reduced motion: fades of `fade`.
+ */
+export const CARD_MS = { drop: 820, stay: 150, lift: 300, flip: 220, flipGap: 70, flipAt: 380, fade: 200 } as const;
 
 /** Per pop-up timing (bible § 8: fold 220 ms ease-in; rise 320 ms, staggered 60 ms by z). */
 export const FOLD_EACH_MS = 220;
@@ -72,15 +90,34 @@ export interface TurnPlan {
   readonly fold: { readonly start: number; readonly each: number; readonly stagger: number } | null;
   readonly leaf: { readonly start: number; readonly duration: number } | null;
   readonly rise: { readonly start: number; readonly each: number; readonly stagger: number };
-  readonly camera: { readonly outEnd: number; readonly inStart: number } | null;
-  readonly card: { readonly start: number; readonly leave: number } | null;
+  /** The camera: away by `outEnd` (0: it starts away), back in from `inStart` to `inEnd` */
+  readonly camera: { readonly outEnd: number; readonly inStart: number; readonly inEnd: number } | null;
+  /** The chapter card: drops from `start`, has settled at `settle` (its lines hold the turn there), lifts away at `leave` */
+  readonly card: { readonly start: number; readonly settle: number; readonly leave: number } | null;
   readonly end: number;
 }
 
 /** The turn's timeline (pure; the unit tests pin it to bible § 2.4). */
 export function turnPlan(kind: TurnKind, reduced: boolean): TurnPlan {
   if (reduced) {
-    return { kind, reduced, swapAt: 0, fold: null, leaf: null, rise: { start: 0, each: REDUCED_MS, stagger: 0 }, camera: null, card: null, end: REDUCED_MS };
+    // The card (a chapter): fades in over the cross-fade, holds for its lines, fades out
+    const card = kind === 'fold' ? null : { start: 0, settle: CARD_MS.fade, leave: CARD_MS.fade };
+    return { kind, reduced, swapAt: 0, fold: null, leaf: null, rise: { start: 0, each: REDUCED_MS, stagger: 0 }, camera: null, card, end: card ? card.leave + CARD_MS.fade + 50 : REDUCED_MS };
+  }
+  if (kind === 'open') {
+    // No old page: the book is on the quilt from the start, its pop-ups flat until the camera comes in
+    const settle = OPEN_MS.card + CARD_MS.drop;
+    return {
+      kind,
+      reduced,
+      swapAt: 0,
+      fold: null,
+      leaf: null,
+      rise: { start: OPEN_MS.dollyIn + 100, each: RISE_EACH_MS, stagger: STAGGER_MS },
+      camera: { outEnd: 0, inStart: OPEN_MS.dollyIn, inEnd: OPEN_MS.dollyIn + CHAPTER_MS.dolly },
+      card: { start: OPEN_MS.card, settle, leave: settle + CARD_MS.stay },
+      end: OPEN_MS.end,
+    };
   }
   if (kind === 'fold') {
     return {
@@ -98,6 +135,7 @@ export function turnPlan(kind: TurnKind, reduced: boolean): TurnPlan {
   // The chapter turn: dolly out, fold, a slow leaf, rise, dolly in, inside ≈ 2.4 s
   const leafStart = CHAPTER_MS.dolly + FOLD_MS.foldEnd - FOLD_MS.settle; // the fold runs while the camera settles
   const leafEnd = leafStart + CHAPTER_MS.leaf * 0.6;
+  const cardStart = leafStart + CARD_AFTER_LEAF_MS;
   return {
     kind,
     reduced,
@@ -105,12 +143,22 @@ export function turnPlan(kind: TurnKind, reduced: boolean): TurnPlan {
     fold: { start: CHAPTER_MS.dolly - 150, each: FOLD_EACH_MS, stagger: FOLD_STAGGER_MS },
     leaf: { start: leafStart, duration: leafEnd - leafStart },
     rise: { start: leafEnd, each: RISE_EACH_MS, stagger: STAGGER_MS },
-    camera: { outEnd: CHAPTER_MS.dolly, inStart: CHAPTER_MS.end - CHAPTER_MS.dolly },
+    camera: { outEnd: CHAPTER_MS.dolly, inStart: CHAPTER_MS.end - CHAPTER_MS.dolly, inEnd: CHAPTER_MS.end },
     // The card drops in as the leaf lifts, after any interlude (the sticker card, #101)
-    card: { start: leafStart + CARD_AFTER_LEAF_MS, leave: CHAPTER_MS.end - CHAPTER_MS.dolly - 150 },
+    card: { start: cardStart, settle: cardStart + CARD_MS.drop, leave: cardStart + CARD_MS.drop + CARD_MS.stay },
     end: CHAPTER_MS.end,
   };
 }
+
+/** The camera's 3/4 view of the book on the quilt (and home), as the book's transform. */
+export function cameraTransform(away: boolean): string {
+  const { scale, rotateX, rotateY, rotateZ, lift } = CAMERA;
+  return away
+    ? `perspective(1250px) translateY(${lift}%) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`
+    : 'perspective(1250px) translateY(0) rotateX(0) rotateY(0) rotateZ(0) scale(1)';
+}
+/** The camera's pivot on the book. */
+export const CAMERA_ORIGIN = '50% 55%';
 
 /** What the driver needs from the screen. */
 export interface TurnTargets {
@@ -118,8 +166,6 @@ export interface TurnTargets {
   readonly book: HTMLElement;
   /** Where the temporary DOM goes: a full-screen layer over the book, inside the camera's transform */
   readonly overlay: HTMLElement;
-  /** Above the camera (the chapter card hangs here, never tilted) */
-  readonly top: HTMLElement;
   /** The page box (`data-page-box`) of the page shown now; read again after the swap */
   readonly pageBox: () => HTMLElement | null;
   /** Page units → CSS px */
@@ -133,14 +179,25 @@ export interface TurnPages {
   readonly fromBackdrop: string | null;
   /** The new page's baked backdrop (the leaf's back: the new floor) */
   readonly toBackdrop: string | null;
-  /** The new chapter, for the card */
-  readonly card?: { readonly chapter: string; readonly title: string; readonly landmark: string; readonly time: string };
+  /**
+   * The chapter card (#102): the shell renders the departure board above the camera, hidden; the
+   * turn shows it when it drops (read then: it may mount after the turn starts) and hides it again
+   * at the end. Its split-flap tiles are its `[data-flap]` halves.
+   */
+  readonly card?: () => HTMLElement | null;
 }
 
-/** Something played over the folded page before the leaf turns (the sticker card, #101). */
+/** Something played while the turn holds (the sticker card over the folded page, #101; the chapter card's lines, #102). */
 export interface TurnInterlude {
   /** Resolves when the turn may go on */
   run(): Promise<void>;
+}
+
+export interface TurnHooks {
+  /** At `swapAt`, over the folded page, before the leaf turns (the sticker card) */
+  readonly interlude?: TurnInterlude;
+  /** At the card's `settle`, while it hangs (its narration lines) */
+  readonly card?: TurnInterlude;
 }
 
 export interface TurnRun {
@@ -193,9 +250,12 @@ const based = (g: SVGGElement) => {
 };
 
 /** Builds and plays a turn. `swap` replaces the old page with the new one (the shell's state change). */
-export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages, swap: () => void, interlude?: TurnInterlude): TurnRun {
+export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages, swap: () => void, hooks: TurnHooks = {}): TurnRun {
   const anims: Animation[] = [];
+  /** What the card's hold lets finish (#102): what is already moving in a chapter turn */
+  const free = new Set<Animation>();
   const temp: HTMLElement[] = [];
+  let cardNode: HTMLElement | null = null;
   const s = targets.scale;
   let swapped = false;
   let done = false;
@@ -205,6 +265,10 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
   const add = (a: Animation) => {
     anims.push(a);
     return a;
+  };
+  const addFree = (a: Animation) => {
+    free.add(a);
+    return add(a);
   };
   // Steps at a time from the turn's start; held, with the running animations, during the interlude
   const steps: { at: number; fn: () => void; handle: number; fired: boolean }[] = [];
@@ -222,16 +286,15 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
     steps.push(st);
     arm(st, 0);
   };
-  if (interlude) {
-    // Registered first: at `swapAt` it runs before the steps due at the same time (the leaf, the swap)
-    later(plan.swapAt, () => {
+  /** Holds the turn at `at` while `run` plays: the pending steps and the running animations `pick` chooses. */
+  const holdAt = (at: number, run: () => Promise<void>, pick: (a: Animation) => boolean) =>
+    later(at, () => {
       if (done) return;
-      const now = plan.swapAt;
-      const running = anims.filter((a) => a.playState === 'running');
+      const running = anims.filter((a) => a.playState === 'running' && pick(a));
       running.forEach((a) => a.pause());
       for (const st of steps) if (!st.fired) window.clearTimeout(st.handle);
-      held = { at: now, anims: running };
-      void interlude.run().then(() => {
+      held = { at, anims: running };
+      void run().then(() => {
         const h = held;
         held = null;
         if (done || h === null) return;
@@ -239,7 +302,8 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
         for (const st of steps) if (!st.fired) arm(st, h.at);
       });
     });
-  }
+  // Registered first: at `swapAt` it runs before the steps due at the same time (the leaf, the swap)
+  if (hooks.interlude) holdAt(plan.swapAt, () => hooks.interlude!.run(), () => true);
   const doSwap = () => {
     if (swapped) return;
     swapped = true;
@@ -267,14 +331,16 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
 
   // ——— The camera (chapter turn): the whole book dollies back onto the quilt and in again ———
   if (plan.camera) {
-    const { scale, rotateX, rotateY, rotateZ, lift } = CAMERA;
-    const away = `perspective(1250px) translateY(${lift}%) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`;
-    const home = 'perspective(1250px) translateY(0) rotateX(0) rotateY(0) rotateZ(0) scale(1)';
-    targets.book.style.transformOrigin = '50% 55%';
-    add(targets.book.animate(
-      [{ transform: home, offset: 0 }, { transform: away, offset: plan.camera.outEnd / plan.end }, { transform: away, offset: plan.camera.inStart / plan.end }, { transform: home, offset: 1 }],
-      { duration: plan.end, easing: 'cubic-bezier(.45,0,.25,1)' },
-    ));
+    const away = cameraTransform(true);
+    const home = cameraTransform(false);
+    const { outEnd, inStart, inEnd } = plan.camera;
+    const ease = 'cubic-bezier(.45,0,.25,1)';
+    targets.book.style.transformOrigin = CAMERA_ORIGIN;
+    // Each move eases on its own; the plateau between them holds still
+    const frames: Keyframe[] = outEnd > 0 ? [{ transform: home, offset: 0, easing: ease }] : [];
+    frames.push({ transform: away, offset: outEnd / plan.end }, { transform: away, offset: inStart / plan.end, easing: ease }, { transform: home, offset: inEnd / plan.end });
+    if (inEnd < plan.end) frames.push({ transform: home, offset: 1 });
+    add(targets.book.animate(frames, { duration: plan.end, fill: 'both' }));
   }
 
   // ——— The leaf, the old floor under it, confetti off its edge ———
@@ -289,10 +355,10 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
     });
     const floor = el('div', { position: 'absolute', left: '0', right: '0', top: px(LEAF_H * s), height: px(FLOOR_H * s), ...paint(pages.fromBackdrop, s, LEAF_H) }, stage, { 'data-turn-floor': '' });
     const shade = el('div', { position: 'absolute', inset: '0', background: `linear-gradient(180deg, ${C.shadow}, transparent)`, opacity: '0' }, floor);
-    add(shade.animate([{ opacity: 0 }, { opacity: 0.55, offset: 0.55 }, { opacity: 0.1 }], { duration: plan.leaf.duration, delay: plan.leaf.start, fill: 'both' }));
+    addFree(shade.animate([{ opacity: 0 }, { opacity: 0.55, offset: 0.55 }, { opacity: 0.1 }], { duration: plan.leaf.duration, delay: plan.leaf.start, fill: 'both' }));
     // The hinge at the gutter; the leaf shrinks to the floor's depth as it lands
     const hinge = el('div', { position: 'absolute', left: '0', right: '0', top: px(LEAF_H * s), height: '0', transformStyle: 'preserve-3d', transformOrigin: '50% 0' }, stage);
-    add(hinge.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(1)', offset: 0.5 }, { transform: `scaleY(${LAND.toFixed(3)})` }], { duration: plan.leaf.duration, delay: plan.leaf.start, fill: 'both', easing: 'linear' }));
+    addFree(hinge.animate([{ transform: 'scaleY(1)' }, { transform: 'scaleY(1)', offset: 0.5 }, { transform: `scaleY(${LAND.toFixed(3)})` }], { duration: plan.leaf.duration, delay: plan.leaf.start, fill: 'both', easing: 'linear' }));
     const strip = LEAF_H / 3;
     let parent = hinge;
     const strips: HTMLElement[] = [];
@@ -307,9 +373,9 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
     // The paper's lit edge on the free end
     el('div', { position: 'absolute', left: '0', right: '0', top: '0', height: '2px', background: C.foldLitHigh, transform: 'translateZ(.5px)' }, strips[2]);
     const leafTiming = { duration: plan.leaf.duration, delay: plan.leaf.start, fill: 'both' as const, easing: 'cubic-bezier(.55,.05,.45,1)' };
-    add(strips[0].animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-180deg)' }], leafTiming));
-    add(strips[1].animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-26deg)', offset: 0.45 }, { transform: 'rotateX(8deg)', offset: 0.85 }, { transform: 'rotateX(0deg)' }], leafTiming));
-    add(strips[2].animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-22deg)', offset: 0.5 }, { transform: 'rotateX(10deg)', offset: 0.88 }, { transform: 'rotateX(0deg)' }], leafTiming));
+    addFree(strips[0].animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-180deg)' }], leafTiming));
+    addFree(strips[1].animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-26deg)', offset: 0.45 }, { transform: 'rotateX(8deg)', offset: 0.85 }, { transform: 'rotateX(0deg)' }], leafTiming));
+    addFree(strips[2].animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-22deg)', offset: 0.5 }, { transform: 'rotateX(10deg)', offset: 0.88 }, { transform: 'rotateX(0deg)' }], leafTiming));
     later(plan.leaf.start + plan.leaf.duration, () => stage.remove());
     // Confetti: 14 paper flecks in the chapter palette thrown off the leaf's free edge
     const tones = [C.goldLight, C.washiPink, C.moonRim, C.page];
@@ -329,35 +395,53 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
       temp.push(fleck);
       const dx = (fx0 - 0.5) * 120;
       const dy = (VB.h * 0.75 + (i % 5) * 18) * s;
-      add(fleck.animate(
+      addFree(fleck.animate(
         [{ opacity: 0, transform: 'translate(0,0) rotate(0deg)' }, { opacity: 0.95, offset: 0.1 }, { opacity: 0.9, transform: `translate(${px(dx)}, ${px(dy * 0.7)}) rotate(${200 + i * 40}deg)`, offset: 0.8 }, { opacity: 0, transform: `translate(${px(dx * 1.2)}, ${px(dy)}) rotate(${300 + i * 50}deg)` }],
         { duration: 900, delay: plan.leaf.start + 80 + (i % 7) * 25, easing: 'cubic-bezier(.3,.6,.4,1)', fill: 'both' },
       ));
     }
-  } else {
-    // Reduced motion: the old page's backdrop fades over the new page
+  } else if (plan.reduced) {
+    // Reduced motion: the old page's backdrop (a chapter open: the night) fades over the new page
     later(0, () => {
       const fade = el('div', { position: 'absolute', ...box, ...paint(pages.fromBackdrop, s, 0) }, targets.overlay, { 'data-turn': 'fade' });
       temp.push(fade);
-      add(fade.animate([{ opacity: 1 }, { opacity: 0 }], { duration: REDUCED_MS, easing: 'ease-out', fill: 'forwards' }));
+      addFree(fade.animate([{ opacity: 1 }, { opacity: 0 }], { duration: REDUCED_MS, easing: 'ease-out', fill: 'forwards' }));
       doSwap();
     });
+  } else {
+    // A chapter open: no old page to turn away
+    later(plan.swapAt, doSwap);
   }
 
-  // ——— The chapter card on two strings ———
+  // ——— The chapter card on two strings (#102: the departure board) ———
   if (plan.card && pages.card) {
-    const card = buildCard(pages.card, targets.top);
-    temp.push(card);
-    const swing = [
-      { transform: 'translateY(-115%) rotate(-4deg)', offset: 0 },
-      { transform: 'translateY(4%) rotate(3.5deg)', offset: 0.22 },
-      { transform: 'translateY(0) rotate(-2.2deg)', offset: 0.36 },
-      { transform: 'translateY(0) rotate(1.2deg)', offset: 0.5 },
-      { transform: 'translateY(0) rotate(0deg)', offset: 0.62 },
-      { transform: 'translateY(0) rotate(0deg)', offset: 0.86 },
-      { transform: 'translateY(-115%) rotate(2deg)', offset: 1 },
-    ];
-    add(card.animate(swing, { duration: plan.end - plan.card.start, delay: plan.card.start, easing: 'ease-in-out', fill: 'both' }));
+    const { start, settle, leave } = plan.card;
+    later(start, () => {
+      cardNode = pages.card?.() ?? null;
+      if (cardNode === null) return;
+      cardNode.style.visibility = 'visible';
+      if (plan.reduced) {
+        add(cardNode.animate([{ opacity: 0 }, { opacity: 1 }], { duration: settle - start, easing: 'ease-out', fill: 'both' }));
+        return;
+      }
+      add(cardNode.animate(CARD_DROP, { duration: settle - start, fill: 'both' }));
+      // The split-flap row flips in while it swings: each tile's blank top half falls, its new bottom half lands
+      cardNode.querySelectorAll<HTMLElement>('[data-flap]').forEach((flap) => {
+        const i = Number(flap.dataset.flapIndex ?? 0);
+        const top = flap.dataset.flap === 'top';
+        const half = CARD_MS.flip / 2;
+        const delay = CARD_MS.flipAt + i * CARD_MS.flipGap + (top ? 0 : half);
+        const frames = top ? [{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-90deg)' }] : [{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(0deg)' }];
+        addFree(flap.animate(frames, { duration: half, delay, easing: top ? 'ease-in' : 'cubic-bezier(.2,.7,.4,1.3)', fill: 'both' }));
+      });
+    });
+    // Its lines (#102): the turn holds with the card hanging; what already moves in a chapter turn finishes
+    if (hooks.card) holdAt(settle, () => hooks.card!.run(), (a) => !free.has(a));
+    later(leave, () => {
+      if (cardNode === null) return;
+      const frames = plan.reduced ? [{ opacity: 1 }, { opacity: 0 }] : [{ transform: 'translateY(0) rotate(0deg)' }, { transform: 'translateY(4%) rotate(-1deg)', offset: 0.2 }, { transform: 'translateY(-115%) rotate(2deg)' }];
+      add(cardNode.animate(frames, { duration: plan.reduced ? CARD_MS.fade : CARD_MS.lift, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' }));
+    });
   }
 
   // ——— The new page rises, z1 → z5, the standees last ———
@@ -368,17 +452,25 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
       const frames = plan.reduced
         ? [{ transform: 'translateY(4px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }]
         : [{ transform: 'scaleY(.03)', opacity: 0 }, { transform: 'scaleY(.2)', opacity: 1, offset: 0.12 }, { transform: 'scaleY(1.07)', offset: 0.7 }, { transform: 'scaleY(1)' }];
-      add(g.animate(frames, { duration: plan.rise.each, delay, easing: plan.reduced ? 'ease-out' : 'cubic-bezier(.3,.7,.4,1)', fill: 'backwards' }));
+      // In a chapter turn the page rises under the hanging card and finishes while its lines play;
+      // in a chapter open it waits, flat, for the camera
+      const a = g.animate(frames, { duration: plan.rise.each, delay, easing: plan.reduced ? 'ease-out' : 'cubic-bezier(.3,.7,.4,1)', fill: 'backwards' });
+      if (plan.kind === 'open' && !plan.reduced) add(a);
+      else addFree(a);
     }));
   };
-  // The new page mounts on the swap: raise it on the next frame (it is under the leaf until then)
-  later(plan.swapAt + 1, () => requestAnimationFrame(() => raise()));
+  // The new page mounts on the swap: raise it on the next frame (it is under the leaf until then).
+  // A chapter open's page is already there: flatten it at once, so it never shows standing first
+  if (plan.kind === 'open' && !plan.reduced) raise();
+  else later(plan.swapAt + 1, () => requestAnimationFrame(() => raise()));
 
   const finish = () => {
     if (done) return;
     done = true;
     doSwap();
     for (const st of steps) window.clearTimeout(st.handle);
+    // The card is the shell's: hidden before its animations let go of it
+    if (cardNode) cardNode.style.visibility = 'hidden';
     for (const a of anims) a.cancel();
     for (const node of temp) node.remove();
     targets.overlay.querySelectorAll('[data-turn],[data-confetti]').forEach((n) => n.remove());
@@ -393,20 +485,15 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
   return { finished, skip: finish };
 }
 
-/** The chapter card (bible § 7): a deckled paper card on two strings, a red spine bar, 「第N章 · title」, the landmark, the time chip, the 翻 seal. */
-function buildCard(info: NonNullable<TurnPages['card']>, parent: HTMLElement): HTMLElement {
-  const wrap = el('div', { position: 'absolute', left: '50%', top: '0', width: '300px', marginLeft: '-150px', pointerEvents: 'none', transformOrigin: '50% 0' }, parent, { 'data-turn-card': '' });
-  wrap.innerHTML = `<svg width="300" height="190" viewBox="0 0 300 190" aria-hidden="true" style="display:block;overflow:visible">
-    <path d="M70 0V74M230 0V68" stroke="${C.standeeCard}" stroke-width="1.4" opacity=".85"/>
-    <g transform="translate(150 118) rotate(-2.5)">
-      <rect x="-133" y="-46" width="270" height="100" rx="4" fill="${C.shadow}" opacity=".45" transform="translate(3 6)"/>
-      <rect x="-136" y="-50" width="272" height="100" rx="4" fill="${C.page}"/>
-      <rect x="-136" y="-50" width="272" height="100" rx="4" fill="none" stroke="${C.cutRim}" stroke-opacity=".6"/>
-      <rect x="-136" y="-50" width="15" height="100" fill="${C.seal}"/>
-      <text x="-108" y="-17" font-family="'Chiron GoRound TC'" font-weight="700" font-size="20" fill="${C.inkSoft}" letter-spacing="1">${info.chapter} · ${info.title}</text>
-      <text x="-109" y="32" font-family="'Noto Serif TC'" font-weight="900" font-size="36" fill="${C.ink}" letter-spacing="2" textLength="${Math.min(160, info.landmark.length * 38)}" lengthAdjust="spacingAndGlyphs">${info.landmark}</text>
-      <g transform="translate(62 8)"><rect width="66" height="30" rx="15" fill="${C.cover}"/><text x="33" y="22" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="20" fill="${C.goldLight}">${info.time}</text></g>
-      <g transform="translate(110 -26)"><rect x="-15" y="-15" width="30" height="30" rx="6" fill="${C.seal}"/><text y="7" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="18" fill="${C.sealGlyph}">翻</text></g>
-    </g></svg>`;
-  return wrap;
-}
+/**
+ * The card's drop (bible § 2.4, proof C): it falls from above the screen on its two strings,
+ * overshoots, swings twice, smaller each time, and settles. Its pivot is the strings' top.
+ */
+const CARD_DROP: Keyframe[] = [
+  { transform: 'translateY(-115%) rotate(-4deg)', offset: 0, easing: 'cubic-bezier(.4,0,.8,.6)' },
+  { transform: 'translateY(3%) rotate(3.2deg)', offset: 0.3, easing: 'ease-in-out' },
+  { transform: 'translateY(-0.5%) rotate(-2deg)', offset: 0.5, easing: 'ease-in-out' },
+  { transform: 'translateY(0) rotate(1.1deg)', offset: 0.68, easing: 'ease-in-out' },
+  { transform: 'translateY(0) rotate(-0.4deg)', offset: 0.84, easing: 'ease-in-out' },
+  { transform: 'translateY(0) rotate(0deg)', offset: 1 },
+];
