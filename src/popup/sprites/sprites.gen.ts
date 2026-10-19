@@ -19,6 +19,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
     },
     "source": "c3bd2e58fb120247"
   },
+  "grades": {
+    "775-785-860": {
+      "by": [0.775, 0.785, 0.86],
+      "chapters": [0, 1]
+    }
+  },
   "sprites": {
     "baokaka.crawl": {
       "kind": "pose",
@@ -76,7 +82,22 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           ]
         }
       },
-      "source": "deb33bd6622f798d"
+      "source": "deb33bd6622f798d",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7516, 13312],
+            [7658, 12972],
+            [7502, 12880],
+            [7662, 13246],
+            [7558, 13204],
+            [7566, 13086],
+            [7664, 13092],
+            [7522, 12886]
+          ],
+          "source": "67dba7841b374734"
+        }
+      }
     },
     "baokaka.sit": {
       "kind": "pose",
@@ -102,7 +123,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "8039e94a104c813e"
+      "source": "8039e94a104c813e",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7516, 12906]
+          ],
+          "source": "a18dc8097938af85"
+        }
+      }
     },
     "baokaka.clap": {
       "kind": "pose",
@@ -129,7 +158,16 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "7635a51216611e95"
+      "source": "7635a51216611e95",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7326, 12826],
+            [7148, 12638]
+          ],
+          "source": "98108ff49cda7440"
+        }
+      }
     },
     "baokaka.reach": {
       "kind": "pose",
@@ -156,7 +194,16 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "25faf9deecf589d2"
+      "source": "25faf9deecf589d2",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7424, 12646],
+            [7568, 12840]
+          ],
+          "source": "c985a7a9fe6a638b"
+        }
+      }
     },
     "baokaka.hold": {
       "kind": "pose",
@@ -182,7 +229,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "695c410edb9feb59"
+      "source": "695c410edb9feb59",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7540, 12900]
+          ],
+          "source": "2eb7760af841c2df"
+        }
+      }
     },
     "baokaka.eat": {
       "kind": "pose",
@@ -208,7 +263,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "821ac385ab2555e2"
+      "source": "821ac385ab2555e2",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7312, 12760]
+          ],
+          "source": "8e0b7687694474c8"
+        }
+      }
     },
     "baokaka.point": {
       "kind": "pose",
@@ -234,7 +297,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "8f2173424fb6f5a2"
+      "source": "8f2173424fb6f5a2",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7650, 13006]
+          ],
+          "source": "0e25bc8e9c3e3f73"
+        }
+      }
     },
     "baokaka.wave": {
       "kind": "pose",
@@ -287,7 +358,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "04a7ba9e89e9327f"
+      "source": "04a7ba9e89e9327f",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7532, 13058]
+          ],
+          "source": "3839959847282870"
+        }
+      }
     },
     "baokaka.cry": {
       "kind": "pose",
@@ -314,7 +393,16 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "515a35b9125e1904"
+      "source": "515a35b9125e1904",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7242, 12992],
+            [7344, 12258]
+          ],
+          "source": "4d7a7fab088b561d"
+        }
+      }
     },
     "baokaka.refuse": {
       "kind": "pose",
@@ -567,7 +655,16 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "86146727d49e3218"
+      "source": "86146727d49e3218",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7234, 12702],
+            [7256, 12632]
+          ],
+          "source": "456192c7bbaa6301"
+        }
+      }
     },
     "baokaka.watch": {
       "kind": "pose",
@@ -594,7 +691,16 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "c9b7bb5c5ade73d1"
+      "source": "c9b7bb5c5ade73d1",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7414, 13022],
+            [7336, 12960]
+          ],
+          "source": "d46fbc9bdfddb750"
+        }
+      }
     },
     "baokaka.giggle": {
       "kind": "pose",
@@ -620,7 +726,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "fd18a986a794fc34"
+      "source": "fd18a986a794fc34",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7486, 12952]
+          ],
+          "source": "76b2565d64f41fa3"
+        }
+      }
     },
     "baokaka.touchwatch": {
       "kind": "pose",
@@ -646,7 +760,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "738f8c9f4478fadc"
+      "source": "738f8c9f4478fadc",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7510, 13112]
+          ],
+          "source": "4054d61701f5349f"
+        }
+      }
     },
     "baokaka.carried": {
       "kind": "pose",
@@ -766,7 +888,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "fec8bb77cbeb6ef2"
+      "source": "fec8bb77cbeb6ef2",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [4856, 8204]
+          ],
+          "source": "223270e920646198"
+        }
+      }
     },
     "mocha.loaf": {
       "kind": "pose",
@@ -792,7 +922,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "e0ff080cf0b54652"
+      "source": "e0ff080cf0b54652",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [4090, 7062]
+          ],
+          "source": "954c81542e373074"
+        }
+      }
     },
     "mocha.sleep": {
       "kind": "pose",
@@ -851,7 +989,17 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           ]
         }
       },
-      "source": "0bac2cbab7ef6f33"
+      "source": "0bac2cbab7ef6f33",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [5498, 9464],
+            [5352, 9438],
+            [5914, 10234]
+          ],
+          "source": "e5a6a526cf4f9f2a"
+        }
+      }
     },
     "mocha.perch": {
       "kind": "pose",
@@ -903,7 +1051,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "73a0e831c47f453f"
+      "source": "73a0e831c47f453f",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [4360, 7414]
+          ],
+          "source": "d25da97327745f68"
+        }
+      }
     },
     "mocha.push": {
       "kind": "pose",
@@ -935,7 +1091,16 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           ]
         }
       },
-      "source": "8ef7cd0063e08fcc"
+      "source": "8ef7cd0063e08fcc",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [4896, 8212],
+            [5164, 8764]
+          ],
+          "source": "e2ac6e838acbda5f"
+        }
+      }
     },
     "mocha.lure": {
       "kind": "pose",
@@ -962,7 +1127,16 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "4ba008c5604d5f7b"
+      "source": "4ba008c5604d5f7b",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [5110, 8652],
+            [5108, 8732]
+          ],
+          "source": "30221653052f4d7c"
+        }
+      }
     },
     "mocha.stretch": {
       "kind": "pose",
@@ -1014,7 +1188,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "fd30e5c4031eca81"
+      "source": "fd30e5c4031eca81",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [6322, 10754]
+          ],
+          "source": "dcabc1896b82e941"
+        }
+      }
     },
     "mocha.rub": {
       "kind": "pose",
@@ -1066,7 +1248,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "97d097bc70417623"
+      "source": "97d097bc70417623",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [5058, 8416]
+          ],
+          "source": "85ef901ab9607ac5"
+        }
+      }
     },
     "mocha.purr": {
       "kind": "pose",
@@ -1092,7 +1282,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "cbbc915047f11db0"
+      "source": "cbbc915047f11db0",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [4092, 6998]
+          ],
+          "source": "7f21e2329adbf180"
+        }
+      }
     },
     "mocha.inbox": {
       "kind": "pose",
@@ -1118,7 +1316,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "2ddce11ea949037c"
+      "source": "2ddce11ea949037c",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [3100, 5266]
+          ],
+          "source": "d2a9b24ca536dda9"
+        }
+      }
     },
     "mocha.album": {
       "kind": "pose",

@@ -49,6 +49,23 @@ export interface SpriteDef {
   readonly anims: Readonly<Record<string, SpriteAnimDef>>;
   /** Hash of everything the bake read: the next sync re-bakes the sprite only when it changes */
   readonly source: string;
+  /**
+   * The half-graded variants (#96, D-59), by grade key (`SpriteManifest.grades`): per frame, the
+   * bytes of the @2x and @3x files at `gradedStem(stem, key)`. Same box, anchor and frames.
+   */
+  readonly graded?: Readonly<Record<string, GradedFrames>>;
+}
+
+export interface GradedFrames {
+  readonly bytes: readonly (readonly [number, number])[];
+  readonly source: string;
+}
+
+/** One character grade (half the chapter's grade, D-59) and the chapters that show it. */
+export interface GradeDef {
+  /** The per-channel multiplier baked into the print */
+  readonly by: readonly [number, number, number];
+  readonly chapters: readonly number[];
 }
 
 export interface FloorDef {
@@ -64,6 +81,8 @@ export interface FloorDef {
 export interface SpriteManifest {
   readonly version: 1;
   readonly floor: FloorDef;
+  /** The character grades baked (#96): by key, for the chapters with registered pages */
+  readonly grades: Readonly<Record<string, GradeDef>>;
   readonly sprites: Readonly<Record<string, SpriteDef>>;
 }
 
@@ -72,6 +91,9 @@ export const pickScale = (dpr: number): Scale => (dpr > 2 ? 3 : 2);
 
 /** The file name of a frame stem at a scale. */
 export const frameFile = (stem: string, scale: Scale): string => `${stem}@${scale}x.webp`;
+
+/** The stem of a frame's graded variant: `g/<grade key>/<stem>`. */
+export const gradedStem = (stem: string, grade: string): string => `g/${grade}/${stem}`;
 
 /** Whether a sprite drawn for `facing` is mirrored (frames face right; `noMirror` poses never flip). */
 export const isMirrored = (sprite: Pick<SpriteDef, 'noMirror'>, facing: Facing): boolean => facing === 'l' && !sprite.noMirror;
@@ -128,6 +150,10 @@ export function validateManifest(m: SpriteManifest): string[] {
     if (!(s.foot[0] <= s.foot[1])) out.push(`${id}: foot extent reversed`);
     if (!(s.mapScale > 0)) out.push(`${id}: mapScale`);
     if (!s.anims.main) out.push(`${id}: no main animation`);
+    for (const [key, g] of Object.entries(s.graded ?? {})) {
+      if (!(key in m.grades)) out.push(`${id}: graded '${key}' is not a manifest grade`);
+      if (g.bytes.length !== s.files.length) out.push(`${id}: graded '${key}' has ${g.bytes.length} byte counts for ${s.files.length} frames`);
+    }
     for (const [name, a] of Object.entries(s.anims)) {
       const where = `${id}/${name}`;
       if (a.frames.length === 0) out.push(`${where}: no frames`);
