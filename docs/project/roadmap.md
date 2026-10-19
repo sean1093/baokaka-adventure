@@ -36,7 +36,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [89](https://github.com/sean1093/baokaka-adventure/issues/89) | PageView: book frame and page renderer with the bible's z-layer table, gutter AO, V-fold crease, floor perspective, interpolation and session runner | ui, engine, m0 | #84, #139 | done (#154) |
 | [90](https://github.com/sean1093/baokaka-adventure/issues/90) | Gestures: tap, one-finger drag, magnet, snap, debounce, locked wobble and touch-pauses-the-world | ui, m0 | #89 | done (#155) |
 | [91](https://github.com/sean1093/baokaka-adventure/issues/91) | PageLab at #/pagelab: overlays, step/play, solver panel, state inspector, edit mode | chore, ui, m0 | #90, #85, #87 | done (#157) |
-| [92](https://github.com/sean1093/baokaka-adventure/issues/92) | Visual QA for 翻翻台北: PageLab fixtures, screenshot targets and UI checks for R5/R6 | chore, ui, m0 | #91 | todo |
+| [92](https://github.com/sean1093/baokaka-adventure/issues/92) | Visual QA for 翻翻台北: PageLab fixtures, screenshot targets and UI checks for R5/R6 | chore, ui, m0 | #91 | done |
 | **M1 · Vertical slice (prologue + 台北車站)** | | | | |
 | [140](https://github.com/sean1093/baokaka-adventure/issues/140) | Touchable affordance system: reserved marigold + lint, verb seals, grips, idle wiggle, hint glow/ghost-hand visuals, locked/drag states, hold-to-reveal | ui, art, engine, m1 | #139, #90 | todo |
 | [93](https://github.com/sean1093/baokaka-adventure/issues/93) | Save format popup.save.v1: progress, stickers, photos, settings; discard RPG saves gracefully | engine, m1 | #87 | todo |

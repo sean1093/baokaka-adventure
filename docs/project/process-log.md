@@ -319,3 +319,32 @@ Format:
 - **Visual QA:** `kit-swatches` baseline updated (the shared PageLab header is one row shorter); `popup-c0p1`/`popup-c1p2` unchanged (0 px).
 - **Tests:** `labParams.test.ts`, `copyTs.test.ts` (incl. evaluating the output back to the data), `labModel.test.ts`, `solverJob.test.ts` (reports, dead ends load and stay dead, from-state, edited copies, errors). Decision D-52; GDD § 3.10 engineers' note; handbook § 5.
 - **Follow-ups:** #92 adds `fixture=` screenshot targets to the lab; #100 may reuse `solverJob.ts`; #140's affordance looks will show in the readability views.
+
+### 2026-10-19 · Staff engineer · #92 Visual QA for 翻翻台北: PageLab fixtures, screenshot targets, R5/R6 UI checks (PR #PRNUM)
+- **Fixtures.** `src/popup/dev/fixtures.ts` holds `POPUP_FIXTURES`. Each fixture is a page id plus a step list, replayed through `core/step`, and pins its expected mode or event. There are three so far:
+  - `c0p1-start`: idle in the crib;
+  - `c1p2-reaching`: on the jammed train at the gap;
+  - `c1p2-riding`: the train carries him back, a `ride` event.
+- **The view.** `FixtureView.tsx` shows a fixture at `#/pagelab?fixture=<name>[&still=1]`: `PagePlayer` full screen with no lab chrome. `#/pagelab?section=fixtures` is the index the scripts read.
+  - `PageSession` and `PagePlayer` gained a `prev` option: the page opens playing the last tick.
+  - `PagePlayer` gained a `still` option: the clock is held, the frame is drawn at its tick's end, and `[data-still]` turns off every CSS animation and transition.
+- **Visual check.** Every popup fixture is a target, at 390×844 and 375×667. The six new baselines are committed, and every existing target is unchanged.
+- **UI check.** The new `scripts/popup-checks.mjs`, run by `npm run check:ui` (`--popup` runs it alone), checks:
+  - R5 text size (20 px, or 24 px under `[data-text-size="big"]`);
+  - R5 contrast of 7:1, against a screenshot taken with all text hidden, with 90 % pixel coverage;
+  - R6 hit areas of 48×48, including `[data-hit]`;
+  - only fades under reduced motion;
+  - no flashing above 3 Hz;
+  - plus a detector self-test.
+
+  Lettering inside pictures (`data-art-text`, added to the station name plate, the board digit and the seal glyph) is skipped. Kit snapshot lengths were updated for the attribute.
+- **Waivers.** Two waivers are printed on every run: the static HUD and bottom bar until #97, and the bubble's 「要！」 at 375×667 until #98.
+- **Play check.** `check:play` fails when a registered page has no scenario. `npm run qa` runs the visual, UI and play checks (the #90 note).
+- **Results.** `npm run visual` passes: everything ok, with the 6 new baselines. `npm run check:ui` passes: the RPG checks, then the popup checks, with 16 art runs skipped and the waivers listed. `check:play` passes 8/8, plus the page coverage check. Tests: 1642, plus `fixtures.test.ts` and the session `prev` test. The build has no fixture code; only `data-still` ships, in `PagePlayer`.
+- **Screenshots.** `docs/screenshots/92/`.
+- **Decision.** D-53. Handbook § 5 has a new subsection, and GDD § 3.10 an engineers' note.
+- **Follow-ups.** Each is commented on its issue:
+  - #97 removes the HUD waiver;
+  - #98 removes the bubble waiver;
+  - #104 sets `data-text-size="big"`;
+  - #111 drops the art lab half of the fixture-name test.
