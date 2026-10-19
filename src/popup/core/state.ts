@@ -20,7 +20,7 @@ export function initialState(def: PageDef): SimState {
   return {
     tick: 0,
     parts,
-    baby: { node: def.baby.start, mode: 'idle', facing: def.baby.facing, refused: [], lookCount: 0, linked: false },
+    baby: { node: def.baby.start, mode: 'idle', facing: def.baby.facing, refused: [], lookCount: 0, target: null, reachTicks: 0, linked: false },
     mocha: { perch: def.mocha.start, path: [] },
     creatures,
     pushables,

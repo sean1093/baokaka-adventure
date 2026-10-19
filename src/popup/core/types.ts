@@ -273,6 +273,10 @@ export interface SimState {
     facing: 'l' | 'r';
     refused: Id[];
     lookCount: number;
+    /** The attractor he is after (`'mocha'` for Mocha), or null (D-43). The view's bubble reads it. */
+    target: Id | null;
+    /** Ticks spent reaching for `target`, mod 4: he barks 「要！要！」 when it is 0 (D-43). */
+    reachTicks: number;
     carriedBy?: { id: Id; k: number };
     linked: boolean;
   };
