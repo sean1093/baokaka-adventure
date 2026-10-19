@@ -385,3 +385,34 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #92 adds `fixture=` targets to the lab for visual QA (the kit target's header moved, baseline updated).
 - #100 may reuse `solverJob.ts` or replace the worker with `hint.worker.ts`.
 - New page fields that move (e.g. a rotary `center`) need `labModel` edit operations and a `copyTs` line.
+
+### D-53 · 2026-10-19 · Visual QA for 翻翻台北: the readings #92 left open
+
+**Context.** #92 asks for PageLab fixtures that the screenshot check picks up, `still=1` stills, and `ui-check.mjs` rules for GDD § 1.3 R5/R6, reduced motion and flashing. Several details were open.
+
+**Decision.**
+1. **Fixtures** (`src/popup/dev/fixtures.ts`, `POPUP_FIXTURES`) are a page id plus a list in the solution-step language (inputs and `wait`s), expanded by `replay` and stepped through `core/step` from the page's initial state. Each one pins what it is meant to show (`expect: { mode?, event? }`). `fixtures.test.ts` fails when the engine or a page edit moves the state away from it; the fix is to change the steps, not the expectation. Fixture names are screenshot file names, so they must be unique among popup and art lab fixtures.
+2. **The view.** `#/pagelab?fixture=<name>` renders `PagePlayer` full screen with no lab chrome. It opens on the fixture's last tick: `PageSession` and `PagePlayer` take a `prev` and play that tick's tween. With **`still=1`** the clock is held, the frame is drawn at its tick's end (`prev` is dropped), and `[data-still]` turns off every CSS animation and transition. So **idle loops must be CSS animations**, never rAF or `element.animate()`, or a still will not stop them. `#/pagelab?section=fixtures` is the index the scripts read: `[data-popup-fixture]` for the fixtures and `[data-popup-page-id]` for the registered pages.
+3. **Targets.** Each fixture is a visual target named after itself, at 390×844 and 375×667, dev only (like the art lab). The `popup-c0p1` and `popup-c1p2` targets stay, because they cover the `#/popup` route.
+4. **R5 measurement.** Every visible text node's element is checked:
+   - **Size:** SVG text is its computed font size × the screen CTM's scale. The minimum is 20 px, or 24 px inside `[data-text-size="big"]`, which #104 must set for 大字.
+   - **Contrast:** the text colour comes from computed styles (`color`, or `fill` for SVG, alpha and opacity included). The background is read off a screenshot taken with all text hidden. The run passes when 90 % of the pixels in its box are ≥ 7:1, which tolerates anti-aliasing and paper fibres. A stroke painted under the fill counts as the run's background. A gradient fill fails as "cannot measure".
+5. **Lettering inside pictures** is marked `data-art-text` in the art and skipped (each run counts as a skip). Examples: the station name plate, the split-flap digit, a verb seal's glyph. The game never asks anyone to read it (R5: "completable without reading"). Seals are icons, and the arrow and track carry the verb too. Never mark UI text this way.
+6. **Waivers** (`WAIVERS` in `scripts/popup-checks.mjs`) name an issue and are printed on every run:
+   - the static kit HUD and bottom bar (labels 12–19 px), until #97;
+   - the thought bubble's 「要！」 under 20 px when the book scales down at 375×667, until #98.
+7. **R6.** Every `[data-hit]` (the page's grown hit shapes) and every button, link, input, switch, tab or slider must be ≥ 48×48 CSS px. A fixture with no `[data-hit]` fails, because a missing hit layer must not pass.
+8. **Motion.** Fixtures run live (not still) for about 1.5 s:
+   - Under `reduce`, a running animation that changes anything but opacity fails.
+   - With motion on, an animation fails when it flashes more than 3 times a second: a falling crossing of the mid level of opacity, visibility or `rgb()` luminance, with a swing of ≥ 0.1, counted per second of its run. A one-shot fade is not a flash.
+   - A self-test first injects a 5 Hz blink, a slide and a slow fade, and fails the run if the detectors misjudge them, so an empty result can't hide a broken check.
+   - Actor movement on rAF is the simulation, not decoration, and is not checked.
+9. **One command.** `npm run qa` runs the visual, UI and play checks. `check:play` also fails when a registered page has no scenario.
+
+**Why.** The fixture list doubles as the screenshot list and the audience-rule list. Replaying the engine keeps fixtures honest. Waivers keep the check green without hiding gaps from the issues that own them.
+
+**Consequences.**
+- #97 removes the HUD/bottom-bar waiver and #98 the bubble waiver.
+- #104 sets `data-text-size="big"` for 大字.
+- Every later UI issue adds fixtures for its screens.
+- #111 drops the art lab half of the name-uniqueness test along with the RPG targets.

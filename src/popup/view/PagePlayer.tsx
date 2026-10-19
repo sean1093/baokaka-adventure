@@ -57,17 +57,29 @@ export interface PagePlayerProps {
   readonly speed?: TickSpeed;
   /** Start from this state (a dev `tick=` jump, a resumed page) */
   readonly from?: SimState;
+  /**
+   * The state before `from`'s latest tick (visual QA fixtures, #92): the page opens playing that
+   * tick's tween. Ignored without `from`.
+   */
+  readonly prev?: SimState;
   /** Hold the clock (dev `paused=1`, screenshots) */
   readonly paused?: boolean;
+  /**
+   * A still for screenshots (PageLab `still=1`, #92): the clock held, the frame drawn at its tick's
+   * end (`prev` is ignored), and every CSS animation and transition off (`data-still`), idle loops
+   * included. Implies `paused`.
+   */
+  readonly still?: boolean;
   /** Inputs to feed one per tick (dev `demo=1` plays the authored solution) */
   readonly script?: readonly Input[];
   /** Hears gesture events: taps, nope, snaps, the word ring, the 土地公 (#97, #99, #101 listen) */
   readonly onGesture?: (event: GestureEvent) => void;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, paused = false, script, onGesture }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedProp = false, still = false, script, onGesture }: PagePlayerProps) {
   const layout = useBookLayout();
-  const session = useMemo(() => new PageSession(def, { speed, from }), [def, speed, from]);
+  const paused = pausedProp || still;
+  const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev }), [def, speed, from, prev, still]);
   const [frame, setFrame] = useState<SessionFrame>(() => session.frame());
   const [ms, setMs] = useState(0);
   const raf = useRef(0);
@@ -146,6 +158,7 @@ export function PagePlayer({ def, speed = 'normal', from, paused = false, script
       style={{ background: POPUP.cover, touchAction: 'none', WebkitTouchCallout: 'none' }}
       lang="zh-Hant"
       data-popup-page={def.id}
+      data-still={still ? '' : undefined}
       {...gestures.handlers}
     >
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />

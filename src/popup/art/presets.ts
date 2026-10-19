@@ -236,7 +236,7 @@ export const PRESET_ART: Readonly<Record<PartPreset, PresetArt>> = {
       const glyph = String(index + 1);
       return card(ctx, 3, 0, 0, 52, 40, C.tile, 4)
         + `<rect x="6" y="6" width="40" height="28" rx="2" fill="${C.page}"/><path d="M6 20H46" stroke="${C.tile}" stroke-width="1.6"/>`
-        + `<text x="26" y="29" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="22" fill="${C.ink}">${glyph}</text>`
+        + `<text data-art-text="" x="26" y="29" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="22" fill="${C.ink}">${glyph}</text>`
         + `<path d="M14 0V-8M38 0V-8" stroke="${C.kraftDark}" stroke-width="1.2"/>`;
     },
   },

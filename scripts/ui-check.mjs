@@ -13,8 +13,13 @@
  *   5. Battle VFX (#15): an all-target skill on three foes (`battle-fx`) keeps at most 40 FX nodes
  *      in flight; under reduced motion nothing in the battle moves or flashes (every running
  *      animation keeps one transform and never blinks) and the effects are only still fades.
+ *   6. 翻翻台北 (#92, `scripts/popup-checks.mjs`): over every PageLab visual QA fixture, at both
+ *      viewports, text ≥ 20 px (24 px with 大字) at ≥ 7:1, hit areas ≥ 48×48, nothing but fades
+ *      under reduced motion, and no flashing above 3 Hz (GDD § 1.3 R5/R6, § 2.11).
  *
- *   node scripts/ui-check.mjs [--serve] [--url <base>]     (npm run check:ui)
+ *   node scripts/ui-check.mjs [--serve] [--url <base>] [--popup]     (npm run check:ui)
+ *
+ *   --popup   run only the 翻翻台北 checks (6)
  *
  * Local only, like the visual check (Chromium from PLAYWRIGHT_BROWSERS_PATH); exits 1 on a failure.
  */
@@ -22,6 +27,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { chromium } from 'playwright';
+import { checkPopup } from './popup-checks.mjs';
 import { VIEWPORTS } from './visual-targets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -29,6 +35,7 @@ const { values: args } = parseArgs({
   options: {
     serve: { type: 'boolean', default: false },
     url: { type: 'string', default: 'http://localhost:5173/baokaka-adventure/' },
+    popup: { type: 'boolean', default: false },
   },
 });
 
@@ -285,17 +292,22 @@ const dev = args.serve ? await startDevServer() : null;
 const base = dev ? dev.url : args.url;
 const browser = await chromium.launch();
 try {
-  const index = await browser.newPage();
-  await index.goto(new URL('#/artlab?section=fixtures', base).href, { waitUntil: 'load' });
-  await index.waitForSelector('[data-fixture]', { timeout: 20000 });
-  const fixtures = await index.$$eval('[data-fixture]', (items) => items.map((item) => item.getAttribute('data-fixture')));
-  await index.close();
+  if (args.popup) {
+    await checkPopup(browser, base, VIEWPORTS, { pass, fail });
+  } else {
+    const index = await browser.newPage();
+    await index.goto(new URL('#/artlab?section=fixtures', base).href, { waitUntil: 'load' });
+    await index.waitForSelector('[data-fixture]', { timeout: 20000 });
+    const fixtures = await index.$$eval('[data-fixture]', (items) => items.map((item) => item.getAttribute('data-fixture')));
+    await index.close();
 
-  await checkTyping(browser, base);
-  await checkTargets(browser, base, fixtures);
-  await checkReducedMotion(browser, base, fixtures);
-  await checkStage(browser, base);
-  await checkFx(browser, base);
+    await checkTyping(browser, base);
+    await checkTargets(browser, base, fixtures);
+    await checkReducedMotion(browser, base, fixtures);
+    await checkStage(browser, base);
+    await checkFx(browser, base);
+    await checkPopup(browser, base, VIEWPORTS, { pass, fail });
+  }
 } finally {
   await browser.close();
   await dev?.server.close();

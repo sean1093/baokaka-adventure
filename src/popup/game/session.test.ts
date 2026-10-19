@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { e, line, page } from '../core/fixtures/toy';
+import { initialState, step } from '../core';
 import { pageById } from '../pages';
 import { FAST_FORWARD, PageSession, RESUME_GRACE_MS, TICK_MS, fastForward, pathEdgesLeft, type Clock } from './session';
 
@@ -199,5 +200,20 @@ describe('fast-forward on long walks', () => {
     advance(2000);
     expect(pathEdgesLeft(gap, s.frame().state)).toBe(0);
     expect(s.frame().tickMs).toBe(500);
+  });
+});
+
+describe('PageSession start frame', () => {
+  test('from alone: prev is the same state; from + prev: the first frame carries that tick (#92 fixtures)', () => {
+    const before = initialState(c1p2);
+    const after = step(c1p2, before, { t: 'set', part: 'train', to: 'half' }).state;
+    const still = new PageSession(c1p2, { from: after });
+    expect(still.frame().prev).toBe(after);
+    const live = new PageSession(c1p2, { from: after, prev: before });
+    expect(live.frame().prev).toBe(before);
+    expect(live.frame().state).toBe(after);
+    // prev without from is ignored: the page starts at its initial state
+    const fresh = new PageSession(c1p2, { prev: after });
+    expect(fresh.frame().prev).toBe(fresh.frame().state);
   });
 });

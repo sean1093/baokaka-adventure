@@ -38,3 +38,14 @@
 
 .reduce-motion .gx-wobble,
 .reduce-motion .gx-glare { animation: none; }
+
+/*
+ * A screenshot still (PagePlayer `still`, PageLab `still=1`, #92): nothing animates, idle loops
+ * included. Every idle loop must be a CSS animation (not rAF or `element.animate`) so this catches it.
+ */
+[data-still] *,
+[data-still] *::before,
+[data-still] *::after {
+  animation: none !important;
+  transition: none !important;
+}

@@ -12,12 +12,15 @@
  *   --url      base URL of a server you started yourself (default http://localhost:5173/baokaka-adventure/)
  *   --shots    write a PNG per step into this directory
  *
- * Exits 1 on any failure. Manual until #92 folds it into the visual QA run.
+ * It also fails when a registered page (listed at `#/pagelab?section=fixtures`) has no scenario:
+ * add one with every new page. Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
+ * and UI checks.
  */
 import { mkdir } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { listPopupFixtures } from './popup-checks.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: args } = parseArgs({
@@ -148,6 +151,20 @@ async function main() {
   const browser = await chromium.launch();
   let failures = 0;
   try {
+    // Every registered page needs a scenario (PageLab lists the registry)
+    const index = await browser.newPage();
+    const listed = await listPopupFixtures(index, base);
+    await index.close();
+    if (!listed) {
+      failures++;
+      console.log('FAIL could not read the page list at #/pagelab?section=fixtures (a dev server is needed)');
+    } else {
+      const missing = listed.pages.filter((id) => !SCENARIOS[id]);
+      if (missing.length > 0) {
+        failures++;
+        console.log(`FAIL pages without a play scenario in SCENARIOS: ${missing.join(', ')}`);
+      } else console.log(`ok   every registered page has a scenario (${listed.pages.join(', ')})`);
+    }
     for (const kind of ['mouse', 'touch']) {
       for (const viewport of VIEWPORTS) {
         const context = await browser.newContext({ viewport, deviceScaleFactor: 2, hasTouch: kind === 'touch', isMobile: kind === 'touch' });

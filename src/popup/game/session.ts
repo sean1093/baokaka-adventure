@@ -60,6 +60,11 @@ export interface SessionOptions {
   clock?: Clock;
   /** Start from this state instead of the page's initial state (PageLab, a resumed save) */
   from?: SimState;
+  /**
+   * The state before `from`'s latest tick (visual QA fixtures, #92): the first frame then plays
+   * that tick's tween from `prev` to `from`. Defaults to `from` (nothing in flight).
+   */
+  prev?: SimState;
 }
 
 /** Edges left on Baokaka's path to his target now, or 0 when he has none or can't get there. */
@@ -98,12 +103,12 @@ export class PageSession {
   private graceTimer: unknown = null;
   private started = false;
 
-  constructor(def: PageDef, { speed = 'normal', clock = systemClock, from }: SessionOptions = {}) {
+  constructor(def: PageDef, { speed = 'normal', clock = systemClock, from, prev }: SessionOptions = {}) {
     this.def = def;
     this.clock = clock;
     this.speed = speed;
     const state = from ?? initialState(def);
-    this.current = { def, prev: state, state, events: [], tickMs: TICK_MS[speed], serial: 0 };
+    this.current = { def, prev: from === undefined ? state : (prev ?? state), state, events: [], tickMs: TICK_MS[speed], serial: 0 };
   }
 
   /** The latest frame. */

@@ -113,7 +113,32 @@ Every merge deploys to the public site. Until the routing switch (#109) `#/` sti
 
 ## 5. Visual QA
 
-Every UI or art PR attaches screenshots made with this tooling (issue #4; decisions D-13, D-18, D-21). **For 翻翻台北,** #92 adds PageLab fixtures (`#/pagelab?fixture=<name>&still=1`) that the visual check picks up automatically, plus UI checks for the GDD audience rules; the RPG art lab and its targets below stay until #111 removes them.
+Every UI or art PR attaches screenshots made with this tooling (issue #4; decisions D-13, D-18, D-21). **For 翻翻台北,** PageLab fixtures (below, #92) are both the screenshot list and the audience-rule list. For UI work, run **`npm run qa`**: the visual check, then `check:ui`, then `check:play`. The RPG art lab and its targets below stay until #111 removes them.
+
+### 翻翻台北 visual QA fixtures (#92, D-53)
+
+- **What a fixture is.** `POPUP_FIXTURES` in `src/popup/dev/fixtures.ts` is a list of named, deterministic game states. Each fixture is a page id plus a list in the solution-step language: inputs like `{ set: 'train', to: 'half' }` and `wait`s. The list is replayed through `core/step` from the page's initial state, so a fixture never drifts from the engine.
+  - Each fixture pins what it shows with `expect: { mode?, event? }`.
+  - `fixtures.test.ts` fails if a fixture stops showing it. When that happens, fix the steps, not the expectation.
+  - Today's fixtures: `c0p1-start`, `c1p2-reaching` (on the jammed train at the gap) and `c1p2-riding` (the train carries him back: a `ride`).
+- **Viewing a fixture.**
+  - `#/pagelab?fixture=<name>&still=1` shows the fixture full screen as a player sees it, with no lab chrome. The clock is held, the frame is drawn at its tick's end, and `[data-still]` turns off every CSS animation and transition. **Idle loops must be CSS animations** (not rAF or `element.animate()`) so that stills stop them.
+  - Without `still`, the fixture opens playing its last tick (`PagePlayer`/`PageSession` `prev`) and can be played on from there.
+  - `#/pagelab?section=fixtures` lists every fixture with still and live links, plus the registered pages.
+- **Add a fixture for every new screen or state.** Later issues add theirs: cover, word ring, hint hand, sticker card, photo, album, settings, chapter card. If a screen is not a page state, give the fixture what it needs (e.g. a screen id) in the same file.
+  - `visual-check.mjs` picks every fixture up as a target named after it, at 390×844 and 375×667. Run `npm run visual:update` and commit the new baselines.
+  - `ui-check.mjs` runs the rules below on every fixture.
+- **`npm run check:ui` rules for 翻翻台北** (`scripts/popup-checks.mjs`; `node scripts/ui-check.mjs --serve --popup` runs only these). All rules run on every fixture, at both viewports:
+  - **R5 text size.** Every visible text run is ≥ 20 CSS px, or ≥ 24 px inside `[data-text-size="big"]` (大字, which #104 sets). SVG text is measured on screen: its font size × the CTM's scale.
+  - **R5 contrast.** Every visible text run is ≥ 7:1. The text colour comes from computed styles. The background is read off a screenshot taken with all text hidden, and 90 % of the pixels behind the run must pass.
+  - **R6 hit areas.** Every `[data-hit]` (the page's grown hit shapes) and every button, link, input, switch, tab or slider is ≥ 48×48 CSS px. A fixture without `[data-hit]` fails.
+  - **Reduced motion.** With the fixture live under `prefers-reduced-motion: reduce`, no running animation may change anything but opacity (fades are allowed).
+  - **Flashing.** With motion on, nothing may flash above 3 Hz.
+  - **Self-test.** Before the motion rules run, a self-test injects a 5 Hz blink, a slide and a slow fade, and checks that the detectors judge them correctly.
+- **Exceptions.**
+  - **Lettering inside a picture** (a station's name plate, a split-flap digit, a verb seal's glyph) carries `data-art-text` in the art and is skipped. Never mark UI text this way.
+  - **Known gaps** are listed in `WAIVERS`, each with the issue that removes it. Waivers are printed on every run. Today: the static HUD and bottom bar (#97), and the bubble's 「要！」 at 375×667 (#98).
+- **`npm run check:play`** also fails when a registered page has no scenario in `SCENARIOS`.
 
 ### PageLab sections (dev builds only)
 
@@ -129,7 +154,7 @@ Since #90 the page is played by touch or mouse (GDD § 2.6): taps and one-finger
 
 The visual targets are `popup-c0p1` and `popup-c1p2`, each paused with Baokaka reaching.
 
-**`npm run check:play`** (`scripts/play-check.mjs`, #90) plays 0-1 and 1-2 to completion through real pointer input — the mouse and CDP touch emulation, at 390×844 and 375×667 — dragging the tabs along their tracks and tapping the pillar perch, and fails if a page does not reach `data-done`, if the world ticks while a finger is down, or on console errors. `--shots <dir>` writes a PNG per step. Add a scenario when you add a page; #92 folds it into the visual QA run.
+**`npm run check:play`** (`scripts/play-check.mjs`, #90) plays 0-1 and 1-2 to completion through real pointer input — the mouse and CDP touch emulation, at 390×844 and 375×667 — dragging the tabs along their tracks and tapping the pillar perch, and fails if a page does not reach `data-done`, if the world ticks while a finger is down, or on console errors. `--shots <dir>` writes a PNG per step. Add a scenario when you add a page (the check fails without one); `npm run qa` runs it after the visual and UI checks.
 
 - **The lab** (`#/pagelab`, since #91; GDD § 3.10). Desktop-first; on a phone the columns stack.
   - **Left:** every registered page with its solver badge (`ok` / `dead-end` / `over cap` / `lint` / `fail`, from `pages/report.ts`, the same judge as `npm run solve`), then lab-only fixtures that are broken on purpose (`c1p2-broken`: the train locks for good if Mocha scares the pigeon first), so the dead-end tools can be tried on real data.
@@ -139,6 +164,7 @@ The visual targets are `popup-c0p1` and `popup-c1p2`, each paused with Baokaka r
   - **Lint** re-runs on every edit. **Readability:** greyscale, the 25 % squint thumbnail, the touchable count (≤ 3 on pages 1–3) and the art-key report (placeholder vs own art per backdrop, part and creature).
   - **Edit:** tick `edit`, drag nodes (a node riding a part moves its position for the part's current state) and track ends; 「Copy TS」 copies the `nodes` block and the `track` lines to paste into the page file (a text box shows the same when the clipboard is blocked).
   - **State:** the event log of the last 20 ticks and the `SimState` JSON.
+  - **QA fixtures** (`section=fixtures`, `fixture=<name>`, `still=1`): see *翻翻台北 visual QA fixtures* above.
   - **URL:** `page`, `overlay` (comma list of `nodes,edges,perches,attractors,hits,target`; absent = `nodes,edges,target`, empty = none), `tick` (start N idle ticks in), `speed`, `edit=1`, `view=grey,squint`. Every checkbox rewrites the hash in place, so the address bar is always a reproducible link, e.g. `#/pagelab?page=c1p2&overlay=nodes,edges&tick=12`.
 - **Kit** (`#/pagelab?section=kit`, since #139): proof D rebuilt from the TS kit port (`src/popup/art/`, with filters), every GDD part preset's default art in its idle state (with filters, as PageLab and the bake show it, and without, as the game draws it until bitmaps are baked), and the artist's `proof-d-swatches.png` below for comparison. Visual target `kit-swatches`.
 
@@ -168,14 +194,14 @@ node scripts/visual-check.mjs --serve --perf --perf-fixture world-follower --onl
 node scripts/visual-check.mjs --url http://localhost:5173/baokaka-adventure/   # use a server you started
 ```
 
-- Targets are listed in `scripts/visual-targets.mjs` (`title`, `artlab-sprites-night`, `artlab-tokens`, `artlab-rig`, `artlab-heroes`, `artlab-ui`, `artlab-map`, `artlab-stage`, `artlab-fx`) plus every art lab fixture. Each is shot at **390×844** and **375×667** (2× pixel ratio, mobile, touch, reduced motion) after `document.fonts.ready` and once the DOM has been still for 0.5 s.
+- Targets are listed in `scripts/visual-targets.mjs` (`title`, `artlab-sprites-night`, `artlab-tokens`, `artlab-rig`, `artlab-heroes`, `artlab-ui`, `artlab-map`, `artlab-stage`, `artlab-fx`, `kit-swatches`, `popup-c0p1`, `popup-c1p2`) plus every art lab fixture and every 翻翻台北 PageLab fixture. Each is shot at **390×844** and **375×667** (2× pixel ratio, mobile, touch, reduced motion) after `document.fonts.ready` and once the DOM has been still for 0.5 s.
 - PNGs go to `artifacts/visual/<viewport>/<name>.png` (gitignored). Diff mode compares against `tests/visual-baseline/<viewport>/` with pixelmatch (threshold 0.1) and fails when more than 0.5 % of pixels differ, writing `<name>.diff.png` next to the screenshot. It also fails on console errors.
 - **When a PR changes visuals on purpose,** run `npm run visual:update` in the same PR and say so in the PR body. Baselines will churn a lot in M2/M3; that is expected.
 - **Attaching to a PR:** copy the relevant 390×844 PNGs from `artifacts/visual/390x844/` to `docs/screenshots/<issue>/`, commit them, and link them in the PR body.
 - `--serve` starts a Vite **dev** server (not `vite preview`), because the art lab only exists in dev builds; `--url` pointed at a production preview runs only the non-art-lab targets.
 - **Browsers:** the agent environment has Chromium preinstalled (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). Elsewhere run `npx playwright install chromium` once. `npm ci` never downloads browsers (the `playwright` package has no install script), and the deploy workflow never runs this check.
 - **Fonts.** Since #10 the game uses web fonts from Google Fonts, so the check needs network access to `fonts.googleapis.com`/`fonts.gstatic.com`; without it screens fall back to system fonts and diff. Baselines were made in the agent environment (Linux Chromium); emoji and font rendering still differ slightly across OSes, so on another machine run `npm run visual:update` first and don't commit those baselines.
-- **`npm run check:ui`** (`scripts/ui-check.mjs`, #12) checks in the browser that dialogue typing never changes the box height, that every visible button/link/switch/tab on every fixture is at least 44×44 px (battle commands exactly 70 px) at both viewports, and that reduced motion (the OS setting, and the 「減少動態」 toggle via `chapter-card-reduced`) leaves no looping, flipping or drawing animation running. Since #14 it also plays three turns of `battle-4v3` and fails if the static backdrop (`[data-stage-static]`) is mutated or remounted, or if any animating element in the battle has a CSS filter, and checks the 布袋戲 frame shows on `battle-boss`/`battle-final` only. Since #15 it plays `battle-fx` (an all-target skill on three foes) and fails if more than 40 FX nodes are in flight, and, under reduced motion, if anything in the battle moves (a running animation whose keyframes change `transform`) or flashes (a blink, a wash or a `steps()` timing), or if the effects play anything but the `fx-still` fade. Run it with the visual check for UI work.
+- **`npm run check:ui`** (`scripts/ui-check.mjs`, #12) checks in the browser that dialogue typing never changes the box height, that every visible button/link/switch/tab on every fixture is at least 44×44 px (battle commands exactly 70 px) at both viewports, and that reduced motion (the OS setting, and the 「減少動態」 toggle via `chapter-card-reduced`) leaves no looping, flipping or drawing animation running. Since #14 it also plays three turns of `battle-4v3` and fails if the static backdrop (`[data-stage-static]`) is mutated or remounted, or if any animating element in the battle has a CSS filter, and checks the 布袋戲 frame shows on `battle-boss`/`battle-final` only. Since #15 it plays `battle-fx` (an all-target skill on three foes) and fails if more than 40 FX nodes are in flight, and, under reduced motion, if anything in the battle moves (a running animation whose keyframes change `transform`) or flashes (a blink, a wash or a `steps()` timing), or if the effects play anything but the `fx-still` fade. Since #92 it also runs the 翻翻台北 rules (see *翻翻台北 visual QA fixtures* above). Run it with the visual check for UI work (`npm run qa`).
 - **`--perf`** walks the party around the `world` fixture (or `--perf-fixture <name>`) at 4× CPU throttle for 3 s and prints the median/p95/max rAF interval, the main-thread time per frame (CDP `TaskDuration`), the DOM node count, the number of ground SVGs and how many times the ground was mutated while walking (must be 0, #13) against art direction § 8.5. It runs on the dev build (React development mode), so numbers are pessimistic, and rAF intervals bottom out at the 16.7 ms vsync floor. It reports only; #57 makes it a gate.
 
 ---
