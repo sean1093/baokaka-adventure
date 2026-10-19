@@ -120,6 +120,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
 - **What a fixture is.** `POPUP_FIXTURES` in `src/popup/dev/fixtures.ts` is a list of named, deterministic game states. Each fixture is a page id plus a list in the solution-step language: inputs like `{ set: 'train', to: 'half' }` and `wait`s. The list is replayed through `core/step` from the page's initial state, so a fixture never drifts from the engine.
   - Each fixture pins what it shows with `expect: { mode?, event? }`.
   - `fixtures.test.ts` fails if a fixture stops showing it. When that happens, fix the steps, not the expectation.
+  - **Screens (#97):** a fixture can be a game-shell screen instead of a bare page: `screen: { nav, save }` renders `GameShell` at that navigation state over a seeded in-memory save (`fixtureStore`; the real save is never touched): `cover-first`, `cover-continue`, `contents-ch1`, `contents-locked`, `page-hud`, `page-hud-left`, `page-menu`. Screens that are not pages mark themselves `data-screen` and `data-screen-ready` once their bitmaps are decoded; the QA scripts wait for that.
   - Today's fixtures: `c0p1-start`, `c1p2-reaching` (on the jammed train at the gap) and `c1p2-riding` (the train carries him back: a `ride`); from #140, `affordance-states` (a specimen sheet: one touchable in every bible § 4.1 state), `c1p2-hold-reveal`, `c1p2-dragging`, `c1p2-reduced-motion` and `c0p1-hint-how` (the L2 ghost hand).
   - A fixture can also `show` gesture flags (as if a finger were doing them: `reveal`, `dragging`…) and affordance flags (a `hint`, `done` knots, `elder`), pin its still's motion `look` (`motion`, the default, or `reduced`: the screenshot browser always runs reduced, so the still decides which idle cues it shows), or draw a `sheet` instead of the page.
 - **Viewing a fixture.**
@@ -138,7 +139,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
   - **Self-test.** Before the motion rules run, a self-test injects a 5 Hz blink, a slide and a slow fade, and checks that the detectors judge them correctly.
 - **Exceptions.**
   - **Lettering inside a picture** (a station's name plate, a split-flap digit, a verb seal's glyph) carries `data-art-text` in the art and is skipped. Never mark UI text this way.
-  - **Known gaps** are listed in `WAIVERS`, each with the issue that removes it. Waivers are printed on every run. Today: the static HUD and bottom bar (#97), and the bubble's 「要！」 at 375×667 (#98).
+  - **Known gaps** are listed in `WAIVERS`, each with the issue that removes it. Waivers are printed on every run. Today: the bubble's 「要！」 at 375×667 (#98). (#97 removed the HUD and bottom-bar waiver: they are live and at R5.)
 - **`npm run check:play`** also fails when a registered page has no scenario in `SCENARIOS`.
 
 ### Character sprites: `npm run sync:sprites` (#94, D-56)
@@ -174,6 +175,10 @@ npm run art:report             # the per-page payload report from the committed 
 - `src/popup/env/env.test.ts` fails when files and `env.gen.ts` disagree, when a source changed without a re-bake (the source hashes), when a page's art passes **350 KB**, or when the first load passes **2.5 MB**.
 - The characters' half grade is baked by `npm run sync:sprites` per graded chapter (`g/<grade>/` variants); re-run it when a page in a new chapter is registered.
 - Needs Playwright's Chromium and Python 3 with Pillow, like `sync:sprites`; CI needs neither.
+
+### The game shell: `#/popup` (#97, D-60)
+
+`#/popup` (no `page=`) is the whole game: `GameShell` (`src/popup/view/screens/`) on one `ProgressStore` and the navigation state machine (`src/popup/game/nav.ts`). The cover (「開始」 on first launch, else 「繼續」 + 目錄 / 相簿 / 設定), a page in the book frame with the live HUD (`view/hud/TopHud.tsx`) and bottom bar (`view/hud/BottomBar.tsx`, mirrored in 左手模式), the pause menu (the kit `Sheet` in `tone="paper"`), the 目錄 (`Contents.tsx`), and the page fold / chapter turn (`view/transitions/pageTurn.ts`, WAAPI). The screens' art (quilt, cover scene, 目錄 map) is baked by `npm run bake:popup` (`src/popup/env/art/screens.ts`). To start over in a browser, clear `popup.save.v1` from localStorage.
 
 ### PageLab sections (dev builds only)
 
