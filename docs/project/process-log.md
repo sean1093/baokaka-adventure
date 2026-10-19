@@ -582,7 +582,8 @@ Format:
 - **QA.**
   - Fixtures `settings`, `settings-elder`, `page-big`, `page-elder` and `subtitle-big`: 10 new baselines; every other target is 0 px.
   - `npm run check:ui:big` (`UI_TEXT=big`, or `&text=big` on a fixture URL) runs every popup fixture with 大字: all pass. `check:ui` skips text clipped by a scroller.
-  - `npm test` (2264) and `npm run build` pass.
+  - `npm test` (2264), `npm run build`, `npm run visual`, `check:ui`, `check:ui:big` and `check:play` all pass.
+  - With five more fixtures, a long-lived dev tab started failing requests (ERR_INSUFFICIENT_RESOURCES), and fixtures timed out at random. `check:ui` and `visual` now open a fresh tab every 15 targets (`freshPages` in `scripts/popup-checks.mjs`).
 - **Screenshots.** `docs/screenshots/104/`.
 - **Decision.** D-67. GDD § 2.11, bible § 9.3 and the handbook § 5 have notes.
 - **Follow-ups.**

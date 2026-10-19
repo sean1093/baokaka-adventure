@@ -29,7 +29,7 @@ import { parseArgs } from 'node:util';
 import pixelmatch from 'pixelmatch';
 import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
-import { listPopupFixtures } from './popup-checks.mjs';
+import { freshPages, listPopupFixtures } from './popup-checks.mjs';
 import { PERF_FIXTURE, TARGETS, VIEWPORTS, fixtureTarget, popupFixtureTarget } from './visual-targets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -258,19 +258,23 @@ async function main() {
         hasTouch: true,
         reducedMotion: 'reduce',
       });
-      const page = await context.newPage();
       const errors = [];
-      page.on('pageerror', (error) => errors.push(error.message));
-      page.on('console', (message) => {
-        if (message.type() === 'error') errors.push(message.text());
-      });
+      // A fresh tab every few targets (a long-lived dev tab runs out of request resources, #104)
+      const open = async () => {
+        const page = await context.newPage();
+        page.on('pageerror', (error) => errors.push(error.message));
+        page.on('console', (message) => {
+          if (message.type() === 'error') errors.push(message.text());
+        });
+        return page;
+      };
 
       const outDir = join(OUT, viewport.name);
       const baseDir = join(BASELINE, viewport.name);
       await mkdir(outDir, { recursive: true });
       if (args.update) await mkdir(baseDir, { recursive: true });
 
-      for (const target of targets) {
+      for await (const [page, target] of freshPages(open, targets)) {
         errors.length = 0;
         const file = `${target.name}.png`;
         const actualPath = join(outDir, file);

@@ -73,6 +73,26 @@ export async function listPopupFixtures(page, base) {
   };
 }
 
+/**
+ * Fixtures per tab before the checks open a fresh one: a dev-server tab that has loaded dozens of
+ * fixtures (hundreds of unbundled modules and font slices each) starts failing requests with
+ * ERR_INSUFFICIENT_RESOURCES (#104).
+ */
+export const FIXTURES_PER_TAB = 15;
+
+/** Yields a page for each item, replaced by a fresh one every `FIXTURES_PER_TAB` items. */
+export async function* freshPages(open, items) {
+  let page = null;
+  for (let i = 0; i < items.length; i++) {
+    if (i % FIXTURES_PER_TAB === 0) {
+      await page?.close();
+      page = await open();
+    }
+    yield [page, items[i]];
+  }
+  await page?.close();
+}
+
 export async function openPopupFixture(page, base, name, still = true) {
   await page.goto('about:blank');
   await page.goto(popupFixtureUrl(base, name, still), { waitUntil: 'load' });
@@ -354,8 +374,8 @@ export async function checkPopup(browser, base, viewports, report) {
 
   console.log('翻翻台北 R5 text and R6 hit areas');
   for (const viewport of viewports) {
-    const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1, reducedMotion: 'reduce', isMobile: true, hasTouch: true });
-    for (const name of fixtures) {
+    const open = () => browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1, reducedMotion: 'reduce', isMobile: true, hasTouch: true });
+    for await (const [page, name] of freshPages(open, fixtures)) {
       await openPopupFixture(page, base, name);
       await page.waitForTimeout(300);
       const { texts, hits, art, hitless } = await page.evaluate(collect, {
@@ -404,7 +424,6 @@ export async function checkPopup(browser, base, viewports, report) {
         else report.fail(`${label} hit areas under ${MIN_HIT_PX} px after the book scale (grown by the hit layer): ${grown.join(', ')}`);
       }
     }
-    await page.close();
   }
 
   console.log('翻翻台北 motion: reduced motion and flashing');
@@ -419,8 +438,7 @@ export async function checkPopup(browser, base, viewports, report) {
     ['reduced', 'reduce'],
     ['motion', 'no-preference'],
   ]) {
-    const page = await browser.newPage({ viewport: viewports[0], reducedMotion });
-    for (const name of fixtures) {
+    for await (const [page, name] of freshPages(() => browser.newPage({ viewport: viewports[0], reducedMotion }), fixtures)) {
       // Live: the fixture's last tick plays, then the clock runs on
       await openPopupFixture(page, base, name, false);
       const anims = await sampleAnimations(page, 1500);
@@ -433,7 +451,6 @@ export async function checkPopup(browser, base, viewports, report) {
       if (flashing.length === 0) pass(report, `no flashing > ${MAX_FLASH_HZ} Hz (${mode}): ${name}`);
       else report.fail(`flashing (${mode}): ${name}: ${flashing.join('; ')}`);
     }
-    await page.close();
   }
 
   console.log(`  ~ skipped ${artRuns} runs of lettering inside pictures (${ART_TEXT})`);
