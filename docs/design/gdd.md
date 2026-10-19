@@ -232,6 +232,8 @@ The first candidate is the **target**.
 - It sits above his head and flips side to stay on screen.
 - When the target changes, the old icon pops and the new one inflates (200 ms), so the player *sees* every change of mind. This is the main teaching device.
 
+**For engineers (#98, D-61).** `src/popup/view/talk/` draws the bubble, barks and subtitles; `layoutTalk` keeps every bubble off Baokaka and the goal (the other side, then higher, never above the HUD's edge). Barks come from events (`view/talk/barks.ts`, text in `content/barks.ts`), and the subtitle queue is `game/talk.ts`.
+
 #### 2.2.7 Mode list (for engineers)
 
 `idle` · `moving` · `reaching` · `looking(n)` · `crying` · `watching` · `cuddling` · `eating` · `grabbing` · `saying(word)` · `carried(by, k)` · `linked` (一起) · `done`
@@ -482,6 +484,8 @@ All sound is **synthesised with WebAudio**, extending `src/shared/audio.ts` (no 
 **For engineers (#97, D-60).** `src/popup/game/nav.ts` is the flow as a pure state machine (a base: the cover or a page; one layer over it: the menu, the 目錄, the album, the settings; a layer over a page holds its session). `GameShell` renders it on one `ProgressStore`. The cover's 「繼續」 opens `save.current` in one tap; the page fold and the chapter turn are `view/transitions/pageTurn.ts`.
 
 Dialogue appears in **short subtitle bubbles over the page** (≤ 30 chars, max 3 per beat, tap to advance). There is no dialogue box covering the play.
+
+**For engineers (#98, D-61).** A beat is ≤ 3 lines, narration included. A tap on a bubble or the strip advances it and never reaches the page. Nothing advances on a timer.
 
 ---
 

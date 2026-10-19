@@ -316,6 +316,8 @@ The anime-rendered characters (v2) are **printed illustrations mounted on card**
 - The icon is drawn in the same paper style: a foil bead, a Mocha head, a bottle.
 - 「要！」 is in red serif at 20 px.
 
+**Engineers' note (#98, D-61).** The bubbles are live SVG with flat fills (`src/popup/view/talk/`): a warm-white die-cut card, a mauve cut line and an offset shadow, with no filters. 「要！」 is `sealInk` at 22 units. Bubbles grow against the book scale so their text is ≥ 20 screen px. Subtitles are labelled speech cards on wire springs, narration is an italic serif washi strip, and 廣播姊姊 speaks from a paper loudspeaker.
+
 **Creatures** (pigeons, geese, the magpie 藍教授):
 - They are **origami**: folded faceted paper in 2–3 tones with a crease line.
 - They sit between the standees and the scenery, belonging to the paper world while still feeling alive.
