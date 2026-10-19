@@ -21,8 +21,9 @@ import {
   sayingWord,
   strideCycles,
   type ActorAnim,
+  CLIMB_AT,
 } from './animMap';
-import { FADE_MS, LAND_MS, LEAN_DEG, WOBBLE_DEG, fadeSlide, lookFacing, standeeTilt, stepT, travelDir } from './standee';
+import { FADE_MS, LAND_MS, LEAN_DEG, WOBBLE_DEG, fadeSlide, standeeTilt, stepT, travelDir } from './standee';
 
 /** #95: every simulation mode and Mocha state has an animation, on frames that exist. */
 
@@ -78,13 +79,21 @@ describe('寶咖咖', () => {
     expect(babyAnim({ mode: 'moving', edge: 'walk', growth: 3 })).toMatchObject({ sprite: 'baokaka.walk', play: { kind: 'stride' } });
   });
 
-  test('fallbacks for the frames #141 draws, each marked', () => {
-    expect(babyAnim({ mode: 'looking', edge: null, growth: 0 })).toMatchObject({ sprite: 'baokaka.sit', lookAround: true, fallback: expect.any(String) });
-    expect(babyAnim({ mode: 'watching', edge: null, growth: 0 })).toMatchObject({ sprite: 'baokaka.sit', sway: true, fallback: expect.any(String) });
-    expect(babyAnim({ mode: 'reaching', edge: null, growth: 0, watching: true })).toMatchObject({ sprite: 'baokaka.sit', gdd: 'touchWatch', fallback: expect.any(String) });
-    expect(babyAnim({ mode: 'reaching', edge: null, growth: 0, riding: true })).toMatchObject({ sprite: 'baokaka.bounce', gdd: 'rideGiggle', fallback: expect.any(String) });
-    expect(babyAnim({ mode: 'carried', edge: null, growth: 0 }).fallback).toBeDefined();
-    expect(babyAnim({ mode: 'moving', edge: 'climb', growth: 1 })).toMatchObject({ sprite: 'baokaka.crawl', gdd: 'climb', fallback: expect.any(String) });
+  test("#141's frames replace the fallbacks", () => {
+    expect(babyAnim({ mode: 'looking', edge: null, growth: 0 })).toMatchObject({ sprite: 'baokaka.look', play: { kind: 'clock' } });
+    expect(babyAnim({ mode: 'watching', edge: null, growth: 0 })).toMatchObject({ sprite: 'baokaka.watch', play: { kind: 'clock' }, gdd: 'watchSway' });
+    expect(babyAnim({ mode: 'reaching', edge: null, growth: 0 })).toMatchObject({ sprite: 'baokaka.reach', play: { kind: 'clock' } });
+    expect(babyAnim({ mode: 'reaching', edge: null, growth: 0, watching: true })).toMatchObject({ sprite: 'baokaka.touchwatch', gdd: 'touchWatch' });
+    expect(babyAnim({ mode: 'reaching', edge: null, growth: 0, riding: true })).toMatchObject({ sprite: 'baokaka.giggle', gdd: 'rideGiggle' });
+    expect(babyAnim({ mode: 'carried', edge: null, growth: 0 })).toMatchObject({ sprite: 'baokaka.carried' });
+    expect(babyAnim({ mode: 'moving', edge: 'climb', growth: 1 })).toMatchObject({ sprite: 'baokaka.climb', gdd: 'climb', play: { kind: 'step', at: CLIMB_AT } });
+    for (const a of everyBabyAnim()) expect(a.fallback, a.gdd ?? a.sprite).toBeUndefined();
+  });
+
+  test('the climb: pull-up, knee-over, up over the step; never before growth 1', () => {
+    const climb = babyAnim({ mode: 'moving', edge: 'climb', growth: 1 });
+    expect([0, 0.2, 0.4, 0.7, 1].map((k) => chooseFrame(climb, { k, dist: 40, tickMs: 500, hold: false }).frame)).toEqual([0, 0, 1, 2, 2]);
+    expect(babyAnim({ mode: 'moving', edge: 'climb', growth: 0 }).sprite).toBe('baokaka.crawl');
   });
 
   test('a ride does not interrupt his stronger poses', () => {
@@ -133,7 +142,7 @@ describe('摩卡', () => {
     expect(mochaState({ travelling: true, landed: true })).toBe('hop');
   });
 
-  test('precedence and the fallbacks', () => {
+  test('precedence and the frames', () => {
     expect(mochaState({ travelling: true, hidden: true })).toBe('inBox');
     expect(mochaState({ travelling: true, edge: 'squeeze' })).toBe('squeeze');
     expect(mochaState({ travelling: false, staring: true, glare: true })).toBe('eyeContact');
@@ -143,9 +152,10 @@ describe('摩卡', () => {
     expect(mochaState({ travelling: false, cuddled: true, onPart: true })).toBe('purr');
     expect(mochaState({ travelling: false, onPart: true })).toBe('onPart');
     expect(mochaState({ travelling: false })).toBe('sit');
-    expect(MOCHA_STATE_ANIM.glare).toMatchObject({ sprite: 'mocha.sit', glare: true, fallback: expect.any(String) });
-    expect(MOCHA_STATE_ANIM.purr).toMatchObject({ sprite: 'mocha.loaf', fallback: expect.any(String) });
-    expect(MOCHA_STATE_ANIM.inBox).toMatchObject({ hidden: true, fallback: expect.any(String) });
+    expect(MOCHA_STATE_ANIM.glare.sprite).toBe('mocha.glare');
+    expect(MOCHA_STATE_ANIM.purr.sprite).toBe('mocha.purr');
+    expect(MOCHA_STATE_ANIM.inBox.sprite).toBe('mocha.inbox');
+    for (const st of MOCHA_STATES) expect(MOCHA_STATE_ANIM[st].fallback, st).toBeUndefined();
   });
 });
 
@@ -226,9 +236,10 @@ describe('the missing-frame report (GDD § 3.9)', () => {
     for (const r of FRAME_REPORT) if (frameStatus(r) === 'missing') expect(r.fallback, `${r.char} ${r.id}`).toBeDefined();
   });
 
-  test('today: the gaps #141 fills', () => {
-    const missing = FRAME_REPORT.filter((r) => frameStatus(r) === 'missing').map((r) => `${r.char}.${r.id}`);
-    expect(missing).toEqual(['baokaka.reach', 'baokaka.look', 'baokaka.watchSway', 'baokaka.rideGiggle', 'baokaka.touchWatch', 'mocha.glare', 'mocha.purr', 'mocha.inBox']);
+  test('no M1 gap is left (#141); of the later rows only stand-cruise is short (3 of 4)', () => {
+    expect(FRAME_REPORT.filter((r) => frameStatus(r) === 'missing')).toEqual([]);
+    const short = FRAME_REPORT.filter((r) => r.delivered.reduce((n, x) => n + x.frames.length, 0) < r.frames).map((r) => `${r.char}.${r.id}`);
+    expect(short).toEqual(['baokaka.standCruise']);
   });
 
   test('every animation the map shows names a report row (or none, for an extra)', () => {
@@ -259,11 +270,5 @@ describe('standee motion (bible § 5, § 8)', () => {
     expect(fadeSlide([0, 0], [100, 0], 0)).toEqual({ x: 90, y: 0, opacity: 0.25 });
     expect(fadeSlide([0, 0], [100, 0], FADE_MS)).toEqual({ x: 100, y: 0, opacity: 1 });
     expect(fadeSlide([95, 0], [100, 0], 0).x).toBe(95);
-  });
-
-  test('look L/R flips away and back over the tick', () => {
-    expect(lookFacing('r', 0, 500)).toEqual({ from: 'r', to: 'r', ms: 0 });
-    expect(lookFacing('r', 200, 500)).toEqual({ from: 'r', to: 'l', ms: 50 });
-    expect(lookFacing('r', 400, 500)).toEqual({ from: 'l', to: 'r', ms: 50 });
   });
 });

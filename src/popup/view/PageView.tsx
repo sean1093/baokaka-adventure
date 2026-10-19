@@ -16,7 +16,6 @@ import {
   Bubble,
   Creature,
   LAMP_GLOW_R,
-  MOCHA_STATE_ANIM,
   Mocha,
   babyAnim,
   bubbleShow,
@@ -24,9 +23,7 @@ import {
   edgeKind,
   fadeSlide,
   flipScale,
-  lookFacing,
   mochaAnim,
-  noteFrameFallback,
   sayingWord,
   standeeTilt,
   stepT,
@@ -267,8 +264,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const babyDir = babyEdge !== null && babyStart && babyEnd ? travelDir(babyStart, babyEnd) : 0;
   const babyTilt = still ? 0 : standeeTilt(ms, tickMs, babyDir, reduced);
   const watch = finger === null || babyPose === null ? undefined : finger[0] < babyPose.x ? -1 : 1;
-  const look = bAnim.lookAround && !held ? lookFacing(state.baby.facing, ms, tickMs) : null;
-  const sx = look ? flipScale(look.from, look.to, look.ms, false) : flipScale(prev.baby.facing, state.baby.facing, ms, reduced);
+  const sx = flipScale(prev.baby.facing, state.baby.facing, ms, reduced);
   const show = bubbleShow(def, state);
   const head = spriteHead(bAnim.sprite, state.baby.facing);
   // The lamp glow (bible § 5): near a lit light attractor
@@ -287,7 +283,6 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const mochaTo = mochaNode(def, state);
   const perch = def.perches.find((p) => p.id === state.mocha.perch);
   const mochaHidden = perch !== undefined && perchHidesMocha(def, perch) && state.mocha.path.length === 0;
-  if (mochaHidden) noteFrameFallback(MOCHA_STATE_ANIM.inBox);
   const mochaTravel = mochaFrom !== null && mochaTo !== null && mochaFrom !== mochaTo;
   const mochaStart = mochaFrom === null ? undefined : nodePos(def, prev, mochaFrom);
   const mochaEnd = mochaTo === null ? undefined : nodePos(def, state, mochaTo);
@@ -307,7 +302,8 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     onPart: perch?.onPart !== undefined,
   });
   const mFrame = chooseFrame(mAnim, { k: tStep, dist: 0, tickMs, hold: held });
-  let mochaPose = mochaHidden ? null : stepPose(def, prev, state, mochaFrom, mochaTo, tStep, ms, { reduced, hop: 24, preview });
+  // In a box (C9) he is still drawn at the perch: the `inbox` frame is only his head and paws over the rim
+  let mochaPose = stepPose(def, prev, state, mochaFrom, mochaTo, tStep, ms, { reduced, hop: 24, preview });
   let mochaOpacity = 1;
   if (reduced && !still && mochaTravel && mochaStart && mochaPose) {
     const f = fadeSlide(mochaStart, [mochaPose.x, mochaPose.y], ms);

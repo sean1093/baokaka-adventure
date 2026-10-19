@@ -2,7 +2,7 @@
 import type { SpriteDef, SpriteManifest } from './manifest';
 
 /** Every sprite id: `<char>.<pose>` for gameplay poses, the artist's names for stills. */
-export const SPRITE_IDS = ["baokaka.crawl","baokaka.sit","baokaka.clap","baokaka.reach","baokaka.hold","baokaka.eat","baokaka.point","baokaka.wave","baokaka.hug","baokaka.cry","baokaka.refuse","baokaka.wonder","baokaka.sleep","baokaka.pull","baokaka.wobble","baokaka.walk","baokaka.bounce","baokaka.zhuazhou","mocha.walk","mocha.sit","mocha.loaf","mocha.sleep","mocha.jump","mocha.perch","mocha.squeeze","mocha.push","mocha.lure","mocha.stretch","mocha.puff","mocha.rub","mocha.album","baokaka-stand","mocha-sit","baokaka-head-neutral","baokaka-head-happy","baokaka-head-laugh","baokaka-head-teary","baokaka-head-surprised","baokaka-head-cry","mocha-head-content","mocha-head-smug","mocha-head-happy","mocha-head-surprised"] as const;
+export const SPRITE_IDS = ["baokaka.crawl","baokaka.sit","baokaka.clap","baokaka.reach","baokaka.hold","baokaka.eat","baokaka.point","baokaka.wave","baokaka.hug","baokaka.cry","baokaka.refuse","baokaka.wonder","baokaka.sleep","baokaka.pull","baokaka.wobble","baokaka.walk","baokaka.bounce","baokaka.zhuazhou","baokaka.look","baokaka.watch","baokaka.giggle","baokaka.touchwatch","baokaka.carried","baokaka.climb","mocha.walk","mocha.sit","mocha.loaf","mocha.sleep","mocha.jump","mocha.perch","mocha.squeeze","mocha.push","mocha.lure","mocha.stretch","mocha.puff","mocha.rub","mocha.glare","mocha.purr","mocha.inbox","mocha.album","baokaka-stand","mocha-sit","baokaka-head-neutral","baokaka-head-happy","baokaka-head-laugh","baokaka-head-teary","baokaka-head-surprised","baokaka-head-cry","mocha-head-content","mocha-head-smug","mocha-head-happy","mocha-head-surprised"] as const;
 export type SpriteId = (typeof SPRITE_IDS)[number];
 
 export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Record<SpriteId, SpriteDef>> } = {
@@ -135,27 +135,28 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "kind": "pose",
       "char": "baokaka",
       "label": "伸手抓高處",
-      "size": [61, 115],
-      "anchor": [35.85, 95.67],
-      "head": [27.65, 3],
+      "size": [62, 115],
+      "anchor": [35.85, 96.33],
+      "head": [27.65, 3.67],
       "foot": [12, 40.67],
       "mapScale": 1,
       "group": 0,
       "noMirror": false,
-      "files": ["poses/baokaka-reach-0"],
+      "files": ["poses/baokaka-reach-0", "poses/baokaka-reach-1"],
       "bytes": [
-        [7614, 13148]
+        [7596, 13044],
+        [7828, 13264]
       ],
       "anims": {
         "main": {
-          "frames": [0],
+          "frames": [0, 1],
           "fps": 4,
-          "mode": "once",
+          "mode": "pingpong",
           "hold": 0,
           "events": []
         }
       },
-      "source": "7cae565b0488fa6c"
+      "source": "25faf9deecf589d2"
     },
     "baokaka.hold": {
       "kind": "pose",
@@ -192,7 +193,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [28.28, 5.33],
       "foot": [12.33, 58.33],
       "mapScale": 1,
-      "group": 0,
+      "group": 1,
       "noMirror": false,
       "files": ["poses/baokaka-eat-0"],
       "bytes": [
@@ -207,7 +208,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "98de76d536d64237"
+      "source": "821ac385ab2555e2"
     },
     "baokaka.point": {
       "kind": "pose",
@@ -218,7 +219,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [26.96, 3.67],
       "foot": [17.33, 63.67],
       "mapScale": 1,
-      "group": 0,
+      "group": 1,
       "noMirror": false,
       "files": ["poses/baokaka-point-0"],
       "bytes": [
@@ -233,7 +234,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "32350d14d4800919"
+      "source": "8f2173424fb6f5a2"
     },
     "baokaka.wave": {
       "kind": "pose",
@@ -497,7 +498,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [33.46, 5.33],
       "foot": [20.67, 65.33],
       "mapScale": 1,
-      "group": 0,
+      "group": "ui",
       "noMirror": false,
       "files": ["poses/baokaka-bounce-0", "poses/baokaka-bounce-1"],
       "bytes": [
@@ -513,7 +514,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "ff6dd1b6f893f1db"
+      "source": "e82f9a0e472951ed"
     },
     "baokaka.zhuazhou": {
       "kind": "pose",
@@ -540,6 +541,166 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
         }
       },
       "source": "1dbba10d935c2a3c"
+    },
+    "baokaka.look": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "左看右看",
+      "size": [76, 105],
+      "anchor": [28.52, 85.33],
+      "head": [37.2, 7],
+      "foot": [18.33, 64.33],
+      "mapScale": 1,
+      "group": 0,
+      "noMirror": false,
+      "files": ["poses/baokaka-look-0", "poses/baokaka-look-1"],
+      "bytes": [
+        [7488, 13048],
+        [7500, 12982]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1],
+          "fps": 1.5,
+          "mode": "loop",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "86146727d49e3218"
+    },
+    "baokaka.watch": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "看燈搖搖",
+      "size": [80, 104],
+      "anchor": [31.85, 84.67],
+      "head": [37.25, 3.67],
+      "foot": [21.67, 67.33],
+      "mapScale": 1,
+      "group": 0,
+      "noMirror": false,
+      "files": ["poses/baokaka-watch-0", "poses/baokaka-watch-1"],
+      "bytes": [
+        [7618, 13338],
+        [7558, 13252]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1],
+          "fps": 1.5,
+          "mode": "pingpong",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "c9b7bb5c5ade73d1"
+    },
+    "baokaka.giggle": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "搭便車咯咯笑",
+      "size": [69, 100],
+      "anchor": [20.85, 82.67],
+      "head": [29.76, 2.33],
+      "foot": [12, 39.33],
+      "mapScale": 1,
+      "group": 1,
+      "noMirror": false,
+      "files": ["poses/baokaka-giggle-0"],
+      "bytes": [
+        [7682, 13364]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "fd18a986a794fc34"
+    },
+    "baokaka.touchwatch": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "抬頭看手指",
+      "size": [75, 103],
+      "anchor": [27.85, 83.67],
+      "head": [27.49, 2.33],
+      "foot": [18, 63.67],
+      "mapScale": 1,
+      "group": 0,
+      "noMirror": false,
+      "files": ["poses/baokaka-touchwatch-0"],
+      "bytes": [
+        [7812, 13612]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "738f8c9f4478fadc"
+    },
+    "baokaka.carried": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "被抱起來",
+      "size": [71, 131],
+      "anchor": [28.19, 112.33],
+      "head": [26.98, 3.33],
+      "foot": [17.67, 36.67],
+      "mapScale": 1,
+      "group": 5,
+      "noMirror": false,
+      "files": ["poses/baokaka-carried-0"],
+      "bytes": [
+        [8530, 14454]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "f72e310d3207e84d"
+    },
+    "baokaka.climb": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "爬上台階",
+      "size": [112, 113],
+      "anchor": [52.52, 93],
+      "head": [27.65, 2.67],
+      "foot": [24.67, 53],
+      "mapScale": 1,
+      "group": 7,
+      "noMirror": false,
+      "files": ["poses/baokaka-climb-0", "poses/baokaka-climb-1", "poses/baokaka-climb-2"],
+      "bytes": [
+        [7568, 13604],
+        [7458, 12580],
+        [7802, 13698]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "ae048ef5dc47aedd"
     },
     "mocha.walk": {
       "kind": "pose",
@@ -642,7 +803,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [38.36, 4.33],
       "foot": [11.33, 49.67],
       "mapScale": 1,
-      "group": 0,
+      "group": "ui",
       "noMirror": false,
       "files": ["poses/mocha-sleep-0"],
       "bytes": [
@@ -657,7 +818,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "c9826ce24b481511"
+      "source": "47ac31dad4e3270c"
     },
     "mocha.jump": {
       "kind": "pose",
@@ -701,7 +862,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [37.97, 5],
       "foot": [10, 38.33],
       "mapScale": 1,
-      "group": 0,
+      "group": "ui",
       "noMirror": false,
       "files": ["poses/mocha-perch-0"],
       "bytes": [
@@ -716,7 +877,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "54bf4f5eb5b04ed3"
+      "source": "a9e32503c533a4de"
     },
     "mocha.squeeze": {
       "kind": "pose",
@@ -727,7 +888,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [68.05, 4.33],
       "foot": [32.33, 70.67],
       "mapScale": 1,
-      "group": 0,
+      "group": 1,
       "noMirror": false,
       "files": ["poses/mocha-squeeze-0"],
       "bytes": [
@@ -742,7 +903,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "96e81bc41813ade9"
+      "source": "73a0e831c47f453f"
     },
     "mocha.push": {
       "kind": "pose",
@@ -812,7 +973,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [16.94, 5.33],
       "foot": [27, 68.33],
       "mapScale": 1,
-      "group": 0,
+      "group": "ui",
       "noMirror": false,
       "files": ["poses/mocha-stretch-0"],
       "bytes": [
@@ -827,7 +988,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "c2abb7a37538695d"
+      "source": "d85a9b8a45bdaf71"
     },
     "mocha.puff": {
       "kind": "pose",
@@ -838,7 +999,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [31, 5.33],
       "foot": [20, 44.67],
       "mapScale": 1,
-      "group": 0,
+      "group": 1,
       "noMirror": false,
       "files": ["poses/mocha-puff-0"],
       "bytes": [
@@ -853,7 +1014,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "6a9da19b372bc99d"
+      "source": "fd30e5c4031eca81"
     },
     "mocha.rub": {
       "kind": "pose",
@@ -864,7 +1025,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [14.29, 5.33],
       "foot": [20, 47.67],
       "mapScale": 1,
-      "group": 0,
+      "group": "ui",
       "noMirror": false,
       "files": ["poses/mocha-rub-0"],
       "bytes": [
@@ -879,7 +1040,85 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "cb5f63927384da03"
+      "source": "85ff16c64167d681"
+    },
+    "mocha.glare": {
+      "kind": "pose",
+      "char": "mocha",
+      "label": "瞪（耳朵往後壓）",
+      "size": [60, 67],
+      "anchor": [31.11, 50.93],
+      "head": [37.48, 5.33],
+      "foot": [15.33, 41.67],
+      "mapScale": 1,
+      "group": 1,
+      "noMirror": false,
+      "files": ["poses/mocha-glare-0"],
+      "bytes": [
+        [5206, 8728]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "97d097bc70417623"
+    },
+    "mocha.purr": {
+      "kind": "pose",
+      "char": "mocha",
+      "label": "呼嚕（被抱）",
+      "size": [68, 54],
+      "anchor": [30.11, 40.27],
+      "head": [46.11, 4.33],
+      "foot": [11, 46],
+      "mapScale": 1,
+      "group": 0,
+      "noMirror": false,
+      "files": ["poses/mocha-purr-0"],
+      "bytes": [
+        [4244, 7288]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "cbbc915047f11db0"
+    },
+    "mocha.inbox": {
+      "kind": "pose",
+      "char": "mocha",
+      "label": "躲在箱子裡探頭",
+      "size": [45, 47],
+      "anchor": [21.44, 34.27],
+      "head": [22.45, 4.33],
+      "foot": [11, 32.67],
+      "mapScale": 1,
+      "group": 0,
+      "noMirror": false,
+      "files": ["poses/mocha-inbox-0"],
+      "bytes": [
+        [3170, 5452]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "2ddce11ea949037c"
     },
     "mocha.album": {
       "kind": "pose",

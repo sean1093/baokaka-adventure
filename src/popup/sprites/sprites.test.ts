@@ -130,12 +130,18 @@ describe('agreement with the artist’s manifests (docs/art/v2/baked)', () => {
 });
 
 describe('payload (#94 R3)', () => {
-  test('the core set (every M1 page) is ≤ 400 KB at @3x', () => {
-    const core = Object.keys(M.sprites).filter((id) => M.sprites[id as keyof typeof M.sprites].kind === 'pose' && M.sprites[id as keyof typeof M.sprites].group === 0);
+  const inGroup = (g: number | 'ui') => Object.keys(M.sprites).filter((id) => M.sprites[id as keyof typeof M.sprites].kind === 'pose' && M.sprites[id as keyof typeof M.sprites].group === g);
+
+  test('the core set (every page from the prologue on) is ≤ 400 KB at @3x', () => {
+    const core = inGroup(0);
     expect(pageSprites(0)).toEqual(core);
-    expect(pageSprites(1)).toEqual(core);
     expect(payloadBytes(core, 3)).toBeLessThanOrEqual(400 * 1024);
     expect(payloadBytes(core, 2)).toBeLessThan(payloadBytes(core, 3));
+  });
+
+  test('chapter 1 (the rest of M1) adds at most 100 KB @3x to the core set (#141, D-58)', () => {
+    expect(new Set(pageSprites(1))).toEqual(new Set([...inGroup(0), ...inGroup(1)]));
+    expect(payloadBytes(inGroup(1), 3)).toBeLessThanOrEqual(100 * 1024);
   });
 
   test('later chapters add their own poses (walk on 10, the rail stand on 9)', () => {
@@ -144,6 +150,13 @@ describe('payload (#94 R3)', () => {
     expect(pageSprites(9)).toContain('baokaka.pull');
     expect(pageSprites(1)).not.toContain('baokaka.walk');
     expect(pageSprites(3)).toContain('baokaka.refuse');
+    // A chapter keeps what earlier chapters needed (a word learnt in 2 is said in 3)
+    expect(pageSprites(3)).toContain('baokaka.wave');
+    expect(pageSprites(1)).toContain('baokaka.giggle');
+    expect(pageSprites(0)).not.toContain('baokaka.giggle');
+    expect(pageSprites(7)).toContain('baokaka.carried');
+    expect(pageSprites(6)).not.toContain('baokaka.climb');
+    expect(pageSprites(10)).not.toContain('baokaka.zhuazhou');
   });
 });
 
