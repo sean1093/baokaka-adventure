@@ -10,7 +10,9 @@
  *                  counts as its background), the background is read off a screenshot taken with all
  *                  text hidden, and 90 % of the pixels behind the run must meet 7:1.
  *   R6 hit areas   every touchable (`[data-hit]`, the page's grown hit shapes) and every button, link,
- *                  switch, tab or slider is ≥ 48×48 CSS px.
+ *                  switch, tab or slider is ≥ 48×48 CSS px. At 390×844 (the reference book scale,
+ *                  ≈ 0.91) no page hit shape may need growing (`[data-hit-grown]`): each touchable's
+ *                  own hit area is ≥ 48 px after the book scale (popup art bible § 4.2, #140).
  *   Reduced motion under `prefers-reduced-motion: reduce`, with the fixture live, no running CSS or
  *                  Web Animations animation changes anything but opacity (fades are allowed).
  *   Flashing       with the fixture live and motion on, no animation flashes above 3 Hz (opacity or
@@ -32,6 +34,8 @@ export const MIN_CONTRAST = 7;
 /** Share of the pixels behind a text run that must meet MIN_CONTRAST (anti-aliasing, paper fibres). */
 export const CONTRAST_COVERAGE = 0.9;
 export const MIN_HIT_PX = 48;
+/** The viewport whose book scale the authored hit areas must clear 48 px at (bible § 2.1, § 4.2). */
+export const REFERENCE_VIEWPORT = '390x844';
 export const MAX_FLASH_HZ = 3;
 
 /**
@@ -187,7 +191,7 @@ function collect({ waivers, artText, minText, minTextBig }) {
     if (opacityOf(el) === 0 && !el.hasAttribute('data-hit')) continue;
     const box = el.getBoundingClientRect();
     if (box.width === 0 && box.height === 0) continue;
-    hits.push({ label: label(el), w: Math.round(box.width * 10) / 10, h: Math.round(box.height * 10) / 10, page: el.hasAttribute('data-hit'), waived: waivedFor(el, 'hit') });
+    hits.push({ label: label(el), w: Math.round(box.width * 10) / 10, h: Math.round(box.height * 10) / 10, page: el.hasAttribute('data-hit'), grown: el.hasAttribute('data-hit-grown'), waived: waivedFor(el, 'hit') });
   }
   return { texts, hits, art };
 }
@@ -371,6 +375,11 @@ export async function checkPopup(browser, base, viewports, report) {
       if (pageHits === 0) report.fail(`${label}: no [data-hit] touchables found (the page's hit layer is missing)`);
       else if (tiny.length === 0) pass(report, `${label}: ${hits.length} hit areas ≥ ${MIN_HIT_PX}×${MIN_HIT_PX}`);
       else report.fail(`${label} hit areas: ${tiny.join('; ')}`);
+      if (viewport.name === REFERENCE_VIEWPORT) {
+        const grown = hits.filter((h) => h.grown && !h.waived).map((h) => `"${h.label}"`);
+        if (grown.length === 0) pass(report, `${label}: every page hit shape is ≥ ${MIN_HIT_PX} px after the book scale (none grown)`);
+        else report.fail(`${label} hit areas under ${MIN_HIT_PX} px after the book scale (grown by the hit layer): ${grown.join(', ')}`);
+      }
     }
     await page.close();
   }

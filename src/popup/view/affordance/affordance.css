@@ -1,0 +1,82 @@
+/*
+ * Touchable states (#140; popup art bible § 4.1, § 8). Transforms and opacity only, no filters
+ * (GDD § 3.9). Every loop here is a CSS animation, so a screenshot still (`[data-still]`,
+ * gestures.css) and reduced motion stop all of it.
+ */
+
+/*
+ * The idle wiggle: one 300 ms run, restarted by switching between the identical `-a` and `-b`
+ * names (useIdleWiggle). Tabs and wheels turn about their own origin (the card's or disc's centre);
+ * a flap lifts its free corner about the hinge; a prop shakes about its middle.
+ */
+.aff-wig { animation-duration: 300ms; animation-timing-function: ease-out; animation-iteration-count: 1; }
+.aff-wig-tab-a { animation-name: aff-wig-tab-a; }
+.aff-wig-tab-b { animation-name: aff-wig-tab-b; }
+.aff-wig-wheel-a { animation-name: aff-wig-wheel-a; }
+.aff-wig-wheel-b { animation-name: aff-wig-wheel-b; }
+.aff-wig-flap-a { animation-name: aff-wig-flap-a; }
+.aff-wig-flap-b { animation-name: aff-wig-flap-b; }
+.aff-wig-prop-a,
+.aff-wig-prop-b { transform-box: fill-box; transform-origin: center; }
+.aff-wig-prop-a { animation-name: aff-wig-prop-a; animation-duration: 360ms; }
+.aff-wig-prop-b { animation-name: aff-wig-prop-b; animation-duration: 360ms; }
+
+@keyframes aff-wig-tab-a { 0%, 100% { transform: none; } 30% { transform: rotate(-2deg); } 65% { transform: rotate(2deg); } }
+@keyframes aff-wig-tab-b { 0%, 100% { transform: none; } 30% { transform: rotate(-2deg); } 65% { transform: rotate(2deg); } }
+@keyframes aff-wig-wheel-a { 0%, 100% { transform: none; } 30% { transform: rotate(-4deg); } 65% { transform: rotate(4deg); } }
+@keyframes aff-wig-wheel-b { 0%, 100% { transform: none; } 30% { transform: rotate(-4deg); } 65% { transform: rotate(4deg); } }
+@keyframes aff-wig-flap-a { 0%, 100% { transform: none; } 45% { transform: rotate(-2.5deg); } }
+@keyframes aff-wig-flap-b { 0%, 100% { transform: none; } 45% { transform: rotate(-2.5deg); } }
+@keyframes aff-wig-prop-a { 0%, 100% { transform: none; } 25% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } 75% { transform: rotate(-1.5deg); } }
+@keyframes aff-wig-prop-b { 0%, 100% { transform: none; } 25% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } 75% { transform: rotate(-1.5deg); } }
+
+/* Hint L1: the halo pulses for 3 s (opacity only), then rests at its glow */
+.aff-halo { animation: aff-halo 1s ease-in-out 3; }
+
+@keyframes aff-halo { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/*
+ * Hint L2: the vellum ghost hand does the gesture, on a 2.4 s loop. The path comes from custom
+ * properties on the element (page units): --dx/--dy for a drag, --deg for a turn, --rise for a lift.
+ */
+.aff-hand { animation-duration: 2400ms; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+.aff-hand-drag { animation-name: aff-hand-drag; }
+.aff-hand-tap { animation-name: aff-hand-tap; }
+.aff-hand-turn { animation-name: aff-hand-turn; }
+.aff-hand-lift { animation-name: aff-hand-lift; }
+
+@keyframes aff-hand-drag {
+  0%, 12% { transform: translate(0, 0); opacity: 0; }
+  20% { transform: translate(0, 0); opacity: 1; }
+  70% { transform: translate(var(--dx), var(--dy)); opacity: 1; }
+  85%, 100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+@keyframes aff-hand-tap {
+  0%, 10% { transform: translate(6px, 10px); opacity: 0; }
+  25% { transform: translate(6px, 10px); opacity: 1; }
+  40% { transform: translate(0, 0) scale(0.94); opacity: 1; }
+  55% { transform: translate(6px, 10px); opacity: 1; }
+  80%, 100% { transform: translate(6px, 10px); opacity: 0; }
+}
+@keyframes aff-hand-turn {
+  0%, 12% { transform: rotate(0deg); opacity: 0; }
+  20% { transform: rotate(0deg); opacity: 1; }
+  70% { transform: rotate(var(--deg)); opacity: 1; }
+  85%, 100% { transform: rotate(var(--deg)); opacity: 0; }
+}
+@keyframes aff-hand-lift {
+  0%, 12% { transform: translate(0, 0); opacity: 0; }
+  20% { transform: translate(0, 0); opacity: 1; }
+  65% { transform: translate(0, calc(-1 * var(--rise))); opacity: 1; }
+  85%, 100% { transform: translate(0, calc(-1 * var(--rise))); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aff-wig,
+  .aff-halo,
+  .aff-hand { animation: none; }
+}
+
+.reduce-motion .aff-wig,
+.reduce-motion .aff-halo,
+.reduce-motion .aff-hand { animation: none; }

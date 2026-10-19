@@ -39,8 +39,8 @@ exports[`PageView layers and budget > node counts per layer (1-2 is far below th
     "elements": 17,
   },
   "parts-near": {
-    "animated": 35,
-    "elements": 63,
+    "animated": 37,
+    "elements": 66,
   },
 }
 `;

@@ -17,7 +17,7 @@ export const VERBS = { tab: '拉', wheel: '轉', flap: '翻', slider: '推' } as
  */
 export function seal(ctx: KitCtx, x: number, y: number, glyph: string, r = 13): string {
   const inset = r - 2.2;
-  return `<g transform="${translate(x, y)}">`
+  return `<g data-seal="${glyph}" transform="${translate(x, y)}">`
     + `<rect x="${f1(-r)}" y="${f1(-r)}" width="${f1(2 * r)}" height="${f1(2 * r)}" rx="${f1(r * 0.32)}" fill="${C.seal}"${filterAttr(ctx, 'deckle')}/>`
     + `<rect x="${f1(-inset)}" y="${f1(-inset)}" width="${f1(2 * inset)}" height="${f1(2 * inset)}" rx="${f1(r * 0.22)}" fill="none" stroke="${C.sealHairline}" stroke-width="1" opacity=".75"/>`
     + `<text data-art-text="" y="${f1(r * 0.38)}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="${f1(r * 1.12)}" fill="${C.sealGlyph}">${glyph}</text></g>`;
@@ -28,7 +28,7 @@ export function seal(ctx: KitCtx, x: number, y: number, glyph: string, r = 13): 
  * that pairs a touchable with the part it moves (bible § 4, linked parts).
  */
 export function brad(ctx: KitCtx, x: number, y: number, r = 4.5, linked = false): string {
-  return `<g transform="${translate(x, y)}"><circle r="${f1(r + 1)}" fill="${C.shadow}" opacity=".35" transform="translate(.8 1.2)"/>`
+  return `<g${linked ? ' data-affordance="link"' : ''} transform="${translate(x, y)}"><circle r="${f1(r + 1)}" fill="${C.shadow}" opacity=".35" transform="translate(.8 1.2)"/>`
     + `<circle r="${f1(r)}" fill="${ref(ctx, 'foil')}"/><circle r="${f1(r * 0.45)}" cx="${f1(-r * 0.25)}" cy="${f1(-r * 0.3)}" fill="${C.brassShine}" opacity=".8"/>`
     + (linked ? `<circle r="${f1(r + 2.4)}" fill="none" stroke="${C.marigold}" stroke-width="1.6" stroke-dasharray="2 2"/>` : '')
     + `</g>`;
@@ -56,15 +56,15 @@ export type PullTabOptions = {
 export function pullTab(ctx: KitCtx, x: number, y: number, { w = 112, h = 44, dir = 1, label = VERBS.tab, track = 120, ticks = true, sealed = true }: PullTabOptions = {}): string {
   const rx = f1(h * 0.34);
   const mid = h / 2;
-  const trackSvg = track <= 0 ? '' : `<g opacity=".85" fill="none" stroke="${C.marigoldLight}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">`
+  const trackSvg = track <= 0 ? '' : `<g data-cue="track" opacity=".85" fill="none" stroke="${C.marigoldLight}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">`
     + `<path d="M${w + 4} ${mid}H${w + track}" stroke-dasharray="1 7"/><path d="M${w + track - 8} ${mid - 6}L${w + track} ${mid}L${w + track - 8} ${mid + 6}"/></g>`;
   const tickSvg = ticks
     ? `<path d="M-8 6l-6 -4M-9 ${mid}h-7M-8 ${h - 6}l-6 4" stroke="${C.marigoldLight}" stroke-width="1.8" stroke-linecap="round" opacity=".9"/>`
     : '';
-  const arrow = `<path d="M${f1(w * 0.42)} ${mid}H${f1(w * 0.66)}M${f1(w * 0.62)} ${mid - 7}L${f1(w * 0.7)} ${mid}L${f1(w * 0.62)} ${mid + 7}" fill="none" stroke="${C.sealDark}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const arrow = `<path data-cue="arrow" d="M${f1(w * 0.42)} ${mid}H${f1(w * 0.66)}M${f1(w * 0.62)} ${mid - 7}L${f1(w * 0.7)} ${mid}L${f1(w * 0.62)} ${mid + 7}" fill="none" stroke="${C.sealDark}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`;
   const body = `<rect width="${w}" height="${h}" rx="${rx}" fill="${ref(ctx, 'tabG')}"/>`
     + `<rect x="2" y="2" width="${w - 4}" height="${h - 4}" rx="${f1(h * 0.3)}" fill="none" stroke="${C.marigoldShine}" stroke-width="1.2" opacity=".7"/>`
-    + `<rect x="${w - 30}" y="6" width="22" height="${h - 12}" rx="4" fill="${ref(ctx, 'ridges')}"/>${arrow}`;
+    + `<rect data-grip="ridges" x="${w - 30}" y="6" width="22" height="${h - 12}" rx="4" fill="${ref(ctx, 'ridges')}"/>${arrow}`;
   return `<g transform="${translate(x, y)} scale(${dir} 1)">${trackSvg}${tickSvg}`
     + depth(ctx, 3, body, `<rect width="${w}" height="${h}" rx="${rx}"/>`)
     + (sealed ? `<g transform="scale(${dir} 1)">${seal(ctx, dir * 22, mid, label, 14)}</g>` : '')
@@ -92,10 +92,10 @@ export type WheelOptions = { teeth?: number; label?: string; face?: string; rot?
 export function wheel(ctx: KitCtx, x: number, y: number, r: number, { teeth = 18, label = VERBS.wheel, face = '', rot = 0 }: WheelOptions = {}): string {
   const rim = wheelRim(r, teeth);
   const turn = rot ? ` transform="rotate(${rot})"` : '';
-  const arrow = `<g stroke="${C.marigoldLight}" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".95">`
+  const arrow = `<g data-cue="turn" stroke="${C.marigoldLight}" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".95">`
     + `<path d="M${f1(-r * 0.55)} ${f1(-r * 1.32)}A${f1(r * 1.42)} ${f1(r * 1.42)} 0 0 1 ${f1(r * 0.9)} ${f1(-r * 1.1)}"/>`
     + `<path d="M${f1(r * 0.62)} ${f1(-r * 1.32)}l${f1(r * 0.3)} ${f1(r * 0.2)}l${f1(-r * 0.05)} ${f1(r * 0.34)}"/></g>`;
-  const body = `<g${turn}><path d="${rim}" fill="${ref(ctx, 'tabR')}"/>`
+  const body = `<g${turn}><path data-grip="rim" d="${rim}" fill="${ref(ctx, 'tabR')}"/>`
     + `<circle r="${f1(r * 0.78)}" fill="none" stroke="${C.marigoldEdge}" stroke-width="1" opacity=".5"/>`
     + `<circle r="${f1(r * 0.74)}" fill="none" stroke="${C.marigoldShine}" stroke-width="1" opacity=".6"/>${face}</g>`;
   return `<g transform="${translate(x, y)}">${arrow}${depth(ctx, 3, body, `<path d="${rim}"${turn}/>`)}`
@@ -104,21 +104,27 @@ export function wheel(ctx: KitCtx, x: number, y: number, r: number, { teeth = 18
     + `</g>`;
 }
 
-export type FlapOptions = { face?: string; label?: string; open?: number };
+export type FlapOptions = {
+  face?: string;
+  label?: string;
+  open?: number;
+  /** Draw the verb seal (false when the caller draws it upright, outside the fold's scale) */
+  sealed?: boolean;
+};
 
 /**
  * 翻 Flap (bible § 4): a printed card whose lifted dog-ear corner is the marigold grip, with a
  * finger notch and a curl cue. Top-left at (x, y); `open` (0–1) lifts the corner further.
  */
-export function flap(ctx: KitCtx, x: number, y: number, w: number, h: number, { face = C.flapFace, label = VERBS.flap, open = 0 }: FlapOptions = {}): string {
+export function flap(ctx: KitCtx, x: number, y: number, w: number, h: number, { face = C.flapFace, label = VERBS.flap, open = 0, sealed = true }: FlapOptions = {}): string {
   const c = 22 + open * 20;
   const card = `M0 0H${w}V${f1(h - c)}L${f1(w - c)} ${h}H0Z`;
   const ear = `M${w} ${f1(h - c)}L${f1(w - c)} ${h}L${f1(w - c * 0.35)} ${f1(h + c * 0.42)}Z`;
   return `<g transform="${translate(x, y)}">`
     + depth(ctx, 3, `<path d="${card}" fill="${face}"/><path d="M2 2H${w - 2}" stroke="${C.standeeCard}" stroke-width="1" opacity=".35"/>`, `<path d="${card}"/>`)
-    + depth(ctx, 4, `<path d="${ear}" fill="${ref(ctx, 'tabG')}"/><path d="M${f1(w - c)} ${h}L${f1(w - c * 0.35)} ${f1(h + c * 0.42)}" stroke="${C.marigoldEdge}" stroke-width="1" opacity=".6"/>`, `<path d="${ear}"/>`)
-    + `<path d="M${f1(w - c * 0.2)} ${f1(h + c * 0.62)}q8 6 14 2M${w + 4} ${f1(h - c * 0.4)}l6 -3M${f1(w - c * 0.5)} ${f1(h + c * 0.95)}l-1 6" stroke="${C.marigoldLight}" stroke-width="2" fill="none" stroke-linecap="round"/>`
-    + seal(ctx, 16, 16, label, 11)
+    + depth(ctx, 4, `<path data-grip="ear" d="${ear}" fill="${ref(ctx, 'tabG')}"/><path d="M${f1(w - c)} ${h}L${f1(w - c * 0.35)} ${f1(h + c * 0.42)}" stroke="${C.marigoldEdge}" stroke-width="1" opacity=".6"/>`, `<path d="${ear}"/>`)
+    + `<path data-cue="curl" d="M${f1(w - c * 0.2)} ${f1(h + c * 0.62)}q8 6 14 2M${w + 4} ${f1(h - c * 0.4)}l6 -3M${f1(w - c * 0.5)} ${f1(h + c * 0.95)}l-1 6" stroke="${C.marigoldLight}" stroke-width="2" fill="none" stroke-linecap="round"/>`
+    + (sealed ? seal(ctx, 16, 16, label, 11) : '')
     + `</g>`;
 }
 
@@ -131,9 +137,9 @@ export function slider(ctx: KitCtx, x: number, y: number, len: number, pos = 0.3
   const knob = `<rect x="${f1(kx - 16)}" y="-15" width="32" height="30" rx="10"/>`;
   return `<g transform="${translate(x, y)}">`
     + `<rect x="-4" y="-5" width="${len + 8}" height="10" rx="5" fill="${C.shadow}" opacity=".55"/><rect x="-4" y="-5" width="${len + 8}" height="2" rx="1" fill="${C.shadow}" opacity=".6"/>`
-    + `<path d="M${f1(kx + 26)} 0H${len}" stroke="${C.marigoldLight}" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/>`
-    + `<path d="M${len - 6} -5L${len} 0L${len - 6} 5" stroke="${C.marigoldLight}" stroke-width="2" fill="none" stroke-linecap="round"/>`
-    + depth(ctx, 3, `<rect x="${f1(kx - 16)}" y="-15" width="32" height="30" rx="10" fill="${ref(ctx, 'tabG')}"/><rect x="${f1(kx - 9)}" y="-9" width="18" height="18" rx="3" fill="${ref(ctx, 'ridges')}"/>`, knob)
+    + `<g data-cue="track"><path d="M${f1(kx + 26)} 0H${len}" stroke="${C.marigoldLight}" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/>`
+    + `<path d="M${len - 6} -5L${len} 0L${len - 6} 5" stroke="${C.marigoldLight}" stroke-width="2" fill="none" stroke-linecap="round"/></g>`
+    + depth(ctx, 3, `<rect x="${f1(kx - 16)}" y="-15" width="32" height="30" rx="10" fill="${ref(ctx, 'tabG')}"/><rect data-grip="knob" x="${f1(kx - 9)}" y="-9" width="18" height="18" rx="3" fill="${ref(ctx, 'ridges')}"/>`, knob)
     + seal(ctx, kx - 24, -22, label, 11)
     + `</g>`;
 }
@@ -149,5 +155,5 @@ export function paw(fill: string = C.chalk, s = 1): string {
  * the action is Mocha's, not the finger's. Centred on (x, y), scaled by `s`.
  */
 export function perch(ctx: KitCtx, x: number, y: number, s = 1): string {
-  return `<g transform="${translate(x, y)} scale(${s})">${softEllipse(ctx, 0, 0, 22, 7, 'marigold', 0.3)}${paw()}</g>`;
+  return `<g data-affordance="perch" transform="${translate(x, y)} scale(${s})">${softEllipse(ctx, 0, 0, 22, 7, 'marigold', 0.3)}${paw()}</g>`;
 }

@@ -416,3 +416,25 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #104 sets `data-text-size="big"` for 大字.
 - Every later UI issue adds fixtures for its screens.
 - #111 drops the art lab half of the name-uniqueness test along with the RPG targets.
+
+### D-54 · 2026-10-19 · The touchable affordance system: the readings #140 left open
+
+**Context.** #140 builds the bible § 4 grandparent rule (marigold + red verb seal + grip + direction cue on every touchable), the § 4.1 states and the § 4.2 checks, with a lint "within ΔE < 12 of marigold". Several details were open.
+
+**Decision.**
+1. **ΔE is CIE76** (Lab distance, D65), the unqualified "ΔE" of the bible, measured against the card's **saturated body only: `marigold` (#FFC23A) and `marigoldDeep`**. The light stop `marigoldLight` sits by design next to lamplight (§ 3.3's lit vellum `windowMid`, ΔE 9; `lamp`, ΔE 6) and foil (`gold`, ΔE 10), and the edge `marigoldEdge` is a brown beside kraft and wood; measuring against them would flag the bible's own night palette. Against the body, no palette colour but the two card stops is within 12 (a unit test pins this), while a saturated taxi yellow (#F7B731) is caught.
+2. **What the lint reads: drawn markup, not data.** `lintAffordance(def, markup)` walks the SVG `PageView` drew (in tests: rendered to static markup for every state of every page's solution, in both motion looks and with the states drawn; in PageLab: the stage's live DOM). Paint attributes and `style` declarations are resolved through gradient and pattern ids. Allowed marigold: inside a touchable's `data-part` group, and inside `data-affordance` (perch paws, linked brads, hint halos and threads). The four cues are found by markup markers the kit now emits: `data-seal`, `data-grip`, `data-cue`. Kit presets are linted the same way (touchable presets show all four cues; printed presets carry no marigold).
+3. **A touchable is `wearsMarigold`:** a preset whose kit art is touchable (tab, slider, wheel, flap; a loop with a crank) with an input other than `none`. Tap toys (`prop`, a tappable `light`) take touches but stay unmarked, and shake on tap.
+4. **Hit areas after the book scale** (`A06-hit-small`): the own hit shape of every touch target must be ≥ 48 CSS px at the 390×844 book scale (0.908, so ≥ 52.9 units). `PERCH_R` and `TUDIGONG_R` grow from 24 and 22 to 27. `PageView` marks hit shapes that `minHit` had to grow (`data-hit-grown`), and `check:ui` fails any at 390×844 (growing stays the safety net on short phones, D-51).
+5. **Seals on a page** are ≥ 12.5 half-size (25 units, ≥ 22 CSS px after the book scale) and 15.5 in 長輩模式 (28 px); the kit's own sheet defaults are unchanged.
+6. **The idle wiggle** is a seeded scheduler (`WiggleScheduler`, pure, fake-clock tested): the first round spread over one period, then each part's next wiggle at the moment in its 3.2–4.8 s window farthest from every other part's. Each wiggle is a one-shot 300 ms CSS animation restarted by switching between two identical keyframe names (no remount, and a still or reduced motion stops it). It pauses while a finger is down and skips locked parts.
+7. **Locked** (bible: "darkened 35 % with a paw badge") is drawn whenever the part is locked (`partLocked`), not only on touch: a 35 % indigo veil over the part's outline and the badge at its hit's top-right corner; the touch adds #90's wobble and glare.
+8. **Dragging** lifts the moving card: 5 units up, ×1.04, over a dropped shadow (a radial-gradient penumbra plus the card's silhouette at 38 %, offset down-right in screen space), and the part is drawn last in its layer.
+9. **Hints** (`affordance.hint`): L1 is a filter-free halo hugging what the finger should touch (a tab's card at its stop, a wheel's rim, a flap's card; else the hit shape), pulsing in opacity three times; L2 adds the vellum ghost hand doing the target's gesture on a 2.4 s loop (drag to the next or hinted stop, turn one step, lift the corner, tap), with the gesture's printed path, and the dotted thread to a linked part. Under reduced motion both hold still. #100 decides what to hint.
+10. **Fixture looks.** The screenshot browser runs with reduced motion, so a fixture's still pins its motion look (`look`, default `motion`); live, the OS setting decides.
+
+**Why.** Linting what is drawn catches art from any source (kit, placeholder, a future baked key) with one rule; the markers make the four cues checkable without guessing from shapes.
+
+**Consequences.**
+- New art must mark its cues (`data-seal`, `data-grip`, `data-cue`) and any non-touchable marigold (`data-affordance`), or the lint fails the page.
+- #100 drives `affordance.hint` (and "Mocha looks at it"); #106 uses the L2 hand for the 0-1 tutorial; #108's art passes the affordance lint and the squint test.

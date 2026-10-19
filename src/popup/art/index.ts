@@ -10,6 +10,8 @@ export * from './svg';
 export * from './defs';
 export * from './paper';
 export * from './touchables';
+export * from './affordance';
+export * from './color';
 export * from './actors';
 export * from './ui';
 export * from './swatches';

@@ -355,7 +355,7 @@ export function perchPost(ctx: KitCtx, post: PerchPost): string {
 
 /** Mocha's empty-perch marker (GDD § 2.1: a faint paw print while Mocha is available). */
 export function perchMark(ctx: KitCtx, x: number, y: number): string {
-  return `<g transform="${translate(x, y - 6)}" opacity=".92">${softEllipse(ctx, 0, 2, 20, 6, 'marigold', 0.32)}${paw()}</g>`;
+  return `<g data-affordance="perch" transform="${translate(x, y - 6)}" opacity=".92">${softEllipse(ctx, 0, 2, 20, 6, 'marigold', 0.32)}${paw()}</g>`;
 }
 
 /** The track pit a carriage runs in, from its level down to the floor page's front edge. */

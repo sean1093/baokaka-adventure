@@ -2,13 +2,18 @@ import { useMemo, type ReactNode } from 'react';
 import { POPUP } from '../../art/palette';
 import { useSvgIds } from '../../art/useSvgIds';
 import { useReducedMotion } from '../../components/motion';
-import { kitCtx, type KitCtx } from '../art';
+import { checkKnot, kitCtx, pawBadge, type KitCtx } from '../art';
 import { attractorNode } from '../core/baby';
 import { holds, partState } from '../core/cond';
+import { partLocked } from '../core/step';
 import { nodePos } from '../core/graph';
 import { mochaNode, perchHidesMocha } from '../core/mocha';
 import type { CreatureDef, Id, PageDef, PerchDef, SimState } from '../core/types';
 import { Baby, Bubble, Creature, Mocha, bubbleShow, flipScale } from './actors';
+import './affordance/affordance.css';
+import { haloShape, handGesture, linkThread } from './affordance/hints';
+import { GhostHand, HintHalo, LinkThread } from './affordance/Hints';
+import { NO_AFFORDANCE, wearsMarigold, type AffordanceFlags, type PartLook } from './affordance/look';
 import { attractorArt, chapterSky, ledge, perchMark, perchPost, pottedPlant, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt } from './art/registry';
 import { BOOK_EXTENT, PAGE_W, type Hit, type Pt } from './geometry';
@@ -31,9 +36,16 @@ import { foregroundSlot, stageOf } from './stage';
  *
  * Gestures (#90, `gestures.ts`) reach it as `gesture` flags: a part held between stops by a drag
  * (its riders follow), the dragged and the locked part (`data-dragging`, `data-locked` and a
- * wobble; #140 draws the full states), Mocha's glare, Baokaka watching the finger, and
+ * wobble; their looks are below), Mocha's glare, Baokaka watching the finger, and
  * hold-to-reveal outlines. The hit layer draws every touchable's hit shape grown to 48 screen px
- * (`minHit`), the same shapes `hitTest` uses.
+ * (`minHit`), the same shapes `hitTest` uses; a grown one is marked `data-hit-grown` (its own shape
+ * is under 48 px at this scale; `npm run check:ui` forbids that at 390 × 844).
+ *
+ * Touchable states (#140, popup art bible § 4.1) come through `affordance` and the gesture: each
+ * part view gets a `look` (its idle wiggle run, the drag's lift, the locked veil, the reduced-motion
+ * double outline, 長輩模式 seals); a dragged part is drawn last in its layer (the next z); a locked
+ * touchable wears the paw badge and a solved one the done knot; a hint draws the L1 halo behind
+ * its target and, at L2, the vellum ghost hand over the page.
  */
 
 /** The SVG's view box in page units: the page plus room for the floor page's widening and the page block. */
@@ -54,6 +66,8 @@ export interface PageViewProps {
   readonly reduced?: boolean;
   /** What the finger is doing (#90) */
   readonly gesture?: GestureFlags;
+  /** Hints, idle wiggles, done knots, 長輩模式 (#140; the hint ladder is #100's) */
+  readonly affordance?: AffordanceFlags;
 }
 
 function Layer({ id, children, html }: { id: LayerId; children?: ReactNode; html?: string }) {
@@ -73,7 +87,7 @@ function creaturePoint(def: PageDef, creature: CreatureDef, state: SimState, oth
   return anchor === undefined ? null : offpagePoint(anchor);
 }
 
-export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE }: PageViewProps) {
+export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE }: PageViewProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
   const ids = useSvgIds(`pg-${def.id}`);
@@ -83,6 +97,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const t = clamp01(ms / Math.max(1, tickMs));
   const preview = gesture.preview;
   const locked = gesture.locked;
+
+  // ——— The hit layer: every touchable's shape, grown to 48 screen px (what hitTest uses) ———
+  const targets = targetsOf(def, state);
 
   // ——— Static layers, built once per page ———
   const statics = useMemo(() => {
@@ -100,15 +117,30 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
 
   // ——— Parts, split around the ledges by depth ———
   const riders = useMemo(() => new Set(def.nodes.filter((n) => n.attach).map((n) => n.attach!.part)), [def]);
+  const lookOf = (part: PageDef['parts'][number]): PartLook | undefined => {
+    const marigold = wearsMarigold(part);
+    const input = targets.some((tg) => tg.kind === 'part' && tg.id === part.id);
+    const look: PartLook = {
+      wiggle: reduced ? undefined : affordance.wiggle?.[part.id],
+      lifted: gesture.dragging === part.id,
+      locked: input && partLocked(def, state, part.id),
+      outline: reduced && marigold,
+      elder: affordance.elder,
+    };
+    return look.wiggle || look.lifted || look.locked || look.outline || look.elder ? look : undefined;
+  };
   const partEls = (z: 'mid' | 'near') =>
     def.parts
       .filter((p) => (PRESET_Z[p.preset] <= 3 ? 'mid' : 'near') === z)
+      // The dragged part lifts to the next z: drawn last in its layer (bible § 4.1)
+      .sort((a, b) => Number(a.id === gesture.dragging) - Number(b.id === gesture.dragging))
       .map((part) => {
         const from = partState(prev, part.id) ?? partState(state, part.id) ?? '';
         const to = partState(state, part.id) ?? from;
         const View = PART_VIEWS[part.preset];
         const held = preview?.part === part.id ? preview.index : undefined;
-        const base: PartViewProps = { part, ctx, from, to, ms, reduced, linked: riders.has(part.id), preview: held };
+        const look = lookOf(part);
+        const base: PartViewProps = { part, ctx, from, to, ms, reduced, linked: riders.has(part.id), preview: held, look };
         let el: JSX.Element;
         if (MOVERS.has(part.preset)) {
           const Mover = View as (p: MoverProps) => JSX.Element;
@@ -119,16 +151,19 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         }
         const dragging = gesture.dragging === part.id;
         const wobble = locked?.part === part.id;
-        if (!dragging && !wobble) return el;
-        // Bible § 4.1 states as flags (#140 draws them); a locked touch wobbles (replays per touch)
+        const badge = look?.locked ? 'locked' : affordance.done?.includes(part.id) ? 'done' : null;
+        if (!dragging && !wobble && badge === null) return el;
+        // Bible § 4.1 states: the drag's lift and the locked veil are the view's (`look`); here the
+        // flags, the wobble on a locked touch (replays per touch) and the badge at the hit's corner
         return (
           <g
             key={wobble ? `${part.id}:${locked.serial}` : part.id}
             data-dragging={dragging ? '' : undefined}
-            data-locked={wobble ? '' : undefined}
+            data-locked={wobble || look?.locked ? '' : undefined}
             className={wobble && !reduced ? 'gx-wobble' : undefined}
           >
             {el}
+            {badge && <PartBadge hit={part.hit} kind={badge} />}
           </g>
         );
       });
@@ -194,8 +229,13 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const tdg = def.tudigong;
   const tudigongShown = holds(def, state, tdg.visibleWhen);
 
-  // ——— The hit layer: every touchable's shape, grown to 48 screen px (what hitTest uses) ———
-  const targets = targetsOf(def, state);
+  // ——— Hints (bible § 4.1 L1/L2): a halo behind the target, the ghost hand over the page ———
+  const hint = affordance.hint ?? null;
+  const hinted = hint === null ? undefined : targets.find((tg) => tg.key === hint.key);
+  const halo = hinted && <HintHalo key={`halo:${hinted.key}`} ctx={ctx} shape={haloShape(def, state, hinted)} reduced={reduced} strong={affordance.elder} />;
+  const haloMid = hinted !== undefined && hinted.layer <= 3;
+  const thread = hinted === undefined ? null : linkThread(def, state, hinted);
+  const hand = hinted !== undefined && hint?.level === 2 ? handGesture(def, state, hinted, hint) : null;
 
   return (
     <svg
@@ -217,6 +257,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {tudigongShown && <TudigongItem ctx={ctx} x={tdg.x} y={tdg.y} />}
       </Layer>
       <Layer id="parts-mid">
+        {haloMid && halo}
         {stage.carriages.map((c) => (
           <CarriageView key={c.part} def={def} prev={prev} state={state} carriage={c} ctx={ctx} ms={ms} reduced={reduced} preview={preview} />
         ))}
@@ -227,6 +268,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {crossings}
       </Layer>
       <Layer id="parts-near">
+        {!haloMid && halo}
         {partEls('near')}
         {attractors}
         {marks}
@@ -236,12 +278,17 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {mochaPose && <Mocha ctx={ctx} x={mochaPose.x} y={mochaPose.y} glare={locked?.serial} />}
         {babyPose && <Baby ctx={ctx} x={babyPose.x} y={babyPose.y} mode={state.baby.mode} sx={sx} watch={watch} />}
       </Layer>
-      <Layer id="fx">{babyPose && show && <Bubble ctx={ctx} show={show} x={babyPose.x} y={babyPose.y} />}</Layer>
+      <Layer id="fx">
+        {babyPose && show && <Bubble ctx={ctx} show={show} x={babyPose.x} y={babyPose.y} />}
+        {thread && <LinkThread from={thread[0]} to={thread[1]} />}
+        {hand && <GhostHand gesture={hand} reduced={reduced} />}
+      </Layer>
       <Layer id="foreground" html={statics.foreground} />
       <Layer id="hit">
-        {targets.map((tg) => (
-          <HitShape key={tg.key} hit={minHit(tg.hit, scale)} data-hit={tg.key} fill="transparent" />
-        ))}
+        {targets.map((tg) => {
+          const grown = minHit(tg.hit, scale);
+          return <HitShape key={tg.key} hit={grown} data-hit={tg.key} data-hit-grown={grown === tg.hit ? undefined : ''} fill="transparent" />;
+        })}
         {gesture.reveal && (
           <g data-reveal="" fill="none" stroke={POPUP.chalk} strokeWidth={2} strokeDasharray="6 4" strokeLinecap="round">
             {targets.map((tg) => (
@@ -255,12 +302,19 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
 }
 
 /** A hit shape as a circle or a rectangle; never takes pointer events (`gestures.ts` hit-tests). */
-function HitShape({ hit, rx, ...rest }: { hit: Hit; rx?: number; fill?: string; vectorEffect?: 'non-scaling-stroke'; 'data-hit'?: string }) {
+function HitShape({ hit, rx, ...rest }: { hit: Hit; rx?: number; fill?: string; vectorEffect?: 'non-scaling-stroke'; 'data-hit'?: string; 'data-hit-grown'?: string }) {
   return 'r' in hit ? (
     <circle cx={r2(hit.cx)} cy={r2(hit.cy)} r={r2(hit.r)} pointerEvents="none" {...rest} />
   ) : (
     <rect x={r2(hit.x)} y={r2(hit.y)} width={r2(hit.w)} height={r2(hit.h)} rx={rx} pointerEvents="none" {...rest} />
   );
+}
+
+/** The locked paw badge or the done knot, upright at the hit area's top-right corner (bible § 4.1). */
+function PartBadge({ hit, kind }: { hit: Hit; kind: 'locked' | 'done' }) {
+  const [x, y] = 'r' in hit ? [hit.cx + hit.r * 0.72, hit.cy - hit.r * 0.72] : [hit.x + hit.w - 8, hit.y + 8];
+  const html = useMemo(() => (kind === 'locked' ? pawBadge(x, y) : checkKnot(x, y)), [kind, x, y]);
+  return <ArtG html={html} />;
 }
 
 function AttractorItem({ ctx, id, kind, x, y }: { ctx: KitCtx; id: string; kind: PageDef['attractors'][number]['kind']; x: number; y: number }) {
