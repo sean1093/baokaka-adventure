@@ -301,6 +301,8 @@ Baokaka knows about 12 words (`docs/story/script.md` vocabulary). Some are **bar
 
 Each word's first use on a page shows a one-time **Mocha translation** joke (§5.4). The word ring button for a newly learned word glows until it is first used.
 
+**For engineers (#99, D-62).** `view/words/` draws the ring (a volvelle round him: 72 px discs, 「好了」 under him, the words from the thumb's side and mirrored in 左手模式, sliding in from screen edges), the word card, the say effect ring (the word's reach in its seal colour) and the 「要！」 poke; `game/words.ts` holds `ringWords` (what `core/step` accepts as a `say`), the learn beat, `firstUseLine` (on the learn page the follow-up, 「……閘門真的開了。」; elsewhere the translation) and the first-use tutorial (on the page of the player's first word). Text: `content/words.ts`, `learn.*` lines in `content/script.ts`.
+
 ### 2.5 Growth stages
 
 Growth stages unlock **edge kinds**. They're learned in story moments and never lost.
