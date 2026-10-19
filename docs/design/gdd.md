@@ -295,6 +295,8 @@ Baokaka knows about 12 words (`docs/story/script.md` vocabulary). Some are **bar
 | **咻——** | 8-3 北投 (溫泉阿嬤 says 「呼呼再吃」) | `whoosh` | 140, in a 90° cone in his facing direction | `blowable` parts in the cone advance one state (pinwheel +1, boat +1 stop, steam cloud `clear`, sail `full`). | Move light objects, clear steam, spin pinwheel-driven lifts. |
 | **一起** | 10-5 台北101 | `together` | — | Enters `linked` mode for the rest of the page. Mocha hops down to Baokaka's node, and cat rule C1 is suspended. **Tapping any floor node walks Mocha there** (over crawl/climb/cruise/walk edges), and Baokaka **follows Mocha**: in `linked` mode Mocha has priority 0, above shiny. Creatures tagged `lonely` (咻咻) follow the pair. In linked mode, cat rules C1, C7 and C8 are suspended: Mocha walks the floor, **even through puddles, for him**. | The finale: the first time you lead him, because he trusts you. |
 
+**For engineers.** `core/words.ts` (#84): `wordEvent`, `inReach` (the radius, and 咻——'s cone as exact integer math: |dy| ≤ dx in his facing, edges included), `wordAvailable` (a page's `words`, plus its `learns` word once learned) and `sayNo`. 嗶！, 哇！ and 掰掰 act only through page reactions (a `toggle` reaction makes 哇！ reversible; two `when`-guarded reactions make 掰掰 send a creature away and back). Built in: 飛機！ toggles each `winged` creature with no `sky` reaction between `initial` and `sky` (else `away`), and 咻—— advances `blowable` parts with no `whoosh` reaction (wrapping). 抱抱 (#120) and 一起 (#128) emit their event only for now (D-45).
+
 Each word's first use on a page shows a one-time **Mocha translation** joke (§5.4). The word ring button for a newly learned word glows until it is first used.
 
 ### 2.5 Growth stages
@@ -536,8 +538,10 @@ export interface PerchDef {
   blockedWhen?: Cond;               // e.g. water present (C7)
 }
 
+export type ReactionOn = EventType | { type: EventType; within?: number; id?: Id; state?: string };
+  // within: units from event origin (default per event); id: the event's subject (e.g. 'panel'); state: for partEnter (D-45)
 export type Reaction = {
-  on: EventType | { type: EventType; within?: number };  // within: units from event origin (default per event)
+  on: ReactionOn;
   when?: Cond;
   to: string | 'next' | 'prev' | 'toggle';
   setFlag?: Id;
@@ -584,7 +588,7 @@ export interface CreatureDef {
   blocks?: boolean;                 // occupied node is not traversable (default true)
   winged?: boolean; lonely?: boolean;
   fleesFromCat?: { nearPerches: Id[]; to: string };
-  react?: { on: EventType; within?: number; when?: Cond; to: string; drop?: Id }[];
+  react?: { on: ReactionOn; within?: number; when?: Cond; to: string; drop?: Id }[];
   art: string;
 }
 
@@ -642,7 +646,8 @@ export interface SimState {
   creatures: Record<Id, string>;
   pushables: Record<Id, 'onPerch' | 'falling' | 'landed'>;   // pushable parts live here, not in `parts`
   consumed: Id[]; flags: Id[];          // refused, consumed and flags are sets: canonicalKey sorts them
-  counters: Record<string, number>;     // for mischief predicates (e.g. ride count)
+  dropped?: Record<Id, Id>;             // heldBy attractors a creature dropped → their node (absent until one drops, D-45)
+  counters: Record<string, number>;     // mischief/line predicates (predicateKey → count, capped) + '!learned' (D-45)
   done: boolean;
 }
 export type Input =
@@ -678,6 +683,8 @@ export type Input =
    - If he ends on a node attached to a part that changed this tick, emit `ride`.
 6. **Arrival effects.** grab / eat / cuddle / watch. Grabbing the goal sets `done`.
 7. **Counters** for mischief predicates. The mischief check happens outside the simulation (the game layer listens to events).
+
+**For engineers.** `core/step.ts` (#84) implements this as `step`, with `cascade`, `matchPredicate` and `predicateKey`; `core/words.ts`, `core/creatures.ts` and `core/replay.ts` hold the words, the creatures and `replay(def, steps)`. The readings the order above leaves open are in D-45: a cascade processes at most 32 § 3.2 events, and each event fires at most one reaction per part and per creature (the first that matches, judged on the state before that event); a reaction's `to` of `next`/`prev` wraps; only real state changes queue `partEnter` (Mocha's presses always do, D-44); radii are measured to a part's hit-area centre or a creature's node; Mocha's events cascade right after phase 3, and Baokaka's (his `cry`, `babyEnter`, his weight on a button) right after phase 6, so a cry opens a gate in its own tick but he walks through on the next; creature moves and drops happen inside the cascades (phase 4 has nothing left until #128's `lonely`); on a say tick he stays `saying` and doesn't move; `ride` needs his node to have moved with the part; a growth `learns` takes effect once it fires; counters exist only for the page's predicates, capped at their count.
 
 **Determinism contract:**
 - No `Math.random`. No iteration over unordered collections (`Object.keys` is sorted).
