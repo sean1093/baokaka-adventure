@@ -591,7 +591,7 @@ Format:
   - #136: per-layer tilt parallax, and a device check of low power and vibration.
   - New screens should pass `check:ui:big`.
 
-### 2026-10-19 · Staff engineer · #105 Audio: the § 2.12 cues and the music box (PR #PR)
+### 2026-10-19 · Staff engineer · #105 Audio: the § 2.12 cues and the music box (PR #174)
 - **Synth (`src/shared/audio.ts`).**
   - Voices: an oscillator note (optionally gliding) or a filtered white-noise burst (optionally sweeping), each with a click-free exponential envelope. Two buses, 音效 and 音樂, with squared 0–100 volumes (`setVolumes`).
   - The `SFX` table: 35 cues, every § 2.12 row plus the bible § 8 fwump / fold chime, the chapter card's drop / flaps / lift, the album's note pop. All under a second, dry.
