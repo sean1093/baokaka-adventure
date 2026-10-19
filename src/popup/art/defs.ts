@@ -55,21 +55,33 @@ const blur = (id: string, sd: number, pad: number) =>
 /**
  * The die-cut standee (bible § 5): the printed sprite plus a 3.2 px warm-white card border dilated
  * from its alpha, a 0.6 px mauve-grey cut line, and a stacked contact + soft shadow. Applied at
- * bake time to every character frame, so the game never runs it.
+ * bake time to every character frame (`npm run sync:sprites`, #94), so the game never runs it.
+ *
+ * `bake` is the variant the sprite bake uses (D-56):
+ * - **symmetric shadows**: no x offset (the bible's 3/5 and 1/1.6 become 0/5 and 0/1.6). The game
+ *   mirrors frames for facing left, and a baked x offset would then fall against the light; the
+ *   floor contact ellipse, drawn outside the frame, carries the light's direction;
+ * - **a die-cut contour**: the card is dilated from the print's alpha softened and thresholded,
+ *   not from raw alpha, so whisker tips, stray hairs and the artist's faint ground shadows don't
+ *   grow ghost cards; and the print is trimmed to the card, as a real die-cut would be.
  */
-export const standeeFilter = (id: string): string =>
+export const standeeFilter = (id: string, { bake = false }: { bake?: boolean } = {}): string =>
   `<filter id="${id}" x="-30%" y="-15%" width="160%" height="135%" color-interpolation-filters="sRGB">`
-  + `<feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/>`
+  + (bake
+    ? `<feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="sa"/><feComponentTransfer in="sa" result="core"><feFuncA type="linear" slope="6" intercept="-1.8"/></feComponentTransfer>`
+      + `<feMorphology in="core" operator="dilate" radius="3.2" result="d"/>`
+    : `<feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/>`)
   + `<feGaussianBlur in="d" stdDeviation=".5" result="d2"/>`
   + `<feComponentTransfer in="d2" result="border"><feFuncA type="linear" slope="3" intercept="-.6"/></feComponentTransfer>`
   + `<feFlood flood-color="${C.standeeCard}"/><feComposite in2="border" operator="in" result="white"/>`
   + `<feMorphology in="border" operator="dilate" radius=".6" result="cut0"/><feComposite in="cut0" in2="border" operator="out" result="cutA"/>`
   + `<feFlood flood-color="${C.standeeCut}" flood-opacity=".9"/><feComposite in2="cutA" operator="in" result="cut"/>`
-  + `<feGaussianBlur in="border" stdDeviation="3.5" result="sb"/><feOffset in="sb" dx="3" dy="5" result="so"/>`
+  + `<feGaussianBlur in="border" stdDeviation="3.5" result="sb"/><feOffset in="sb" dx="${bake ? 0 : 3}" dy="5" result="so"/>`
   + `<feFlood flood-color="${C.shadow}" flood-opacity=".45"/><feComposite in2="so" operator="in" result="soft"/>`
-  + `<feGaussianBlur in="border" stdDeviation=".8" result="cb"/><feOffset in="cb" dx="1" dy="1.6" result="co"/>`
+  + `<feGaussianBlur in="border" stdDeviation=".8" result="cb"/><feOffset in="cb" dx="${bake ? 0 : 1}" dy="1.6" result="co"/>`
   + `<feFlood flood-color="${C.shadow}" flood-opacity=".6"/><feComposite in2="co" operator="in" result="contact"/>`
-  + `<feMerge><feMergeNode in="soft"/><feMergeNode in="contact"/><feMergeNode in="white"/><feMergeNode in="cut"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  + (bake ? `<feComposite in="SourceGraphic" in2="border" operator="in" result="print"/>` : '')
+  + `<feMerge><feMergeNode in="soft"/><feMergeNode in="contact"/><feMergeNode in="white"/><feMergeNode in="cut"/><feMergeNode in="${bake ? 'print' : 'SourceGraphic'}"/></feMerge></filter>`;
 
 /** The tunnel-book depths (bible § 2.2 table). */
 export const DEPTHS = [0, 1, 2, 3, 4, 5] as const;
@@ -94,7 +106,7 @@ export const FILTER_DEFS = {
   blur3: (id: string) => blur(id, 3, 50),
   blur8: (id: string) => blur(id, 8, 50),
   blur18: (id: string) => blur(id, 18, 80),
-  standee: standeeFilter,
+  standee: (id: string) => standeeFilter(id),
 } as const satisfies Record<string, (id: string) => string>;
 
 /** A soft radial blob for a colour: the filter-free stand-in for a blurred ellipse. */
