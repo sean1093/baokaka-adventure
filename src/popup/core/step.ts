@@ -353,8 +353,16 @@ export function pagePredicates(def: PageDef): EventPredicate[] {
 
 /** A predicate's `counters` key: its type, then `:id`, then `?` and its condition (stable JSON). */
 export function predicateKey(pred: EventPredicate): string {
-  return pred.type + (pred.id === undefined ? '' : `:${pred.id}`) + (pred.when === undefined ? '' : `?${stableStringify(pred.when)}`);
+  let key = predicateKeys.get(pred);
+  if (key === undefined) {
+    key = pred.type + (pred.id === undefined ? '' : `:${pred.id}`) + (pred.when === undefined ? '' : `?${stableStringify(pred.when)}`);
+    predicateKeys.set(pred, key);
+  }
+  return key;
 }
+
+/** `predicateKey` per predicate object (page data is immutable, D-42): the tick and the solver ask every tick. */
+const predicateKeys = new WeakMap<EventPredicate, string>();
 
 const eventMatches = (pred: EventPredicate, ev: SimEvent) => ev.type === pred.type && (pred.id === undefined || ev.id === pred.id);
 
