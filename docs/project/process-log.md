@@ -303,7 +303,7 @@ Format:
   - At 375 × 667 the book is 0.66 scale, so tab hit areas drop under 48 px (noted on #90).
   - #94/#95 swap the stand-ins for baked frames; #96 registers baked art; #97 makes the HUD and bar live; #98 animates the bubble.
 
-### 2026-10-19 · Staff engineer · #90 Gestures: tap, drag, magnet, snap, debounce, locks, touch pauses the world
+### 2026-10-19 · Staff engineer · #90 Gestures: tap, drag, magnet, snap, debounce, locks, touch pauses the world (PR #155)
 - **`src/popup/view/gestures.ts`** (pure, no DOM): `targetsOf` (parts by `hit`, perch paw prints, Mocha, Baokaka, the 土地公), `minHit` (grows every hit to 48 screen px after the book scale), `hitTest` / `magnet` (direct → grown → 32 px magnet, ties to the higher layer), `projectTrack`, `rubberBand`, `snapStop`, `rotaryDelta`, `rotaryStep`, `Debouncer`, `previewNodePos`, `settlePreview`, and `GestureTracker` (8 px threshold, drag capture, palm > 3 points, second finger ignored, locked → `nope` with no input, 600 ms hold-to-reveal, tap mapping).
 - **`useGestures.ts`**: Pointer Events only on the whole screen, client px → page units through the book layout, pointer capture, the hold timer; `session.pause('finger')` / `resume('finger')`, queued inputs, the word ring stub (`pause('ring')`). A released drag holds its snapped stop until its tick, then glides to the landed state.
 - **View**: tab/wheel/flap views take a fractional `preview`; the carriage and its riders follow it; `data-dragging` / `data-locked` + wobble, Mocha `data-glare`, Baokaka's 3° touch-watch tilt (`data-watch`), hold-to-reveal chalk outlines; the hit layer draws the grown shapes of every touchable; the page SVG carries `data-parts` and `data-done`. `PageSession.queued`.
