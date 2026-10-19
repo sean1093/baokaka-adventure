@@ -43,11 +43,15 @@ export const RUBBER_STOPS = 0.35;
 /** A flap drag commits once its corner is lifted half way. */
 export const FLAP_COMMIT = 0.5;
 
-/** Actor and marker hit shapes around their feet / node, in page units (stand-in standee sizes, § 3.9). */
+/**
+ * Actor and marker hit shapes around their feet / node, in page units (stand-in standee sizes, § 3.9).
+ * Each is at least 48 CSS px across at the 390 × 844 book scale (≈ 0.91, so ≥ 52.9 units; bible
+ * § 4.2, #140's `A06-hit-small`), before `minHit` grows anything on shorter phones.
+ */
 export const BABY_BOX = { x: -48, y: -64, w: 96, h: 66 } as const;
 export const MOCHA_BOX = { x: -28, y: -68, w: 56, h: 70 } as const;
-export const PERCH_R = 24;
-export const TUDIGONG_R = 22;
+export const PERCH_R = 27;
+export const TUDIGONG_R = 27;
 
 export type TargetKind = 'part' | 'perch' | 'mocha' | 'baby' | 'tudigong';
 
@@ -230,7 +234,7 @@ export interface PartPreview {
   readonly index: number;
 }
 
-/** What the view shows of the gesture (GDD § 2.6; bible § 4.1 states; the full visuals are #140's). */
+/** What the view shows of the gesture (GDD § 2.6; bible § 4.1 states, drawn by the part views' `look`, #140). */
 export interface GestureFlags {
   /** The part following the finger while it drags (the snapped stop after release is `settlePreview`'s) */
   readonly preview: PartPreview | null;

@@ -2,6 +2,8 @@ import { initialState, replay, step } from '../core';
 import type { SimEvent } from '../core/events';
 import type { BabyMode, Id, PageDef, SimState, SolutionStep } from '../core/types';
 import { pageById } from '../pages';
+import type { AffordanceFlags } from '../view/affordance/look';
+import type { GestureFlags } from '../view/gestures';
 
 /**
  * Visual QA fixtures for 翻翻台北 (#92; docs/project/README.md § 5): named, deterministic game
@@ -31,6 +33,19 @@ export interface PopupFixture {
   readonly note: string;
   /** What the final state must show: Baokaka's mode and/or an event of the last tick */
   readonly expect?: { readonly mode?: BabyMode; readonly event?: SimEvent['type'] };
+  /**
+   * What the page shows on top of the state (#140): gesture flags as if a finger were doing them
+   * (hold-to-reveal, a drag), and affordance flags (a hint level, done knots, 長輩模式).
+   */
+  readonly show?: { readonly gesture?: Partial<GestureFlags>; readonly affordance?: AffordanceFlags };
+  /**
+   * The still's motion look: `motion` (default) draws the idle cues of full motion, `reduced` the
+   * reduced-motion ones (the static double outline). The screenshot browser runs with reduced
+   * motion, so the still pins its look; live, the OS setting decides.
+   */
+  readonly look?: 'motion' | 'reduced';
+  /** A specimen sheet drawn instead of the page (`page` and `steps` still name a valid frame) */
+  readonly sheet?: 'affordance-states';
 }
 
 export const POPUP_FIXTURES: readonly PopupFixture[] = [
@@ -54,6 +69,41 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }, { set: 'train', to: 'out' }],
     note: '1-2: the train carries Baokaka back to out (a ride, the 淘氣 counter); live, the last tick replays.',
     expect: { event: 'ride' },
+  },
+  {
+    name: 'affordance-states',
+    page: 'c1p2',
+    steps: [],
+    sheet: 'affordance-states',
+    note: 'The touchable states side by side (bible § 4.1, #140): idle, hint L1 halo, hint L2 ghost hand, dragging, locked, done, hold-to-reveal, reduced motion.',
+  },
+  {
+    name: 'c1p2-hold-reveal',
+    page: 'c1p2',
+    steps: [],
+    show: { gesture: { reveal: true } },
+    note: '1-2 under a 600 ms hold on empty paper: every touchable, the prop and the perch get the dashed chalk outline (GDD § 2.6).',
+  },
+  {
+    name: 'c1p2-dragging',
+    page: 'c1p2',
+    steps: [],
+    show: { gesture: { dragging: 'train', preview: { part: 'train', index: 0.6 }, finger: [150, 612] } },
+    note: '1-2: the train tab mid-drag, lifted to the next z over its dropped shadow; Baokaka watches the finger.',
+  },
+  {
+    name: 'c1p2-reduced-motion',
+    page: 'c1p2',
+    steps: [],
+    look: 'reduced',
+    note: '1-2 under reduced motion: no idle wiggle, the touchable carries the static double outline instead.',
+  },
+  {
+    name: 'c0p1-hint-how',
+    page: 'c0p1',
+    steps: [],
+    show: { affordance: { hint: { level: 2, key: 'crib-rail' } } },
+    note: '0-1 with hint L2: the rail tab glows (L1) and the vellum ghost hand pulls it down to its stop.',
   },
 ];
 

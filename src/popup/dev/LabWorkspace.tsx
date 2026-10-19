@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { PAGELAB, POPUP, withAlpha } from '../../art/palette';
 import { SCRIPT } from '../content/script';
-import { lintPage, type LintIssue } from '../core/lint';
+import { lintPage, type LintIssue, type LintResult } from '../core/lint';
 import { initialState } from '../core/state';
 import type { Point } from '../core/graph';
 import type { Id, Input, PageDef } from '../core/types';
 import { TICK_MS, type TickSpeed } from '../game/session';
+import { lintAffordance } from '../view/affordance/lint';
 import { PART_SETTLE_MS } from '../view/interp';
 import { PageView, VIEW_BOX } from '../view/PageView';
 import { copyTs } from './copyTs';
@@ -207,6 +208,13 @@ export function LabWorkspace({ params, setParams }: { params: LabParams; setPara
 
   // ——— Lint, live on every edit ———
   const lint = useMemo(() => lintPage(def, SCRIPT), [def]);
+  // The affordance lint (#140) reads what the stage actually drew, after each state lands
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [artLint, setArtLint] = useState<LintResult | null>(null);
+  useEffect(() => {
+    const svg = stageRef.current?.querySelector('svg[data-page]');
+    setArtLint(svg ? lintAffordance(def, svg.outerHTML) : null);
+  }, [def, sim.state]);
 
   // ——— Edit mode ———
   const onMoveNode = useCallback((id: Id, to: Point) => setEdited((d) => moveNode(d ?? base, simRef.current.state, id, to)), [base]);
@@ -281,7 +289,7 @@ export function LabWorkspace({ params, setParams }: { params: LabParams; setPara
         </label>
       </div>
       <div className="relative self-start overflow-hidden" style={{ width: VIEW_BOX.w * scale, height: VIEW_BOX.h * scale }} data-pagelab-stage={def.id} data-tick={sim.state.tick}>
-        <div style={{ filter: grey ? 'grayscale(1)' : undefined }}>
+        <div ref={stageRef} style={{ filter: grey ? 'grayscale(1)' : undefined }}>
           <PageView def={def} prev={sim.prev} state={sim.state} ms={ms} tickMs={tickMs} scale={scale} reduced={false} />
         </div>
         <Overlays def={def} state={sim.state} overlays={overlays} scale={scale} edit={params.edit} onMoveNode={onMoveNode} onMoveTrack={onMoveTrack} />
@@ -412,6 +420,16 @@ export function LabWorkspace({ params, setParams }: { params: LabParams; setPara
 
       <Panel title={`Lint · ${lint.errors.length} errors · ${lint.warnings.length} warnings`} data="lint">
         {lint.errors.length + lint.warnings.length === 0 ? <p className="text-xs" style={{ color: PAGELAB.badgeOk }}>clean</p> : <Issues issues={[...lint.errors, ...lint.warnings]} />}
+      </Panel>
+
+      <Panel title={`Affordance lint · ${artLint?.errors.length ?? '–'} errors · ${artLint?.warnings.length ?? '–'} warnings`} data="affordance-lint">
+        {artLint === null ? null : artLint.errors.length + artLint.warnings.length === 0 ? (
+          <p className="text-xs" style={{ color: PAGELAB.badgeOk }}>
+            clean: marigold reserved, four cues on every touchable, hit areas ≥ 48 px at 390×844
+          </p>
+        ) : (
+          <Issues issues={[...artLint.errors, ...artLint.warnings]} />
+        )}
       </Panel>
 
       <Panel title="Readability · art keys" data="readability">

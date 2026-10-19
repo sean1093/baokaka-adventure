@@ -2,6 +2,7 @@ import { memo } from 'react';
 import type { KitCtx, PartArtOptions } from '../../art';
 import { compilePart } from '../../core/presets';
 import type { PartDef } from '../../core/types';
+import type { PartLook } from '../affordance/look';
 import { lerp, partProgress, snapSquash } from '../interp';
 
 /**
@@ -27,6 +28,8 @@ export interface PartViewProps {
    * fraction (past the ends while rubber-banding; unwrapped for wheels). Overrides the tween.
    */
   readonly preview?: number;
+  /** Its touchable state look (bible § 4.1, #140): wiggle, lift, locked veil, reduced outline, 長輩模式 */
+  readonly look?: PartLook;
 }
 
 /** A memoised raw-SVG group: the art string is set once per change, not every frame. */

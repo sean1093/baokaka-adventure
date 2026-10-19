@@ -3,12 +3,15 @@ import { POPUP, withAlpha } from '../../art/palette';
 import { useSvgIds } from '../../art/useSvgIds';
 import { useReducedMotion } from '../../components/motion';
 import { nodePos } from '../core/graph';
+import { partLocked } from '../core/step';
 import { bottomBar, cover, hudLabel, kitCtx, kitDefs, type KitCtx } from '../art';
 import type { Input, PageDef, SimState } from '../core/types';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
 import { chapterSky } from './art/placeholders';
 import { BAR_H, HUD_H, bookLayout, toScreen, type BookLayout } from './geometry';
-import type { GestureEvent } from './gestures';
+import { wearsMarigold, type AffordanceFlags } from './affordance/look';
+import { useIdleWiggle } from './affordance/useIdleWiggle';
+import type { GestureEvent, GestureFlags } from './gestures';
 import './gestures.css';
 import { PART_SETTLE_MS } from './interp';
 import { PageView, VIEW_BOX } from './PageView';
@@ -26,6 +29,10 @@ import { useGestures } from './useGestures';
  *
  * Animation runs on `requestAnimationFrame` only while something moves (an actor mid-step, a part
  * mid-tween) and sleeps between ticks.
+ *
+ * Touchable states (#140): the idle wiggle runs on its own timer (`useIdleWiggle`; off in a still,
+ * under reduced motion and while a finger is down), and a tapped prop shakes. `affordance` passes
+ * hints (#100), done knots and 長輩模式 through to the page.
  */
 
 const subscribeResize = (onChange: () => void) => {
@@ -74,9 +81,15 @@ export interface PagePlayerProps {
   readonly script?: readonly Input[];
   /** Hears gesture events: taps, nope, snaps, the word ring, the 土地公 (#97, #99, #101 listen) */
   readonly onGesture?: (event: GestureEvent) => void;
+  /** Hints, done knots, 長輩模式 (#140; #100 drives the hints) */
+  readonly affordance?: AffordanceFlags;
+  /** Visual QA fixtures (#140): gesture flags to show as if a finger were doing them (e.g. hold-to-reveal) */
+  readonly showGesture?: Partial<GestureFlags>;
+  /** Override the reduced-motion setting (visual QA stills pin the full-motion or the reduced look) */
+  readonly reduced?: boolean;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedProp = false, still = false, script, onGesture }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
   const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev }), [def, speed, from, prev, still]);
@@ -113,8 +126,28 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
     };
   }, [session, paused, script]);
 
-  const reduced = useReducedMotion();
-  const gestures = useGestures(def, session, layout, frame, ms, reduced, onGesture);
+  const osReduced = useReducedMotion();
+  const reduced = reducedProp ?? osReduced;
+  // The idle wiggle (bible § 4.1): quiet while a finger is down; a tapped prop shakes (bible § 4 props)
+  const [fingerDown, setFingerDown] = useState(false);
+  const locked = useMemo(() => def.parts.filter((p) => partLocked(def, frame.state, p.id)).map((p) => p.id), [def, frame.state]);
+  const idle = useIdleWiggle(def, { enabled: !still && !reduced, quiet: fingerDown, excluded: locked });
+  const onEvent = useMemo(
+    () => (event: GestureEvent) => {
+      if (event.type === 'tap' && event.target.kind === 'part' && !locked.includes(event.target.id)) {
+        const part = def.parts.find((p) => p.id === event.target.id);
+        if (part !== undefined && !wearsMarigold(part)) idle.poke(part.id);
+      }
+      onGesture?.(event);
+    },
+    [def, locked, idle.poke, onGesture],
+  );
+  const gestures = useGestures(def, session, layout, frame, ms, reduced, onEvent);
+  const live = gestures.flags;
+  const flags = showGesture ? { ...live, ...showGesture } : live;
+  const down = live.finger !== null || live.dragging !== null;
+  useEffect(() => setFingerDown(down), [down]);
+  const pageAffordance = useMemo(() => ({ ...affordance, wiggle: idle.wiggle }), [affordance, idle.wiggle]);
 
   const ids = useSvgIds('book');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('book'), id: ids }), [ids]);
@@ -164,7 +197,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
       <div style={block} aria-hidden="true" />
       <div style={page}>
-        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={gestures.flags} />
+        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} />
       </div>
       <svg
         className="absolute left-1/2 top-0 font-body"

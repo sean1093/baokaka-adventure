@@ -12,6 +12,7 @@ import {
   MAGNET_PX,
   MIN_HIT_PX,
   RUBBER_STOPS,
+  TUDIGONG_R,
   hitDistance,
   hitTest,
   magnet,
@@ -109,7 +110,7 @@ describe('targets (what a finger can touch)', () => {
   test('the 土地公 is touchable only while he shows', () => {
     expect(targetsOf(c1p2, initialState(c1p2)).some((x) => x.kind === 'tudigong')).toBe(false);
     const flipped = withPartState(initialState(c1p2), 'board', 'flip');
-    expect(targetsOf(c1p2, flipped).find((x) => x.kind === 'tudigong')?.hit).toEqual({ cx: 120, cy: 160, r: 22 });
+    expect(targetsOf(c1p2, flipped).find((x) => x.kind === 'tudigong')?.hit).toEqual({ cx: 120, cy: 160, r: TUDIGONG_R });
   });
 
   test('no Mocha on 0-1: no perches, no Mocha (its 土地公 always shows); done pages drop Baokaka', () => {

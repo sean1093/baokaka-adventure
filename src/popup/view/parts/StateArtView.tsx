@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { PRESET_ART } from '../../art';
+import { PRESET_ART, doubleOutline, lockVeil, rectOutline } from '../../art';
+import { wiggleClass } from '../affordance/look';
 import { partArt } from '../art/registry';
 import { ArtG, artOpts, fitToHit, r2, squashFor, type PartViewProps } from './common';
 
@@ -8,9 +9,12 @@ import { ArtG, artOpts, fitToHit, r2, squashFor, type PartViewProps } from './co
  * state): the art for the new state swaps in as the tick lands and the part takes the 60 ms snap
  * squash. Drawn from the art registry (the preset's kit art until the key has its own), fitted
  * into the part's hit area.
+ *
+ * Touch states (bible § 4, § 4.1, `look`): a prop shakes when tapped (it stays unmarked otherwise),
+ * a locked crank wears the 35 % veil, and a marigold crank carries the reduced-motion outline.
  */
 export function StateArtView(props: PartViewProps) {
-  const { part, ctx, to } = props;
+  const { part, ctx, to, look = {} } = props;
   const art = partArt(part.art, part.preset);
   const fit = fitToHit(part, PRESET_ART[part.preset].box);
   const touchable = part.input !== undefined && part.input !== 'none';
@@ -18,11 +22,19 @@ export function StateArtView(props: PartViewProps) {
   const sq = squashFor(props);
   const box = PRESET_ART[part.preset].box;
   const [px, py] = [box.x + box.w / 2, box.y + box.h / 2];
+  const extras = useMemo(() => {
+    const shape = `<rect x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" rx="6"/>`;
+    return { veil: lockVeil(shape), outline: doubleOutline(rectOutline(box, 6)) };
+  }, [box]);
   return (
     <g data-part={part.id} data-preset={part.preset} transform={`translate(${r2(fit.tx)} ${r2(fit.ty)}) scale(${r2(fit.s)})`}>
       <g data-anim="" transform={sq === 1 ? undefined : `translate(${r2(px)} ${r2(py)}) scale(${r2(sq)}) translate(${r2(-px)} ${r2(-py)})`}>
-        <ArtG html={html} />
+        <g className={wiggleClass('prop', look.wiggle)}>
+          <ArtG html={html} />
+          {look.locked && <ArtG html={extras.veil} />}
+        </g>
       </g>
+      {look.outline && <ArtG html={extras.outline} />}
     </g>
   );
 }

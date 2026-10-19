@@ -1,6 +1,7 @@
 /*
- * Gesture feedback (#90; GDD § 2.6, popup bible § 4.1). Minimal motion for the state flags; the
- * full Dragging / Locked looks (lift, darken, paw badge) are #140's. Transforms only.
+ * Gesture feedback (#90; GDD § 2.6, popup bible § 4.1): the locked wobble and Mocha's glare. The
+ * Dragging / Locked looks (lift, darken, paw badge) are the part views' `look` and the idle wiggle,
+ * hint halo and ghost hand live in `affordance/affordance.css` (#140). Transforms only.
  */
 
 /* A locked part wobbles when touched (± 4°, like a wheel's idle wiggle, once) */

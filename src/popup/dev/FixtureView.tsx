@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { POPUP } from '../../art/palette';
 import { PAGES } from '../pages';
 import { PagePlayer } from '../view/PagePlayer';
+import { AffordanceSheet } from './AffordanceSheet';
 import { POPUP_FIXTURES, fixtureFrame, popupFixture } from './fixtures';
 
 /**
@@ -29,9 +30,24 @@ export function FixtureView({ name, still }: { name: string; still: boolean }) {
       </main>
     );
   }
+  // A still pins its motion look (the screenshot browser runs reduced); live, the OS decides
+  const reduced = still ? fixture.look === 'reduced' : undefined;
   return (
     <div data-pagelab-fixture={fixture.name}>
-      <PagePlayer key={`${fixture.name}-${still}`} def={frame.def} from={frame.state} prev={frame.prev} still={still} />
+      {fixture.sheet === 'affordance-states' ? (
+        <AffordanceSheet still={still} reduced={reduced} />
+      ) : (
+        <PagePlayer
+          key={`${fixture.name}-${still}`}
+          def={frame.def}
+          from={frame.state}
+          prev={frame.prev}
+          still={still}
+          reduced={reduced}
+          showGesture={fixture.show?.gesture}
+          affordance={fixture.show?.affordance}
+        />
+      )}
     </div>
   );
 }

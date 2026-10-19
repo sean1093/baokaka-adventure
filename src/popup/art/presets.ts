@@ -1,5 +1,6 @@
 import { POPUP as C } from '../../art/palette';
 import type { PartPreset } from '../core/types';
+import { SEAL_R } from './affordance';
 import { kitDefs, type DefName } from './defs';
 import { depth, scallopBand, softEllipse } from './paper';
 import { f1, ref, type KitCtx } from './svg';
@@ -181,7 +182,7 @@ export const PRESET_ART: Readonly<Record<PartPreset, PresetArt>> = {
         + `<rect x="10" y="10" width="100" height="20" rx="10" fill="${C.kraftDark}"/>${slots}`;
       const crank = opts.touchable === false
         ? brad(ctx, 120, 20, 6)
-        : wheel(ctx, 128, 20, 14, { teeth: 10, label: '' }) + seal(ctx, 140, 34, VERBS.wheel, 11);
+        : wheel(ctx, 128, 20, 14, { teeth: 10, label: '' }) + seal(ctx, 140, 34, VERBS.wheel, SEAL_R.normal);
       return belt + crank;
     },
   },
