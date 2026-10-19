@@ -27,6 +27,9 @@ export function contrastRatio(a: string, b: string): number {
 export type TextLevel = 'body' | 'muted';
 export const MIN_CONTRAST: Readonly<Record<TextLevel, number>> = { body: 7, muted: 4.5 };
 
+/** WCAG 1.4.11: graphical objects and UI components need ≥ 3:1 against what is next to them. */
+export const MIN_GRAPHIC_CONTRAST = 3;
+
 export type TextPair = { readonly text: keyof typeof UI; readonly on: keyof typeof UI; readonly level: TextLevel; readonly use: string };
 
 /** The navy surfaces text sits on: both panel stops and both command-button stops. */
@@ -75,4 +78,26 @@ export const POPUP_TEXT_PAIRS: readonly PopupTextPair[] = [
   { text: 'gold', on: 'cover', use: 'captions in gold on the cover' },
   { text: 'goldLight', on: 'coverDark', use: 'titles on the cover vignette' },
   { text: 'page', on: 'cover', use: 'cream labels under the bottom-bar discs' },
+  // The kit port (issue 139)
+  { text: 'inkSoft', on: 'page', use: 'secondary text on paper: the HUD label\'s 第N章 line, swatch captions' },
+  { text: 'sealInk', on: 'page', use: 'red text on paper: the HUD\'s 「page title」' },
+  { text: 'barLabel', on: 'cover', use: 'labels under the bottom-bar discs (提示 · 重來 · 選單)' },
+  { text: 'stickerLabel', on: 'cover', use: 'sticker labels (解開 · 淘氣 · 土地公)' },
+  { text: 'chalk', on: 'nightCardDeep', use: 'captions printed on night card' },
+  { text: 'goldLight', on: 'nightCardDeep', use: 'gold captions on night card' },
+];
+
+/**
+ * Non-text pairs (WCAG 1.4.11, ≥ 3:1): the parts of the touchable language that must stay findable
+ * by contrast. The verb seal's glyph is one of them: it is a stamp read as a symbol as much as a
+ * word, one of four redundant cues (bible § 4), drawn ≥ 22 px bold; the bible's seal red cannot carry
+ * a 7:1 glyph, so it is held to the non-text level (decisions D-40). Text never uses these.
+ */
+export const POPUP_GRAPHIC_PAIRS: readonly PopupTextPair[] = [
+  { text: 'sealGlyph', on: 'seal', use: 'the verb glyph stamped on a seal' },
+  { text: 'seal', on: 'page', use: 'a seal on a cream page or card' },
+  { text: 'marigold', on: 'nightCardDeep', use: 'a touchable on night card' },
+  { text: 'marigold', on: 'nightCard', use: 'a touchable on the lighter night card' },
+  { text: 'marigold', on: 'cover', use: 'the word-ring touchable in the bottom bar' },
+  { text: 'chalk', on: 'nightCardDeep', use: 'the perch paw print' },
 ];

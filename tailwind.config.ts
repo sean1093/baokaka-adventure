@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import { BACKLIGHT, MRT, UI } from './src/art/palette';
+import { BACKLIGHT, MRT, POPUP, UI } from './src/art/palette';
 
 /**
  * Design tokens for the game. Screens compose these; they never invent sizes, colours or
@@ -68,6 +68,8 @@ export default {
         scrim: UI.scrim,
         backlight: BACKLIGHT,
         line: MRT,
+        // 翻翻台北 Pop-Up Taipei (popup art bible; #139): `bg-popup-cover`, `text-popup-ink`, …
+        popup: POPUP,
       },
     },
   },
