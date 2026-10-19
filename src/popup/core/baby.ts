@@ -1,6 +1,7 @@
 import { holds, partState } from './cond';
 import type { Bark, SimEvent } from './events';
 import { dist2, nodePos, walkGraph, type Point, type WalkGraph } from './graph';
+import { mochaAttractorNode } from './mocha';
 import type { AttractorDef, BabyMode, Growth, Id, Kind, PageDef, SimState } from './types';
 
 /**
@@ -10,7 +11,8 @@ import type { AttractorDef, BabyMode, Growth, Id, Kind, PageDef, SimState } from
  *
  * - **Candidates** (§ 2.2.1): page attractors whose `visibleWhen` and `activeWhen` hold, that
  *   are not consumed or refused, and that are somewhere on the page; plus Mocha (id `'mocha'`,
- *   priority 2) while he is settled on a perch that doesn't hide him, at the perch's `reachNode`.
+ *   priority 2) while he is settled on a perch that doesn't hide him, at the perch's `reachNode`
+ *   (`mochaAttractorNode`, `mocha.ts`: a `hidesMocha` perch or a `box` node hides him, C9).
  * - **Target** (§ 2.2.2): candidates sorted by priority, reachable first, path length, squared
  *   straight-line distance from Baokaka, then id (code-unit order). Unreachable candidates tie on
  *   path length. Decoys always count as unreachable: he never grabs one.
@@ -115,15 +117,6 @@ export function attractorNode(def: PageDef, state: SimState, a: AttractorDef): I
   return a.node;
 }
 
-/** Mocha's node as an attractor, or null when he isn't settled, is hidden, or isn't on the page. */
-function mochaNode(def: PageDef, state: SimState): Id | null {
-  const { perch: perchId, path } = state.mocha;
-  if (perchId === null || path.length > 0) return null;
-  const perch = def.perches.find((p) => p.id === perchId);
-  if (perch === undefined || perch.hidesMocha) return null;
-  return perch.reachNode ?? perch.node;
-}
-
 /** An attractor's node if it is visible, active and not consumed (refusal aside); else null. */
 function availableNode(def: PageDef, state: SimState, a: AttractorDef): Id | null {
   if (state.consumed.includes(a.id)) return null;
@@ -141,7 +134,7 @@ export function candidates(def: PageDef, state: SimState): Candidate[] {
     if (node === null) continue;
     out.push({ id: a.id, kind: a.kind, node, height: a.height ?? 0, decoy: a.decoy === true, goal: a.goal === true });
   }
-  const mocha = mochaNode(def, state);
+  const mocha = mochaAttractorNode(def, state);
   if (mocha !== null && !refused.includes(MOCHA)) out.push({ id: MOCHA, kind: 'mocha', node: mocha, height: 0, decoy: false, goal: false });
   return out;
 }
@@ -217,7 +210,7 @@ export function selectTarget(def: PageDef, state: SimState, opts: BabyOptions = 
 /** What a refusal is tied to: an attractor's place and availability. A change clears the refusal. */
 function refusalKey(def: PageDef, state: SimState, id: Id): string {
   let node: Id | null;
-  if (id === MOCHA) node = mochaNode(def, state);
+  if (id === MOCHA) node = mochaAttractorNode(def, state);
   else {
     const a = def.attractors.find((x) => x.id === id);
     node = a === undefined ? null : availableNode(def, state, a);

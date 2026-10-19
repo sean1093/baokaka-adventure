@@ -14,7 +14,7 @@ import type { EdgeDef, EdgeKind, Growth, Id, PageDef, SimState } from './types';
  * - **Blocked nodes (Baokaka only).** A node is blocked while a blocking creature (`blocks`
  *   defaults to true) stands on it, or while it is attached to a `gate` part that is `closed`
  *   (D-42). A blocked node can't be entered or crossed; the start node never counts as blocked
- *   (he is already there).
+ *   (he is already there). Mocha is blocked only by the nodes his walker `avoid`s (#83, D-44).
  * - **Shortest path.** BFS in edges. Among equally short paths the one whose sequence of edge
  *   indices (in the data, from the start) is lexicographically smallest wins — "ties broken by
  *   edge order in the data". It falls out of a BFS that expands each node's edges in data order.
@@ -28,8 +28,12 @@ import type { EdgeDef, EdgeKind, Growth, Id, PageDef, SimState } from './types';
  * buffers owned by the compiled page and allocates only the path it returns.
  */
 
-/** Who is walking: Baokaka at a growth stage, or Mocha. */
-export type Walker = { who: 'baby'; growth: Growth } | { who: 'cat' };
+/**
+ * Who is walking: Baokaka at a growth stage, or Mocha. Mocha isn't blocked by creatures or gates;
+ * `avoid` lists the nodes he won't step on this tick (perches he refuses, C7/C8, decided by
+ * `mocha.ts`). As for Baokaka, the start node never counts.
+ */
+export type Walker = { who: 'baby'; growth: Growth } | { who: 'cat'; avoid?: readonly Id[] };
 
 export type Point = readonly [number, number];
 
@@ -200,6 +204,17 @@ function blockedMask(def: PageDef, state: SimState, g: Compiled): Uint8Array {
   return blocked;
 }
 
+/** The cat walker's `avoid` list as a mask, or null when it avoids nothing (unknown ids are ignored). */
+function avoidMask(g: Compiled, avoid: readonly Id[] | undefined): Uint8Array | null {
+  if (avoid === undefined || avoid.length === 0) return null;
+  const mask = new Uint8Array(g.ids.length);
+  for (const id of avoid) {
+    const i = g.index.get(id);
+    if (i !== undefined) mask[i] = 1;
+  }
+  return mask;
+}
+
 /**
  * The walk graph for one walker in one state. Build it once per tick (or per solver state) and
  * ask it as many questions as needed; it doesn't see later changes to `state`.
@@ -222,7 +237,7 @@ export class WalkGraph {
       const when = g.edges[k].when;
       if (when === undefined || holds(def, state, when)) open[k] = 1;
     }
-    this.blocked = walker.who === 'baby' ? blockedMask(def, state, g) : null;
+    this.blocked = walker.who === 'baby' ? blockedMask(def, state, g) : avoidMask(g, walker.avoid);
   }
 
   /**
