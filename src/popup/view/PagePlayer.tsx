@@ -21,6 +21,10 @@ import { bookLayout, toScreen, type BookLayout } from './geometry';
 import { BottomBar } from './hud/BottomBar';
 import { TopHud } from './hud/TopHud';
 import { wearsMarigold, type AffordanceFlags } from './affordance/look';
+import { hintDisplay, type HintLevel } from './affordance/ladder';
+import { useHintLadder } from './affordance/useHintLadder';
+import { nextHint } from '../core/hint';
+import { mochaNode } from '../core/mocha';
 import { useIdleWiggle } from './affordance/useIdleWiggle';
 import type { GestureEvent, GestureFlags } from './gestures';
 import './gestures.css';
@@ -63,7 +67,14 @@ import { WordCard, WordRing, ringSafeArea, wantPoke } from './words';
  *
  * Touchable states (#140): the idle wiggle runs on its own timer (`useIdleWiggle`; off in a still,
  * under reduced motion and while a finger is down), and a tapped prop shakes. `affordance` passes
- * hints (#100), done knots and 長輩模式 through to the page.
+ * hints, done knots and 長輩模式 through to the page.
+ *
+ * Hints (#100, GDD § 2.7; `affordance/useHintLadder.ts`, `ladder.ts`): 提示 climbs the ladder —
+ * where (the halo, Mocha looks, his line), how (the ghost hand; on the word ring, the word's disc),
+ * show me (the hand, then the action played for real, again on every press) — from the hint
+ * worker's next action for the state now; the player's own move resets it. With `chrome.autoHintMs`
+ * the nudge (Mocha's yawn and look, a single shimmer) comes after that long without a change. A
+ * lost page glows 重來. Fixtures pin a level with `showHint` (computed in-process).
  */
 
 const subscribeResize = (onChange: () => void) => {
@@ -94,7 +105,10 @@ export interface PageChrome {
   readonly stickers?: readonly [boolean, boolean, boolean];
   /** 左手模式: the bottom bar mirrored */
   readonly leftHand?: boolean;
+  /** 提示 was pressed (the page runs the hint ladder itself; this hears it, e.g. for a sound) */
   readonly onHint?: () => void;
+  /** The auto nudge's delay (`autoHintMs` of the settings), or null / absent when off */
+  readonly autoHintMs?: number | null;
   readonly onRetry?: () => void;
   readonly onMenu?: () => void;
 }
@@ -140,6 +154,8 @@ export interface PagePlayerProps {
   readonly onDone?: (state: SimState) => void;
   /** The HUD's and the bottom bar's state and buttons (#97) */
   readonly chrome?: PageChrome;
+  /** Visual QA fixtures (#100): show the hint ladder at this level for the state (0 nudge, 1 where, 2 how) */
+  readonly showHint?: Exclude<HintLevel, 3>;
   /** Visual QA fixtures (#99): open the word ring, put a word card up, show the 「要！」 poke */
   readonly showWords?: { readonly ring?: boolean; readonly card?: LearnKey; readonly poke?: boolean };
   /** A word was said (its say tick): the word and its sound motif (`WORD_MOTIF`) for the audio (#105) */
@@ -148,7 +164,7 @@ export interface PagePlayerProps {
   readonly pageRef?: Ref<HTMLDivElement>;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, onSay }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
   const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev, events }), [def, speed, from, prev, still, events]);
@@ -271,10 +287,6 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     session.pause('card');
     return () => session.resume('card');
   }, [session, carding]);
-  const say = useCallback((word: Word) => {
-    session.input({ t: 'say', word });
-    setRingOpen(false);
-  }, [session]);
   const closeRing = useCallback(() => setRingOpen(false), []);
   const cardDone = useCallback(() => setLearning(null), []);
   const onAdvance = useMemo(() => () => setTalk(advance), []);
@@ -282,12 +294,53 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
 
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
+
+  // The hint ladder (#100): 提示 climbs it, the player's own move resets it; level 3 plays the action
+  const ladder = useHintLadder({
+    def,
+    session,
+    state: frame.state,
+    enabled: !still,
+    autoMs: pageChrome?.autoHintMs ?? null,
+    held: hold || ringOpen || learning !== null,
+    reduced,
+    onPlay: (action) => {
+      if (action.t === 'say') setRingOpen(false);
+    },
+  });
+  const { acted, press: pressHint } = ladder;
+  // A fixture pins a level (computed here, in-process: no worker in a still)
+  const pinned = useMemo(() => (showHint === undefined ? null : hintDisplay(def, nextHint(def, session.frame().state), showHint)), [def, session, showHint]);
+  const hintShown = pinned ?? ladder.display;
+  const hintSerial = pinned === null ? ladder.serial : -1;
+  // Mocha says the hint's line (§ 5.3) in his bark bubble, when he is on the page
+  useEffect(() => {
+    const line = hintShown.line;
+    const now = session.frame().state;
+    if (line === null || mochaNode(def, now) === null) return;
+    setBarks((log) => barkLog(log, [{ who: 'mocha', bark: 'hint', text: line, tick: now.tick }], now.tick));
+  }, [def, session, hintShown.line, hintSerial]);
+  const onHint = useCallback(() => {
+    pressHint();
+    pageChrome?.onHint?.();
+  }, [pressHint, pageChrome]);
+
+  const say = useCallback(
+    (word: Word) => {
+      acted();
+      session.input({ t: 'say', word });
+      setRingOpen(false);
+    },
+    [session, acted],
+  );
   // The idle wiggle (bible § 4.1): quiet while a finger is down; a tapped prop shakes (bible § 4 props)
   const [fingerDown, setFingerDown] = useState(false);
   const locked = useMemo(() => def.parts.filter((p) => partLocked(def, frame.state, p.id)).map((p) => p.id), [def, frame.state]);
   const idle = useIdleWiggle(def, { enabled: !still && !reduced, quiet: fingerDown, excluded: locked });
   const onEvent = useMemo(
     () => (event: GestureEvent) => {
+      // The player's own move (a part, a perch, Mocha; a drag landing on a stop) puts the hint ladder back to rest
+      if ((event.type === 'tap' && (event.target.kind === 'part' || event.target.kind === 'perch' || event.target.kind === 'mocha')) || event.type === 'snap') acted();
       if (event.type === 'tap' && event.target.kind === 'part' && !locked.includes(event.target.id)) {
         const part = def.parts.find((p) => p.id === event.target.id);
         if (part !== undefined && !wearsMarigold(part)) idle.poke(part.id);
@@ -302,7 +355,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       }
       onGesture?.(event);
     },
-    [def, session, locked, idle.poke, onGesture],
+    [def, session, locked, idle.poke, onGesture, acted],
   );
   const gestures = useGestures(def, session, layout, frame, ms, reduced, ringOpen, onEvent);
   const live = gestures.flags;
@@ -318,10 +371,12 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     busy: learning !== null,
     ringOpen,
   });
-  const tutorialHint = tutorial.baby && !affordance?.hint;
+  // What the page shows: a fixture's own flags, else the ladder's hint, else the tutorial's hand
+  const hintShow = affordance?.hint ?? hintShown.show ?? (tutorial.baby ? { level: 2 as const, key: 'baby:baby' } : null);
+  const mochaCue = affordance?.mocha ?? hintShown.mocha;
   const pageAffordance = useMemo(
-    () => ({ ...affordance, wiggle: idle.wiggle, ...(tutorialHint ? { hint: { level: 2 as const, key: 'baby:baby' } } : {}) }),
-    [affordance, idle.wiggle, tutorialHint],
+    () => ({ ...affordance, wiggle: idle.wiggle, hint: hintShow, mocha: mochaCue }),
+    [affordance, idle.wiggle, hintShow, mochaCue],
   );
 
   // The page's character frames (#94) and environment bitmaps (#96): preloaded and decoded as it
@@ -375,6 +430,8 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       data-popup-page={def.id}
       data-still={still ? '' : undefined}
       data-sprites={spritesReady && artReady ? 'ready' : 'loading'}
+      data-hint-level={ladder.level}
+      data-hint-source={ladder.answer?.source}
       {...gestures.handlers}
     >
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
@@ -396,9 +453,10 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         stickers={pageChrome?.stickers}
         leftHand={pageChrome?.leftHand}
         glow={tutorial.portrait}
+        retryGlow={hintShown.retry}
         reduced={reduced}
         onPortrait={gestures.openRing}
-        onHint={pageChrome?.onHint}
+        onHint={onHint}
         onRetry={pageChrome?.onRetry}
         onMenu={pageChrome?.onMenu}
       />
@@ -409,7 +467,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
           safe={ringSafeArea(layout)}
           leftHand={pageChrome?.leftHand}
           fresh={fresh}
-          hand={tutorial.disc}
+          hand={tutorial.disc ?? hintShown.ringWord}
           reduced={reduced}
           onSay={say}
           onClose={closeRing}

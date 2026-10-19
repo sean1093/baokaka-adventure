@@ -19,8 +19,8 @@ import type { Pt } from '../geometry';
 
 export interface BarkShow {
   readonly who: 'baby' | 'mocha';
-  /** `word`: a word he says (GDD § 2.4's big speech bubble) */
-  readonly bark: BabyBark | MochaBark | 'word';
+  /** `word`: a word he says (GDD § 2.4's big speech bubble); `hint`: Mocha's hint line (§ 2.7, #100) */
+  readonly bark: BabyBark | MochaBark | 'word' | 'hint';
   readonly text: string;
   /** The tick it was said on (a bark lasts a little longer than its tick, `BARK_TICKS`) */
   readonly tick: number;

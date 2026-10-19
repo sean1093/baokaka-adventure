@@ -1147,7 +1147,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
       "head": [16.94, 5.33],
       "foot": [27, 68.33],
       "mapScale": 1,
-      "group": "ui",
+      "group": 1,
       "noMirror": false,
       "files": ["poses/mocha-stretch-0"],
       "bytes": [
@@ -1162,7 +1162,15 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "d85a9b8a45bdaf71"
+      "source": "178f77b1ac9a651d",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [5802, 9786]
+          ],
+          "source": "d8241e9c65d8fd5e"
+        }
+      }
     },
     "mocha.puff": {
       "kind": "pose",

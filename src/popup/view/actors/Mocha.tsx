@@ -15,6 +15,9 @@ import { noteFrameFallback, type ActorAnim, type FrameChoice } from './animMap';
  * `glare` (GDD § 2.6 locked part, #90): a touch on a part he locks, or any locked part, makes him
  * glare: a short stiff lean (`.gx-glare`, `gestures.css`; still under reduced motion). Changing
  * `glare` replays it.
+ *
+ * `tapping` (a hint's 「等等看。」, #100): he taps his paw, a slow bob about his feet
+ * (`.aff-mocha-wait`, `affordance.css`; none under reduced motion or in a still).
  */
 export interface MochaProps {
   readonly x: number;
@@ -30,11 +33,14 @@ export interface MochaProps {
   readonly opacity?: number;
   readonly reduced?: boolean;
   readonly still?: boolean;
+  /** 「等等看。」: tapping his paw (#100) */
+  readonly tapping?: boolean;
 }
 
-export function Mocha({ x, y, anim, frame, glare, facing = 'r', tilt = 0, opacity = 1, reduced = false, still = false }: MochaProps) {
+export function Mocha({ x, y, anim, frame, glare, facing = 'r', tilt = 0, opacity = 1, reduced = false, still = false, tapping = false }: MochaProps) {
   useEffect(() => noteFrameFallback(anim), [anim.fallback]);
-  const sprite = <SpriteAnim sprite={anim.sprite} anim={frame.anim} frame={frame.frame} facing={facing} playing={frame.playing && !still} reduced={reduced} />;
+  const art = <SpriteAnim sprite={anim.sprite} anim={frame.anim} frame={frame.frame} facing={facing} playing={frame.playing && !still} reduced={reduced} />;
+  const sprite = tapping && !reduced && !still ? <g className="aff-mocha-wait">{art}</g> : art;
   const rotate = Math.abs(tilt) < 0.01 ? '' : ` rotate(${r2(tilt)})`;
   return (
     <g
@@ -42,6 +48,7 @@ export function Mocha({ x, y, anim, frame, glare, facing = 'r', tilt = 0, opacit
       data-pose={anim.gdd ?? anim.sprite}
       data-fallback={anim.fallback === undefined ? undefined : ''}
       data-glare={glare === undefined ? undefined : ''}
+      data-cue={tapping ? 'wait' : undefined}
       data-anim=""
       transform={`translate(${r2(x)} ${r2(y)})${rotate}`}
       opacity={opacity < 1 ? r2(opacity) : undefined}

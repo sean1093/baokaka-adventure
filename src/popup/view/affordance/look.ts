@@ -63,20 +63,30 @@ export function wearsMarigold(part: PartDef): boolean {
 export const marigoldParts = (parts: readonly PartDef[]): Id[] => parts.filter(wearsMarigold).map((p) => p.id);
 
 /**
- * What the hint ladder (#100) asks the page to show: level 1 halos the target ("where"), level 2
- * adds the vellum ghost hand doing the gesture ("how"). `key` is a target key (`targetsOf`: a part
- * id, `perch:<id>`, `mocha:mocha`…); `stop` is the state index a drag hint should end on (the next
- * stop by default).
+ * What the hint ladder (#100, `ladder.ts`) asks the page to show: level 0 (the auto nudge) makes
+ * the target shimmer once, level 1 halos it ("where", pulsing for 3 s), level 2 adds the vellum
+ * ghost hand doing the gesture ("how"). `key` is a target key (`targetsOf`: a part id,
+ * `perch:<id>`, `mocha:mocha`…); `stop` is the state index a drag hint should end on (the next stop
+ * by default).
  */
 export interface HintShow {
-  readonly level: 1 | 2;
+  readonly level: 0 | 1 | 2;
   readonly key: string;
   readonly stop?: number;
 }
 
+/**
+ * Mocha's part in a hint (GDD § 2.7): `yawn` (the nudge: the stretch pose, turned toward the hinted
+ * target), `look` (turned toward it), `wait` (「等等看。」: sitting, tapping his paw). Only while he
+ * is at rest on the page; a hop, a stare or a reaction wins.
+ */
+export type MochaCue = 'yawn' | 'look' | 'wait';
+
 /** Affordance flags beyond the gesture's (`GestureFlags`): hints, idle wiggles, done knots, 長輩模式. */
 export interface AffordanceFlags {
   readonly hint?: HintShow | null;
+  /** Mocha's part in the hint (#100) */
+  readonly mocha?: MochaCue | null;
   /** Each wiggling part's current run */
   readonly wiggle?: Readonly<Record<Id, WigglePhase>>;
   /** Parts showing the done check knot (bible § 4.1 done, optional per page: solved wheels on 101) */

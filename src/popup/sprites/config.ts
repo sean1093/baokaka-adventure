@@ -80,10 +80,11 @@ export const POSE_CONFIG: Readonly<Record<string, PoseConfig>> = {
   'mocha.walk': { group: 10, easel: true },
   'mocha.sit': { easel: true },
   'mocha.jump': { mode: 'once', hold: 1, events: [{ frame: 2, name: 'land' }] },
-  // perch, stretch, sleep and rub are drawn but no game state shows them yet (#95's map): they
-  // load with the album, not with every page, to make room for #141's frames (D-58)
+  // perch, sleep and rub are drawn but no game state shows them yet (#95's map): they load with
+  // the album, not with every page, to make room for #141's frames (D-58). The stretch is the hint
+  // nudge's yawn (#100); Mocha first walks a page in chapter 1
   'mocha.perch': { group: 'ui', easel: true },
-  'mocha.stretch': { group: 'ui' },
+  'mocha.stretch': { group: 1 },
   'mocha.sleep': { group: 'ui' },
   'mocha.push': { mode: 'once', events: [{ frame: 1, name: 'push' }] },
   'mocha.lure': { mode: 'loop', easel: true },
