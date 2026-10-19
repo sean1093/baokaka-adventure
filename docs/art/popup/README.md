@@ -433,6 +433,8 @@ Paper moves **quickly and settles softly**. Nothing floats or tweens linearly.
 
 Keep sounds **dry and close**, like paper on a table, with no reverb tails. The music box sits under everything.
 
+*Engineers' note (#105, D-68):* the cues are `SFX` in `src/shared/audio.ts`, each under a second with a plain exponential tail. The fold sounds as the pop-ups fold, the leaf's whoosh and chime as it turns, and the fwump as the new pop-ups land (their overshoot). The chapter card thunks as it drops, rattles its split-flap row and swishes away. The music box is two sine partials per tine, plucked, at half the effects' level.
+
 ---
 
 ## 9. Performance budget and implementation architecture

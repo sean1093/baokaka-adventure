@@ -21,6 +21,8 @@
  * `stickers-c1p2` earns all three of 1-2's stickers in the game shell (#101: four rides for the 淘氣,
  * the board flipped and the 土地公 tapped, the solve, the sticker card, then the 目錄's 淘氣 line);
  * `photo-spread` plays the lab spread in the shell (#103: the photo moment, the album, a retake).
+ * `{ heard: [cues] }` checks the shell played those sounds (#105; the dev build lists them in
+ * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
  * Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
  * and UI checks.
  */
@@ -119,6 +121,8 @@ const SCENARIOS = {
     { fresh: true },
     { tapEl: '[data-button="start"]' },
     { expect: '[data-chapter-board="0"]' },
+    // Sound (#105): the board thunks as it drops and rattles its split-flap row
+    { heard: ['cardDrop', 'flaps'] },
     { expect: '[data-card-talk="1"] [data-card-line="nar"]', timeout: 6_000 },
     { absent: '[data-subtitle], [data-narration]' },
     { tapEl: '[data-card-next]' },
@@ -126,6 +130,8 @@ const SCENARIOS = {
     { tapEl: '[data-card-next]' },
     { expect: '[data-popup-page="c0p1"] [data-narration]', timeout: 6_000 },
     { absent: '[data-chapter-board]' },
+    // … swishes away, and the pop-ups land with a fwump
+    { heard: ['cardLift', 'fwump'] },
   ],
   // The chapter spread (#103, GDD § 2.9) in the game shell, on the lab spread as 1-6: Mocha back
   // to the bench (in the frame), the train across — 2 edges from the 雞腿 the world holds under the
@@ -217,6 +223,10 @@ const tickOf = (page) => page.evaluate(() => Number(document.querySelector('svg[
 
 async function run(page, base, id, kind, viewport, shots) {
   await page.setViewportSize(viewport);
+  // The dev build hands every sound the shell plays to this list (#105, `view/sound.ts`)
+  await page.addInitScript(() => {
+    window.__popupSounds = [];
+  });
   await page.goto(`${base}${SCENARIO_URLS[id] ?? `#/popup?page=${id}&speed=fast`}`);
   await page.waitForSelector(SCENARIO_READY[id] ?? 'svg[data-page]');
   await page.evaluate(() => document.fonts.ready);
@@ -256,6 +266,14 @@ async function run(page, base, id, kind, viewport, shots) {
       await page.reload();
       await page.waitForSelector(SCENARIO_READY[id] ?? 'svg[data-page]');
       await page.evaluate(() => document.fonts.ready);
+    } else if (stepDef.heard) {
+      // These cues were played (in the shell: its SoundContext is live)
+      await page
+        .waitForFunction((cues) => cues.every((c) => window.__popupSounds.some((s) => s.cue === c)), stepDef.heard, { timeout: 5_000 })
+        .catch(async () => {
+          const got = await page.evaluate(() => window.__popupSounds.map((s) => s.cue ?? s.word ?? 'voice').join(' '));
+          throw new Error(`expected the sounds ${stepDef.heard.join(', ')}; heard: ${got || 'nothing'}`);
+        });
     } else if (stepDef.absent && !stepDef.expect) {
       if (await page.$(stepDef.absent)) throw new Error(`${stepDef.absent} should not be there`);
     } else if (stepDef.readTalk) {

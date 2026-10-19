@@ -211,6 +211,10 @@ The settings are the player's own values in the save (`popup.save.v1`, `store.up
 
 `effectiveSettings` and `pulse` are in `game/settings.ts`. 「重新開始」 needs a 3-second hold; it calls `store.reset()` (the settings are kept) and opens the cover.
 
+### Sound: `shared/audio.ts` and `view/sound.ts` (#105, D-68)
+
+Everything is synthesised (no audio files). `src/shared/audio.ts` is the synth: `unlockAudio` (on a gesture; iOS), `setVolumes` (音效 / 音樂, 0–100), the `SFX` cue table, the word motifs and voice blips, and the music box (`playMusic`, `chapterTrack`); the RPG's `playTone` / tracks are kept until #111. `src/popup/view/sound.ts` maps play to cues — `tickSounds`, `gestureSounds`, `stickerSounds`, all pure and tested in `sound.test.ts` against GDD § 2.12 — and holds `SoundContext`. Only `GameShell` provides the live sink, so the art lab, PageLab, `#/popup?page=` and stills are silent. A screen sounds through `useSound()`; time a sound with the animation's own timer so a skip stops it. In dev, `window.__popupSounds = []` (set before the page loads) collects every sound played, for QA scripts. To add a chapter's loop: a `chapterN` track in `TRACKS` (8–16 bars of four steps, pentatonic degrees, `box: true`) and a line in `chapterTrack`.
+
 ### PageLab sections (dev builds only)
 
 ### Pages in the book: `#/popup?page=<id>` (every build)
