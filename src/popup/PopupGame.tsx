@@ -1,11 +1,22 @@
-import type { CSSProperties } from 'react';
+import { useMemo, useSyncExternalStore, type CSSProperties } from 'react';
 import { POPUP, withAlpha } from '../art/palette';
+import { hashParams } from '../shared/route';
+import { initialState, replay, step } from './core';
+import type { Input, PageDef, SimState } from './core/types';
+import { TICK_MS, type TickSpeed } from './game/session';
+import { pageById } from './pages';
+import { PagePlayer } from './view/PagePlayer';
 
 /**
  * 翻翻台北 Pop-Up Taipei, served at `#/popup` (unlinked) until the routing switch (#109) makes it
  * `#/`. For now a placeholder (#79): one cream page on the navy linen cover, with the title and
  * 「開發中」. The real screens (cover, 目錄, chapter card, page …) arrive in `view/screens/` (GDD
  * § 2.13). App lazy-loads this module so the RPG's bundle does not carry it.
+ *
+ * `#/popup?page=c1p2` plays one page (#89; a dev convenience: production will open the save's
+ * current page, #93). Also `tick=N` (start N idle ticks in), `paused=1` (hold the clock),
+ * `speed=slow|normal|fast` and `demo=1` (after three idle ticks, play the page's authored solution
+ * through the session: until gestures land in #90 this is how to watch rides and part tweens).
  */
 
 /** The cover: navy linen, a fine weave and a vignette (popup art bible § 7). */
@@ -33,7 +44,36 @@ const page: CSSProperties = {
 
 const foil: CSSProperties = { borderColor: withAlpha(POPUP.gold, 0.7) };
 
+const subscribe = (onChange: () => void) => {
+  window.addEventListener('hashchange', onChange);
+  return () => window.removeEventListener('hashchange', onChange);
+};
+const readHash = () => window.location.hash;
+
+/** Three idle ticks (he sets off and reaches), then the page's authored solution, one input per tick. */
+function demoScript(def: PageDef): Input[] {
+  const lead: Input[] = [{ t: 'none' }, { t: 'none' }, { t: 'none' }];
+  const idle = idleTicks(def, lead.length);
+  return [...lead, ...replay(def, def.solution, idle).ticks.map((t) => t.input)];
+}
+
+/** The state after `ticks` idle ticks (no input). */
+function idleTicks(def: PageDef, ticks: number): SimState {
+  let s = initialState(def);
+  for (let i = 0; i < ticks; i++) s = step(def, s, { t: 'none' }).state;
+  return s;
+}
+
 export default function PopupGame() {
+  const params = hashParams(useSyncExternalStore(subscribe, readHash));
+  const def = pageById(params.get('page') ?? '');
+  const ticks = Math.max(0, Math.min(500, Number(params.get('tick')) || 0));
+  const from = useMemo(() => (def && ticks > 0 ? idleTicks(def, ticks) : undefined), [def, ticks]);
+  const speedParam = params.get('speed');
+  const speed: TickSpeed = speedParam !== null && speedParam in TICK_MS ? (speedParam as TickSpeed) : 'normal';
+  const demo = params.get('demo') === '1';
+  const script = useMemo(() => (def && demo && ticks === 0 ? demoScript(def) : undefined), [def, demo, ticks]);
+  if (def) return <PagePlayer key={`${def.id}-${ticks}-${demo}`} def={def} from={from} speed={speed} paused={params.get('paused') === '1'} script={script} />;
   return (
     <main className="fixed inset-0 flex flex-col items-center justify-center gap-8 px-6" style={cover} lang="zh-Hant">
       <div className="pointer-events-none absolute inset-3 rounded-panel border" style={foil} aria-hidden="true" />

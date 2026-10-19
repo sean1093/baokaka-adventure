@@ -1,0 +1,150 @@
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
+import { initialState, replay, step, withPartState } from '../core';
+import type { PageDef, SimState } from '../core/types';
+import { PAGES, pageById } from '../pages';
+import { ANIMATED_LAYERS, ANIMATED_NODE_BUDGET, LAYERS, type LayerId } from './layers';
+import { PageView } from './PageView';
+
+/**
+ * The page renderer, rendered to static markup (#89; GDD § 3.9): the layers in order, node counts
+ * per layer against the 150 animated-node budget, no `filter` anywhere on the in-game path, a hit
+ * shape for every part, and the moving pieces where the state puts them.
+ */
+
+beforeAll(() => {
+  vi.spyOn(console, 'info').mockImplementation(() => {});
+});
+afterAll(() => {
+  vi.restoreAllMocks();
+});
+
+function render(def: PageDef, prev: SimState, state: SimState, ms = 0, reduced = false): string {
+  return renderToStaticMarkup(createElement(PageView, { def, prev, state, ms, tickMs: 500, reduced }));
+}
+
+/** Each layer's markup (layers are sibling groups, so a layer runs to the next one's start). */
+function layers(html: string): Record<LayerId, string> {
+  const out = {} as Record<LayerId, string>;
+  const starts = LAYERS.map((id) => [id, html.indexOf(`data-layer="${id}"`)] as const);
+  starts.forEach(([id, at], i) => {
+    expect(at, `layer ${id}`).toBeGreaterThan(-1);
+    const end = starts[i + 1]?.[1] ?? html.length;
+    out[id] = html.slice(at, end);
+  });
+  return out;
+}
+
+/** SVG/DOM elements in a chunk of markup. */
+const elements = (html: string) => (html.match(/<[a-zA-Z][\w:-]*/g) ?? []).length;
+/** Groups the view moves between ticks. */
+const animated = (html: string) => (html.match(/data-anim=""/g) ?? []).length;
+
+/** Every element that moves: the `data-anim` groups and everything inside them. */
+function animatedNodes(html: string): number {
+  const stack: boolean[] = [];
+  let count = 0;
+  for (const [, close, , attrs, selfClose] of html.matchAll(/<(\/?)([a-zA-Z][\w:-]*)([^>]*?)(\/?)>/g)) {
+    if (close) {
+      stack.pop();
+      continue;
+    }
+    const inside = (stack[stack.length - 1] ?? false) || attrs.includes('data-anim=""');
+    if (inside) count++;
+    if (!selfClose) stack.push(inside);
+  }
+  return count;
+}
+
+/** Frames worth checking per page: the start, mid-step, after a few idle ticks, and every tick of the solution mid-tween. */
+function frames(def: PageDef): [SimState, SimState][] {
+  const out: [SimState, SimState][] = [];
+  let s = initialState(def);
+  out.push([s, s]);
+  for (let i = 0; i < 3; i++) {
+    const next = step(def, s, { t: 'none' }).state;
+    out.push([s, next]);
+    s = next;
+  }
+  for (const t of replay(def, def.solution, s).ticks) {
+    const next = step(def, s, t.input).state;
+    out.push([s, next]);
+    s = next;
+  }
+  return out;
+}
+
+describe('PageView layers and budget', () => {
+  test.each(PAGES.map((def) => [def.id, def] as const))('%s: layers in the GDD § 3.9 order, no filters, animated nodes within budget', (_, def) => {
+    for (const [prev, state] of frames(def)) {
+      const html = render(def, prev, state, 120);
+      const byLayer = layers(html);
+      // GDD § 3.9: no runtime SVG filters (the kit draws flat stand-ins in game)
+      expect(html).not.toMatch(/\bfilter=/);
+      expect(html).not.toMatch(/filter:/);
+      expect(animatedNodes(html), `${def.id} tick ${state.tick}: animated nodes`).toBeLessThanOrEqual(ANIMATED_NODE_BUDGET);
+      for (const id of LAYERS) if (!ANIMATED_LAYERS.has(id)) expect(animated(byLayer[id]), `${def.id}: ${id} is static`).toBe(0);
+    }
+  });
+
+  test('node counts per layer (1-2 is far below the animated budget)', () => {
+    const def = pageById('c1p2')!;
+    const s = initialState(def);
+    let max = 0;
+    for (const [prev, state] of frames(def)) max = Math.max(max, animatedNodes(render(def, prev, state, 120)));
+    // Strict reading (every element inside a moving group) stays well inside the budget …
+    expect(max).toBeLessThanOrEqual(ANIMATED_NODE_BUDGET * 0.8);
+    // … and the moving groups themselves (what the compositor animates) are a handful
+    expect(animated(render(def, s, s))).toBeLessThanOrEqual(15);
+    const html = render(def, s, s);
+    const counts = Object.fromEntries(Object.entries(layers(html)).map(([id, chunk]) => [id, { elements: elements(chunk), animated: animatedNodes(chunk) }]));
+    expect(counts).toMatchSnapshot();
+  });
+
+  test('a hit shape for every part, in page units', () => {
+    for (const def of PAGES) {
+      const s = initialState(def);
+      const hit = layers(render(def, s, s)).hit;
+      for (const part of def.parts) expect(hit).toContain(`data-hit="${part.id}"`);
+      expect(hit).toContain('fill="transparent"');
+    }
+  });
+});
+
+describe('PageView motion', () => {
+  const def = pageById('c1p2')!;
+  const s0 = initialState(def);
+  const transformOf = (html: string, attr: string) => html.match(new RegExp(`${attr}[^>]*transform="([^"]*)"`))?.[1] ?? html.match(new RegExp(`transform="([^"]*)"[^>]*${attr}`))?.[1];
+
+  test('Baokaka lerps between nodes over the tick', () => {
+    const s1 = step(def, s0, { t: 'none' }).state;
+    const at = (ms: number) => transformOf(render(def, s0, s1, ms), 'data-actor="baby"');
+    expect(at(0)).toContain('translate(40 430)');
+    expect(at(500)).toContain('translate(90 430)');
+    expect(at(250)).toMatch(/translate\(65 428/);
+  });
+
+  test('the train tab slides with the part tween and the carriage carries its riders', () => {
+    const half = withPartState(s0, 'train', 'half');
+    const html0 = render(def, s0, half, 0);
+    const html1 = render(def, s0, half, 400);
+    expect(html1).not.toBe(html0);
+    expect(transformOf(html1, 'data-carriage="train"')).toBe('translate(124 430)');
+    expect(transformOf(html0, 'data-carriage="train"')).toBe('translate(34 430)');
+  });
+
+  test('reduced motion swaps at once', () => {
+    const s1 = step(def, s0, { t: 'none' }).state;
+    expect(transformOf(render(def, s0, s1, 0, true), 'data-actor="baby"')).toContain('translate(90 430)');
+  });
+
+  test('the bubble shows what he wants: 要！ while reaching', () => {
+    let s = s0;
+    for (let i = 0; i < 3; i++) s = step(def, s, { t: 'none' }).state;
+    expect(s.baby.mode).toBe('reaching');
+    const fx = layers(render(def, s, s)).fx;
+    expect(fx).toContain('data-bubble="want"');
+    expect(fx).toContain('要！');
+  });
+});
