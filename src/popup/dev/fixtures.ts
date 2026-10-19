@@ -48,6 +48,8 @@ export interface PopupFixture {
     readonly talk?: readonly LineKey[];
     /** Words (#99): the word ring open, a word card up, the 「要！」 poke of a tap on Baokaka */
     readonly words?: { readonly ring?: boolean; readonly card?: LearnKey; readonly poke?: boolean };
+    /** The hint ladder at this level for the fixture's state (#100: 0 nudge, 1 where, 2 how), the hint computed by the solver */
+    readonly hint?: 0 | 1 | 2;
   };
   /**
    * The still's motion look: `motion` (default) draws the idle cues of full motion, `reduced` the
@@ -259,6 +261,37 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     show: { affordance: { hint: { level: 2, key: 'crib-rail' } } },
     note: '0-1 with hint L2: the rail tab glows (L1) and the vellum ghost hand pulls it down to its stop.',
+  },
+  {
+    name: 'hint-nudge',
+    page: 'c1p2',
+    steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }],
+    show: { hint: 0 },
+    note: 'Hint level 0, the auto nudge (GDD § 2.7, #100): after 30 s with no change Mocha stretches with a yawn and turns toward the next useful thing (the pillar); live, its paw print shimmers once (the still catches the shimmer at rest, invisible).',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'hint-level1',
+    page: 'c1p2',
+    steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }],
+    show: { hint: 1 },
+    note: 'Hint level 1, "where" (GDD § 2.7, #100): stuck at the gap, the solver\'s next action is Mocha to the pillar — the paw print there glows and pulses, Mocha turns to look at it and says 「讓摩卡上去」.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'hint-ghost-hand',
+    page: 'c1p2',
+    steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { wait: 'settle' }],
+    show: { hint: 2 },
+    note: 'Hint level 2, "how" (#100): the pigeon gone, the vellum ghost hand drags the train tab from half to its last stop, the halo behind it and the dotted thread to the train; Mocha on the pillar looks at it: 「拉拉看這裡」.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'hint-wait',
+    page: 'c1p2',
+    steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { wait: 'settle' }, { set: 'train', to: 'full' }],
+    show: { hint: 1 },
+    note: 'Waiting as an action (GDD § 2.7, #100): the train at the far platform, the best next move is to wait — Mocha sits up on the pillar tapping his paw: 「等等看。」 No halo, no hand.',
   },
   {
     name: 'word-poke',

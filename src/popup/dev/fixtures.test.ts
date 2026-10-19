@@ -3,6 +3,8 @@ import { ARTLAB_FIXTURES } from '../../artlab/fixtures';
 import { hashParams } from '../../shared/route';
 import { initialState } from '../core';
 import { POPUP_FIXTURES, fixtureFrame, fixtureParams, fixtureStore, popupFixture } from './fixtures';
+import { nextHint } from '../core/hint';
+import { hintDisplay } from '../view/affordance/ladder';
 import { isFirstLaunch, resumeTarget } from '../game/nav';
 import { SAVE_KEY } from '../game/progress';
 
@@ -77,4 +79,28 @@ test('fixtureParams', () => {
   expect(fixtureParams(hashParams('#/pagelab?fixture=c1p2-riding&still=1'))).toEqual({ fixture: 'c1p2-riding', still: true });
   expect(fixtureParams(hashParams('#/pagelab?fixture=&still=yes'))).toEqual({ fixture: null, still: false });
   expect(fixtureParams(hashParams('#/pagelab'))).toEqual({ fixture: null, still: false });
+});
+
+describe('the hint fixtures (#100) show what the solver says', () => {
+  const shown = (name: string) => {
+    const fixture = popupFixture(name)!;
+    const { def, state } = fixtureFrame(fixture);
+    return hintDisplay(def, nextHint(def, state), fixture.show!.hint!);
+  };
+
+  test('hint-nudge: Mocha yawns toward the pillar, no line', () => {
+    expect(shown('hint-nudge')).toEqual({ show: { level: 0, key: 'perch:pillar' }, mocha: 'yawn', line: null, retry: false, ringWord: null });
+  });
+
+  test('hint-level1: Mocha to the pillar — its paw print halos, he looks, 「讓摩卡上去」', () => {
+    expect(shown('hint-level1')).toEqual({ show: { level: 1, key: 'perch:pillar' }, mocha: 'look', line: '讓摩卡上去', retry: false, ringWord: null });
+  });
+
+  test('hint-ghost-hand: the hand drags the train to its last stop', () => {
+    expect(shown('hint-ghost-hand')).toMatchObject({ show: { level: 2, key: 'train', stop: 2 }, mocha: 'look', line: '拉拉看這裡' });
+  });
+
+  test('hint-wait: 「等等看。」, no target', () => {
+    expect(shown('hint-wait')).toEqual({ show: null, mocha: 'wait', line: '等等看。', retry: false, ringWord: null });
+  });
 });

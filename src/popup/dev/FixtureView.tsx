@@ -57,6 +57,7 @@ export function FixtureView({ name, still }: { name: string; still: boolean }) {
           showGesture={fixture.show?.gesture}
           affordance={fixture.show?.affordance}
           showWords={fixture.show?.words}
+          showHint={fixture.show?.hint}
         />
       )}
     </div>
