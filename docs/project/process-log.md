@@ -383,7 +383,7 @@ Format:
 - **Decision:** D-56. Handbook § 5 (sync:sprites), GDD § 3.9, bible § 9.1 and Art v2 § 2.4 have engineers' notes.
 - **Follow-ups (commented on the issues):** #95 completes the mode → sprite mapping and Mocha's hop/land/push (`onDone`/`onEvent` are ready); #96 adds the per-chapter half grade to the sync; #98 reads the bubble anchor from `spriteHead`; #141's frames arrive with a sync.
 
-### 2026-10-19 · Staff engineer · #95 Standee integration: 寶咖咖 and 摩卡 animations wired to sim modes (PR #PRNUM)
+### 2026-10-19 · Staff engineer · #95 Standee integration: 寶咖咖 and 摩卡 animations wired to sim modes (PR #163)
 - **`src/popup/view/actors/animMap.ts`.** The table: `babyAnim` (mode + the edge stepped + ride + growth + finger + word) and `mochaAnim` (hop, squeeze, eye contact, push, glare, puff, nope, purr, loaf on a part, in-box) return the pose and how its frame is chosen; `chooseFrame` turns it into a frame for the time into the tick. GDD names → Art v2 § 5 poses (grab `hold`, cuddle `hug`, say `point`, stand-cruise `pull`/`wobble`, hop/land `jump`, eye contact `push` frame 1). Word poses from the tick's events (`wave`, `refuse`, `hug`, `wonder`; `point` otherwise). Growth guard: no standing pose before its stage.
 - **Frames on the tick.** The crawl/walk cycle runs whole strides per edge (44 units each) read from the eased step, so hands never slide; above 24 fps it uses the 4-frame `key` cycle. Mocha's `jump` crouch / air / land at 0 / 18 / 82 % of his step. The eye contact is the tick that ends with `mocha.stare` (from his landing on); the next tick shows the shove. `SpriteAnim` gained a `frame` prop for these.
 - **Standee motion (`standee.ts`).** The step lands 120 ms before the tick ends; 4° lean into the travel direction at mid-step; ±2° damped landing wobble; look L/R card-flips away and back; reduced motion: a 180 ms fade-slide, held key frames, no lean, wobble, flips or sway. Lamp glow: a radial gradient behind him within 110 units of a lit light.
@@ -391,7 +391,7 @@ Format:
 - **Missing-frame report:** `#/pagelab?section=sprites` (visual target `pagelab-sprites`): M1 14 of 22 ✓; ✗ reach (1/2), look L/R, watch-sway, ride-giggle, touch-watch, Mocha glare, purr, in-box; later: carried, climb, stand-cruise (3/4), walk, Mocha walk. GDD § 3.9 table now says 8-frame cycles.
 - **Fixtures.** `lab-eye-contact` and `lab-crying` on lab-only stages (`lab-push`: 1-2 with a cup on the pillar; `lab-cry`: 0-1 with the bead hidden until the mobile spins), since 0-3 and 0-4 don't exist yet; `c1p2-reaching` already existed. `fixtureFrame` resolves lab stages.
 - **Payload.** `hug` (the cuddle frame) joined the core set: 396.6 KB @3x (≤ 400 KB).
-- **Results.** RESULTS
+- **Results.** Tests 1843 (new `animMap.test.ts`, PageView animation tests). `npm run build` OK. `npm run visual:update`: idle → sit and touch-watch changed 5 popup fixtures on purpose, kit-swatches by the new nav link; new baselines `pagelab-sprites`, `lab-eye-contact`, `lab-crying`; everything else 0 px. `check:ui` and `check:play` (8/8) pass. No console errors; fallbacks log as `console.info` in dev only.
 - **Screenshots.** `docs/screenshots/95/`.
 - **Decision.** D-57. GDD § 3.9, bible § 5, Art v2 § 5 and handbook § 5 have engineers' notes.
 - **Follow-ups (commented on the issues):** #141 replaces the fallbacks and adds `reach`'s second frame (the report shows what's left); #106 adds `c0p3-eye-contact` / `c0p4-crying` on the real pages; #98 keeps reading the bubble anchor from the shown pose.
