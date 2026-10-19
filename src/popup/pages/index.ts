@@ -4,4 +4,4 @@
  * most one custom reaction, which lint flags. This file becomes the ordered page registry;
  * `pages.test.ts` lints, replays and solves every page in CI.
  */
-export {};
+export { definePage } from '../core/define';

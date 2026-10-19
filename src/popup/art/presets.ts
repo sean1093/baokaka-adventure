@@ -1,4 +1,5 @@
 import { POPUP as C } from '../../art/palette';
+import type { PartPreset } from '../core/types';
 import { kitDefs, type DefName } from './defs';
 import { depth, scallopBand, softEllipse } from './paper';
 import { f1, ref, type KitCtx } from './svg';
@@ -15,9 +16,8 @@ import { brad, flap, pullTab, seal, slider, wheel, wheelRim, VERBS } from './tou
  * differently (a flap's lifted corner, a light on or off), since the view moves parts by transform.
  */
 
-/** The GDD § 3.2 `PartDef['preset']` values. Core types (#80) take this list over. */
-export const PART_PRESETS = ['tab', 'slider', 'wheel', 'flap', 'section', 'gate', 'button', 'lift', 'loop', 'pushable', 'light', 'blowable', 'carrier', 'prop'] as const;
-export type PartPreset = (typeof PART_PRESETS)[number];
+/** The preset list is owned by core (`PartDef['preset']`, #80); art only re-exports it (D-40). */
+export { PART_PRESETS, type PartPreset } from '../core/types';
 
 export type PartArtOptions = {
   /** The part's current state (defaults to the first) */
