@@ -5,6 +5,7 @@ import { FixtureIndex, FixtureView } from './FixtureView';
 import { fixtureParams } from './fixtures';
 import { KitSection } from './KitSection';
 import { LabWorkspace } from './LabWorkspace';
+import { SpriteReport } from './SpriteReport';
 import { labHash, parseLabParams, type LabParams } from './labParams';
 
 /**
@@ -15,6 +16,7 @@ import { labHash, parseLabParams, type LabParams } from './labParams';
  *   readability views and the art-key report, edit mode with 「Copy TS」, and the state inspector.
  *   Its settings live in the hash (`labParams.ts`), e.g. `#/pagelab?page=c1p2&overlay=nodes,edges&tick=12`.
  * - `section=kit` (#139): the paper kit port beside proof D and every part preset's default art.
+ * - `section=sprites` (#95): the missing-frame report, GDD § 3.9's character frames ✓ / ✗ / later.
  * - Visual QA fixtures (#92, `fixtures.ts`): `fixture=<name>` shows one full screen with no lab
  *   chrome (`still=1` for screenshots), and `section=fixtures` lists them for the QA scripts.
  */
@@ -56,12 +58,15 @@ export default function PageLab() {
           <a href="#/pagelab?section=kit" style={{ color: 'inherit' }} aria-current={section === 'kit' ? 'page' : undefined}>
             紙材套件 kit
           </a>
+          <a href="#/pagelab?section=sprites" style={{ color: 'inherit' }} aria-current={section === 'sprites' ? 'page' : undefined}>
+            角色影格 sprites
+          </a>
           <a href="#/pagelab?section=fixtures" style={{ color: 'inherit' }} aria-current={section === 'fixtures' ? 'page' : undefined}>
             QA fixtures
           </a>
         </nav>
       </header>
-      {section === 'kit' ? <KitSection /> : section === 'fixtures' ? <FixtureIndex /> : <LabWorkspace params={params} setParams={setParams} />}
+      {section === 'kit' ? <KitSection /> : section === 'fixtures' ? <FixtureIndex /> : section === 'sprites' ? <SpriteReport /> : <LabWorkspace params={params} setParams={setParams} />}
     </main>
   );
 }

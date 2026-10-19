@@ -1,0 +1,22 @@
+/*
+ * Standee loops (#95; popup bible § 5, § 8). CSS animations only, so a screenshot still
+ * (`[data-still]`, gestures.css) and reduced motion stop them. Transforms only.
+ */
+
+/* Watch-sway (fallback until #141's frames): the card rocks ±3° about its feet, calm, 2 s */
+.actor-sway {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  animation: actor-sway 2s ease-in-out infinite;
+}
+
+@keyframes actor-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actor-sway { animation: none; }
+}
+
+.reduce-motion .actor-sway { animation: none; }

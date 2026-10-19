@@ -488,3 +488,28 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #96 adds the per-chapter half grade to the sync.
 - #141's new frames arrive through `poses.json` and need only a sync (and a `config.ts` line if they are not core).
 - #98 reads the bubble's spring anchor from the sprite's `head`.
+
+### D-57 · 2026-10-19 · Character animations on the simulation: the readings #95 left open
+
+**Context.** #95 maps every simulation mode and event to a character animation (GDD § 3.9, § 2.2.7, § 2.3), moves the standees as rigid cards (bible § 5, § 8) and reports which GDD frames the artist still owes. Several choices were open.
+
+**Decision.**
+1. **One table, pure:** `src/popup/view/actors/animMap.ts`. `babyAnim({ mode, edge, riding, growth, watching, word })` and `mochaAnim(...)` return an `ActorAnim` (the pose, how its frame is chosen, the GDD frame it is, fallback flags); `chooseFrame` turns it into the frame for the time into the tick. `BABY_MODE_ANIM` has an entry per `BabyMode` and `MOCHA_STATE_ANIM` one per view state of Mocha (`sit`, `onPart`, `hop`, `squeeze`, `eyeContact`, `push`, `glare`, `puff`, `nope`, `purr`, `inBox`); tests insist on both and on every frame existing.
+2. **What decides the pose, beyond the mode:** the kind of the edge stepped this tick (crawl / climb / cruise / walk; Mocha's jump / squeeze), a ride (his node moved with a part: `bounce`, unless he is crying, saying, eating, grabbing or done), a finger down (touch-watch), and the word being said (from the tick's events: 掰掰 `wave`, 不要！ `refuse` when the refused set grew, 抱抱 `hug`, 飛機！ `wonder`; 嗶！ and the rest `point`). Idle is `sit`; done is the `clap` loop. `PageView` gets the tick's events through a new `events` prop.
+3. **The eye contact is the tick that ends with `mocha.stare`** (D-44). Arriving on that tick, he hops and faces the camera from the landing on; the next tick (the push) shows `push` frame 2 while the pushable starts its fall. Stills of the stare state show the eye contact.
+4. **Strides synced to the lerp:** a crawl or walk cycle runs whole strides per edge (one per 44 units, at least one), its frame read from the eased step progress, so hands plant once per stride and never slide. Above 24 frames a second (two strides in a normal tick) it switches to the 4-frame `key` cycle. Between steps and in stills the cycle's key frame holds. Mocha's hop is `jump` crouch / air / land at 0 / 18 % / 82 % of his step.
+5. **Standee motion (`standee.ts`):** the step finishes 120 ms before the tick ends (at least 60 % of the tick), leaving the ±2° damped landing wobble its 120 ms. The card leans 4° into the travel direction at mid-step (sin of the eased progress), none on a vertical step. The 2 px arc stays `stepPose`'s (Mocha's 24 px hop arc too). Turning stays the card flip.
+6. **Fallbacks until #141** (each logged once in dev with `console.info`, never an error): look L/R → `sit` card-flipping away at 30 % of the tick and back at 70 % (the head-turn frames don't exist, and a head still pasted on `sit` reads worse than a flip); touch-watch → `sit` tilted 3° toward the finger; watch-sway → `sit` rocking ±3° over 2 s (a CSS loop, so stills and reduced motion stop it); ride-giggle → `bounce`; carried → `sit`; climb → the crawl stride; Mocha glare → `sit` with the stiff lean; purr → `loaf`; in-box → the standee hidden (the box art frames the perch). `reach` has one frame of the GDD's two; it is held. Mocha's tail flick at an unreachable perch uses `lure`, his loaf on a part (C4) `loaf`, a squeeze `squeeze`.
+7. **Growth guard:** `pull` / `wobble` need growth 2, `walk` growth 3 (`GROWTH_NEEDS`); a standing pose any input asks for too early becomes the crawl. Sitting and crawling show at every stage.
+8. **Reduced motion:** loops and cycles hold their key frame, a step sequence its landed frame; a step is a 180 ms fade-slide (from 25 % opacity, sliding the last 10 units in) with no arc, lean or wobble; the look flips and the sway are off.
+9. **Lamp glow:** within 110 units of a lit light attractor (visible, active, not consumed), a warm radial gradient (`standeeGlow` in the stage defs, ≈ 18 % at its core) sits behind 寶咖咖. A gradient, not the bible's blur, because nothing on a mover may run a filter.
+10. **`hug` moved to the core set** (it is the cuddle frame from the prologue on): the core set is 396.6 KB @3x, still under the 400 KB test.
+11. **Fixtures for states no registered page reaches yet** use lab-only stages in `dev/labPages.ts` (`lab-push`: 1-2 with a cup on the pillar; `lab-cry`: 0-1 with the bead hidden until the mobile spins): fixtures `lab-eye-contact` and `lab-crying`. `fixtureFrame` resolves lab stages too. #106 adds `c0p3-eye-contact` and `c0p4-crying` on the real pages.
+12. **The missing-frame report** is `FRAME_REPORT` (GDD § 3.9 rows, frames needed, delivered poses and frames, fallback) shown at `#/pagelab?section=sprites` (visual target `pagelab-sprites`): ✓ when the delivered frames cover the count, ✗ otherwise, `later` for M3/M4 rows (carried, climb, stand-cruise, walk, Mocha's linked walk).
+
+**Why.** The view stays a pure function of `(prev, state, ms, events)`, so PageLab scrubs and stills render the same frames as play; the table is the one place #141 edits when its frames land.
+
+**Consequences.**
+- #141: replace each fallback in `animMap.ts` with its frame after the sync and watch the report's ✗ rows turn ✓ (`reach` needs its second frame too).
+- #98 (bubble) reads the shown pose's head through `spriteHead(babyAnim(...).sprite)`, as `PageView` does now.
+- #106 adds the real `c0p3-eye-contact` / `c0p4-crying` fixtures; the lab stages can then go.

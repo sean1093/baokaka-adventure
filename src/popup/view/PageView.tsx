@@ -5,12 +5,33 @@ import { useReducedMotion } from '../../components/motion';
 import { checkKnot, kitCtx, pawBadge, type KitCtx } from '../art';
 import { attractorNode } from '../core/baby';
 import { holds, partState } from '../core/cond';
-import { partLocked } from '../core/step';
+import { partLocked, stepGrowth } from '../core/step';
+import type { SimEvent } from '../core/events';
 import { nodePos } from '../core/graph';
 import { mochaNode, perchHidesMocha } from '../core/mocha';
 import type { CreatureDef, Id, PageDef, PerchDef, SimState } from '../core/types';
 import { spriteHead } from '../sprites';
-import { Baby, Bubble, Creature, Mocha, babySprite, bubbleShow, flipScale } from './actors';
+import {
+  Baby,
+  Bubble,
+  Creature,
+  LAMP_GLOW_R,
+  MOCHA_STATE_ANIM,
+  Mocha,
+  babyAnim,
+  bubbleShow,
+  chooseFrame,
+  edgeKind,
+  fadeSlide,
+  flipScale,
+  lookFacing,
+  mochaAnim,
+  noteFrameFallback,
+  sayingWord,
+  standeeTilt,
+  stepT,
+  travelDir,
+} from './actors';
 import './affordance/affordance.css';
 import { haloShape, handGesture, linkThread } from './affordance/hints';
 import { GhostHand, HintHalo, LinkThread } from './affordance/Hints';
@@ -19,7 +40,7 @@ import { attractorArt, chapterSky, ledge, perchMark, perchPost, pottedPlant, rai
 import { backdropArt } from './art/registry';
 import { BOOK_EXTENT, PAGE_W, type Hit, type Pt } from './geometry';
 import { NO_GESTURE, minHit, targetsOf, type GestureFlags } from './gestures';
-import { clamp01, drawnNodePos, lerpPt, offpagePoint, partProgress, stepPose } from './interp';
+import { clamp01, drawnNodePos, easeInOut, lerpPt, offpagePoint, partProgress, stepPose } from './interp';
 import { PRESET_Z, type LayerId } from './layers';
 import { ArtG, r2 } from './parts/common';
 import { CarriageView, MOVERS, PART_VIEWS, type MoverProps, type PartViewProps } from './parts';
@@ -71,7 +92,11 @@ export interface PageViewProps {
   readonly affordance?: AffordanceFlags;
   /** A still (screenshots, #92): the character sprites hold their key frames */
   readonly still?: boolean;
+  /** The latest tick's events (#95: what Mocha reacts to, the word being said) */
+  readonly events?: readonly SimEvent[];
 }
+
+const NO_EVENTS: readonly SimEvent[] = [];
 
 function Layer({ id, children, html }: { id: LayerId; children?: ReactNode; html?: string }) {
   if (html !== undefined) return <g data-layer={id} dangerouslySetInnerHTML={{ __html: html }} />;
@@ -90,7 +115,7 @@ function creaturePoint(def: PageDef, creature: CreatureDef, state: SimState, oth
   return anchor === undefined ? null : offpagePoint(anchor);
 }
 
-export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false }: PageViewProps) {
+export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false, events = NO_EVENTS }: PageViewProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
   const ids = useSvgIds(`pg-${def.id}`);
@@ -216,20 +241,83 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     return <Creature key={c.id} ctx={ctx} id={c.id} art={c.art} x={x} y={y} flip={b[0] < a[0]} />;
   });
 
-  // ——— Mocha and Baokaka ———
+  // ——— Mocha and Baokaka (#95): standees on the tick, each mode mapped to its frames (`actors/animMap.ts`) ———
+  // A step finishes LAND_MS before the tick ends (the landing wobble's time); stills hold every key frame
+  const tStep = stepT(ms, tickMs);
+  const kStep = easeInOut(tStep);
+  const held = reduced || still;
+  const finger = gesture.finger;
+
+  const babyFrom = prev.baby.node;
+  const babyTo = state.baby.node;
+  const babyStart = nodePos(def, prev, babyFrom);
+  const babyEnd = nodePos(def, state, babyTo);
+  const babyEdge = babyFrom === babyTo ? null : edgeKind(def, babyFrom, babyTo);
+  const riding = babyFrom === babyTo && babyStart !== undefined && babyEnd !== undefined && (babyStart[0] !== babyEnd[0] || babyStart[1] !== babyEnd[1]);
+  const bAnim = babyAnim({ mode: state.baby.mode, edge: babyEdge, riding, growth: stepGrowth(def, state), watching: finger !== null, word: sayingWord(prev, state, events) });
+  const babyDist = babyEdge !== null && babyStart && babyEnd ? Math.hypot(babyEnd[0] - babyStart[0], babyEnd[1] - babyStart[1]) : 0;
+  const bFrame = chooseFrame(bAnim, { k: kStep, dist: babyDist, tickMs, hold: held });
+  let babyPose = stepPose(def, prev, state, babyFrom, babyTo, tStep, ms, { reduced, preview });
+  let babyOpacity = 1;
+  if (reduced && !still && babyEdge !== null && babyStart && babyPose) {
+    const f = fadeSlide(babyStart, [babyPose.x, babyPose.y], ms);
+    babyPose = { x: f.x, y: f.y, moving: f.opacity < 1 };
+    babyOpacity = f.opacity;
+  }
+  const babyDir = babyEdge !== null && babyStart && babyEnd ? travelDir(babyStart, babyEnd) : 0;
+  const babyTilt = still ? 0 : standeeTilt(ms, tickMs, babyDir, reduced);
+  const watch = finger === null || babyPose === null ? undefined : finger[0] < babyPose.x ? -1 : 1;
+  const look = bAnim.lookAround && !held ? lookFacing(state.baby.facing, ms, tickMs) : null;
+  const sx = look ? flipScale(look.from, look.to, look.ms, false) : flipScale(prev.baby.facing, state.baby.facing, ms, reduced);
+  const show = bubbleShow(def, state);
+  const head = spriteHead(bAnim.sprite, state.baby.facing);
+  // The lamp glow (bible § 5): near a lit light attractor
+  const glow =
+    babyPose !== null &&
+    def.attractors.some((a) => {
+      if (a.kind !== 'light' || state.consumed.includes(a.id) || !holds(def, state, a.visibleWhen) || !holds(def, state, a.activeWhen)) return false;
+      const node = attractorNode(def, state, a);
+      const p = node === null ? undefined : nodePos(def, state, node);
+      return p !== undefined && Math.hypot(p[0] - babyPose!.x, p[1] - babyPose!.y) <= LAMP_GLOW_R;
+    })
+      ? `url(#${ctx.id('standeeGlow')})`
+      : undefined;
+
   const mochaFrom = mochaNode(def, prev);
   const mochaTo = mochaNode(def, state);
   const perch = def.perches.find((p) => p.id === state.mocha.perch);
   const mochaHidden = perch !== undefined && perchHidesMocha(def, perch) && state.mocha.path.length === 0;
-  const mochaPose = mochaHidden ? null : stepPose(def, prev, state, mochaFrom, mochaTo, t, ms, { reduced, hop: 24, preview });
-  const babyPose = stepPose(def, prev, state, prev.baby.node, state.baby.node, t, ms, { reduced, preview });
-  const finger = gesture.finger;
-  const watch = finger === null || babyPose === null ? undefined : finger[0] < babyPose.x ? -1 : 1;
-  const sx = flipScale(prev.baby.facing, state.baby.facing, ms, reduced);
-  const show = bubbleShow(def, state);
-  const head = spriteHead(babySprite(state.baby.mode).sprite, state.baby.facing);
-  // Mocha sits turned toward him (frames face right; mirrored about his feet)
-  const mochaFacing = mochaPose && babyPose && babyPose.x < mochaPose.x - 4 ? 'l' : 'r';
+  if (mochaHidden) noteFrameFallback(MOCHA_STATE_ANIM.inBox);
+  const mochaTravel = mochaFrom !== null && mochaTo !== null && mochaFrom !== mochaTo;
+  const mochaStart = mochaFrom === null ? undefined : nodePos(def, prev, mochaFrom);
+  const mochaEnd = mochaTo === null ? undefined : nodePos(def, state, mochaTo);
+  const stared = prev.mocha.stare;
+  const mAnim = mochaAnim({
+    travelling: mochaTravel,
+    landed: tStep >= 1 || held,
+    edge: mochaTravel ? edgeKind(def, mochaFrom!, mochaTo!) : null,
+    hidden: mochaHidden,
+    staring: state.mocha.stare !== undefined,
+    pushing: stared !== undefined && state.mocha.stare === undefined && state.pushables[stared] === 'falling',
+    // The glare pose holds while the finger is still on the locked part (the lean replays per touch)
+    glare: locked !== null && finger !== null,
+    puff: events.some((e) => e.type === 'mochaPuff'),
+    nope: events.some((e) => e.type === 'mochaNope'),
+    cuddled: state.baby.mode === 'cuddling' && state.baby.target === 'mocha',
+    onPart: perch?.onPart !== undefined,
+  });
+  const mFrame = chooseFrame(mAnim, { k: tStep, dist: 0, tickMs, hold: held });
+  let mochaPose = mochaHidden ? null : stepPose(def, prev, state, mochaFrom, mochaTo, tStep, ms, { reduced, hop: 24, preview });
+  let mochaOpacity = 1;
+  if (reduced && !still && mochaTravel && mochaStart && mochaPose) {
+    const f = fadeSlide(mochaStart, [mochaPose.x, mochaPose.y], ms);
+    mochaPose = { x: f.x, y: f.y, moving: f.opacity < 1 };
+    mochaOpacity = f.opacity;
+  }
+  const mochaDir = mochaTravel && mochaStart && mochaEnd ? travelDir(mochaStart, mochaEnd) : 0;
+  const mochaTilt = still ? 0 : standeeTilt(ms, tickMs, mochaDir, reduced);
+  // At rest he sits turned toward 寶咖咖; travelling, toward where he is going (frames face right)
+  const mochaFacing = mochaDir !== 0 ? (mochaDir < 0 ? 'l' : 'r') : mochaPose && babyPose && babyPose.x < mochaPose.x - 4 ? 'l' : 'r';
 
   // ——— 土地公, when his condition shows him ———
   const tdg = def.tudigong;
@@ -281,8 +369,12 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       </Layer>
       <Layer id="creatures">{creatures}</Layer>
       <Layer id="actors">
-        {mochaPose && <Mocha x={mochaPose.x} y={mochaPose.y} glare={locked?.serial} facing={mochaFacing} reduced={reduced} />}
-        {babyPose && <Baby x={babyPose.x} y={babyPose.y} mode={state.baby.mode} sx={sx} watch={watch} reduced={reduced} still={still} />}
+        {mochaPose && (
+          <Mocha x={mochaPose.x} y={mochaPose.y} anim={mAnim} frame={mFrame} glare={locked?.serial} facing={mochaFacing} tilt={mochaTilt} opacity={mochaOpacity} reduced={reduced} still={still} />
+        )}
+        {babyPose && (
+          <Baby x={babyPose.x} y={babyPose.y} mode={state.baby.mode} anim={bAnim} frame={bFrame} sx={sx} tilt={babyTilt} opacity={babyOpacity} watch={watch} glow={glow} reduced={reduced} still={still} />
+        )}
       </Layer>
       <Layer id="fx">
         {babyPose && show && <Bubble ctx={ctx} show={show} x={babyPose.x} y={babyPose.y} head={head} />}

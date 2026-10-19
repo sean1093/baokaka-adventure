@@ -156,6 +156,7 @@ npm run sync:sprites -- --force   # re-bake everything
 - `src/popup/sprites/sprites.test.ts` fails when an animation references a frame missing at either scale, when the committed files and `sprites.gen.ts` disagree (names, bytes, pixel sizes), when they drift from the artist's manifests, or when the core set passes 400 KB @3x.
 - In code: `<SpriteAnim sprite="baokaka.crawl" facing="l" playing reduced x y />` (`src/popup/sprites/`), positioned by its foot anchor; `spriteHead()` gives the bubble anchor; `usePagePreload(chapter)` preloads a page's frames (`PagePlayer` marks the page `data-sprites="ready"`, which the screenshot targets wait for).
 - PageLab: the fixture `sprites-anchors` shows the sprites at map scale with their box, foot anchor, head and footprint; the lab's `anchors` overlay marks the actors on a page.
+- **Animations (#95, D-57):** `src/popup/view/actors/animMap.ts` maps every sim mode and Mocha state to a pose and how its frame is chosen (clock, held, stride-synced, step sequence), with the fallbacks for frames #141 still draws; `standee.ts` holds the card motion. When the artist adds a frame, sync, then replace its fallback in `animMap.ts`. **`#/pagelab?section=sprites`** is the missing-frame report: every GDD § 3.9 frame ✓ / ✗ / later (visual target `pagelab-sprites`).
 
 ### PageLab sections (dev builds only)
 
@@ -211,7 +212,7 @@ node scripts/visual-check.mjs --serve --perf --perf-fixture world-follower --onl
 node scripts/visual-check.mjs --url http://localhost:5173/baokaka-adventure/   # use a server you started
 ```
 
-- Targets are listed in `scripts/visual-targets.mjs` (`title`, `artlab-sprites-night`, `artlab-tokens`, `artlab-rig`, `artlab-heroes`, `artlab-ui`, `artlab-map`, `artlab-stage`, `artlab-fx`, `kit-swatches`, `popup-c0p1`, `popup-c1p2`) plus every art lab fixture and every 翻翻台北 PageLab fixture. Each is shot at **390×844** and **375×667** (2× pixel ratio, mobile, touch, reduced motion) after `document.fonts.ready` and once the DOM has been still for 0.5 s.
+- Targets are listed in `scripts/visual-targets.mjs` (`title`, `artlab-sprites-night`, `artlab-tokens`, `artlab-rig`, `artlab-heroes`, `artlab-ui`, `artlab-map`, `artlab-stage`, `artlab-fx`, `kit-swatches`, `pagelab-sprites`, `popup-c0p1`, `popup-c1p2`) plus every art lab fixture and every 翻翻台北 PageLab fixture. Each is shot at **390×844** and **375×667** (2× pixel ratio, mobile, touch, reduced motion) after `document.fonts.ready` and once the DOM has been still for 0.5 s.
 - PNGs go to `artifacts/visual/<viewport>/<name>.png` (gitignored). Diff mode compares against `tests/visual-baseline/<viewport>/` with pixelmatch (threshold 0.1) and fails when more than 0.5 % of pixels differ, writing `<name>.diff.png` next to the screenshot. It also fails on console errors.
 - **When a PR changes visuals on purpose,** run `npm run visual:update` in the same PR and say so in the PR body. Baselines will churn a lot in M2/M3; that is expected.
 - **Attaching to a PR:** copy the relevant 390×844 PNGs from `artifacts/visual/390x844/` to `docs/screenshots/<issue>/`, commit them, and link them in the PR body.

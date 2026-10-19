@@ -8,6 +8,7 @@ import { compilePart } from '../core/presets';
 import { NO_GESTURE, targetsOf, type GestureFlags } from './gestures';
 import { ANIMATED_LAYERS, ANIMATED_NODE_BUDGET, LAYERS, type LayerId } from './layers';
 import { PageView } from './PageView';
+import { labPageById } from '../dev/labPages';
 
 /**
  * The page renderer, rendered to static markup (#89; GDD § 3.9): the layers in order, node counts
@@ -121,12 +122,26 @@ describe('PageView motion', () => {
   const s0 = initialState(def);
   const transformOf = (html: string, attr: string) => html.match(new RegExp(`${attr}[^>]*transform="([^"]*)"`))?.[1] ?? html.match(new RegExp(`transform="([^"]*)"[^>]*${attr}`))?.[1];
 
-  test('Baokaka lerps between nodes over the tick', () => {
+  test('Baokaka hop-lerps between nodes as a leaning card, landing 120 ms before the tick ends (#95)', () => {
     const s1 = step(def, s0, { t: 'none' }).state;
     const at = (ms: number) => transformOf(render(def, s0, s1, ms), 'data-actor="baby"');
-    expect(at(0)).toContain('translate(40 430)');
-    expect(at(500)).toContain('translate(90 430)');
-    expect(at(250)).toMatch(/translate\(65 428/);
+    expect(at(0)).toBe('translate(40 430) scale(1 1)');
+    // Mid-step (380 ms of travel): half way, the 2 px arc at its top, the full 4° lean to the right
+    expect(at(190)).toBe('translate(65 428) rotate(4) scale(1 1)');
+    // Landed at 380 ms, then the ±2° wobble, settled by the tick's end
+    expect(at(380)).toBe('translate(90 430) scale(1 1)');
+    expect(at(410)).toMatch(/^translate\(90 430\) rotate\(1\.\d+\) scale\(1 1\)$/);
+    expect(at(500)).toBe('translate(90 430) scale(1 1)');
+  });
+
+  test('the crawl cycle is synced to the step: whole strides per edge, the key frame between steps', () => {
+    const s1 = step(def, s0, { t: 'none' }).state;
+    const frameAt = (ms: number) => render(def, s0, s1, ms).match(/data-sprite="baokaka\.crawl" data-frame="(\d+)"/)?.[1];
+    // A 50-unit edge is one stride: 8 frames over the eased step
+    expect(frameAt(0)).toBe('0');
+    expect(frameAt(190)).toBe('4');
+    expect(frameAt(500)).toBe('0');
+    expect(new Set([40, 80, 120, 160, 200, 240, 280, 320, 360].map(frameAt)).size).toBeGreaterThanOrEqual(6);
   });
 
   test('the train tab slides with the part tween and the carriage carries its riders', () => {
@@ -138,9 +153,15 @@ describe('PageView motion', () => {
     expect(transformOf(html0, 'data-carriage="train"')).toBe('translate(34 430)');
   });
 
-  test('reduced motion swaps at once', () => {
+  test('reduced motion: a step is a short fade-slide, with no arc, lean or frame cycle', () => {
     const s1 = step(def, s0, { t: 'none' }).state;
-    expect(transformOf(render(def, s0, s1, 0, true), 'data-actor="baby"')).toContain('translate(90 430)');
+    const html0 = render(def, s0, s1, 0, true);
+    expect(transformOf(html0, 'data-actor="baby"')).toBe('translate(80 430) scale(1 1)');
+    expect(html0).toMatch(/data-actor="baby"[^>]*opacity="0.25"/);
+    const html1 = render(def, s0, s1, 200, true);
+    expect(transformOf(html1, 'data-actor="baby"')).toBe('translate(90 430) scale(1 1)');
+    expect(html1).not.toMatch(/data-actor="baby"[^>]*opacity=/);
+    expect(render(def, s0, s1, 100, true)).toMatch(/data-sprite="baokaka\.crawl" data-frame="0"/);
   });
 
   test('the bubble shows what he wants: 要！ while reaching', () => {
@@ -187,5 +208,57 @@ describe('PageView gesture flags (#90)', () => {
     expect(render(def, s0, s0)).toContain('data-parts="board=times train=out"');
     const done = replay(def, def.solution).state;
     expect(render(def, done, done)).toContain('data-done=""');
+  });
+});
+
+describe('PageView character animations (#95)', () => {
+  const def = pageById('c1p2')!;
+  const s0 = initialState(def);
+  const pose = (html: string, actor: 'baby' | 'mocha') => html.match(new RegExp(`data-actor="${actor}"[^>]*data-pose="([^"]*)"`))?.[1];
+
+  test('idle sits; reaching reaches; a finger down is touch-watch (fallback, marked)', () => {
+    expect(pose(render(def, s0, s0), 'baby')).toBe('sit');
+    let s = s0;
+    for (let i = 0; i < 3; i++) s = step(def, s, { t: 'none' }).state;
+    expect(pose(render(def, s, s), 'baby')).toBe('reach');
+    const watching = render(def, s, s, 0, false, { ...NO_GESTURE, finger: [300, 200] });
+    expect(pose(watching, 'baby')).toBe('touchWatch');
+    expect(watching).toMatch(/data-actor="baby"[^>]*data-fallback=""/);
+  });
+
+  test('Mocha hops along his step (jump frames) and turns toward where he goes; he glares while the finger is on a locked part', () => {
+    const s1 = step(def, s0, { t: 'mocha', perch: 'pillar' }).state;
+    const mid = render(def, s0, s1, 190);
+    expect(pose(mid, 'mocha')).toBe('hop');
+    expect(mid).toMatch(/data-sprite="mocha\.jump" data-frame="1" data-facing="l"/);
+    expect(render(def, s0, s1, 500)).toMatch(/data-sprite="mocha\.jump" data-frame="2"/);
+    expect(pose(render(def, s1, s1), 'mocha')).toBe('sit');
+    const locked = { part: 'train', serial: 1 };
+    expect(pose(render(def, s0, s0, 0, false, { ...NO_GESTURE, locked, finger: [100, 600] }), 'mocha')).toBe('glare');
+    expect(pose(render(def, s0, s0, 0, false, { ...NO_GESTURE, locked }), 'mocha')).toBe('sit');
+  });
+
+  test('the eye-contact tick faces the camera from the landing on; the next tick pushes', () => {
+    const lab = labPageById('lab-push')!;
+    const a = initialState(lab);
+    const b = step(lab, a, { t: 'mocha', perch: 'pillar' }).state;
+    const c = step(lab, b, { t: 'none' }).state;
+    expect(b.mocha.stare).toBe('cup');
+    expect(pose(render(lab, a, b, 100), 'mocha')).toBe('hop');
+    expect(pose(render(lab, a, b, 450), 'mocha')).toBe('eyeContact');
+    expect(render(lab, b, b)).toMatch(/data-sprite="mocha\.push" data-frame="0"/);
+    expect(render(lab, b, c, 200)).toMatch(/data-sprite="mocha\.push" data-frame="1"/);
+  });
+
+  test('crying loops cry; a lit light nearby glows behind him', () => {
+    const lab = labPageById('lab-cry')!;
+    let s = initialState(lab);
+    for (let i = 0; i < 3; i++) s = step(lab, s, { t: 'none' }).state;
+    expect(s.baby.mode).toBe('crying');
+    expect(pose(render(lab, s, s), 'baby')).toBe('cry');
+    expect(render(lab, s, s)).not.toContain('data-lamp-glow');
+    const lit: PageDef = { ...lab, attractors: [...lab.attractors, { id: 'lamp', kind: 'light', node: 'crib2' }] };
+    const near = initialState(lit);
+    expect(render(lit, near, near)).toMatch(/data-lamp-glow="" [^>]*fill="url\(#/);
   });
 });

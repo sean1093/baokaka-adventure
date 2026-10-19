@@ -12,7 +12,8 @@ import { TICK_MS, type TickSpeed } from '../game/session';
  * - `speed` — `slow` | `normal` | `fast` for play.
  * - `edit=1` — edit mode (drag nodes and track ends).
  * - `view` — a comma list of readability views: `grey` (greyscale) and `squint` (the 25 % thumbnail).
- * - `section=kit` — the paper kit sheet (#139) instead of the lab.
+ * - `section=kit` — the paper kit sheet (#139) instead of the lab; `section=sprites` — the
+ *   missing-frame report (#95).
  *
  * Pure: no DOM, so it is unit-tested.
  */

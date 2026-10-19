@@ -28,8 +28,46 @@ const brokenC1p2: PageDef[] =
         },
       ];
 
+const c0p1 = pageById('c0p1');
+
+/**
+ * Character states the registered M1 pages can't reach yet (#95's visual fixtures; #106 builds
+ * the prologue pages that do: 0-3's push, 0-4's cry). Not broken, just borrowed stages:
+ * - `lab-push`: 1-2 with a cup on the pillar perch (C3): sent there, Mocha makes eye contact with
+ *   the camera for a tick, then pushes the cup down beside 寶咖咖's side of the gap.
+ * - `lab-cry`: 0-1 with the bead hidden until the mobile spins: nothing to want, he looks, then
+ *   cries (GDD § 2.2.5).
+ */
+const characterStages: PageDef[] = [
+  ...(c1p2 === undefined
+    ? []
+    : [
+        {
+          ...c1p2,
+          id: 'lab-push',
+          title: '月台的杯子',
+          parts: [
+            ...c1p2.parts,
+            { id: 'cup', preset: 'pushable' as const, fall: { path: [[306, 238], [306, 330], [300, 420]] as [number, number][], fallTo: 'R1' }, hit: { cx: 306, cy: 230, r: 18 }, art: 'lab/cup' },
+          ],
+          perches: c1p2.perches.map((p) => (p.id === 'pillar' ? { ...p, push: 'cup' } : p)),
+        },
+      ]),
+  ...(c0p1 === undefined
+    ? []
+    : [
+        {
+          ...c0p1,
+          id: 'lab-cry',
+          title: '找不到',
+          attractors: c0p1.attractors.map((a) => ({ ...a, visibleWhen: { part: 'mobile', in: ['spin'] } })),
+          solution: [{ set: 'crib-rail', to: 'down' }, { tap: 'mobile' }, { wait: 'goal' as const }],
+        },
+      ]),
+];
+
 /** Lab-only fixture pages (not in the registry). */
-export const LAB_FIXTURES: readonly PageDef[] = brokenC1p2;
+export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...characterStages];
 
 /** Every page the lab lists, registered pages first. */
 export const LAB_PAGES: readonly PageDef[] = [...PAGES, ...LAB_FIXTURES];
