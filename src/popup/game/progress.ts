@@ -2,6 +2,7 @@ import type { Growth, Id, Word } from '../core/types';
 import { registry as gameRegistry, type PageRegistry } from '../pages';
 import { hadRpgSave, cleanupLegacyStorage } from '../../shared/legacy';
 import { browserStorage, loadJson, saveJson, type StorageLike } from '../../shared/storage';
+import { elderPatch } from './settings';
 
 /**
  * Progress and the save (GDD § 2.10, § 3.8): `SaveV1` in memory, `popup.save.v1` in storage.
@@ -45,7 +46,11 @@ export interface Photo {
   at: number;
 }
 
-/** § 2.11. `speed` 0 慢 / 1 普通 / 2 快; `autoHint` in seconds (0 = off); volumes 0–100 %; `reduceMotion` null = follow the system. */
+/**
+ * § 2.11. `speed` 0 慢 / 1 普通 / 2 快; `autoHint` in seconds (0 = off); volumes 0–100 %; `reduceMotion`
+ * null = follow the system. These are the player's own choices: 長輩模式 (`elder`) never overwrites
+ * them, it is applied over them when read (`game/settings.ts` `effectiveSettings`, D-67).
+ */
 export interface Settings {
   speed: 0 | 1 | 2;
   bigText: boolean;
@@ -56,6 +61,11 @@ export interface Settings {
   vibrate: boolean;
   reduceMotion: boolean | null;
   leftHand: boolean;
+  /**
+   * The gyro tilt (popup art bible § 2.3, #104): off by default, never in 長輩模式. Optional so a
+   * save written before #104 still loads (D-67).
+   */
+  tilt?: boolean;
 }
 
 /** GDD § 3.8, exactly. */
@@ -81,6 +91,7 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = Object.freeze({
   vibrate: true,
   reduceMotion: null,
   leftHand: false,
+  tilt: false,
 });
 
 /** The record as stored: `SaveV1` with each page record packed into a code (`packPage`). */
@@ -151,7 +162,8 @@ export function isSettings(value: unknown): value is Settings {
     isVolume(s.music) &&
     typeof s.vibrate === 'boolean' &&
     (s.reduceMotion === null || typeof s.reduceMotion === 'boolean') &&
-    typeof s.leftHand === 'boolean'
+    typeof s.leftHand === 'boolean' &&
+    (s.tilt === undefined || typeof s.tilt === 'boolean')
   );
 }
 
@@ -327,12 +339,17 @@ export function keepPhoto(save: SaveV1, chapter: number, photo: Photo): SaveV1 {
   return { ...save, photos: { ...save.photos, [chapter]: { frame: photo.frame, mocha: photo.mocha, at: photo.at } } };
 }
 
-/** Changed settings (a save trigger). Volumes are rounded and clamped to 0–100; an invalid result changes nothing. */
+/**
+ * Changed settings (a save trigger). Volumes are rounded and clamped to 0–100; an invalid result
+ * changes nothing. While 長輩模式 is on (and stays on) the settings it holds (速度, 字的大小, 自動提示)
+ * keep the player's own values: the patch's changes to them are dropped (`elderPatch`, D-67).
+ */
 export function updateSettings(save: SaveV1, patch: Partial<Settings>): SaveV1 {
-  const settings = { ...save.settings, ...patch };
+  const settings = { ...save.settings, ...elderPatch(save.settings, patch) };
   settings.sfx = Math.min(100, Math.max(0, Math.round(settings.sfx)));
   settings.music = Math.min(100, Math.max(0, Math.round(settings.music)));
-  return isSettings(settings) ? { ...save, settings } : save;
+  const same = (Object.keys(settings) as (keyof Settings)[]).every((k) => settings[k] === save.settings[k]);
+  return isSettings(settings) && !same ? { ...save, settings } : save;
 }
 
 /** A page opened from the 目錄 or the cover: it becomes the page to resume. Locked pages can't be opened. */

@@ -22,12 +22,12 @@ describe('pressing 提示', () => {
 });
 
 describe('the auto nudge (§ 2.11 自動提示)', () => {
-  test('30 s by default, 15 s, off; 長輩模式 makes it 15 s unless it is off', () => {
+  test('30 s by default, 15 s, off; 長輩模式 always makes it 15 s (D-67)', () => {
     expect(autoHintMs({ autoHint: 30, elder: false })).toBe(30_000);
     expect(autoHintMs({ autoHint: 15, elder: false })).toBe(15_000);
     expect(autoHintMs({ autoHint: 0, elder: false })).toBeNull();
     expect(autoHintMs({ autoHint: 30, elder: true })).toBe(15_000);
-    expect(autoHintMs({ autoHint: 0, elder: true })).toBeNull();
+    expect(autoHintMs({ autoHint: 0, elder: true })).toBe(15_000);
   });
 });
 
