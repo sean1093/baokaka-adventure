@@ -1,3 +1,4 @@
+import { chapterInfo } from '../content/chapters';
 import type { Id } from '../core/types';
 import { registry as gameRegistry, type PageRegistry } from '../pages';
 import { isChapterUnlocked, isUnlocked, type SaveV1 } from './progress';
@@ -145,4 +146,17 @@ export function treasuresFound(save: SaveV1): number {
 export function pageStickers(save: SaveV1, id: Id): [boolean, boolean, boolean] {
   const r = save.pages[id];
   return [r?.solved === true, r?.mischief === true, r?.tudigong === true];
+}
+
+/**
+ * A chapter's stickers in page order for the album's 6 × 3 grid (#103): each page (its registered
+ * page with that index, else `c<chapter>p<index>`) as 解開, 淘氣, 土地公.
+ */
+export function chapterStickers(save: SaveV1, chapter: number, reg: PageRegistry = gameRegistry): [boolean, boolean, boolean][] {
+  const out: [boolean, boolean, boolean][] = [];
+  for (let i = 1; i <= chapterInfo(chapter).pages; i++) {
+    const id = reg.pages.find((p) => p.chapter === chapter && p.index === i)?.id ?? `c${chapter}p${i}`;
+    out.push(pageStickers(save, id));
+  }
+  return out;
 }
