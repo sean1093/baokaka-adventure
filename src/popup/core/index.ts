@@ -17,7 +17,8 @@
  * `baby.ts` (Baokaka's decision loop) and the first `events.ts` (`SimEvent`, barks) from #82;
  * `mocha.ts` (perch pathing, arrival actions, pet, cat rules C1–C9) from #83; `step.ts` (the tick,
  * the cascade, rides, counters, `matchPredicate`), `words.ts`, `creatures.ts`, `replay.ts` and the
- * full `events.ts` from #84.
+ * full `events.ts` from #84; `solver.ts` (`solve`, `candidateInputs`, `solverKey`, `nextAction`)
+ * from #85.
  */
 export * from './types';
 export * from './cond';
@@ -31,4 +32,5 @@ export * from './words';
 export * from './creatures';
 export * from './step';
 export * from './replay';
+export * from './solver';
 export { definePage } from './define';
