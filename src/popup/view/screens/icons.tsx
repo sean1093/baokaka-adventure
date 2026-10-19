@@ -78,3 +78,14 @@ export const LockIcon = ({ size = 20, color = C.inkSoft }: { size?: number; colo
     <circle cx="10" cy="13.2" r="1.5" fill={C.page} />
   </svg>
 );
+
+/** 再拍一次: a little paper camera with a round-arrow over it (#103). */
+export const RetakeIcon = () => (
+  <svg {...box}>
+    <rect x="4" y="13" width="28" height="18" rx="4" fill={C.foldLitHigh} {...ink} />
+    <path d="M12 13l2.5 -3.5h7l2.5 3.5" fill="none" {...ink} />
+    <circle cx="18" cy="22" r="5" fill={C.nightCard} {...ink} strokeWidth={2} />
+    <path d="M25 6.5a8 8 0 0 0 -13 -1.2" fill="none" stroke={C.seal} strokeWidth={2.4} strokeLinecap="round" />
+    <path d="M10.4 2.2l1.4 3.6l3.6 -1.2" fill="none" stroke={C.seal} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);

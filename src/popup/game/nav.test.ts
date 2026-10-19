@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { PageDef } from '../core/types';
 import { buildRegistry, registry } from '../pages';
-import { COVER, holdsPage, homeChapter, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from './nav';
+import { COVER, chapterStickers, holdsPage, homeChapter, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from './nav';
 import { completePage, freshSave, openPage, type SaveV1 } from './progress';
 
 /** The navigation state machine (#97; GDD § 2.13): cover → page → menu → contents, and the resume target. */
@@ -135,6 +135,21 @@ describe('the HUD and the bar read the save', () => {
     const pages = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`c${i + 1}p6`, { solved: true as const }]));
     expect(treasuresFound({ ...fresh, pages: { ...pages, c1p5: { solved: true } } })).toBe(9);
     expect(treasuresFound({ ...fresh, pages: { c1p6: { solved: true }, c2p6: { mischief: true } } })).toBe(1);
+  });
+
+  test('a chapter’s stickers for the album grid (#103): its six pages in order, by registered index', () => {
+    const save = { ...fresh, pages: { c1p2: { solved: true as const, mischief: true as const }, c1p6: { tudigong: true as const } } };
+    const grid = chapterStickers(save, 1);
+    expect(grid).toHaveLength(6);
+    expect(grid[1]).toEqual([true, true, false]);
+    expect(grid[5]).toEqual([false, false, true]);
+    expect(grid[0]).toEqual([false, false, false]);
+    // The prologue has four pages
+    expect(chapterStickers(fresh, 0)).toHaveLength(4);
+    // A registered page with that index is read by its own id
+    const spread = { ...registry.pageById('c1p2')!, id: 'lab-spread', index: 6 } as PageDef;
+    const reg = buildRegistry([...registry.pages, spread]);
+    expect(chapterStickers({ ...fresh, pages: { 'lab-spread': { solved: true } } }, 1, reg)[5]).toEqual([true, false, false]);
   });
 
   test('a page’s stickers', () => {

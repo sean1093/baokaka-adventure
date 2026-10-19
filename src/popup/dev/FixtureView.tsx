@@ -4,6 +4,7 @@ import { PAGES } from '../pages';
 import { PagePlayer } from '../view/PagePlayer';
 import { AffordanceSheet } from './AffordanceSheet';
 import { POPUP_FIXTURES, fixtureFrame, fixtureStore, popupFixture } from './fixtures';
+import { SPREAD_REGISTRY } from './labPages';
 import { GameShell } from '../view/screens/GameShell';
 import { SpritesAnchorsSheet } from './SpriteSheet';
 
@@ -22,7 +23,8 @@ import { SpritesAnchorsSheet } from './SpriteSheet';
 export function FixtureView({ name, still }: { name: string; still: boolean }) {
   const fixture = popupFixture(name);
   const frame = useMemo(() => (fixture ? fixtureFrame(fixture) : null), [fixture]);
-  const store = useMemo(() => (fixture?.screen ? fixtureStore(fixture.screen.save) : null), [fixture]);
+  const reg = fixture?.screen?.spread ? SPREAD_REGISTRY : undefined;
+  const store = useMemo(() => (fixture?.screen ? fixtureStore(fixture.screen.save, fixture.screen.spread ? SPREAD_REGISTRY : undefined) : null), [fixture]);
   useEffect(() => () => store?.dispose(), [store]);
   if (!fixture || !frame) {
     return (
@@ -43,7 +45,7 @@ export function FixtureView({ name, still }: { name: string; still: boolean }) {
       ) : fixture.sheet === 'sprites-anchors' ? (
         <SpritesAnchorsSheet still={still} />
       ) : fixture.screen && store ? (
-        <GameShell key={`${fixture.name}-${still}`} store={store} initial={fixture.screen.nav} still={still} reduced={reduced} stickerCard={fixture.screen.card} chapterCard={fixture.screen.chapterCard} />
+        <GameShell key={`${fixture.name}-${still}`} store={store} initial={fixture.screen.nav} still={still} reduced={reduced} stickerCard={fixture.screen.card} chapterCard={fixture.screen.chapterCard} albumAfter={fixture.screen.albumAfter} registry={reg} />
       ) : (
         <PagePlayer
           key={`${fixture.name}-${still}`}
@@ -59,6 +61,7 @@ export function FixtureView({ name, still }: { name: string; still: boolean }) {
           showWords={fixture.show?.words}
           showHint={fixture.show?.hint}
           showSticker={fixture.show?.sticker}
+          showPhoto={fixture.show?.photo}
         />
       )}
     </div>

@@ -22,6 +22,11 @@ export const UI = {
   chapterCard: { next: '下一站', skip: '跳過', more: '下一句' },
   /** § 5.7 Photo (#103) */
   photo: { shutter: '咔嚓', retake: '再拍一次', keep: '放進相簿' },
+  /**
+   * The album (§ 2.9; #103): its name (「寶咖咖一歲的相簿」, § 2.9 step 6), the word's label (the
+   * word card's 學會了, D-62) and 返回. Not in § 5.7 (D-66): the sticker count's accessible name.
+   */
+  album: { title: '寶咖咖一歲的相簿', learned: '學會了', back: '返回', stickers: '已收集' },
   /** § 5.7 Settings (#104) */
   settings: {
     speed: '速度', speeds: ['慢', '普通', '快'],

@@ -4,9 +4,9 @@ import { AlbumIcon, BackIcon, SettingsIcon } from './icons';
 import { CREAM_CARD, PaperButton, Quilt } from './paper';
 
 /**
- * The album and the settings until #103 / #113 and #104 build them (#97, D-60): a cream card on
- * the quilt with the screen's name, one line, and the way back. The navigation to them is real, so
- * those issues only replace this component.
+ * The settings until #104 builds them (#97, D-60): a cream card on the quilt with the screen's
+ * name, one line, and the way back. The navigation to it is real, so #104 only replaces this
+ * component. (The album was a stub until #103: `view/photo/Album.tsx`.)
  */
 
 export function StubScreen({ kind, onBack }: { kind: 'album' | 'settings'; onBack: () => void }) {

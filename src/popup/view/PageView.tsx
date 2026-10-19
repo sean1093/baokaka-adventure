@@ -35,7 +35,8 @@ import './affordance/affordance.css';
 import { haloShape, handGesture, linkThread } from './affordance/hints';
 import { GhostHand, HintHalo, LinkThread } from './affordance/Hints';
 import { NO_AFFORDANCE, wearsMarigold, type AffordanceFlags, type PartLook } from './affordance/look';
-import { attractorArt, chapterSky, ledge, perchMark, perchPost, pottedPlant, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
+import { treasureOnPage } from './photo/treasureArt';
+import { attractorArt, chapterSky, spine, ledge, perchMark, perchPost, pottedPlant, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
 import { NO_GESTURE, hitCenter, minHit, targetsOf, type GestureFlags } from './gestures';
@@ -150,7 +151,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     const defs = stageDefs(ctx, chapterSky(def.chapter));
     // The baked backdrop (#96) over the whole view box, else the placeholder stage drawn live
     const baked = backdropBitmap(def.backdrop);
-    const backdrop = defs + (baked ? image(baked.url, baked.box, 'data-baked="backdrop"') : backdropArt(def.backdrop)(ctx, def));
+    const backdrop = defs + (baked ? image(baked.url, baked.box, 'data-baked="backdrop"') : backdropArt(def.backdrop)(ctx, def))
+      // A spread is a centrefold (GDD § 2.9, #103): the same 390 × 560 space, with the spine's crease down its middle
+      + (def.spread ? spine(ctx) : '');
     // Standing cut-outs the page places (GDD § 3.9 layer 2), then the track pits from the walk graph
     const cutouts = (def.cutouts ?? []).map((c) => {
       const img = cutoutBitmap(c.art);
@@ -247,7 +250,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     const node = attractorNode(def, state, a);
     const p = node === null ? undefined : drawnNodePos(def, prev, state, node, ms, reduced, preview);
     if (p === undefined) return null;
-    return <AttractorItem key={a.id} ctx={ctx} id={a.id} kind={a.kind} x={p[0]} y={p[1]} />;
+    return <AttractorItem key={a.id} ctx={ctx} id={a.id} kind={a.kind} x={p[0]} y={p[1]} treasure={a.goal && def.spread ? def.chapter : undefined} />;
   });
   const marks = mochaOn
     ? def.perches.filter((p) => p.id !== state.mocha.perch).map((p) => <PerchMarkItem key={p.id} ctx={ctx} perch={p} def={def} state={state} />)
@@ -509,8 +512,9 @@ function PartBadge({ hit, kind }: { hit: Hit; kind: 'locked' | 'done' }) {
   return <ArtG html={html} />;
 }
 
-function AttractorItem({ ctx, id, kind, x, y }: { ctx: KitCtx; id: string; kind: PageDef['attractors'][number]['kind']; x: number; y: number }) {
-  const html = useMemo(() => attractorArt(ctx, kind), [ctx, kind]);
+function AttractorItem({ ctx, id, kind, x, y, treasure }: { ctx: KitCtx; id: string; kind: PageDef['attractors'][number]['kind']; x: number; y: number; treasure?: number }) {
+  // A spread's goal is the chapter treasure (GDD § 2.9, #103), drawn as itself in its cup of light
+  const html = useMemo(() => (treasure === undefined ? attractorArt(ctx, kind) : treasureOnPage(ctx, treasure)), [ctx, kind, treasure]);
   // Shinies hover a little above the ledge, in their cup of light
   return (
     <g data-attractor={id} transform={`translate(${r2(x)} ${r2(y - 14)})`}>

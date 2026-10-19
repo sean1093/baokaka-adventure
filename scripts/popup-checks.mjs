@@ -327,7 +327,9 @@ export async function checkPopup(browser, base, viewports, report) {
     report.fail('翻翻台北: no popup fixtures at #/pagelab?section=fixtures');
     return;
   }
-  const { fixtures } = listed;
+  // `UI_ONLY=a,b` checks only these fixtures (a quick look while working on a screen)
+  const only = process.env.UI_ONLY?.split(',');
+  const fixtures = only ? listed.fixtures.filter((f) => only.includes(f)) : listed.fixtures;
   const waived = new Map();
   let artRuns = 0;
   const noteWaiver = (issue, what) => waived.set(issue, (waived.get(issue) ?? 0) + (what ? 1 : 0));

@@ -4,7 +4,7 @@ import { ReducedMotionContext, usePrefersReducedMotion } from '../../../componen
 import { cardLines, chapterName, loadLines, UI } from '../../content';
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
-import { COVER, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
+import { COVER, chapterStickers, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
 import { ProgressStore, type PageResult } from '../../game/progress';
 import type { TickSpeed } from '../../game/session';
 import { EMPTY_TALK, advance, currentBeat, enqueue, type TalkQueue } from '../../game/talk';
@@ -21,6 +21,9 @@ import { Cover } from './Cover';
 import { PauseMenu } from './PauseMenu';
 import { Quilt } from './paper';
 import { StubScreen } from './StubScreen';
+import { Album } from '../photo/Album';
+import { albumHome, keptPhoto, spreadPage, type Shot } from '../../game/photo';
+import type { Photo, SaveV1 } from '../../game/progress';
 import './screens.css';
 
 /**
@@ -45,6 +48,11 @@ import './screens.css';
  *   the lines skips the whole turn. The new page's own intro waits for the turn to end.
  * - Any layer over a page (the menu, the 目錄, the settings) and a turn in progress hold the page's
  *   session (§ 2.6).
+ * - **The chapter spread** (GDD § 2.9; #103): the photo taken on the spread is kept at once
+ *   (`store.keepPhoto`); when the treasure is grabbed the album page opens over the book with the
+ *   print flying in and the four notes popping on. 「再拍一次」 replays the 3-second moment;
+ *   「放進相簿」 goes on to the sticker card and the chapter turn. The cover's 相簿 opens the
+ *   album at the latest chapter with a photo (#113 adds the other chapters).
  * - Settings read from the save: tick speed (0/1/2 → slow/normal/fast), 左手模式, 減少動態 (null
  *   follows the OS), 自動提示 (the hint nudge's delay; 15 s in 長輩模式, #100). #104 builds the
  *   settings screen that changes them.
@@ -64,6 +72,8 @@ export interface GameShellProps {
   readonly stickerCard?: boolean;
   /** Visual QA fixtures (#102): the chapter card of this chapter hanging over the book on the quilt, its first beat of lines under it */
   readonly chapterCard?: number;
+  /** Visual QA fixtures (#103): the album as it opens after the spread, the print landed and every note on; `retaken` adds a second shot to choose from */
+  readonly albumAfter?: { readonly chapter: number; readonly retaken?: Photo };
 }
 
 const SPEEDS: readonly TickSpeed[] = ['slow', 'normal', 'fast'];
@@ -85,7 +95,17 @@ interface CardShow {
   readonly end: () => void;
 }
 
-export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard }: GameShellProps) {
+/** The album over the book after a spread (#103): the chapter, and how to go on. */
+interface AlbumAfter {
+  readonly chapter: number;
+  readonly photo: Photo | null;
+  readonly mocha: boolean;
+  readonly fresh: boolean;
+  readonly retaken?: Photo;
+  readonly go: () => void;
+}
+
+export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter }: GameShellProps) {
   const [store] = useState(() => given ?? new ProgressStore({ registry: reg }));
   useEffect(() => (given ? undefined : () => store.dispose()), [given, store]);
   const save = useSyncExternalStore(store.subscribe, store.get);
@@ -233,13 +253,26 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
     if (opening && opened) startTurn('open', opened, null, () => undefined);
   }, [base, reg, opening, startTurn]);
 
+  // ——— The spread's photo and the album after it (#103) ———
+  const shotRef = useRef<{ readonly id: string; readonly shot: Shot } | null>(null);
+  const [after, setAfter] = useState<AlbumAfter | null>(() =>
+    albumAfter === undefined ? null : { chapter: albumAfter.chapter, photo: store.get().photos[albumAfter.chapter] ?? null, mocha: false, fresh: false, retaken: albumAfter.retaken, go: () => undefined },
+  );
+  const onPhoto = useCallback(
+    (from: PageDef, shot: Shot) => {
+      shotRef.current = { id: from.id, shot };
+      store.keepPhoto(from.chapter, keptPhoto(shot, Date.now()));
+    },
+    [store],
+  );
+
   const onDone = useCallback(
     (from: PageDef, result: PageResult) => {
       store.completePage(from.id, result);
       const next = reg.nextPage(from.id);
       setTurning(true);
       window.clearTimeout(holdTimer.current);
-      holdTimer.current = window.setTimeout(() => {
+      const turnOn = () => {
         const kind = next !== null && next.chapter !== from.chapter ? 'chapter' : 'fold';
         if (next === null || !startTurn(kind, next, from, () => go({ t: 'next', id: next.id }), { run: () => showCard(from.id) })) {
           // The last page (or no book to turn): the card, then the 目錄
@@ -248,6 +281,23 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
             go({ t: 'next', id: next?.id ?? null });
           });
         }
+      };
+      const shot = shotRef.current?.id === from.id ? shotRef.current.shot : null;
+      shotRef.current = null;
+      holdTimer.current = window.setTimeout(() => {
+        // A spread: the album page first (the photo flies in), then on
+        if (from.spread && shot !== null) {
+          setAfter({
+            chapter: from.chapter,
+            photo: store.get().photos[from.chapter] ?? null,
+            mocha: shot.mocha,
+            fresh: true,
+            go: () => {
+              setAfter(null);
+              turnOn();
+            },
+          });
+        } else turnOn();
       }, GRAB_HOLD_MS);
     },
     [store, reg, go, showCard, startTurn],
@@ -323,6 +373,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                 // A page that opens with its chapter card is held from its first frame (its intro waits for the card)
                 hold={holdsPage(nav) || turning || opening || chapterCard !== undefined}
                 onDone={(_, result) => onDone(def, result)}
+                onPhoto={(shot) => onPhoto(def, shot)}
                 onSticker={(sticker) => onSticker(def.id, sticker)}
                 chrome={chrome || undefined}
                 pageRef={pageBoxRef}
@@ -374,13 +425,54 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
             />
           </div>
         )}
-        {(layer?.kind === 'album' || layer?.kind === 'settings') && (
+        {after !== null && (
+          <div className="fixed inset-0 z-50">
+            <Album
+              chapter={after.chapter}
+              def={spreadPage(after.chapter, reg)}
+              photo={after.photo}
+              stickers={chapterStickers(save, after.chapter, reg)}
+              mode="after"
+              fresh={after.fresh}
+              mocha={after.mocha}
+              retaken={after.retaken}
+              reduced={reduced}
+              still={still}
+              onKeep={(photo) => store.keepPhoto(after.chapter, photo)}
+              onDone={after.go}
+            />
+          </div>
+        )}
+        {layer?.kind === 'album' && (
+          <div className="fixed inset-0 z-50">
+            <AlbumLayer save={save} reg={reg} reduced={reduced} still={still} onKeep={(chapter, photo) => store.keepPhoto(chapter, photo)} onBack={() => go({ t: 'close' })} />
+          </div>
+        )}
+        {layer?.kind === 'settings' && (
           <div className="fixed inset-0 z-50">
             <StubScreen kind={layer.kind} onBack={() => go({ t: 'close' })} />
           </div>
         )}
       </div>
     </ReducedMotionContext.Provider>
+  );
+}
+
+/** The cover's 相簿 (#103): the latest chapter with a photo (or chapter 1's empty page), to look at or retake. */
+function AlbumLayer({ save, reg, reduced, still, onKeep, onBack }: { save: SaveV1; reg: PageRegistry; reduced: boolean; still: boolean; onKeep: (chapter: number, photo: Photo) => void; onBack: () => void }) {
+  const [chapter] = useState(() => albumHome(save.photos));
+  return (
+    <Album
+      chapter={chapter}
+      def={spreadPage(chapter, reg)}
+      photo={save.photos[chapter] ?? null}
+      stickers={chapterStickers(save, chapter, reg)}
+      mode="browse"
+      reduced={reduced}
+      still={still}
+      onKeep={(photo) => onKeep(chapter, photo)}
+      onDone={onBack}
+    />
   );
 }
 

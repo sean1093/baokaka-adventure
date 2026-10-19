@@ -36,6 +36,8 @@ import { useGestures } from './useGestures';
 import { barkLog, barksOf, type BarkShow } from './talk';
 import { sayingWord } from './actors';
 import { WordCard, WordRing, ringSafeArea, wantPoke } from './words';
+import { mochaInFrame, photoReady, type Shot } from '../game/photo';
+import { PhotoMoment } from './photo/PhotoMoment';
 
 /**
  * One page, played (GDD § 2.1 page anatomy; bible § 2.1, § 7): the navy-linen cover, the HUD slot
@@ -84,6 +86,12 @@ import { WordCard, WordRing, ringSafeArea, wantPoke } from './words';
  * worker's next action for the state now; the player's own move resets it. With `chrome.autoHintMs`
  * the nudge (Mocha's yawn and look, a single shimmer) comes after that long without a change. A
  * lost page glows 重來. Fixtures pin a level with `showHint` (computed in-process).
+ *
+ * The photo moment (#103, GDD § 2.9; `game/photo.ts`, `photo/PhotoMoment.tsx`): on a spread, once
+ * Baokaka is 2 edges from the treasure with a clear path (`photoReady`), the session pauses and the
+ * paper camera comes down over the page; the shot (`onPhoto`: the frame, and +M when Mocha sits in
+ * the `photoRect`) resumes it and he grabs the treasure. Should he reach it first (it came into
+ * reach on the spot), the moment plays after the grab. A spread's `onDone` waits for its photo.
  */
 
 /** Chapters where Mocha squints at the 土地公 on the first tap (GDD § 5.3: 4-x, 7-x, 10-x). */
@@ -178,9 +186,13 @@ export interface PagePlayerProps {
   readonly onSay?: (word: Word, motif: readonly number[]) => void;
   /** The book's page box (the page fold and the chapter turn animate inside it, #97) */
   readonly pageRef?: Ref<HTMLDivElement>;
+  /** A spread's photo was taken (#103): the frame and +M, before he grabs the treasure */
+  readonly onPhoto?: (shot: Shot) => void;
+  /** Visual QA fixtures (#103): the photo moment up over the page, its clock at `at` ms */
+  readonly showPhoto?: { readonly at: number };
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay, onSticker, showSticker }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay, onSticker, showSticker, onPhoto, showPhoto }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
   const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev, events }), [def, speed, from, prev, still, events]);
@@ -247,7 +259,30 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     if (!still && mischiefFired(def, frame.prev, frame.state, frame.events)) earn('mischief');
   }, [def, frame, still, earn]);
 
-  // The page completes once per session
+  // The photo moment (#103): up once per session on a spread, the world held under it
+  const [moment, setMoment] = useState<{ readonly mocha: boolean } | null>(() => (showPhoto ? { mocha: mochaInFrame(def, session.frame().state) } : null));
+  const shotRef = useRef<Shot | null>(null);
+  const onPhotoRef = useRef(onPhoto);
+  onPhotoRef.current = onPhoto;
+  useEffect(() => {
+    shotRef.current = null;
+  }, [session]);
+  useEffect(() => {
+    if (still || moment !== null || shotRef.current !== null || !def.spread) return;
+    if (photoReady(def, frame.state) || frame.state.done) setMoment({ mocha: mochaInFrame(def, frame.state) });
+  }, [def, frame, still, moment]);
+  useEffect(() => {
+    if (moment === null) return undefined;
+    session.pause('photo');
+    return () => session.resume('photo');
+  }, [session, moment]);
+  const snapped = useCallback((shot: Shot) => {
+    shotRef.current = shot;
+    setMoment(null);
+    onPhotoRef.current?.(shot);
+  }, []);
+
+  // The page completes once per session (a spread once its photo is taken)
   const doneFired = useRef(false);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
@@ -255,10 +290,10 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     doneFired.current = false;
   }, [session]);
   useEffect(() => {
-    if (!frame.state.done || doneFired.current || still) return;
+    if (!frame.state.done || doneFired.current || still || moment !== null || (def.spread && shotRef.current === null)) return;
     doneFired.current = true;
     onDoneRef.current?.(frame.state, attemptResult({ ...attemptRef.current, moves: session.moves }));
-  }, [frame.state, still, session]);
+  }, [def, frame.state, still, session, moment]);
 
   // What is said (#98): the subtitle queue (the intro, then lines the page's events fire; a tap on a
   // bubble advances) and the barks of the last few ticks
@@ -353,7 +388,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     state: frame.state,
     enabled: !still,
     autoMs: pageChrome?.autoHintMs ?? null,
-    held: hold || ringOpen || learning !== null,
+    held: hold || ringOpen || learning !== null || moment !== null,
     reduced,
     onPlay: (action) => {
       if (action.t === 'say') setRingOpen(false);
@@ -534,6 +569,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         />
       )}
       {learning?.stage === 'card' && <WordCard learn={learning.key} vw={layout.vw} cy={toScreen(layout, [195, 300])[1]} reduced={reduced} onDone={cardDone} />}
+      {moment !== null && <PhotoMoment chapter={def.chapter} def={def} mocha={moment.mocha} reduced={reduced} still={still} at={showPhoto?.at} vw={layout.vw} onSnap={snapped} />}
     </main>
   );
 }

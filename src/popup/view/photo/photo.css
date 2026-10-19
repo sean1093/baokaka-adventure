@@ -1,0 +1,62 @@
+/*
+ * The photo moment and the album page (#103; GDD § 2.9; popup art bible § 7 Album, § 8).
+ * Transforms and opacity only, no filters, every one a CSS animation so a screenshot still
+ * (`[data-still]`, gestures.css) stops it and shows the settled look. The `-fade` classes are the
+ * reduced-motion versions (the OS setting or 減少動態): opacity only, and no slow-motion zoom.
+ */
+
+/* The paper camera slides down over the page and settles with a little bounce */
+.ph-in { animation: ph-in 460ms cubic-bezier(0.2, 0.9, 0.3, 1.12) both; }
+@keyframes ph-in {
+  0% { transform: translateY(-115%) rotate(-3deg); }
+  70% { transform: translateY(2%) rotate(0.6deg); }
+  100% { transform: translateY(0) rotate(-0.8deg); }
+}
+.ph-fade { animation: ph-fade 240ms ease-out both; }
+@keyframes ph-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* The shutter rises under it a beat later */
+.ph-shutter-in { animation: ph-shutter-in 380ms 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+@keyframes ph-shutter-in {
+  0% { transform: translateY(40px) scale(0.6); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Slow motion: the viewfinder creeps in on him over the 3 s loop, then starts again */
+.ph-zoom { transform-origin: 55% 70%; animation: ph-zoom 3000ms linear infinite; }
+@keyframes ph-zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.09); }
+}
+
+/* The flash: one white burst, then gone (a single flash, far under 3 Hz) */
+.ph-flash { animation: ph-flash 360ms ease-out both; }
+@keyframes ph-flash {
+  0% { opacity: 0; }
+  18% { opacity: 0.92; }
+  100% { opacity: 0; }
+}
+
+/* The album page: the print flies in from the camera and lands crooked under its washi corners */
+.al-fly { animation: al-fly 620ms cubic-bezier(0.25, 0.9, 0.3, 1.08) both; }
+@keyframes al-fly {
+  0% { transform: translate(40px, -340px) rotate(14deg) scale(1.25); opacity: 0; }
+  20% { opacity: 1; }
+  78% { transform: translate(0, 6px) rotate(-3.6deg) scale(1); }
+  100% { transform: translate(0, 0) rotate(-2.5deg) scale(1); opacity: 1; }
+}
+.al-print { transform: rotate(-2.5deg); }
+
+/* A sticky note pops on, 0.6 s after the one before (§ 2.9 step 5) */
+.al-note { animation: al-note 320ms cubic-bezier(0.3, 0.8, 0.4, 1.3) both; }
+@keyframes al-note {
+  0% { transform: scale(0.4) rotate(var(--tilt-from, -8deg)); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: scale(1) rotate(var(--tilt, 0deg)); opacity: 1; }
+}
+.al-note-still { transform: rotate(var(--tilt, 0deg)); }
+.al-note-fade { animation: ph-fade 260ms ease-out both; }

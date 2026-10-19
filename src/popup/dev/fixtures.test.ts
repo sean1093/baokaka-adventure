@@ -7,6 +7,7 @@ import { nextHint } from '../core/hint';
 import { hintDisplay } from '../view/affordance/ladder';
 import { isFirstLaunch, resumeTarget } from '../game/nav';
 import { SAVE_KEY } from '../game/progress';
+import { mochaInFrame, photoFrameAt, photoReady } from '../game/photo';
 
 /** The visual QA fixtures (#92): valid, unique, deterministic, and still showing what they claim. */
 
@@ -102,5 +103,26 @@ describe('the hint fixtures (#100) show what the solver says', () => {
 
   test('hint-wait: 「等等看。」, no target', () => {
     expect(shown('hint-wait')).toEqual({ show: null, mocha: 'wait', line: '等等看。', retry: false, ringWord: null });
+  });
+});
+
+describe('the photo and album fixtures (#103)', () => {
+  test('photo-moment: on the spread, 2 edges from the treasure, 摩卡 in the frame, the moment at the peak (Frame A)', () => {
+    const f = popupFixture('photo-moment')!;
+    const { def, state } = fixtureFrame(f);
+    expect(def.spread).toBe(true);
+    expect(photoReady(def, state)).toBe(true);
+    expect(mochaInFrame(def, state)).toBe(true);
+    expect(photoFrameAt(f.show!.photo!.at)).toBe('A');
+  });
+
+  test('the album fixtures read the photos they claim', () => {
+    const album = popupFixture('album-c1')!;
+    expect(album.screen!.save.photos[1]).toMatchObject({ frame: 'A', mocha: true });
+    expect(album.screen!.nav.layer).toEqual({ kind: 'album' });
+    const retake = popupFixture('album-c1-retake')!;
+    expect(retake.screen!.save.photos[1]).toMatchObject({ frame: 'B', mocha: true });
+    expect(retake.screen!.albumAfter?.retaken).toMatchObject({ frame: 'C', mocha: false });
+    expect(popupFixture('spread-shell')!.screen!.spread).toBe(true);
   });
 });

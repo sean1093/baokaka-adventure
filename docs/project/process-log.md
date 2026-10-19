@@ -529,3 +529,32 @@ Format:
   - #106 and #107 wire the 0-3, 0-4, 1-1, 1-5 and 1-6 beats into their pages' `lines`.
   - #105: sounds for the drop and the flaps.
   - #110: watch the reading load at the start (the card plus 0-1's intro).
+
+### 2026-10-19 · Staff engineer · #103 Chapter spread, photo moment and the album page (PR #172)
+- **Rules (`game/photo.ts`, pure).**
+  - `photoReady`: on a `spread`, the goal is his target, reachable, 1–2 edges away.
+  - The 3 s loop: `photoFrameAt` (A within ±0.4 s of the 1.8 s peak, B before, C after), `wowMeter`, `approachAt`; the auto snap (B) at 6 s.
+  - `mochaInFrame` (+M: Mocha settled on a perch inside `photoRect`).
+  - `albumNotes`: Frame A takes the chapter row, B and C the pools at `(chapter × 7 + frame) mod size` with A = 0, B = 1, C = 2; Mocha's pool is in or out by +M.
+  - `spreadPage`, `albumHome`, and `chapterStickers` in `nav.ts`.
+- **Text (`content/album.ts`).** All of § 5.6: the 10 chapter rows, the ending's row and the pools, plus each chapter's treasure and word. `UI.album` holds 「寶咖咖一歲的相簿」 and the labels.
+- **View (`view/photo/`).**
+  - `PhotoScene`: the photo re-drawn from `{ frame, mocha }`, a 4 : 3 crop of the spread's backdrop with placeholder composites (B `reach`, A `bounce` with the 雞腿 held up, C `eat`, +M `mocha.album`).
+  - `PhotoMoment`: the paper camera with the slow-motion viewfinder, the 「哇！」 meter, the marigold 咔嚓 and the flash.
+  - `AlbumPage` / `Album`: the album leaf, the retake and the choice of shot.
+  - `treasureArt` draws 雞腿; the spine crease is `placeholders.ts` `spine`.
+- **Wiring.** `PagePlayer` pauses for the moment and `onDone` waits for the shot. `GameShell` saves each shot (`keepPhoto`), then after the grab opens the album, and on 「放進相簿」 shows the sticker card and turns. The cover's 相簿 replaces the stub (the settings stub stays for #104).
+- **QA.**
+  - Lab stage `lab-spread` (1-2 as a centrefold) and `SPREAD_REGISTRY`.
+  - Fixtures: `spread-c1`, `photo-moment`, `album-c1`, `album-c1-retake`, `spread-shell`. 10 new baselines; every other target is 0 px.
+  - `check:play`: `photo-spread` (the moment holds the world, the shot, the album's notes, a retake, the choice, 放進相簿, the sticker card, the 目錄). It gained `--only <ids>`, and `check:ui` gained `UI_ONLY=`.
+  - `check:ui`: the album is a modal; the notes' names are ink with a red underline (seal ink on pink is 6.4 : 1).
+  - `npm test` (2237), `npm run build`, `npm run visual`, `check:ui --popup` and `check:play` all pass.
+- **Screenshots.** `docs/screenshots/103/`.
+- **Decision.** D-66. GDD § 2.9, bible § 7 and the handbook § 5 have engineers' notes.
+- **Follow-ups.**
+  - #107: register 1-6 with `spread` / `photoRect`, move the photo fixtures and `photo-spread` onto `c1p6`, and play `c1p6.end.*` after the album.
+  - Character artist: the real photo frames (A/B/C, +M) replace the composites in `PhotoScene`.
+  - #113: album navigation and the 淘氣大王 cover.
+  - #105: shutter and note sounds.
+  - The thought bubble still shows the bead icon for a spread's treasure. It is minor, and #107/#108 can draw a treasure icon.
