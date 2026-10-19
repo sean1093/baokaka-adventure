@@ -720,6 +720,20 @@ export const POPUP = {
   sealHairline: '#FFE7D8',
   /** Red text printed on paper (the HUD's 「page title」): seal red darkened to 7:1 */
   sealInk: '#8C1A14',
+  /**
+   * Each word's own seal colour (bible § 7 word ring; #99): the stamp on its disc in the word ring
+   * and on its word card, under a cream icon. Deep inks, none of them marigold (reserved).
+   */
+  wordBeep: '#1F6A86',
+  wordBye: '#2F7348',
+  wordNo: '#B0291F',
+  wordWow: '#A8326E',
+  wordHug: '#B4561C',
+  wordPlane: '#2B4790',
+  wordWhoosh: '#5E4E9A',
+  wordTogether: '#8A6410',
+  /** The growth stages' seal (爬樓梯 / 扶著站 / 第一步 cards) */
+  wordGrowth: '#6E4A2A',
   /** Chalk: Mocha's perch paw, hold-to-reveal outlines, captions on night card */
   chalk: '#FFF7E0',
   /** Brass split-pin and foil highlights */

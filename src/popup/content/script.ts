@@ -63,6 +63,32 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'rec.pa.ride.3': { who: 'pa', text: '車門即將關閉。' },
   'rec.uncle.tap': { who: 'uncle', text: '呵呵，囡仔，慢慢仔來。' },
   'rec.mocha.squint': { who: 'mocha', text: '……我是不是在哪裡看過你？' },
+  // § 5.4 word learning: the source line, Baokaka's word, Mocha's translation (and its follow-up);
+  // `content/words.ts` strings them into learn beats (#99). Sources that make no sound have no line.
+  'learn.beep.src': { who: 'npc', label: '讀卡機', text: '嗶！' },
+  'learn.beep.baby': { who: 'baby', text: '嗶！' },
+  'learn.beep.mocha': { who: 'mocha', text: '他說：『芝麻開門。』' },
+  'learn.beep.then': { who: 'mocha', text: '……閘門真的開了。' },
+  'learn.bye.src': { who: 'npc', label: '跑步阿姨', text: '掰掰～小寶貝！' },
+  'learn.bye.baby': { who: 'baby', text: '掰掰！' },
+  'learn.bye.mocha': { who: 'mocha', text: '他說：『請讓一讓，謝謝。』' },
+  'learn.no.src': { who: 'npc', label: '鵝', text: '嘎！不要過來！' },
+  'learn.no.baby': { who: 'baby', text: '不要！' },
+  'learn.no.mocha': { who: 'mocha', text: '他學會了人生最重要的詞。' },
+  'learn.wow.baby': { who: 'baby', text: '哇！' },
+  'learn.wow.mocha': { who: 'mocha', text: '他說：『開燈。』……電費誰付？' },
+  'learn.hug.src': { who: 'npc', label: '夜市阿姨', text: '來，阿姨抱！' },
+  'learn.hug.baby': { who: 'baby', text: '抱抱！' },
+  'learn.hug.mocha': { who: 'mocha', text: '他說：『載我一程。』' },
+  'learn.plane.baby': { who: 'baby', text: '飛……飛機！' },
+  'learn.plane.mocha': { who: 'mocha', text: '不會說爸爸，先會說飛機。' },
+  'learn.climb.mocha': { who: 'mocha', text: '……你什麼時候學會的？' },
+  'learn.whoosh.src': { who: 'npc', label: '溫泉阿嬤', text: '蛋很燙，呼呼再吃。' },
+  'learn.whoosh.baby': { who: 'baby', text: '咻——！' },
+  'learn.whoosh.mocha': { who: 'mocha', text: '他說：『我是颱風。』……別鬧。' },
+  'learn.cruise.mocha': { who: 'mocha', text: '站、站起來了！……我沒有哭。' },
+  'learn.together.baby': { who: 'baby', text: '……一起。' },
+  'learn.together.mocha': { who: 'mocha', text: '他說：『我們一起去。』' },
 };
 
 /** A line ready to show: its key, speaker, label and text. */

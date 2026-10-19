@@ -5,6 +5,8 @@
 export const UI = {
   cover: { start: '開始', resume: '繼續', contents: '目錄', album: '相簿', settings: '設定' },
   bar: { talk: '說話', hint: '提示', retry: '重來', menu: '選單' },
+  /** The word ring's close disc (§ 5.7); the card's accessible name for the tap that puts it away (D-62) */
+  ring: { close: '好了', card: '學會了' },
   stickers: { solved: '解開', mischief: '淘氣', tudigong: '土地公' },
   /** 選單 (the pause menu, #97): 繼續 / 目錄 / 設定 / 封面 */
   menu: { resume: '繼續', contents: '目錄', settings: '設定', cover: '封面' },
