@@ -275,6 +275,13 @@ Each touchable carries **four redundant cues**, so colour-blind players, low-vis
 - **Count:** at most 3 touchables plus perches visible at once on pages 1–3 of a chapter (GDD: early pages have one).
 - **Hit areas** are ≥ 48×48 CSS px after the 0.91 book scale. Draw them in the hit layer, never infer them from art.
 
+**For engineers (#140, D-54).** The rule is code and a lint:
+- The kit marks every cue in its markup: `data-seal` on a seal, `data-grip` (ridges, rim, ear, knob), `data-cue` (track, arrow, turn, curl), and `data-affordance` on marigold that isn't a touchable (perch paws, linked brads, hint halos and threads).
+- **The affordance lint** (`src/popup/view/affordance/lint.ts`) reads a drawn page: any fill, stroke or gradient stop within **ΔE (CIE76) < 12** of the card's saturated body (`marigold`, `marigoldDeep`) outside a touchable or a marked affordance is an error; so is a touchable without its marigold, seal, grip or cue; a hit area under 48 px at the 390×844 book scale; and (a warning) more than 3 touchables plus perches at the start of pages 1–3. It runs on every page and every preset in the tests, and live in PageLab.
+- **States** (`src/popup/view/affordance/`, the part views' `look`): the idle wiggle scheduler (4 s ± 0.8 s per part, staggered, `useIdleWiggle`), the L1 halo (a radial-gradient glow pulsing in opacity) and the L2 vellum hand (`Hints.tsx`; #100 decides what to hint), the drag's lift over a dropped shadow, the 35 % veil and paw badge, the done knot, and the reduced-motion double outline. No runtime filters anywhere.
+- Seals on a page are ≥ 25 units (≥ 22 CSS px after the book scale), 31 in 長輩模式.
+- PageLab fixture `affordance-states` shows every state side by side.
+
 ---
 
 ## 5. Characters in a paper world: die-cut standees

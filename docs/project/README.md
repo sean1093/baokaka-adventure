@@ -120,7 +120,8 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
 - **What a fixture is.** `POPUP_FIXTURES` in `src/popup/dev/fixtures.ts` is a list of named, deterministic game states. Each fixture is a page id plus a list in the solution-step language: inputs like `{ set: 'train', to: 'half' }` and `wait`s. The list is replayed through `core/step` from the page's initial state, so a fixture never drifts from the engine.
   - Each fixture pins what it shows with `expect: { mode?, event? }`.
   - `fixtures.test.ts` fails if a fixture stops showing it. When that happens, fix the steps, not the expectation.
-  - Today's fixtures: `c0p1-start`, `c1p2-reaching` (on the jammed train at the gap) and `c1p2-riding` (the train carries him back: a `ride`).
+  - Today's fixtures: `c0p1-start`, `c1p2-reaching` (on the jammed train at the gap) and `c1p2-riding` (the train carries him back: a `ride`); from #140, `affordance-states` (a specimen sheet: one touchable in every bible § 4.1 state), `c1p2-hold-reveal`, `c1p2-dragging`, `c1p2-reduced-motion` and `c0p1-hint-how` (the L2 ghost hand).
+  - A fixture can also `show` gesture flags (as if a finger were doing them: `reveal`, `dragging`…) and affordance flags (a `hint`, `done` knots, `elder`), pin its still's motion `look` (`motion`, the default, or `reduced`: the screenshot browser always runs reduced, so the still decides which idle cues it shows), or draw a `sheet` instead of the page.
 - **Viewing a fixture.**
   - `#/pagelab?fixture=<name>&still=1` shows the fixture full screen as a player sees it, with no lab chrome. The clock is held, the frame is drawn at its tick's end, and `[data-still]` turns off every CSS animation and transition. **Idle loops must be CSS animations** (not rAF or `element.animate()`) so that stills stop them.
   - Without `still`, the fixture opens playing its last tick (`PagePlayer`/`PageSession` `prev`) and can be played on from there.
@@ -131,7 +132,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
 - **`npm run check:ui` rules for 翻翻台北** (`scripts/popup-checks.mjs`; `node scripts/ui-check.mjs --serve --popup` runs only these). All rules run on every fixture, at both viewports:
   - **R5 text size.** Every visible text run is ≥ 20 CSS px, or ≥ 24 px inside `[data-text-size="big"]` (大字, which #104 sets). SVG text is measured on screen: its font size × the CTM's scale.
   - **R5 contrast.** Every visible text run is ≥ 7:1. The text colour comes from computed styles. The background is read off a screenshot taken with all text hidden, and 90 % of the pixels behind the run must pass.
-  - **R6 hit areas.** Every `[data-hit]` (the page's grown hit shapes) and every button, link, input, switch, tab or slider is ≥ 48×48 CSS px. A fixture without `[data-hit]` fails.
+  - **R6 hit areas.** Every `[data-hit]` (the page's grown hit shapes) and every button, link, input, switch, tab or slider is ≥ 48×48 CSS px. A fixture without `[data-hit]` fails. At 390×844 no page hit shape may be grown (`[data-hit-grown]`): each touchable's own hit area must be ≥ 48 px after the ≈ 0.91 book scale (bible § 4.2, #140).
   - **Reduced motion.** With the fixture live under `prefers-reduced-motion: reduce`, no running animation may change anything but opacity (fades are allowed).
   - **Flashing.** With motion on, nothing may flash above 3 Hz.
   - **Self-test.** Before the motion rules run, a self-test injects a 5 Hz blink, a slide and a slow fade, and checks that the detectors judge them correctly.
@@ -161,7 +162,7 @@ The visual targets are `popup-c0p1` and `popup-c1p2`, each paused with Baokaka r
   - **Centre:** the page (`PageView`) with overlay checkboxes — nodes by height, Baokaka's edges by kind (dashed while closed), perches and cat edges, attractors with their rank and priority, hit areas (data shape solid, the grown 48 px shape dashed), his target line and path preview plus Mocha's trip.
   - **Controls:** reset, play/pause, +1 tick, speed, and the input palette (every legal input as a button; while playing, clicks queue).
   - **Solver** (in a worker, `dev/solver.worker.ts`): run from the start or from the current state → par, states, time, 淘氣/土地公 reachability, the shortest solution with 「▶ play it」, and the dead ends (click one to load its state).
-  - **Lint** re-runs on every edit. **Readability:** greyscale, the 25 % squint thumbnail, the touchable count (≤ 3 on pages 1–3) and the art-key report (placeholder vs own art per backdrop, part and creature).
+  - **Lint** re-runs on every edit. **Affordance lint** (#140, `view/affordance/lint.ts`) re-reads what the stage drew after every state: near-marigold decoration, the four cues on every touchable, hit areas ≥ 48 px at 390×844, the early-page count. **Readability:** greyscale, the 25 % squint thumbnail, the touchable count (≤ 3 on pages 1–3) and the art-key report (placeholder vs own art per backdrop, part and creature).
   - **Edit:** tick `edit`, drag nodes (a node riding a part moves its position for the part's current state) and track ends; 「Copy TS」 copies the `nodes` block and the `track` lines to paste into the page file (a text box shows the same when the clipboard is blocked).
   - **State:** the event log of the last 20 ticks and the `SimState` JSON.
   - **QA fixtures** (`section=fixtures`, `fixture=<name>`, `still=1`): see *翻翻台北 visual QA fixtures* above.
