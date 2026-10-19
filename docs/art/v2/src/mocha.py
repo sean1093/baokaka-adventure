@@ -100,7 +100,7 @@ def eye(doc, side, mode="open"):
     out = ""
     if mode in ("open", "wide", "smug", "glare"):
         if mode == "glare":   # narrowed and slanted down toward the nose
-            upper = [(X(318), 200), (X(330), 191), (X(350), 183), (X(370), 179), (X(382), 183)]
+            upper = [(X(318), 197), (X(330), 184), (X(350), 172), (X(370), 166), (X(382), 172)]
         elif mode == "smug":
             upper = [(X(318), 196), (X(330), 186), (X(350), 181), (X(370), 184), (X(382), 190)]
         elif mode == "wide":
@@ -109,7 +109,7 @@ def eye(doc, side, mode="open"):
             upper = [(X(318), 194), (X(326), 168), (X(349), 156), (X(372), 162), (X(382), 184)]
         lower = [(X(382), 188), (X(373), 208), (X(350), 216), (X(328), 210)]
         if mode == "glare":
-            lower = [(X(382), 188), (X(373), 204), (X(350), 210), (X(328), 207)]
+            lower = [(X(382), 186), (X(373), 206), (X(350), 213), (X(328), 208)]
         shape = upper + lower
         d = smooth(shape)
         clip = doc.clip(d)
@@ -140,7 +140,7 @@ def eye(doc, side, mode="open"):
         o += P(taper([(X(326), 214), (X(350), 222), (X(376), 212)], 4, .3, .3), "#E6DAC4", opacity=.8)
         o += P(taper([(X(319), 198), (X(314), 212), (X(310), 226)], 3.4, .1, .8), FUR_LN, opacity=.85)
         if mode == "glare":   # the furrowed fur above the eye
-            o += P(taper([(X(314), 186), (X(342), 170), (X(378), 164)], 4.2, .2, .6), FUR_LN, opacity=.8)
+            o += P(taper([(X(312), 184), (X(342), 164), (X(380), 154)], 5.2, .2, .6), FUR_LN, opacity=.85)
         if mode == "smug":
             o += P(taper([(X(324), 176), (X(350), 172), (X(376), 178)], 1.6, .3, .3), FUR_LN, opacity=.6)
         out += o
