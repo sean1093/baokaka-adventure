@@ -10,10 +10,11 @@ import { describe, expect, test } from 'vitest';
 const CORE = 'src/popup/core';
 const ALLOWED_OUTSIDE = new Set(['src/shared/random']);
 
-/** Blanks out comments, then string and template literal contents, keeping quotes and line breaks. */
+/** Blanks out block and line comments, keeping line breaks. */
 function stripComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' ')).replace(/(^|[^:\\])\/\/.*$/gm, '$1');
 }
+/** Empties string and template literals, keeping their quotes. */
 const stripStrings = (source: string): string => source.replace(/(['"`])(?:\\.|(?!\1)[^\\\n])*\1/g, (m) => `${m[0]}${m.at(-1)}`);
 
 /** Every module specifier: static imports and re-exports, side-effect imports, `import()`, `require()`. */

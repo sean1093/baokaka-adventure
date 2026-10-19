@@ -652,6 +652,8 @@ export const POPUP = {
   page: '#F3E6CC',
   pageDark: '#E2D0AE',
   pageEdge: '#D8C59F',
+  /** The paper core catching light on a cut edge, drawn at 42 % on the top-left (bible § 2.2) */
+  cutRim: '#FFF8E8',
   /** Text printed on paper */
   ink: '#2E2235',
   /** Indigo shadow: shadows are never black (bible § 2.2) */

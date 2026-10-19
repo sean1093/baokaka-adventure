@@ -24,7 +24,7 @@ const page: CSSProperties = {
   backgroundImage: `linear-gradient(180deg, ${POPUP.page} 0%, ${POPUP.page} 62%, ${POPUP.pageDark} 100%)`,
   color: POPUP.ink,
   boxShadow: [
-    `inset 1px 1px 0 ${withAlpha(POPUP.page, 1)}`,
+    `inset 1px 1px 0 ${withAlpha(POPUP.cutRim, 0.42)}`,
     `inset -1px -1px 0 ${POPUP.pageEdge}`,
     `0 2px 3px ${withAlpha(POPUP.shadow, 0.45)}`,
     `0 18px 36px ${withAlpha(POPUP.shadow, 0.55)}`,
