@@ -43,17 +43,27 @@ export function bubbleCloud(cx: number, cy: number, w = 96, h = 48): string {
  * (x0, y0) to the cloud centred on (x1, y1); `content` (the icon) is drawn on top.
  */
 export function springBubble(ctx: KitCtx, x0: number, y0: number, x1: number, y1: number, content = '', { w = 96, h = 48 }: BubbleOptions = {}): string {
-  const n = 7;
-  let d = `M${f1(x0)} ${f1(y0)}`;
-  for (let i = 1; i <= n * 2; i++) {
-    const t = i / (n * 2), px = x0 + (x1 - x0) * t, py = y0 + (y1 + h / 2 - y0) * t, s = i % 2 ? 4 : -4;
-    d += `L${f1(px + s)} ${f1(py)}`;
-  }
   const cloud = bubbleCloud(x1, y1, w, h);
-  return `<path d="${d}" fill="none" stroke="${C.wireShadow}" stroke-width="2.6" stroke-linejoin="round" opacity=".35" transform="translate(1 1.5)"/>`
-    + `<path d="${d}" fill="none" stroke="${C.wire}" stroke-width="1.6" stroke-linejoin="round"/>`
+  return wireSpring(x0, y0, x1, y1 + h / 2)
     + depth(ctx, 3, `<path d="${cloud}" fill="${C.standeeCard}"/>`, `<path d="${cloud}"/>`)
     + content;
+}
+
+/** A coiled wire spring's zig-zag from (x0, y0) to (x1, y1), `n` coils of half-width `amp`, as a `d`. */
+export function springPath(x0: number, y0: number, x1: number, y1: number, n = 7, amp = 4): string {
+  let d = `M${f1(x0)} ${f1(y0)}`;
+  for (let i = 1; i <= n * 2; i++) {
+    const t = i / (n * 2), px = x0 + (x1 - x0) * t, py = y0 + (y1 - y0) * t, s = i % 2 ? amp : -amp;
+    d += `L${f1(px + s)} ${f1(py)}`;
+  }
+  return d;
+}
+
+/** The spring drawn (bible § 5): its dropped shadow, then the wire. */
+export function wireSpring(x0: number, y0: number, x1: number, y1: number, n = 7, amp = 4, width = 1.6): string {
+  const d = springPath(x0, y0, x1, y1, n, amp);
+  return `<path d="${d}" fill="none" stroke="${C.wireShadow}" stroke-width="${f1(width + 1)}" stroke-linejoin="round" opacity=".35" transform="translate(1 1.5)"/>`
+    + `<path d="${d}" fill="none" stroke="${C.wire}" stroke-width="${f1(width)}" stroke-linejoin="round"/>`;
 }
 
 /** 金珠珠, the page goal (bible § 3.1 foil): a gold-foil bead in a little cup of light, three sparkles. */

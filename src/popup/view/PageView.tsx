@@ -10,15 +10,14 @@ import type { SimEvent } from '../core/events';
 import { nodePos } from '../core/graph';
 import { mochaNode, perchHidesMocha } from '../core/mocha';
 import type { CreatureDef, Id, PageDef, PerchDef, SimState } from '../core/types';
-import { SpriteGrade, chapterGradeKey, spriteHead } from '../sprites';
+import { SpriteGrade, chapterGradeKey, spriteBox, spriteHead } from '../sprites';
+import type { TalkLine } from '../content/script';
 import {
   Baby,
-  Bubble,
   Creature,
   LAMP_GLOW_R,
   Mocha,
   babyAnim,
-  bubbleShow,
   chooseFrame,
   edgeKind,
   fadeSlide,
@@ -42,6 +41,7 @@ import { PRESET_Z, type LayerId } from './layers';
 import { ArtG, r2 } from './parts/common';
 import { CarriageView, MOVERS, PART_VIEWS, type MoverProps, type PartViewProps } from './parts';
 import { foregroundSlot, stageOf } from './stage';
+import { BarkBubble, Subtitles, ThoughtBubble, barksOf, bubbleShow, goalBox, layoutTalk, showKey, talkScale, type BarkShow, type TalkActor } from './talk';
 
 /**
  * The page renderer (GDD § 3.9; popup art bible § 2): one SVG in page units, layer by layer (see
@@ -91,6 +91,10 @@ export interface PageViewProps {
   readonly still?: boolean;
   /** The latest tick's events (#95: what Mocha reacts to, the word being said) */
   readonly events?: readonly SimEvent[];
+  /** The barks on the page (#98; `PagePlayer` keeps them a few ticks); defaults to this tick's */
+  readonly barks?: readonly BarkShow[];
+  /** The subtitle beat on the page (#98, `game/talk.ts`) and the tap that advances it */
+  readonly talk?: { readonly beat: readonly TalkLine[] | null; readonly serial: number; readonly onAdvance?: () => void };
 }
 
 const NO_EVENTS: readonly SimEvent[] = [];
@@ -116,7 +120,7 @@ function creaturePoint(def: PageDef, creature: CreatureDef, state: SimState, oth
   return anchor === undefined ? null : offpagePoint(anchor);
 }
 
-export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false, events = NO_EVENTS }: PageViewProps) {
+export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false, events = NO_EVENTS, barks: barksProp, talk }: PageViewProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
   const ids = useSvgIds(`pg-${def.id}`);
@@ -276,7 +280,6 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const watch = finger === null || babyPose === null ? undefined : finger[0] < babyPose.x ? -1 : 1;
   const sx = flipScale(prev.baby.facing, state.baby.facing, ms, reduced);
   const show = bubbleShow(def, state);
-  const head = spriteHead(bAnim.sprite, state.baby.facing);
   // The lamp glow (bible § 5): near a lit light attractor
   const glow =
     babyPose !== null &&
@@ -324,6 +327,37 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const mochaTilt = still ? 0 : standeeTilt(ms, tickMs, mochaDir, reduced);
   // At rest he sits turned toward 寶咖咖; travelling, toward where he is going (frames face right)
   const mochaFacing = mochaDir !== 0 ? (mochaDir < 0 ? 'l' : 'r') : mochaPose && babyPose && babyPose.x < mochaPose.x - 4 ? 'l' : 'r';
+
+  // ——— What is said (#98): the thought bubble, barks, subtitles, placed off him and the goal ———
+  const k = talkScale(scale);
+  const babyHead = spriteHead(bAnim.sprite, state.baby.facing);
+  const babyBox = spriteBox(bAnim.sprite, state.baby.facing);
+  const mochaHead = spriteHead(mAnim.sprite, mochaFacing);
+  const mochaBox = spriteBox(mAnim.sprite, mochaFacing);
+  const goal = def.attractors.find((a) => a.goal);
+  const goalNode = goal === undefined || state.done || state.consumed.includes(goal.id) ? null : attractorNode(def, state, goal);
+  const goalAt = goalNode === null ? undefined : nodePos(def, state, goalNode);
+  const barks = useMemo(() => barksProp ?? barksOf(prev, state, events), [barksProp, prev, state, events]);
+  const beat = talk?.beat ?? null;
+  const said = useMemo(() => {
+    const actor = (at: Pt | undefined, head: Pt, box: { x: number; y: number; w: number; h: number }): TalkActor | null =>
+      at === undefined ? null : { at, head: [at[0] + head[0], at[1] + head[1]], box: { ...box, x: at[0] + box.x, y: at[1] + box.y } };
+    return layoutTalk({
+      k,
+      baby: actor(babyEnd, babyHead, babyBox),
+      mocha: mochaHidden ? null : actor(mochaEnd, mochaHead, mochaBox),
+      goal: goalAt === undefined ? null : goalBox(goalAt),
+      tudigong: [def.tudigong.x, def.tudigong.y],
+      thought: show,
+      barks,
+      beat,
+      touch: beat === null ? [] : targets.map((tg) => hitBox(tg.hit)),
+    });
+    // Positions at the tick's end: the layout changes once a tick, not every frame
+  }, [k, state, def, bAnim.sprite, mAnim.sprite, mochaFacing, mochaHidden, showKey(show), barks, beat]);
+  const babyOff: Pt = babyPose && babyEnd ? [babyPose.x - babyEnd[0], babyPose.y - babyEnd[1]] : [0, 0];
+  const mochaOff: Pt = mochaPose && mochaEnd ? [mochaPose.x - mochaEnd[0], mochaPose.y - mochaEnd[1]] : [0, 0];
+  const was = still ? show : bubbleShow(def, prev);
 
   // ——— 土地公, when his condition shows him ———
   const tdg = def.tudigong;
@@ -386,7 +420,26 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         </SpriteGrade.Provider>
       </Layer>
       <Layer id="fx">
-        {babyPose && show && <Bubble ctx={ctx} show={show} x={babyPose.x} y={babyPose.y} head={head} />}
+        {babyPose && babyEnd && show && said.thought && (
+          <ThoughtBubble
+            ctx={ctx}
+            show={show}
+            was={was}
+            appeared={was === null}
+            placed={said.thought}
+            head={[babyEnd[0] + babyHead[0], babyEnd[1] + babyHead[1]]}
+            offset={babyOff}
+            k={k}
+            reduced={reduced}
+            still={still}
+          />
+        )}
+        {said.barks.map((b) => (
+          <BarkBubble key={b.bark.who} placed={b} offset={b.bark.who === 'baby' ? babyOff : mochaOff} k={k} reduced={reduced} />
+        ))}
+        {(said.strip || said.subs.length > 0) && (
+          <Subtitles strip={said.strip} subs={said.subs} horn={said.horn} k={k} ride={{ baby: babyOff, mocha: mochaOff }} serial={talk?.serial ?? 0} reduced={reduced} onAdvance={talk?.onAdvance} />
+        )}
         {thread && <LinkThread from={thread[0]} to={thread[1]} />}
         {hand && <GhostHand gesture={hand} reduced={reduced} />}
       </Layer>
@@ -407,6 +460,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     </svg>
   );
 }
+
+/** A hit shape's bounding box. */
+const hitBox = (h: Hit) => ('r' in h ? { x: h.cx - h.r, y: h.cy - h.r, w: 2 * h.r, h: 2 * h.r } : h);
 
 /** A hit shape as a circle or a rectangle; never takes pointer events (`gestures.ts` hit-tests). */
 function HitShape({ hit, rx, ...rest }: { hit: Hit; rx?: number; fill?: string; vectorEffect?: 'non-scaling-stroke'; 'data-hit'?: string; 'data-hit-grown'?: string }) {

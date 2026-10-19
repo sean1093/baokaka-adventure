@@ -1,6 +1,6 @@
 import { initialState, replay, step } from '../core';
 import type { SimEvent } from '../core/events';
-import type { BabyMode, Id, PageDef, SimState, SolutionStep } from '../core/types';
+import type { BabyMode, Id, LineKey, PageDef, SimState, SolutionStep } from '../core/types';
 import type { NavState } from '../game/nav';
 import { completePage, earnSticker, encodeSave, freshSave, ProgressStore, SAVE_KEY, updateSettings, type SaveV1 } from '../game/progress';
 import type { StorageLike } from '../../shared/storage';
@@ -40,7 +40,12 @@ export interface PopupFixture {
    * What the page shows on top of the state (#140): gesture flags as if a finger were doing them
    * (hold-to-reveal, a drag), and affordance flags (a hint level, done knots, 長輩模式).
    */
-  readonly show?: { readonly gesture?: Partial<GestureFlags>; readonly affordance?: AffordanceFlags };
+  readonly show?: {
+    readonly gesture?: Partial<GestureFlags>;
+    readonly affordance?: AffordanceFlags;
+    /** Subtitle lines on the page (#98): script keys, shown as the opening beat (≤ 3 lines a beat) */
+    readonly talk?: readonly LineKey[];
+  };
   /**
    * The still's motion look: `motion` (default) draws the idle cues of full motion, `reduced` the
    * reduced-motion ones (the static double outline). The screenshot browser runs with reduced
@@ -223,6 +228,27 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     screen: { nav: { base: { kind: 'page', id: 'c1p2', run: 0 }, layer: { kind: 'menu' } }, save: PLAYED },
     note: 'The pause menu over 1-2 (#97): 繼續 / 目錄 / 設定 / 封面 on the paper sheet; the page is held.',
+  },
+  {
+    name: 'bubble-reaching',
+    page: 'c1p2',
+    steps: [{ set: 'train', to: 'half' }, { wait: 4 }],
+    note: '1-2: Baokaka at the gap reaching for the bead: the thought bubble shows the foil bead and 「要！」 (red serif, pulsing live), and he barks 「要！要！」 (#98).',
+    expect: { mode: 'reaching', event: 'bark' },
+  },
+  {
+    name: 'lab-change-of-mind',
+    page: 'lab-lamp',
+    steps: [{ wait: 2 }, { tap: 'mobile' }],
+    note: 'The change of mind (GDD § 2.2.6, #98): he watched the night light (a note) until the bead appeared; the bubble flips to the bead and 「要！」 (live: the note pops, the bead inflates, the spring wobbles) and he barks 「要！」. Lab stage until #106 adds 0-2 (c0p2-change-of-mind: the cushion).',
+    expect: { mode: 'reaching', event: 'bark' },
+  },
+  {
+    name: 'subtitle-3',
+    page: 'c1p2',
+    steps: [],
+    show: { talk: ['c1.intro.1', 'c1.intro.2', 'c1.intro.3'] },
+    note: 'A three-line beat (GDD § 2.13, § 5.1; #98): 廣播姊姊 from her paper loudspeaker, 摩卡 on a spring from his head, the narration on the paper strip at the top; none covers Baokaka or the bead. A tap advances.',
   },
   {
     name: 'c0p1-hint-how',

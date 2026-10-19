@@ -1,6 +1,6 @@
 import { POPUP as C, POPUP_CHAPTER_CLOCK, POPUP_STAGE as S, mixHex, type PopupChapterSky } from '../../../art/palette';
 import type { Kind, PageDef } from '../../core/types';
-import { PRESET_DEFS, brad, depth, f1, kitDefs, pageBlock, paw, pinholes, ref, scallopBand, seeded, skyline, softEllipse, sparkle, springBubble, translate, type DefName, type KitCtx } from '../../art';
+import { PRESET_DEFS, brad, depth, f1, kitDefs, pageBlock, paw, pinholes, ref, scallopBand, seeded, skyline, softEllipse, sparkle, translate, type DefName, type KitCtx } from '../../art';
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorOutline, floorWiden, towardVp } from '../geometry';
 import { LEDGE_DEPTH, type Carriage, type LedgeRun, type PerchPost, type Slope } from '../stage';
 
@@ -412,6 +412,9 @@ export function tudigong(ctx: KitCtx): string {
     + `<path d="M-6 2q6 12 12 0q-2 3 -6 3q-4 0 -6 -3z" fill="${C.standeeCard}"/><circle cx="-2.6" cy="0" r=".9" fill="${C.ink}"/><circle cx="2.6" cy="0" r=".9" fill="${C.ink}"/>`, `<circle r="7.5"/>`);
 }
 
+/** A light attractor where it lies: a little paper star lamp. */
+const lampIcon = `<path d="M0 -10l2.6 6.4l6.9 .5l-5.3 4.4l1.7 6.7l-5.9 -3.7l-5.9 3.7l1.7 -6.7l-5.3 -4.4l6.9 -.5z" fill="${C.lamp}" stroke="${C.lampAmber}" stroke-width="1"/>`;
+
 /** The goal and other attractors where they lie (bead for shinies; simple paper icons otherwise). */
 export function attractorArt(ctx: KitCtx, kind: Kind): string {
   if (kind === 'shiny') {
@@ -421,23 +424,33 @@ export function attractorArt(ctx: KitCtx, kind: Kind): string {
       + `<circle cx="-3.2" cy="-3.4" r="2.7" fill="${C.foilShine}"/>`
       + sparkle(ctx, -17, -14, 6) + sparkle(ctx, 16, -20, 4.5);
   }
-  return depth(ctx, 4, iconArt(ctx, kind), `<circle r="10"/>`);
+  return depth(ctx, 4, kind === 'light' ? lampIcon : bubbleIcon(ctx, kind), `<circle r="10"/>`);
 }
 
-/** The bubble's icon for what he wants (bible § 5: drawn in the paper style). */
-function iconArt(ctx: KitCtx, kind: Kind | 'mocha'): string {
+/**
+ * The thought bubble's icons (GDD § 2.2.1, bible § 5): paper-style shapes, never colour alone — a
+ * foil bead with a sparkle (shiny), Mocha's head (with ears), a milk bottle (snack), a music note
+ * (light). Centred on the origin, about 22 units across.
+ */
+export function bubbleIcon(ctx: KitCtx, kind: Kind | 'mocha'): string {
   switch (kind) {
     case 'shiny':
-      return `<circle r="9" fill="${ref(ctx, 'foil')}"/><circle cx="-3" cy="-3" r="2.6" fill="${C.foilShine}"/>`;
+      return `<circle r="9" fill="${ref(ctx, 'foil')}" stroke="${C.goldDeep}" stroke-width=".8"/><circle cx="-3" cy="-3" r="2.6" fill="${C.foilShine}"/>`
+        + `<path d="M10 -15l1.6 4.4l4.4 1.6l-4.4 1.6l-1.6 4.4l-1.6 -4.4l-4.4 -1.6l4.4 -1.6z" fill="${C.goldDeep}"/>`;
     case 'mocha':
       return `<path d="M-9 -3L-8 -13L-3 -8ZM3 -8L8 -13L9 -3Z" fill="${S.catFur}"/><circle r="9" fill="${S.catFur}"/><circle cx="-3.4" cy="-1" r="1.6" fill="${S.catEye}"/><circle cx="3.4" cy="-1" r="1.6" fill="${S.catEye}"/><path d="M-1.2 2h2.4l-1.2 1.5z" fill="${S.catNose}"/>`;
     case 'snack':
-      return `<rect x="-6" y="-8" width="12" height="17" rx="4" fill="${C.vellum}"/><rect x="-4" y="-13" width="8" height="6" rx="2" fill="${S.rugTop}"/><path d="M-6 0h12" stroke="${S.rugLow}" stroke-width="1.4"/>`;
+      return `<rect x="-6" y="-8" width="12" height="17" rx="4" fill="${C.vellum}" stroke="${C.inkSoft}" stroke-width=".8"/><rect x="-4" y="-13" width="8" height="6" rx="2" fill="${S.rugTop}"/><path d="M-6 0h12" stroke="${S.rugLow}" stroke-width="1.4"/>`;
     case 'light':
-      return `<path d="M0 -10l2.6 6.4l6.9 .5l-5.3 4.4l1.7 6.7l-5.9 -3.7l-5.9 3.7l1.7 -6.7l-5.3 -4.4l6.9 -.5z" fill="${C.lamp}" stroke="${C.lampAmber}" stroke-width="1"/>`;
+      return musicNote(0, 0);
   }
 }
 
+/** A music note (watching a light; a light's icon), centred on (x, y). */
+const musicNote = (x: number, y: number) =>
+  `<g transform="${translate(x, y)}"><path d="M-3 8V-10l10 -3v16" stroke="${C.ink}" stroke-width="2" fill="none"/><ellipse cx="-6" cy="8" rx="4" ry="3" fill="${C.ink}"/><ellipse cx="4" cy="5" rx="4" ry="3" fill="${C.ink}"/></g>`;
+
+/** What the thought bubble shows (GDD § 2.2.6). */
 export type BubbleShow =
   | { kind: 'want'; target: Kind | 'mocha'; reach: boolean }
   | { kind: 'text'; text: string }
@@ -445,38 +458,32 @@ export type BubbleShow =
   | { kind: 'heart' }
   | { kind: 'note' };
 
+/** The serif text in a bubble, centred on (x, y): 「要！」 in red (bible § 5), 「？」 in ink. */
+export const bubbleText = (t: string, x: number, y: number, size: number, fill: string) =>
+  `<text x="${f1(x)}" y="${f1(y + size * 0.36)}" text-anchor="middle" font-family="'Noto Serif TC', serif" font-weight="900" font-size="${f1(size)}" fill="${fill}">${t}</text>`;
+
 /**
- * The thought bubble on its spring (GDD § 2.2.6, bible § 5), in baby-local space (his feet at the
- * origin): the spring rises from `head` (the top of his head) to the cloud, `side` (+1 right, −1
- * left) of it so it stays on the page. #98 adds the
- * change-of-mind pop and the spring wobble; this is the static bubble.
+ * What goes inside the thought bubble's cloud (GDD § 2.2.6, bible § 5), centred on the origin of
+ * a 92 × 46 cloud: the target's icon; while reaching, the icon and 「要！」 (red serif; the view
+ * pulses it); 「？」 while looking; tears while crying; a note while watching; a heart while
+ * cuddling, eating, grabbing or done.
  */
-export function thoughtBubble(ctx: KitCtx, show: BubbleShow, side: 1 | -1 = 1, head: readonly [number, number] = [side * 8, -68]): string {
-  const cx = head[0] + side * 12;
-  const cy = head[1] - 74;
-  let content: string;
-  const text = (t: string, x: number, size = 22, fill: string = C.sealInk) =>
-    `<text x="${x}" y="${cy + 8}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="${size}" fill="${fill}">${t}</text>`;
+export function thoughtContent(ctx: KitCtx, show: BubbleShow): string {
   switch (show.kind) {
     case 'want':
-      content = show.reach
-        ? `<g transform="${translate(cx - 22, cy)}">${iconArt(ctx, show.target)}</g>${text('要！', cx + 12)}`
-        : `<g transform="${translate(cx, cy)} scale(1.25)">${iconArt(ctx, show.target)}</g>`;
-      break;
+      return show.reach
+        ? `<g transform="${translate(-22, 0)}">${bubbleIcon(ctx, show.target)}</g><g data-reach="">${bubbleText('要！', 13, 0, 22, C.sealInk)}</g>`
+        : `<g transform="scale(1.25)">${bubbleIcon(ctx, show.target)}</g>`;
     case 'text':
-      content = text(show.text, cx, 26, C.ink);
-      break;
+      return bubbleText(show.text, 0, 0, 26, C.ink);
     case 'cry':
-      content = `<path d="M${cx - 14} ${cy - 8}q4 9 0 14q-4 -5 0 -14zM${cx - 4} ${cy - 4}q4 9 0 14q-4 -5 0 -14z" fill="${C.moonRim}" stroke="${C.printLilacDeep}" stroke-width=".8"/>${text('哇', cx + 14)}`;
-      break;
+      // Three falling tears (shape, not colour: drops with a highlight)
+      return [[-14, -8], [-2, -2], [10, -9]].map(([x, y]) => `<path d="M${x} ${y}q5 9 0 13q-5 -4 0 -13z" fill="${C.moonRim}" stroke="${C.printLilacDeep}" stroke-width="1"/><circle cx="${x - 1.2}" cy="${y + 7}" r="1.1" fill="${C.cutRim}"/>`).join('');
     case 'heart':
-      content = `<path d="M${cx} ${cy + 9}l-10 -10a6 6 0 0 1 10 -7a6 6 0 0 1 10 7z" fill="${S.blush}" stroke="${C.sealDark}" stroke-width="1"/>`;
-      break;
+      return `<path d="M0 10l-11 -11a6.5 6.5 0 0 1 11 -8a6.5 6.5 0 0 1 11 8z" fill="${S.blush}" stroke="${C.sealDark}" stroke-width="1.2"/>`;
     case 'note':
-      content = `<path d="M${cx - 3} ${cy + 8}V${cy - 10}l10 -3v16" stroke="${C.ink}" stroke-width="2" fill="none"/><ellipse cx="${cx - 6}" cy="${cy + 8}" rx="4" ry="3" fill="${C.ink}"/><ellipse cx="${cx + 4}" cy="${cy + 5}" rx="4" ry="3" fill="${C.ink}"/>`;
-      break;
+      return musicNote(0, 0);
   }
-  return springBubble(ctx, head[0], head[1], cx, cy, content, { w: 92, h: 46 });
 }
 
 /** A foreground card for a near corner (bible § 2.2): a paper potted plant, its foot at the origin. */

@@ -50,6 +50,8 @@ export function FixtureView({ name, still }: { name: string; still: boolean }) {
           def={frame.def}
           from={frame.state}
           prev={frame.prev}
+          events={frame.events}
+          talk={fixture.show?.talk}
           still={still}
           reduced={reduced}
           showGesture={fixture.show?.gesture}

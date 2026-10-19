@@ -177,3 +177,17 @@ export function spriteHead(sprite: SpriteId, facing: Facing = 'r', scale = 1): r
   const def = spriteDef(sprite);
   return toPage(def, facing, 0, 0, def.head, scale * def.mapScale);
 }
+
+/**
+ * A sprite's frame box relative to its feet, as drawn for `facing` (what a bubble must not cover,
+ * #98), cut off a little under the feet (the frame's padding there is shadow, not body).
+ */
+export function spriteBox(sprite: SpriteId, facing: Facing = 'r', scale = 1): { x: number; y: number; w: number; h: number } {
+  const def = spriteDef(sprite);
+  const k = scale * def.mapScale;
+  const a = toPage(def, facing, 0, 0, [0, 0], k);
+  const b = toPage(def, facing, 0, 0, def.size, k);
+  const x = Math.min(a[0], b[0]);
+  const y = Math.min(a[1], b[1]);
+  return { x: r3(x), y: r3(y), w: r3(Math.abs(b[0] - a[0])), h: r3(Math.min(Math.abs(b[1] - a[1]), 4 - y)) };
+}

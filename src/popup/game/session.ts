@@ -65,6 +65,8 @@ export interface SessionOptions {
    * that tick's tween from `prev` to `from`. Defaults to `from` (nothing in flight).
    */
   prev?: SimState;
+  /** That tick's events (visual QA fixtures, #98: the barks and lines it fired). Ignored without `from`. */
+  events?: readonly SimEvent[];
 }
 
 /** Edges left on Baokaka's path to his target now, or 0 when he has none or can't get there. */
@@ -103,12 +105,12 @@ export class PageSession {
   private graceTimer: unknown = null;
   private started = false;
 
-  constructor(def: PageDef, { speed = 'normal', clock = systemClock, from, prev }: SessionOptions = {}) {
+  constructor(def: PageDef, { speed = 'normal', clock = systemClock, from, prev, events }: SessionOptions = {}) {
     this.def = def;
     this.clock = clock;
     this.speed = speed;
     const state = from ?? initialState(def);
-    this.current = { def, prev: from === undefined ? state : (prev ?? state), state, events: [], tickMs: TICK_MS[speed], serial: 0 };
+    this.current = { def, prev: from === undefined ? state : (prev ?? state), state, events: from === undefined ? [] : (events ?? []), tickMs: TICK_MS[speed], serial: 0 };
   }
 
   /** The latest frame. */
