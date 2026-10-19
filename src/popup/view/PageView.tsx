@@ -45,6 +45,7 @@ import { ArtG, r2 } from './parts/common';
 import { CarriageView, MOVERS, PART_VIEWS, type MoverProps, type PartViewProps } from './parts';
 import { foregroundSlot, stageOf } from './stage';
 import { SayRing } from './words/SayFx';
+import './hud/stickers.css';
 import { BarkBubble, Subtitles, ThoughtBubble, barksOf, bubbleShow, goalBox, layoutTalk, showKey, talkScale, type BarkShow, type TalkActor } from './talk';
 
 /**
@@ -376,6 +377,15 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const mochaOff: Pt = mochaPose && mochaEnd ? [mochaPose.x - mochaEnd[0], mochaPose.y - mochaEnd[1]] : [0, 0];
   const was = still ? show : bubbleShow(def, prev);
 
+  // ——— The grab (GDD § 2.8 step 1): 「這個！」 (a bark) and a sparkle burst where the shiny was ———
+  const grab = events.find((e) => e.type === 'grab');
+  const grabAt = useMemo((): Pt | null => {
+    if (grab === undefined) return null;
+    const a = def.attractors.find((x) => x.id === grab.id);
+    const node = a === undefined ? null : attractorNode(def, prev, a);
+    return (node === null ? undefined : nodePos(def, prev, node)) ?? babyEnd ?? null;
+  }, [grab, def, prev, babyEnd?.[0], babyEnd?.[1]]);
+
   // ——— 土地公, when his condition shows him ———
   const tdg = def.tudigong;
   const tudigongShown = holds(def, state, tdg.visibleWhen);
@@ -458,6 +468,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {(said.strip || said.subs.length > 0) && (
           <Subtitles strip={said.strip} subs={said.subs} horn={said.horn} k={k} ride={{ baby: babyOff, mocha: mochaOff }} serial={talk?.serial ?? 0} reduced={reduced} onAdvance={talk?.onAdvance} />
         )}
+        {grabAt && <GrabBurst key={`grab:${state.tick}`} at={grabAt} reduced={reduced} />}
         {thread && <LinkThread from={thread[0]} to={thread[1]} />}
         {hand && <GhostHand gesture={hand} reduced={reduced} />}
       </Layer>
@@ -517,4 +528,34 @@ function PerchMarkItem({ ctx, perch, def, state }: { ctx: KitCtx; perch: PerchDe
 function TudigongItem({ ctx, x, y }: { ctx: KitCtx; x: number; y: number }) {
   const html = useMemo(() => `<g transform="translate(${x} ${y}) rotate(14) scale(1.2)">${tudigong(ctx)}</g>`, [ctx, x, y]);
   return <ArtG html={html} />;
+}
+
+/**
+ * The sparkle burst of a grab (GDD § 2.8 step 1; bible § 8 sparkles on foil; #101): eight foil rays
+ * and three four-point glints flash out of the shiny's place once (≈ 650 ms) and are gone. Its own
+ * style is the burst at its fullest, so a still shows it; reduced motion only fades it.
+ */
+function GrabBurst({ at, reduced }: { at: Pt; reduced: boolean }) {
+  const html = useMemo(() => {
+    let rays = '';
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + 0.2;
+      const r0 = i % 2 === 0 ? 16 : 19;
+      const r1 = i % 2 === 0 ? 38 : 30;
+      rays += `M${r2(Math.cos(a) * r0)} ${r2(Math.sin(a) * r0)}L${r2(Math.cos(a) * r1)} ${r2(Math.sin(a) * r1)}`;
+    }
+    const glint = (x: number, y: number, r: number) => {
+      const k = r * 0.18;
+      return `<path d="M${x} ${y - r}Q${x + k} ${y - k} ${x + r} ${y}Q${x + k} ${y + k} ${x} ${y + r}Q${x - k} ${y + k} ${x - r} ${y}Q${x - k} ${y - k} ${x} ${y - r}Z" fill="${POPUP.goldLight}" stroke="${POPUP.goldDeep}" stroke-width=".8"/>`;
+    };
+    return `<circle r="13" fill="${POPUP.lampHot}" opacity=".55"/>`
+      + `<path d="${rays}" stroke="${POPUP.goldLight}" stroke-width="3" stroke-linecap="round"/>`
+      + `<path d="${rays}" stroke="${POPUP.goldDeep}" stroke-width="1" stroke-linecap="round" opacity=".5"/>`
+      + glint(-24, -22, 8.5) + glint(27, -12, 6) + glint(6, 29, 5.5);
+  }, []);
+  return (
+    <g transform={`translate(${r2(at[0])} ${r2(at[1] - 16)})`} data-grab-burst="">
+      <g className={reduced ? 'grab-burst-fade' : 'grab-burst'} dangerouslySetInnerHTML={{ __html: html }} />
+    </g>
+  );
 }

@@ -11,7 +11,8 @@ import type { Pt } from '../geometry';
  * match below wins.
  *
  * Baokaka: a word he says (#99: the big speech bubble, `WORD_BUBBLE` × the bark size, on the say
- * tick), the engine's `bark` (on choosing a target, and 「要！要！」 while reaching), 好吃！ on
+ * tick), 「這個！」 when he grabs a shiny (the goal's completion beat, § 2.8; #101), the engine's
+ * `bark` (on choosing a target, and 「要！要！」 while reaching), 好吃！ on
  * `eat`, 哇—— when he starts crying. Mocha: 「……」 at the stare before a push, 「喵？」 at an
  * unreachable perch, 「不要。」 at water or steam, 「喵。」 on arrival, 「呼嚕嚕……」 when Baokaka
  * starts cuddling him.
@@ -44,6 +45,7 @@ export function barksOf(prev: SimState, state: SimState, events: readonly SimEve
   const word = sayingWord(prev, state, events);
   const said = events.find((e) => e.type === 'bark' && e.bark !== undefined)?.bark;
   if (word !== null) out.push({ who: 'baby', bark: 'word', text: WORD_LABEL[word], tick: state.tick, size: WORD_BUBBLE });
+  else if (events.some((e) => e.type === 'grab')) out.push(baby('this'));
   else if (said !== undefined) out.push(baby(said));
   else if (events.some((e) => e.type === 'eat')) out.push(baby('yum'));
   else if (state.baby.mode === 'crying' && prev.baby.mode !== 'crying') out.push(baby('cry'));

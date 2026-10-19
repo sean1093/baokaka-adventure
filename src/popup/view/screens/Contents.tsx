@@ -23,6 +23,9 @@ import { CREAM_CARD, cardShadow, useScreenReady } from './paper';
  *   as the thumbnail, a ✓ and the 淘氣 / 土地公 stickers once solved, the red bookmark on the page
  *   to resume, and a padlock on pages not open yet. Tapping an open page plays it (a replay keeps
  *   its own designed words, D-55).
+ * - **淘氣** (GDD § 2.8; #101): under the strip, each solved page's mischief — its 嘿 sticker (foil
+ *   when earned, a pressed silhouette when not) and its text. Never before the page's first
+ *   completion, so the first play has no clutter.
  * - **A locked station** answers 「月亮線還沒開到這裡。」 (§ 5.7).
  *
  * Chapters 0–1 are what M1 plays; #113 completes the 目錄 for every chapter (the map already
@@ -267,6 +270,7 @@ export function Contents({ save, registry: reg, chapter, locked, resumeId, backL
                   </li>
                 ))}
               </ol>
+              <MischiefList cards={cards} />
             </>
           )}
         </section>
@@ -334,5 +338,44 @@ function PageThumb({ card, current, onPlay }: { card: PageCard; current: boolean
         {card.index}
       </span>
     </button>
+  );
+}
+
+/** The chapter's 淘氣, for its solved pages only (GDD § 2.8: shown after the first completion). */
+function MischiefList({ cards }: { cards: readonly PageCard[] }) {
+  const rows = cards.filter((c) => c.solved && c.def !== undefined);
+  if (rows.length === 0) return null;
+  return (
+    <ul className="mt-3 flex flex-col gap-[6px] border-t-[1.5px] border-dashed pt-2" style={{ borderColor: C.pageEdge }} aria-label={UI.contents.mischief} data-mischief-list="">
+      {rows.map((card) => (
+        <li key={card.id} className="flex items-center gap-2" data-mischief={card.id} data-earned={card.mischief ? '' : undefined}>
+          <svg width={30} height={30} viewBox="-15 -15 30 30" aria-hidden="true" className="shrink-0">
+            {card.mischief ? (
+              <>
+                <circle r={13} fill={C.goldLight} stroke={C.goldDeep} strokeWidth={1.2} />
+                <text data-art-text="" y={5} textAnchor="middle" fontFamily="'Noto Serif TC'" fontWeight={900} fontSize={14} fill={C.foilInk}>
+                  嘿
+                </text>
+              </>
+            ) : (
+              <>
+                <circle r={13} fill={C.pageDark} />
+                <circle r={10.5} fill="none" stroke={C.dimpleShade} strokeWidth={1.4} strokeDasharray="2.5 3" />
+                <text data-art-text="" y={5} textAnchor="middle" fontFamily="'Noto Serif TC'" fontWeight={900} fontSize={14} fill={C.dimpleShade}>
+                  嘿
+                </text>
+              </>
+            )}
+          </svg>
+          <span className="font-num text-[20px] font-semibold leading-[24px]" style={{ color: C.ink }}>
+            {card.index}
+          </span>
+          <span className="text-[20px] font-bold leading-[24px]" style={{ color: card.mischief ? C.ink : C.inkSoft }}>
+            <span className="sr-only">{`${UI.contents.mischief}：`}</span>
+            {card.def!.mischief.text}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }

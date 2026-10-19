@@ -8,9 +8,13 @@ export const UI = {
   /** The word ring's close disc (§ 5.7); the card's accessible name for the tap that puts it away (D-62) */
   ring: { close: '好了', card: '學會了' },
   stickers: { solved: '解開', mischief: '淘氣', tudigong: '土地公' },
+  /** § 5.3: the pops when 淘氣 / 土地公 is earned (#101) */
+  stickerPop: { mischief: '嘿嘿，淘氣！', tudigong: '找到土地公！' },
+  /** § 5.3 「下一頁！」 on the sticker card (#101); the 目錄's 淘氣 line (#101, not in § 5.7: D-64) */
+  card: { next: '下一頁！' },
   /** 選單 (the pause menu, #97): 繼續 / 目錄 / 設定 / 封面 */
   menu: { resume: '繼續', contents: '目錄', settings: '設定', cover: '封面' },
-  contents: { title: '目錄', collected: '已收集', locked: '月亮線還沒開到這裡。', back: '封面' },
+  contents: { title: '目錄', collected: '已收集', locked: '月亮線還沒開到這裡。', back: '封面', mischief: '淘氣' },
   /** Not in § 5.7 (D-60): the album and settings screens until #103 / #104 build them */
   stub: { soon: '這一頁，還在畫。', back: '返回' },
 } as const;

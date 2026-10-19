@@ -1,11 +1,14 @@
-import { useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { POPUP as C, withAlpha } from '../../../art/palette';
 import { useSvgIds } from '../../../art/useSvgIds';
 import { kitCtx, kitDefs, ref, type KitCtx } from '../../art';
 import { UI } from '../../content';
 import { deviceScale, frameUrl, spriteDef } from '../../sprites';
 import { BAR_H } from '../geometry';
+import { STICKER_ICON, STICKER_KINDS, STICKER_NAME } from './stickerArt';
+import type { Sticker } from '../../game/progress';
 import '../words/words.css';
+import './stickers.css';
 
 /**
  * The bottom bar on the cover (GDD § 2.1; popup art bible § 7; #97): [寶咖咖's portrait → the word
@@ -20,6 +23,8 @@ import '../words/words.css';
  * - When a hint finds no way on from here (#100: the fallback's 重來 + step 1), 重來 glows the same way
  *   (`retryGlow`).
  * - **左手模式** (§ 2.11) mirrors the bar: the portrait on the right, the stickers on the left.
+ * - **A sticker earned mid-page** (#101, GDD § 2.8) slaps onto its dimple with a squash, and a kraft
+ *   tag pops up over the tray: 「嘿嘿，淘氣！」 or 「找到土地公！」 (`pop`, keyed by its serial).
  *
  * Laid out in a 390 × 120 box, scaled like the HUD on narrow phones.
  */
@@ -39,9 +44,14 @@ export interface BottomBarProps {
   readonly onHint?: () => void;
   readonly onRetry?: () => void;
   readonly onMenu?: () => void;
+  /** The pop over the tray: the sticker just earned, and a serial that replays it (#101) */
+  readonly pop?: { readonly sticker: Sticker; readonly serial: number } | null;
 }
 
 const NONE: readonly [boolean, boolean, boolean] = [false, false, false];
+
+/** How long the sticker pop stays over the tray (its CSS animation fades it out by then). */
+export const STICKER_POP_MS = 2000;
 
 /** The bar's icons, drawn in a disc's local space (centre 0, 0). */
 const ICONS = {
@@ -76,7 +86,7 @@ function BarButton({ label, onClick, children, testId }: { label: string; onClic
   );
 }
 
-export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow = false, retryGlow = false, reduced = false, onPortrait, onHint, onRetry, onMenu }: BottomBarProps) {
+export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow = false, retryGlow = false, reduced = false, onPortrait, onHint, onRetry, onMenu, pop = null }: BottomBarProps) {
   const ids = useSvgIds('bar');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('bar'), id: ids }), [ids]);
   const head = useMemo(() => {
@@ -110,16 +120,24 @@ export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow =
     </svg>
   );
   const earned = (i: number) => stickers[i] === true;
+  // A sticker earned while the bar is up slaps on (not the ones the page opened with)
+  const seen = useRef(stickers);
+  const [slapped, setSlapped] = useState<readonly boolean[]>(NONE);
+  useEffect(() => {
+    const was = seen.current;
+    seen.current = stickers;
+    if (stickers.some((s, i) => s && !was[i])) setSlapped(stickers.map((s, i) => s && !was[i]));
+  }, [stickers]);
   const sticker = (i: number, label: string, icon: string) => (
-    <g transform={`translate(${i * 34 + 17} 0)`} data-sticker={label} data-earned={earned(i) ? '' : undefined}>
+    <g key={label} transform={`translate(${i * 34 + 17} 0)`} data-sticker={label} data-earned={earned(i) ? '' : undefined}>
       <circle r={14} fill={C.sticker} />
       <circle r={14} cy={1.2} fill="none" stroke={C.stickerRim} strokeWidth={1.2} />
       <circle r={14} cy={-1} fill="none" stroke={C.stickerDeep} strokeWidth={1.2} opacity={0.7} />
       {earned(i) ? (
-        <>
+        <g className={slapped[i] ? (reduced ? 'stk-fade' : 'stk-slap') : undefined}>
           <circle r={12.5} fill={ref(ctx, 'foil')} />
           <g dangerouslySetInnerHTML={{ __html: icon }} />
-        </>
+        </g>
       ) : (
         <circle r={10} fill="none" stroke={C.gold} strokeWidth={1.2} strokeDasharray="2.5 3" opacity={0.75} />
       )}
@@ -153,9 +171,7 @@ export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow =
       data-stickers={stickers.map((s) => (s ? 1 : 0)).join('')}
     >
       <rect x={-1} y={-21} width={104} height={42} rx={21} fill={withAlpha(C.stickerDeep, 0.55)} />
-      {sticker(0, UI.stickers.solved, `<path d="M-6 0l4 4l8 -9" fill="none" stroke="${C.foilInk}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`)}
-      {sticker(1, UI.stickers.mischief, `<text data-art-text="" y="5" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="13" fill="${C.foilInk}">嘿</text>`)}
-      {sticker(2, UI.stickers.tudigong, `<path d="M-7 0a7 7 0 0 1 14 0z" fill="${C.hatRed}"/><path d="M-5 1q5 9 10 0z" fill="${C.standeeCard}"/>`)}
+      {STICKER_KINDS.map((kind, i) => sticker(i, STICKER_NAME[kind], STICKER_ICON[kind]))}
     </svg>
   );
   return (
@@ -174,6 +190,40 @@ export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow =
         </div>
         {tray}
       </nav>
+      {pop && <StickerPop key={pop.serial} sticker={pop.sticker} leftHand={leftHand} reduced={reduced} />}
+    </div>
+  );
+}
+
+/**
+ * The pop over the tray when 淘氣 or 土地公 is earned (GDD § 2.8, § 5.3; #101): a kraft tag taped
+ * above the stickers, a foil disc with the sticker's icon and the line on a cream label, popping up
+ * with a little overshoot and fading after ≈ 2 s (a fade only, with reduced motion). A still shows it.
+ */
+function StickerPop({ sticker, leftHand, reduced }: { sticker: Sticker; leftHand: boolean; reduced: boolean }) {
+  const text = UI.stickerPop[sticker];
+  return (
+    <div
+      className={`pointer-events-none absolute flex items-center gap-[8px] rounded-[6px] py-[6px] pl-[6px] pr-[6px] ${reduced ? 'stk-pop-fade' : 'stk-pop'}`}
+      style={{
+        bottom: 106,
+        [leftHand ? 'left' : 'right']: 12,
+        background: `repeating-linear-gradient(35deg, ${withAlpha(C.kraftFiber, 0.1)} 0 2px, transparent 2px 7px), ${C.kraft}`,
+        boxShadow: `0 3px 0 ${withAlpha(C.shadow, 0.35)}, 0 8px 18px ${withAlpha(C.shadow, 0.45)}`,
+        transformOrigin: leftHand ? '20% 100%' : '80% 100%',
+      }}
+      role="status"
+      data-sticker-pop={sticker}
+    >
+      <svg width={34} height={34} viewBox="-17 -17 34 34" aria-hidden="true" className="shrink-0 overflow-visible">
+        <circle r={15.5} cy={1.5} fill={C.kraftDark} />
+        <circle r={14} fill={C.goldLight} stroke={C.goldDeep} strokeWidth={1.2} />
+        <g transform="scale(1.05)" dangerouslySetInnerHTML={{ __html: STICKER_ICON[sticker] }} />
+      </svg>
+      <span className="whitespace-nowrap rounded-[3px] px-[8px] py-[2px] font-body text-[20px] font-black leading-[26px] tracking-[0.04em]" style={{ background: C.page, color: C.ink }}>
+        {text}
+      </span>
+      <span className="absolute -top-[7px] left-1/2 h-[14px] w-[46px] -translate-x-1/2 rotate-[-3deg]" style={{ background: withAlpha(C.washiCeladon, 0.85) }} aria-hidden="true" />
     </div>
   );
 }

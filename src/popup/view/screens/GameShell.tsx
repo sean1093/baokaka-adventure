@@ -5,13 +5,14 @@ import { chapterInfo, chapterName, UI } from '../../content';
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
 import { COVER, holdsPage, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
-import { ProgressStore } from '../../game/progress';
+import { ProgressStore, type PageResult } from '../../game/progress';
 import type { TickSpeed } from '../../game/session';
 import { registry as gameRegistry, type PageRegistry } from '../../pages';
 import { autoHintMs } from '../affordance/ladder';
 import { bookLayout } from '../geometry';
 import { PagePlayer } from '../PagePlayer';
 import { PAGE_VIEW_BOX } from '../geometry';
+import { CARD_OUT_MS, StickerCard, cardMs } from '../hud/StickerCard';
 import { playTurn, turnPlan, type TurnRun } from '../transitions/pageTurn';
 import { Contents } from './Contents';
 import { Cover } from './Cover';
@@ -30,6 +31,11 @@ import './screens.css';
  * - Opening the page makes it current in the save; completing it records the solve and turns to
  *   the next page (a chapter turn when the chapter changes); after the last registered page the
  *   目錄 opens.
+ * - **Completion** (GDD § 2.8; #101): 「這個！」 and the sparkle, the page held `GRAB_HOLD_MS`, the
+ *   pop-ups fold flat, then the **sticker card** (the turn's interlude: the page's three stickers
+ *   slap on) until `cardMs` passes or a tap, then the leaf turns and the next page unfolds. The
+ *   solve is saved at once with the attempt's stickers and moves; 淘氣 and 土地公 earned mid-page are
+ *   saved the moment they are earned (`store.earnSticker`).
  * - Any layer over a page (the menu, the 目錄, the settings) and a turn in progress hold the page's
  *   session (§ 2.6).
  * - Settings read from the save: tick speed (0/1/2 → slow/normal/fast), 左手模式, 減少動態 (null
@@ -47,6 +53,8 @@ export interface GameShellProps {
   readonly still?: boolean;
   /** Override reduced motion (visual QA stills pin a look) */
   readonly reduced?: boolean;
+  /** Visual QA fixtures (#101): the page folded flat under its sticker card */
+  readonly stickerCard?: boolean;
 }
 
 const SPEEDS: readonly TickSpeed[] = ['slow', 'normal', 'fast'];
@@ -59,7 +67,14 @@ const subscribeResize = (onChange: () => void) => {
 };
 const readSize = () => `${window.innerWidth}x${window.innerHeight}`;
 
-export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp }: GameShellProps) {
+/** The sticker card on screen: the page it is for, and how to end it (the turn goes on). */
+interface CardShow {
+  readonly id: string;
+  readonly leaving: boolean;
+  readonly end: () => void;
+}
+
+export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false }: GameShellProps) {
   const [store] = useState(() => given ?? new ProgressStore({ registry: reg }));
   useEffect(() => (given ? undefined : () => store.dispose()), [given, store]);
   const save = useSyncExternalStore(store.subscribe, store.get);
@@ -89,25 +104,60 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   const size = useSyncExternalStore(subscribeResize, readSize, () => '390x844');
 
   const holdTimer = useRef(0);
+  // ——— The sticker card (#101): shown in the turn's interlude, over the folded page ———
+  const [card, setCard] = useState<CardShow | null>(null);
+  const cardRef = useRef(card);
+  cardRef.current = card;
+  const cardTimers = useRef<number[]>([]);
+  const clearCardTimers = () => {
+    cardTimers.current.forEach((t) => window.clearTimeout(t));
+    cardTimers.current = [];
+  };
+  /** Shows the card for `id`; resolves when it has lifted away (after `cardMs`, or a tap: `end`). */
+  const showCard = useCallback(
+    (id: string) =>
+      new Promise<void>((resolve) => {
+        let ended = false;
+        const end = () => {
+          if (ended) return;
+          ended = true;
+          clearCardTimers();
+          setCard((c) => (c === null ? c : { ...c, leaving: true }));
+          cardTimers.current.push(
+            window.setTimeout(() => {
+              setCard(null);
+              resolve();
+            }, CARD_OUT_MS),
+          );
+        };
+        setCard({ id, leaving: false, end });
+        cardTimers.current.push(window.setTimeout(end, cardMs(reduced)));
+      }),
+    [reduced],
+  );
   useEffect(
     () => () => {
       window.clearTimeout(holdTimer.current);
+      clearCardTimers();
       turnRef.current?.skip();
     },
     [],
   );
 
   const onDone = useCallback(
-    (from: PageDef) => {
-      store.completePage(from.id);
+    (from: PageDef, result: PageResult) => {
+      store.completePage(from.id, result);
       const next = reg.nextPage(from.id);
       setTurning(true);
       window.clearTimeout(holdTimer.current);
       holdTimer.current = window.setTimeout(() => {
         const book = bookRef.current, overlay = overlayRef.current, top = topRef.current;
         if (next === null || !book || !overlay || !top) {
-          setTurning(false);
-          go({ t: 'next', id: next?.id ?? null });
+          // The last page (or no book to turn): the card, then the 目錄
+          void showCard(from.id).then(() => {
+            setTurning(false);
+            go({ t: 'next', id: next?.id ?? null });
+          });
           return;
         }
         const [vw, vh] = readSize().split('x').map(Number);
@@ -123,16 +173,27 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
             card: { chapter: chapterName(next.chapter), title: info.title, landmark: info.landmark, time: info.time },
           },
           () => go({ t: 'next', id: next.id }),
+          { run: () => showCard(from.id) },
         );
         turnRef.current = run;
         void run.finished.then(() => {
           if (turnRef.current === run) turnRef.current = null;
+          // Skipped mid-card: put the card away too
+          clearCardTimers();
+          setCard(null);
           setTurning(false);
         });
       }, GRAB_HOLD_MS);
     },
-    [store, reg, go, reduced],
+    [store, reg, go, reduced, showCard],
   );
+  const onSticker = useCallback((id: string, sticker: 'mischief' | 'tudigong') => store.earnSticker(id, sticker), [store]);
+  // A tap while the card is up turns the page on; any other tap in the turn skips it
+  const onSkip = useCallback(() => {
+    const c = cardRef.current;
+    if (c !== null && !c.leaving) c.end();
+    else if (c === null) turnRef.current?.skip();
+  }, []);
 
   const chrome = useMemo(
     () =>
@@ -173,7 +234,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
           <>
             {/* The quilt under the book: seen when the camera pulls back in a chapter turn */}
             <Quilt />
-            <div ref={bookRef} className="fixed inset-0" data-book="" data-size={size} style={covered ? { visibility: 'hidden' } : undefined}>
+            <div ref={bookRef} className="fixed inset-0" data-book="" data-size={size} data-folded={stickerCard ? '' : undefined} style={covered ? { visibility: 'hidden' } : undefined}>
               <PagePlayer
                 key={`${def.id}-${base.run}`}
                 def={def}
@@ -181,14 +242,18 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                 still={still}
                 reduced={reduced}
                 hold={holdsPage(nav) || turning}
-                onDone={() => onDone(def)}
+                onDone={(_, result) => onDone(def, result)}
+                onSticker={(sticker) => onSticker(def.id, sticker)}
                 chrome={chrome || undefined}
                 pageRef={pageBoxRef}
               />
               <div ref={overlayRef} className="pointer-events-none absolute inset-0" data-turn-overlay="" />
             </div>
             <div ref={topRef} className="pointer-events-none fixed inset-0 z-30" aria-hidden="true" />
-            {turning && <button type="button" className="fixed inset-0 z-40 cursor-default opacity-0" aria-label="跳過" onClick={() => turnRef.current?.skip()} data-turn-skip="" />}
+            {(card !== null || stickerCard) && (
+              <CardLayer title={reg.pageById(card?.id ?? def.id)?.title ?? def.title} stickers={pageStickers(save, card?.id ?? def.id)} leaving={card?.leaving ?? false} reduced={reduced} still={still} />
+            )}
+            {turning && <button type="button" className="fixed inset-0 z-40 cursor-default opacity-0" aria-label={card ? UI.card.next : '跳過'} onClick={onSkip} data-turn-skip="" />}
           </>
         )}
         <PauseMenu
@@ -220,5 +285,24 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
         )}
       </div>
     </ReducedMotionContext.Provider>
+  );
+}
+
+/**
+ * The sticker card's layer (#101): over the book's middle (the folded page), above the turn's
+ * chapter-card layer, below the full-screen tap layer. Its width keeps the 300 px card on narrow
+ * phones (R5: its 20 px words never shrink below 360 px wide).
+ */
+function CardLayer({ title, stickers, leaving, reduced, still }: { title: string; stickers: readonly [boolean, boolean, boolean]; leaving: boolean; reduced: boolean; still: boolean }) {
+  const size = useSyncExternalStore(subscribeResize, readSize, () => '390x844');
+  const [vw, vh] = size.split('x').map(Number);
+  const layout = bookLayout(vw, vh);
+  const width = 300 * Math.min(1, vw / 360);
+  // Centred on the standing page, a little above the gutter
+  const cy = layout.y + 300 * layout.scale;
+  return (
+    <div className="pointer-events-none fixed inset-x-0 z-[35] flex justify-center" style={{ top: cy - (width * 248) / 300 / 2 }} data-still={still ? '' : undefined} data-card-layer="">
+      <StickerCard title={title} stickers={stickers} leaving={leaving} reduced={reduced} width={width} />
+    </div>
   );
 }

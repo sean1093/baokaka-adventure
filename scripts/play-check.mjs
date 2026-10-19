@@ -16,7 +16,9 @@
  * add one with every new page. A scenario can also play a PageLab stage through a live fixture
  * (`SCENARIO_URLS`): `lab-gates` plays 1-3's word flow end to end (#99) — the 「要！」 poke, Mocha's
  * push, the learn beat and its word card, the tutorial, the word ring and 嗶！ — until #107 brings
- * the real 1-3; `hints-c1p2` plays 1-2 with 提示 alone (#100: where, how, then show me until done).
+ * the real 1-3; `hints-c1p2` plays 1-2 with 提示 alone (#100: where, how, then show me until done);
+ * `stickers-c1p2` earns all three of 1-2's stickers in the game shell (#101: four rides for the 淘氣,
+ * the board flipped and the 土地公 tapped, the solve, the sticker card, then the 目錄's 淘氣 line).
  * Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
  * and UI checks.
  */
@@ -76,12 +78,46 @@ const SCENARIOS = {
     { expect: '[data-hint-hand]' },
     { showMe: 30 },
   ],
+  // Stickers (#101, GDD § 2.8) on 1-2 in the game shell: 淘氣 for riding back and forth twice, the
+  // 土地公 behind the flipped board, then the solve and the sticker card with all three
+  'stickers-c1p2': [
+    { wait: 'reaching' },
+    { drag: [[80, 610], [142, 610]] },
+    { settle: 1500 },
+    { drag: [[140, 610], [76, 610]] },
+    { settle: 700 },
+    { drag: [[80, 610], [142, 610]] },
+    { settle: 700 },
+    { drag: [[140, 610], [76, 610]] },
+    { settle: 700 },
+    { drag: [[80, 610], [142, 610]] },
+    { expect: '[data-sticker-pop="mischief"]' },
+    { expect: '[data-sticker="淘氣"][data-earned]' },
+    { tap: [140, 72] },
+    { settle: 900 },
+    { tap: [236, 98] },
+    { expect: '[data-sticker-pop="tudigong"]' },
+    { expect: '[data-sticker="土地公"][data-earned]' },
+    { expect: '[data-subtitle]' },
+    { settle: 800 },
+    { tap: [280, 234] },
+    { settle: 2500 },
+    { drag: [[140, 610], [205, 610]] },
+    { expect: 'svg[data-page][data-done]', timeout: 20_000 },
+    { expect: '[data-sticker-card="111"]', timeout: 5_000 },
+    // 1-2 is the last page so far: the card, then the 目錄 with the page's 淘氣 (earned)
+    { expect: '[data-mischief="c1p2"][data-earned]', timeout: 8_000 },
+  ],
 };
+
+/** Scenarios that end somewhere other than their page done (the shell moved on). */
+const SCENARIO_ENDS = { 'stickers-c1p2': '[data-screen="contents"]' };
 
 /** Scenarios that start somewhere other than `#/popup?page=<id>`: a PageLab stage, live. */
 const SCENARIO_URLS = {
   'lab-gates': '#/pagelab?fixture=word-poke',
   'hints-c1p2': '#/popup?page=c1p2&speed=fast',
+  'stickers-c1p2': '#/pagelab?fixture=page-hud',
 };
 
 const VIEWPORTS = [
@@ -178,7 +214,7 @@ async function run(page, base, id, kind, viewport, shots) {
       if ((await page.getAttribute('[data-popup-page]', 'data-hint-level')) === null) throw new Error('no hint ladder on the page');
       await shot('show-me');
     } else if (stepDef.expect) {
-      await page.waitForSelector(stepDef.expect, { timeout: 5_000 });
+      await page.waitForSelector(stepDef.expect, { timeout: stepDef.timeout ?? 5_000 });
       if (stepDef.absent && (await page.$(stepDef.absent))) throw new Error(`${stepDef.absent} should not be there`);
     } else if (stepDef.tap) {
       await input.down(toClient(stepDef.tap));
@@ -207,7 +243,7 @@ async function run(page, base, id, kind, viewport, shots) {
       await input.up();
     }
   }
-  await page.waitForSelector('svg[data-page][data-done]', { timeout: 20_000 });
+  await page.waitForSelector(SCENARIO_ENDS[id] ?? 'svg[data-page][data-done]', { timeout: 20_000 });
   await page.waitForTimeout(400);
   await shot('done');
 }
