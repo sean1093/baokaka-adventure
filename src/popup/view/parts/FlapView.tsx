@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { LIFT, VERBS, depth, doubleOutline, f1, flap, liftShadow, lockVeil, rectOutline, ref, seal, sealR } from '../../art';
 import { wiggleClass } from '../affordance/look';
-import { ArtG, hitBox, r2, stateAt, tweened, type PartViewProps } from './common';
+import { partBitmap } from '../art/registry';
+import { ArtG, bakedImage, hitBox, r2, stateAt, tweened, type PartViewProps } from './common';
 
 /**
  * 翻 flap (GDD § 2.1; bible § 4): a printed card hinged on its top edge, its marigold dog-ear the
@@ -33,6 +34,15 @@ export function FlapView(props: PartViewProps) {
     return { front: flap(ctx, 0, 0, w, h, { sealed: false }), back, veil: lockVeil(`<path d="${card}"/>`), shadow: liftShadow(ctx, { x: 0, y: 0, w, h }, 2) };
   }, [ctx, w, h]);
   const sealSvg = useMemo(() => seal(ctx, 0, 0, VERBS.flap, sealR(11, look.elder)), [ctx, look.elder]);
+  // Baked art (#96): the front is the first state's bitmap, the back the second's, each hung from its
+  // hinge line; dragged, the lifted variant carries the rise, the scale and the dropped shadow
+  const states0 = stateAt(part, to).states;
+  const bakedFront = partBitmap(part.art, states0[0], look.lifted);
+  const bakedBack = partBitmap(part.art, states0[1] ?? states0[0], look.lifted);
+  const baked = useMemo(
+    () => (bakedFront && bakedBack ? { front: bakedImage(bakedFront, [0, bakedFront.hinge ?? 0]), back: bakedImage(bakedBack, [0, bakedBack.hinge ?? 0]), lifted: bakedFront.lifted } : null),
+    [bakedFront?.url, bakedBack?.url, bakedFront?.hinge, bakedBack?.hinge, bakedFront?.lifted],
+  );
   const fold = (s: string) => (s === 'open' ? FOLD.open : FOLD.closed);
   // A corner drag (#90) lifts it part way: 0 = its first state's fold, 1 = its second's
   const { states } = stateAt(part, to);
@@ -40,21 +50,22 @@ export function FlapView(props: PartViewProps) {
     ? fold(states[0]) + (fold(states[1] ?? states[0]) - fold(states[0])) * Math.min(1, Math.max(0, preview))
     : tweened(fold(from), fold(to), ms, reduced);
   const shown = Math.abs(sy) < 0.02 ? 0.02 : sy;
-  const lift = look.lifted ? LIFT.rise : 0;
-  const k = look.lifted ? LIFT.scale : 1;
+  const bakedLift = baked?.lifted === true;
+  const lift = look.lifted && !bakedLift ? LIFT.rise : 0;
+  const k = look.lifted && !bakedLift ? LIFT.scale : 1;
   // The folded extent (for the reduced-motion outline): below the hinge when closed, above when open
   const extent = shown >= 0 ? { x: 0, y: 0, w, h: h * shown } : { x: 0, y: h * shown, w, h: -h * shown };
   const outline = useMemo(() => (look.outline ? doubleOutline(rectOutline(extent, 3)) : ''), [look.outline, extent.y, extent.h, w]);
   return (
     <g data-part={part.id} data-preset={part.preset} transform={`translate(${r2(hb.x + 4)} ${r2(hb.y + 4)})`}>
-      {look.lifted && (
+      {look.lifted && !bakedLift && (
         <g transform={`translate(${LIFT.shadow[0]} ${LIFT.shadow[1]}) scale(1 ${r2(Math.max(0.2, Math.abs(shown)))})`}>
           <ArtG html={art.shadow} />
         </g>
       )}
       <g data-anim="" transform={`translate(0 ${-lift}) scale(${k} ${r2(shown * k)})`}>
-        <g className={wiggleClass('flap', look.wiggle)}>
-          <ArtG html={shown >= 0 ? art.front : art.back} />
+        <g className={wiggleClass('flap', look.wiggle)} data-grip={baked ? 'ear' : undefined} data-baked-marigold={baked ? '' : undefined}>
+          <ArtG html={baked ? (shown >= 0 ? baked.front : baked.back) : shown >= 0 ? art.front : art.back} />
           {look.locked && <ArtG html={art.veil} />}
         </g>
       </g>

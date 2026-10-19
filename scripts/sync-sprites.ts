@@ -15,6 +15,10 @@
  * then measures the head (bubble anchor) and the ground footprint, bakes the shared floor contact
  * ellipse, and writes `src/popup/assets/sprites/**` plus `src/popup/sprites/sprites.gen.ts`.
  *
+ * **Half grade** (#96, D-59): for each chapter with registered pages, the characters' half grade
+ * (`env/grade.ts` `standeeGrade`) is baked into the print of every gameplay pose that chapter shows,
+ * as a variant at `g/<grade key>/<stem>` in the same box (chapters sharing a grade share files).
+ *
  * **Idempotent:** each sprite records a hash of everything its bake read (the source entry and
  * files, `sprites/config.ts`, the filter, this script's bake version). A sprite whose hash and
  * files are unchanged is not re-rendered, and an unchanged manifest is not rewritten, so a second
@@ -35,8 +39,10 @@ import { chromium, type Page } from 'playwright';
 import { PNG } from 'pngjs';
 import { POPUP as C } from '../src/art/palette';
 import { standeeFilter } from '../src/popup/art/defs';
+import { gradeKey, isIdentity, standeeGrade } from '../src/popup/env/grade';
+import { PAGES } from '../src/popup/pages';
 import { ALPHA_QUALITY, BAKE_PAD, HEAD_MAP_SCALE, POSE_CONFIG, SCALES, STILL_CONFIG, WEBP_QUALITY, type PoseConfig } from '../src/popup/sprites/config';
-import type { FloorDef, SpriteAnimDef, SpriteDef, SpriteManifest } from '../src/popup/sprites/manifest';
+import { gradedStem, type FloorDef, type GradeDef, type GradedFrames, type SpriteAnimDef, type SpriteDef, type SpriteManifest } from '../src/popup/sprites/manifest';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'docs/art/v2/baked');
@@ -145,14 +151,24 @@ function easel(ax: number, ay: number, w: number, h: number): string {
   return `<path d="M${f(ax - tw * 0.18)} ${f(ay + 1)}L${f(ax - tw * 0.12)} ${f(ay - th)}L${f(ax + tw * 0.12)} ${f(ay - th)}L${f(ax + tw * 0.28)} ${f(ay + 3)}Z" fill="${C.easel}" opacity=".9"/>`;
 }
 
-function frameSvg(job: Job, srcFile: string, anchor: [number, number]): { svg: string; w: number; h: number } {
+/**
+ * The half grade (#96, D-59) as a filter on the print alone: a per-channel multiply in sRGB, the
+ * same maths as `multiplyHex`. The standee filter then cuts its warm-white card around the graded
+ * print, so the card, the cut line and the shadows keep their own night colours.
+ */
+const gradeFilter = (by: readonly [number, number, number]) =>
+  `<filter id="gr" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${by[0]} 0 0 0 0  0 ${by[1]} 0 0 0  0 0 ${by[2]} 0 0  0 0 0 1 0"/></filter>`;
+
+function frameSvg(job: Job, srcFile: string, anchor: [number, number], grade?: readonly [number, number, number]): { svg: string; w: number; h: number } {
   const [w, h] = job.size;
   const W = w + BAKE_PAD.l + BAKE_PAD.r;
   const H = h + BAKE_PAD.t + BAKE_PAD.b;
   const href = `data:image/webp;base64,${readFileSync(srcFile).toString('base64')}`;
   const tab = job.cfg.easel ? easel(anchor[0] + BAKE_PAD.l, anchor[1] + BAKE_PAD.t, w, h) : '';
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${FILTER}</defs>${tab}`
-    + `<image href="${href}" x="${BAKE_PAD.l}" y="${BAKE_PAD.t}" width="${w}" height="${h}" preserveAspectRatio="none" filter="url(#st)"/></svg>`;
+  const image = (attrs: string) => `<image href="${href}" x="${BAKE_PAD.l}" y="${BAKE_PAD.t}" width="${w}" height="${h}" preserveAspectRatio="none" ${attrs}/>`;
+  const art = grade === undefined ? image('filter="url(#st)"') : `<g filter="url(#st)">${image('filter="url(#gr)"')}</g>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs>${FILTER}${grade === undefined ? '' : gradeFilter(grade)}</defs>${tab}`
+    + `${art}</svg>`;
   return { svg, w: W, h: H };
 }
 
@@ -319,6 +335,51 @@ async function bakeJob(pages: Record<Scale, Page>, job: Job): Promise<SpriteDef>
   };
 }
 
+// ——— Character grades (#96, D-59) ———
+
+/** The grades the registered pages' chapters show (identity grades bake nothing), by key. */
+function gradeTable(): Record<string, GradeDef> {
+  const out: Record<string, { by: [number, number, number]; chapters: number[] }> = {};
+  for (const ch of [...new Set(PAGES.map((p) => p.chapter))].sort((a, b) => a - b)) {
+    const by = standeeGrade(ch);
+    if (isIdentity(by)) continue;
+    const key = gradeKey(by);
+    (out[key] ??= { by: [by[0], by[1], by[2]], chapters: [] }).chapters.push(ch);
+  }
+  return out;
+}
+
+/** The grades a sprite needs: every graded chapter at or after its group (gameplay poses only). */
+function gradesFor(def: Pick<SpriteDef, 'kind' | 'group'>, grades: Record<string, GradeDef>): string[] {
+  if (def.kind !== 'pose' || typeof def.group !== 'number') return [];
+  const group = def.group;
+  return Object.entries(grades).filter(([, g]) => g.chapters.some((c) => c >= group)).map(([key]) => key);
+}
+
+/**
+ * Bakes a sprite's graded variant into its already baked box: the crop is recovered from the
+ * plain bake's anchor (the source anchor moved by the pad and the crop), so both share the box.
+ */
+async function bakeGraded(pages: Record<Scale, Page>, job: Job, def: SpriteDef, key: string, by: readonly [number, number, number]): Promise<GradedFrames['bytes']> {
+  const anchor = job.anchor!;
+  const x0 = Math.round(BAKE_PAD.l - (def.anchor[0] - anchor[0]));
+  const y0 = Math.round(BAKE_PAD.t - (def.anchor[1] - anchor[1]));
+  const [w, h] = def.size;
+  const bytes: [number, number][] = job.frames.map(() => [0, 0]);
+  for (const s of SCALES) {
+    const pngs: PNG[] = [];
+    for (const f of job.frames) pngs.push(crop(await renderPng(pages[s], frameSvg(job, f.src[s], anchor, by).svg), x0 * s, y0 * s, w * s, h * s));
+    const webps = pillowWebp(pngs);
+    webps.forEach((webp, i) => {
+      const file = join(OUT, `${gradedStem(job.frames[i].stem, key)}@${s}x.webp`);
+      mkdirSync(dirname(file), { recursive: true });
+      writeFileSync(file, webp);
+      bytes[i][s === 2 ? 0 : 1] = webp.length;
+    });
+  }
+  return bytes;
+}
+
 const FLOOR = { size: [56, 20] as [number, number], ellipse: { cx: 28, cy: 10, rx: 20, ry: 3.6 } };
 const FLOOR_STEM = 'floor';
 
@@ -381,26 +442,51 @@ async function main() {
   const pages = {} as Record<Scale, Page>;
   for (const s of SCALES) pages[s] = await (await browser.newContext({ deviceScaleFactor: s, viewport: { width: 800, height: 800 } })).newPage();
   const sprites: Record<string, SpriteDef> = {};
+  const grades = gradeTable();
   let baked = 0;
+  let gradedBaked = 0;
   try {
     for (const job of list) {
       const source = hashJob(job);
       const old = prev?.sprites[job.id];
+      let def: SpriteDef;
       if (old && old.source === source && old.files.every((stem, i) => fileOk(stem, 2, old.bytes[i][0]) && fileOk(stem, 3, old.bytes[i][1]))) {
-        sprites[job.id] = old;
-        continue;
+        def = old;
+      } else {
+        process.stdout.write(`bake ${job.id} (${job.frames.length})\n`);
+        def = { ...(await bakeJob(pages, job)), source };
+        baked++;
       }
-      process.stdout.write(`bake ${job.id} (${job.frames.length})\n`);
-      sprites[job.id] = { ...(await bakeJob(pages, job)), source };
-      baked++;
+      // Its half-graded variants (#96): one per grade its chapters show, re-baked when it or the grade changes
+      const graded: Record<string, GradedFrames> = {};
+      for (const key of gradesFor(def, grades)) {
+        const gsource = createHash('sha256').update(JSON.stringify([def.source, key, grades[key].by])).digest('hex').slice(0, 16);
+        const was = old?.graded?.[key];
+        if (was && was.source === gsource && def.files.every((stem, i) => fileOk(gradedStem(stem, key), 2, was.bytes[i][0]) && fileOk(gradedStem(stem, key), 3, was.bytes[i][1]))) {
+          graded[key] = was;
+          continue;
+        }
+        process.stdout.write(`bake ${job.id} graded ${key}\n`);
+        graded[key] = { bytes: await bakeGraded(pages, job, def, key, grades[key].by), source: gsource };
+        gradedBaked++;
+      }
+      const { graded: _drop, ...plain } = def;
+      sprites[job.id] = Object.keys(graded).length > 0 ? { ...plain, graded } : plain;
     }
     const oldFloor = prev?.floor;
     const floorKept = oldFloor && oldFloor.source === floorHash && fileOk(oldFloor.file, 2, oldFloor.bytes[0]) && fileOk(oldFloor.file, 3, oldFloor.bytes[1]);
     const floor = floorKept ? oldFloor : { ...(await bakeFloor(pages)), source: floorHash };
-    const manifest: SpriteManifest = { version: 1, floor, sprites };
+    const manifest: SpriteManifest = { version: 1, floor, grades, sprites };
     // Remove files no sprite references any more
     const keep = new Set<string>();
-    for (const s of Object.values(sprites)) for (const stem of s.files) for (const sc of SCALES) keep.add(join(OUT, `${stem}@${sc}x.webp`));
+    for (const s of Object.values(sprites)) {
+      for (const stem of s.files) {
+        for (const sc of SCALES) {
+          keep.add(join(OUT, `${stem}@${sc}x.webp`));
+          for (const key of Object.keys(s.graded ?? {})) keep.add(join(OUT, `${gradedStem(stem, key)}@${sc}x.webp`));
+        }
+      }
+    }
     for (const sc of SCALES) keep.add(join(OUT, `${floor.file}@${sc}x.webp`));
     let removed = 0;
     for (const f of listFiles(OUT)) if (!keep.has(f)) (rmSync(f), removed++);
@@ -411,8 +497,12 @@ async function main() {
     const sum = (filter: (s: SpriteDef) => boolean, k: 0 | 1) => Object.values(sprites).filter(filter).reduce((n, s) => n + s.bytes.reduce((m, b) => m + b[k], 0), 0);
     const kb = (n: number) => `${(n / 1024).toFixed(1)} KB`;
     const core = (s: SpriteDef) => s.kind === 'pose' && s.group === 0;
-    console.log(`${baked} sprite(s) baked, ${list.length - baked} unchanged, ${removed} stale file(s) removed; ${relative(ROOT, GEN)} ${changed ? 'written' : 'unchanged'}`);
+    console.log(`${baked} sprite(s) baked, ${list.length - baked} unchanged, ${gradedBaked} graded variant(s) baked, ${removed} stale file(s) removed; ${relative(ROOT, GEN)} ${changed ? 'written' : 'unchanged'}`);
     console.log(`core poses (group 0) + floor: @2x ${kb(sum(core, 0) + floor.bytes[0])}, @3x ${kb(sum(core, 1) + floor.bytes[1])}`);
+    for (const [key, g] of Object.entries(grades)) {
+      const gsum = (k: 0 | 1) => Object.values(sprites).filter(core).reduce((n, s) => n + (s.graded?.[key] ?? s).bytes.reduce((m, b) => m + b[k], 0), 0);
+      console.log(`  graded ${key} (chapters ${g.chapters.join(', ')}): @2x ${kb(gsum(0) + floor.bytes[0])}, @3x ${kb(gsum(1) + floor.bytes[1])}`);
+    }
     console.log(`all sprites: @2x ${kb(sum(() => true, 0))}, @3x ${kb(sum(() => true, 1))}`);
   } finally {
     await browser.close();

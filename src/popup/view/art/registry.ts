@@ -1,13 +1,17 @@
 import { PRESET_ART, PRESET_DEFS, kitDefs, type KitCtx, type PartArtOptions, type PartPreset, type PresetArt } from '../../art';
 import type { PageDef } from '../../core/types';
+import { backdropImage, cutoutImage, partImage, type EnvImage, type PartImage } from '../../env/loader';
 import { origamiBird, placeholderBackdrop } from './placeholders';
 
 /**
- * The art registry (GDD § 3.5, § 3.9): an art key → what draws it. Until a key has its own art
- * (chapter art issues) or a baked bitmap (#96), it falls back to a placeholder: a part to its
- * preset's kit art (`src/popup/art/presets.ts`, #139), a backdrop to the chapter's placeholder
- * stage, a creature to an origami bird. So M0/M1 pages already look like paper, not coloured
- * cards. Each missing key is logged once in dev builds, so the gap list is visible in the console.
+ * The art registry (GDD § 3.5, § 3.9): an art key → what draws it. In order:
+ * 1. a **baked bitmap** (#96, `npm run bake:popup`; `env/loader.ts`): a backdrop, a part's bitmap
+ *    per state (with its lifted drag variant), a cut-out;
+ * 2. else a placeholder drawn live: a part to its preset's kit art (`src/popup/art/presets.ts`,
+ *    #139), a backdrop to the chapter's placeholder stage, a creature to an origami bird, a cut-out
+ *    to nothing. So M0/M1 pages already look like paper, not coloured cards, and an unknown key is
+ *    never an error. Each missing key is logged once in dev builds, so the gap list is visible in
+ *    the console.
  *
  * The in-game path calls this with a `filters: false` context (GDD § 3.9: no runtime SVG filters on
  * moving parts); PageLab may pass `filters: true` to preview the bake.
@@ -25,7 +29,7 @@ const BACKDROPS: Readonly<Record<string, BackdropArt>> = {};
 /** Creatures by key (e.g. 'common/pigeon'). */
 const CREATURES: Readonly<Record<string, CreatureArt>> = {};
 
-export type ArtKind = 'part' | 'backdrop' | 'creature';
+export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';
 
 const reported = new Set<string>();
 
@@ -43,15 +47,37 @@ export function resetFallbackLog(): void {
   reported.clear();
 }
 
-/** The art for a part: its key's own art if registered, otherwise its preset's default kit art. */
+/** The live art for a part: its key's own art if registered, otherwise its preset's default kit art. */
 export function partArt(key: string, preset: PartPreset): PresetArt {
   const own = KEYED[key];
-  if (own === undefined) noteFallback('part', key);
+  if (own === undefined && isPlaceholder(key)) noteFallback('part', key);
   return own ?? PRESET_ART[preset];
 }
 
 /** True when `key` has no art of its own yet (the part shows its preset's placeholder). */
-export const isPlaceholder = (key: string): boolean => !(key in KEYED);
+export const isPlaceholder = (key: string): boolean => !(key in KEYED) && partImage(key, '') === null;
+
+/**
+ * A part's baked bitmap for a state (the first state's when the art has none for it; the lifted
+ * variant while dragged, when baked), or null: the view then draws `partArt` live.
+ */
+export function partBitmap(key: string, state: string, lifted = false): PartImage | null {
+  return partImage(key, state, { lifted });
+}
+
+/** A page's baked backdrop, or null (`backdropArt` draws the placeholder stage live). */
+export function backdropBitmap(key: string): EnvImage | null {
+  const img = backdropImage(key);
+  if (img === null) noteFallback('backdrop', key);
+  return img;
+}
+
+/** A standing cut-out's baked bitmap, or null (an unknown cut-out draws nothing, logged once in dev). */
+export function cutoutBitmap(key: string): EnvImage | null {
+  const img = cutoutImage(key);
+  if (img === null) noteFallback('cutout', key);
+  return img;
+}
 
 /** A part's art as a self-contained SVG fragment (its scoped defs plus the drawing). */
 export function renderPart(ctx: KitCtx, key: string, preset: PartPreset, opts: PartArtOptions = {}): string {
@@ -65,8 +91,8 @@ export function backdropArt(key: string): BackdropArt {
   return own ?? placeholderBackdrop;
 }
 
-/** True when backdrop `key` has art of its own (PageLab's art-key report). */
-export const hasBackdropArt = (key: string): boolean => key in BACKDROPS;
+/** True when backdrop `key` has art of its own or a baked bitmap (PageLab's art-key report). */
+export const hasBackdropArt = (key: string): boolean => key in BACKDROPS || backdropImage(key) !== null;
 
 /** True when creature `key` has art of its own (PageLab's art-key report). */
 export const hasCreatureArt = (key: string): boolean => key in CREATURES;

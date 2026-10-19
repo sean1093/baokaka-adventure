@@ -613,6 +613,7 @@ export interface PageDef {
   priorityOverride?: Partial<Record<Kind, number>>;   // page E only
   lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey }[] };
   backdrop: string;                     // baked art key
+  cutouts?: { art: string; x: number; y: number }[];   // standing cut-outs (§ 3.9 layer 2), placed by their origin (#96)
 }
 
 export type SolutionStep =
@@ -880,6 +881,8 @@ All frames are at map scale (~70 px tall for Baokaka crawling, at 390-wide).
 **For engineers.** #95 mapped every mode to its frames (D-57): `view/actors/animMap.ts` holds the table (Art v2 § 5 names: grab → `hold`, cuddle → `hug`, say → `point`, stand-cruise → `pull`/`wobble`, Mocha hop/land → `jump`, eye contact → `push` frame 1), the fallbacks for frames #141 still draws, the growth guard and the missing-frame report (`#/pagelab?section=sprites`); `view/actors/standee.ts` the card motion (lean, landing wobble, look flips, reduced motion's fade-slide). Cycles are 8 frames (the table above says so since #95). The crawl stride is synced to the step's lerp (whole strides per edge; the 4-frame `key` cycle above 24 fps). Frames needed only from M3/M4 (carried, climb, stand-cruise, walk, Mocha's linked walk) are `later` in the report. The core set is now 396.6 KB @3x (`hug` joined it as the cuddle frame).
 
 **For engineers.** #141 drew the missing frames (D-58): reach's second, look L/R, watch-sway, ride-giggle, touch-watch, carried, climb (pull-up, knee-over, up on all fours), and Mocha's glare, purr and in-box (head and paws over the rim, drawn at the box perch). No M1 fallback is left; stand-cruise has 3 of its 4 frames. Preload groups now mean "this chapter and every later one", and the core set is the prologue's: 381.1 KB @3x, with chapter 1 adding 66 KB.
+
+**For engineers.** #96 baked the environment (D-59): `npm run bake:popup` renders each page's backdrop (its art, or its chapter's placeholder stage, with filters, grain and the chapter grade) and each part art key with a drawing (a bitmap per state, a lifted variant for dragged presets, `pivot` / `hinge`) to WebP @2x in `src/popup/assets/env/`, with the manifest `src/popup/env/env.gen.ts`. The registry (`view/art/registry.ts`) draws a key's bitmap when baked and the live placeholder otherwise. `PageDef.cutouts` places standing cut-outs (layer 2). A page preloads its bitmaps and, once they are in, the next page's backdrop. `env.test.ts` holds every page to 350 KB and the first load (the prologue's art plus its characters @3x) to 2.5 MB; `npm run art:report` prints the report. The characters get the chapter's half grade as baked sprite variants. 1-2's split-flap board is the first real part art (proof A); its hit area and the 土地公 moved to fit it (§ 3.4's numbers are the original layout).
 
 **Performance budget:**
 - 60 fps on a mid-range phone (2021 Android).

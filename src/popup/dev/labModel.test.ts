@@ -190,8 +190,8 @@ describe('readability and art keys', () => {
       ['part', 'board', 'c1/departure-board'],
       ['creature', 'pigeon', 'common/pigeon'],
     ]);
-    // M0: nothing is baked yet
-    expect(rows.every((r) => r.status === 'placeholder')).toBe(true);
+    // #96: the backdrop and the board are baked; the train tab and the pigeon are live placeholders
+    expect(rows.map((r) => r.status)).toEqual(['baked', 'placeholder', 'baked', 'placeholder']);
   });
 });
 

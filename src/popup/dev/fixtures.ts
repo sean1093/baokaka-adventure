@@ -71,6 +71,12 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     expect: { event: 'ride' },
   },
   {
+    name: 'c1p2-env',
+    page: 'c1p2',
+    steps: [{ tap: 'board' }, { wait: 1 }],
+    note: '1-2 environment art (#96): the baked backdrop (grain, depth shadows), the baked split-flap board flipped to the 福德線, the 土地公 peeking from behind it; characters in the chapter half grade.',
+  },
+  {
     name: 'affordance-states',
     page: 'c1p2',
     steps: [],

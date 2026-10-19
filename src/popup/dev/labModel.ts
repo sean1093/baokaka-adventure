@@ -10,6 +10,7 @@ import { step, stepGrowth } from '../core/step';
 import type { EdgeKind, Id, Input, Kind, PageDef, SimState } from '../core/types';
 import type { PageReport } from '../pages/report';
 import { isPlaceholder, hasBackdropArt, hasCreatureArt } from '../view/art/registry';
+import { cutoutImage } from '../env/loader';
 import { targetsOf } from '../view/gestures';
 
 /**
@@ -289,7 +290,7 @@ export function touchableCount(def: PageDef, state: SimState): TouchableCount {
 export type ArtStatus = 'baked' | 'placeholder';
 
 export interface ArtKeyRow {
-  readonly kind: 'backdrop' | 'part' | 'creature';
+  readonly kind: 'backdrop' | 'part' | 'creature' | 'cutout';
   readonly id: Id;
   readonly key: string;
   readonly status: ArtStatus;
@@ -302,6 +303,7 @@ export function artReport(def: PageDef): ArtKeyRow[] {
     { kind: 'backdrop', id: def.id, key: def.backdrop, status: status(hasBackdropArt(def.backdrop)) },
     ...def.parts.map((p): ArtKeyRow => ({ kind: 'part', id: p.id, key: p.art, status: status(!isPlaceholder(p.art)) })),
     ...def.creatures.map((c): ArtKeyRow => ({ kind: 'creature', id: c.id, key: c.art, status: status(hasCreatureArt(c.art)) })),
+    ...(def.cutouts ?? []).map((c): ArtKeyRow => ({ kind: 'cutout', id: def.id, key: c.art, status: status(cutoutImage(c.art) !== null) })),
   ];
 }
 

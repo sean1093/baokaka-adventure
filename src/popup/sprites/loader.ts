@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
-import { frameFile, pickScale, type Scale, type SpriteDef } from './manifest';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { frameFile, gradedStem, pickScale, type Scale, type SpriteDef } from './manifest';
 import { SPRITE_MANIFEST } from './sprites.gen';
 
 /**
@@ -14,6 +14,10 @@ import { SPRITE_MANIFEST } from './sprites.gen';
  * (`img.decode()`), and the decoded image is kept referenced so it stays warm; `SpriteAnim` draws a
  * placeholder card in the frame's box until its frames are ready (no layout shift). A page preloads
  * the core set plus its chapter's sprites (`pageSprites`); later chapters' poses load with them.
+ *
+ * **Grades** (#96, D-59): a page's characters are drawn in its chapter's half grade, a baked
+ * variant of each frame (`chapterGradeKey`, the `SpriteGrade` context); a page downloads only its
+ * chapter's variant.
  */
 
 const FILES = import.meta.glob<string>('../assets/sprites/**/*.webp', { eager: true, query: '?url', import: 'default' });
@@ -21,6 +25,27 @@ const PREFIX = '../assets/sprites/';
 
 /** The URL of a frame stem at a scale (undefined when the file is missing: the test forbids it). */
 export const frameUrl = (stem: string, scale: Scale): string | undefined => FILES[PREFIX + frameFile(stem, scale)];
+
+/**
+ * The character grade a chapter shows (#96, D-59: half the chapter's grade, baked per variant), or
+ * undefined when no variant was baked for it (the ungraded frames are drawn).
+ */
+export function chapterGradeKey(chapter: number): string | undefined {
+  return Object.entries(SPRITE_MANIFEST.grades).find(([, g]) => g.chapters.includes(chapter))?.[0];
+}
+
+/** The stem a sprite's frame is drawn from under a grade: its graded variant when baked, else the plain frame. */
+export function shownStem(def: SpriteDef, frame: number, grade: string | undefined): string {
+  const stem = def.files[frame];
+  return grade !== undefined && def.graded?.[grade] !== undefined ? gradedStem(stem, grade) : stem;
+}
+
+/**
+ * The grade the sprites below are drawn in (a page provides its chapter's: `PageView`). Outside a
+ * page (the album, PageLab's sheets) it is undefined: the ungraded frames.
+ */
+export const SpriteGrade = createContext<string | undefined>(undefined);
+export const useSpriteGrade = (): string | undefined => useContext(SpriteGrade);
 
 /** Every file the glob found, as stems with scale (the files ↔ manifest test). */
 export const bundledFiles = (): string[] => Object.keys(FILES).map((k) => k.slice(PREFIX.length));
@@ -31,11 +56,11 @@ export function spriteDef(id: string): SpriteDef {
   return def;
 }
 
-/** The URLs of a sprite's frames (one animation's, or all) at a scale. */
-export function spriteUrls(id: string, scale: Scale, anim?: string): string[] {
+/** The URLs of a sprite's frames (one animation's, or all) at a scale, in a grade (its variant when baked). */
+export function spriteUrls(id: string, scale: Scale, anim?: string, grade?: string): string[] {
   const def = spriteDef(id);
   const frames = anim === undefined ? def.files.map((_, i) => i) : [...new Set(def.anims[anim]?.frames ?? [])];
-  return frames.map((i) => frameUrl(def.files[i], scale)).filter((u): u is string => u !== undefined);
+  return frames.map((i) => frameUrl(shownStem(def, i, grade), scale)).filter((u): u is string => u !== undefined);
 }
 
 export const floorUrl = (scale: Scale): string | undefined => frameUrl(SPRITE_MANIFEST.floor.file, scale);
@@ -54,10 +79,14 @@ export function pageSprites(chapter: number): string[] {
     .map(([id]) => id);
 }
 
-/** Bytes a list of sprites costs at a scale (the payload report and its test). */
-export function payloadBytes(ids: readonly string[], scale: Scale): number {
+/** Bytes a list of sprites costs at a scale, in a grade (the payload report and its test). */
+export function payloadBytes(ids: readonly string[], scale: Scale, grade?: string): number {
   const k = scale === 2 ? 0 : 1;
-  return ids.reduce((n, id) => n + spriteDef(id).bytes.reduce((m, b) => m + b[k], 0), 0) + SPRITE_MANIFEST.floor.bytes[k];
+  return ids.reduce((n, id) => {
+    const def = spriteDef(id);
+    const bytes = (grade !== undefined ? def.graded?.[grade]?.bytes : undefined) ?? def.bytes;
+    return n + bytes.reduce((m, b) => m + b[k], 0);
+  }, 0) + SPRITE_MANIFEST.floor.bytes[k];
 }
 
 // ——— The loader ———
@@ -159,13 +188,13 @@ export function useFramesReady(urls: readonly string[], loader: SpriteLoader = s
  * Preloads sprites (every frame, plus the floor ellipse) and reports `true` once all of it has
  * settled (decoded, or failed: the placeholder stays and the game goes on).
  */
-export function useSpritesPreload(ids: readonly string[], loader: SpriteLoader = spriteLoader): boolean {
+export function useSpritesPreload(ids: readonly string[], loader: SpriteLoader = spriteLoader, grade?: string): boolean {
   const key = ids.join(',');
   const urls = useMemo(() => {
     const scale = deviceScale();
     const floor = floorUrl(scale);
-    return [...(key === '' ? [] : key.split(',')).flatMap((id) => spriteUrls(id, scale)), ...(floor ? [floor] : [])];
-  }, [key]);
+    return [...(key === '' ? [] : key.split(',')).flatMap((id) => spriteUrls(id, scale, undefined, grade)), ...(floor ? [floor] : [])];
+  }, [key, grade]);
   const [done, setDone] = useState(() => loader.settled(urls));
   useEffect(() => {
     let live = true;
@@ -184,5 +213,5 @@ export function useSpritesPreload(ids: readonly string[], loader: SpriteLoader =
  */
 export function usePagePreload(chapter: number, loader: SpriteLoader = spriteLoader): boolean {
   const ids = useMemo(() => pageSprites(chapter), [chapter]);
-  return useSpritesPreload(ids, loader);
+  return useSpritesPreload(ids, loader, chapterGradeKey(chapter));
 }

@@ -76,3 +76,13 @@ export function fitToHit(part: PartDef, box: { x: number; y: number; w: number; 
   const s = Math.min(max, hb.w / box.w, hb.h / box.h);
   return { tx: hb.cx - (box.x + box.w / 2) * s, ty: hb.cy - (box.y + box.h / 2) * s, s };
 }
+
+/**
+ * A baked part bitmap (#96, `npm run bake:popup`) as an SVG string: the image over its local box,
+ * shifted so `origin` (a pivot, a hinge point) sits at the local (0, 0). Its cut-edge rim and
+ * stacked shadow are in the bitmap: no filter at runtime (GDD § 3.9).
+ */
+export function bakedImage(img: { url: string; box: { x: number; y: number; w: number; h: number } }, origin: readonly [number, number] = [0, 0]): string {
+  const { x, y, w, h } = img.box;
+  return `<image data-baked="part" href="${img.url}" x="${r2(x - origin[0])}" y="${r2(y - origin[1])}" width="${w}" height="${h}" preserveAspectRatio="none"/>`;
+}

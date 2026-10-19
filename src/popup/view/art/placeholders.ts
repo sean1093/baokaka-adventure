@@ -38,10 +38,13 @@ const radial = (id: string, stops: readonly (readonly [number, string, number?])
   + stops.map(([o, c, a]) => `<stop offset="${o}" stop-color="${c}"${a === undefined ? '' : ` stop-opacity="${a}"`}/>`).join('')
   + `</radialGradient>`;
 
-/** The page's `<defs>`: the kit's paints and the stage's own gradients (sky per chapter, materials), scoped by `ctx`. */
-export function stageDefs(ctx: KitCtx, sky: PopupChapterSky): string {
+/**
+ * The page's `<defs>`: the kit's paints and the stage's own gradients (sky per chapter, materials),
+ * scoped by `ctx`. `all` emits every kit def (the bake, whose art may use any depth filter).
+ */
+export function stageDefs(ctx: KitCtx, sky: PopupChapterSky, { all = false }: { all?: boolean } = {}): string {
   const id = ctx.id;
-  return kitDefs(ctx, STAGE_DEFS, [
+  return kitDefs(ctx, all ? undefined : STAGE_DEFS, [
     lin(id('sky'), [[0, sky.top], [0.45, mixHex(sky.top, sky.horizon, 0.38)], [0.82, mixHex(sky.top, sky.horizon, 0.72)], [1, sky.horizon]]),
     lin(id('cloudFar'), [[0, mixHex(sky.top, sky.horizon, 0.42)], [1, mixHex(sky.top, sky.horizon, 0.3)]]),
     lin(id('cloudNear'), [[0, mixHex(sky.top, sky.horizon, 0.62)], [1, mixHex(sky.top, sky.horizon, 0.44)]]),

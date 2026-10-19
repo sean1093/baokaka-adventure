@@ -5,8 +5,10 @@ import POSES from '../../../docs/art/v2/baked/poses.json';
 import STILLS from '../../../docs/art/v2/baked/manifest.json';
 import { BAKE_PAD, POSE_CONFIG } from './config';
 import { eventsBetween, frameAt, frameOfStep, manualClock, rafClock, stepAt } from './clock';
-import { bundledFiles, floorUrl, frameUrl, pageSprites, payloadBytes, spriteDef, SpriteLoader, spriteUrls } from './loader';
-import { fromAnchor, framePoint, isMirrored, pickScale, spriteTransform, toPage, validateManifest, type SpriteAnimDef, type SpriteDef } from './manifest';
+import { bundledFiles, chapterGradeKey, floorUrl, frameUrl, pageSprites, payloadBytes, shownStem, spriteDef, SpriteLoader, SpriteGrade, spriteUrls } from './loader';
+import { fromAnchor, framePoint, gradedStem, isMirrored, pickScale, spriteTransform, toPage, validateManifest, type SpriteAnimDef, type SpriteDef } from './manifest';
+import { gradeKey, standeeGrade } from '../env/grade';
+import { PAGES } from '../pages';
 import { SpriteAnim, spriteHead } from './SpriteAnim';
 import { SPRITE_IDS, SPRITE_MANIFEST } from './sprites.gen';
 
@@ -58,7 +60,14 @@ describe('manifest ↔ committed files', () => {
 
   test('no file is missing from or extra to the manifest, and Vite bundles exactly those', () => {
     const expected = new Set<string>();
-    for (const [, s] of sprites) for (const stem of s.files) for (const scale of [2, 3]) expected.add(`${stem}@${scale}x.webp`);
+    for (const [, s] of sprites) {
+      for (const stem of s.files) {
+        for (const scale of [2, 3]) {
+          expected.add(`${stem}@${scale}x.webp`);
+          for (const key of Object.keys(s.graded ?? {})) expected.add(`${gradedStem(stem, key)}@${scale}x.webp`);
+        }
+      }
+    }
     for (const scale of [2, 3]) expected.add(`${M.floor.file}@${scale}x.webp`);
     expect(new Set(Object.keys(FILES))).toEqual(expected);
     expect(new Set(bundledFiles())).toEqual(expected);
@@ -68,14 +77,70 @@ describe('manifest ↔ committed files', () => {
     for (const [id, s] of sprites) {
       for (const stem of s.files) {
         for (const scale of [2, 3]) {
-          const buf = FILES[`${stem}@${scale}x.webp`];
-          expect(ascii(buf, 0, 4), id).toBe('RIFF');
-          expect(ascii(buf, 8, 12), id).toBe('WEBP');
-          const [w, h] = webpSize(buf);
-          expect([w, h], `${stem}@${scale}x`).toEqual([s.size[0] * scale, s.size[1] * scale]);
+          for (const file of [stem, ...Object.keys(s.graded ?? {}).map((key) => gradedStem(stem, key))]) {
+            const buf = FILES[`${file}@${scale}x.webp`];
+            expect(ascii(buf, 0, 4), id).toBe('RIFF');
+            expect(ascii(buf, 8, 12), id).toBe('WEBP');
+            const [w, h] = webpSize(buf);
+            expect([w, h], `${file}@${scale}x`).toEqual([s.size[0] * scale, s.size[1] * scale]);
+          }
         }
       }
     }
+  });
+
+  test('graded variants are recorded with their bytes', () => {
+    for (const [id, s] of sprites) {
+      for (const [key, g] of Object.entries(s.graded ?? {})) {
+        s.files.forEach((stem, i) => {
+          for (const [k, scale] of [[0, 2], [1, 3]] as const) expect(FILES[`${gradedStem(stem, key)}@${scale}x.webp`].length, `${id} ${key} ${i}`).toBe(g.bytes[i][k]);
+        });
+      }
+    }
+  });
+});
+
+describe('the half grade (#96, D-59)', () => {
+  test('every chapter with pages and a grade has its variant; chapters 0–2 share one (×0.775, 0.785, 0.86)', () => {
+    const chapters = [...new Set(PAGES.map((p) => p.chapter))];
+    for (const ch of chapters) expect(chapterGradeKey(ch), `chapter ${ch}`).toBe(gradeKey(standeeGrade(ch)));
+    expect(gradeKey(standeeGrade(0))).toBe('775-785-860');
+    expect(gradeKey(standeeGrade(2))).toBe(gradeKey(standeeGrade(0)));
+    expect(M.grades['775-785-860'].by).toEqual([0.775, 0.785, 0.86]);
+  });
+
+  test('every pose a graded chapter preloads has that chapter’s variant; stills and UI poses stay ungraded', () => {
+    for (const [key, g] of Object.entries(M.grades)) {
+      for (const ch of g.chapters) for (const id of pageSprites(ch)) expect(spriteDef(id).graded?.[key], `${id} in chapter ${ch}`).toBeDefined();
+    }
+    for (const [id, s] of sprites) if (s.kind === 'still' || s.group === 'ui') expect(s.graded, id).toBeUndefined();
+  });
+
+  test('URLs pick the graded variant when there is one, else the plain frame', () => {
+    const key = chapterGradeKey(1)!;
+    const crawl = spriteDef('baokaka.crawl');
+    expect(shownStem(crawl, 0, key)).toBe(gradedStem(crawl.files[0], key));
+    expect(shownStem(crawl, 0, undefined)).toBe(crawl.files[0]);
+    expect(shownStem(spriteDef('baokaka-stand'), 0, key)).toBe(spriteDef('baokaka-stand').files[0]);
+    expect(spriteUrls('baokaka.crawl', 2, 'main', key)[0]).toBe(frameUrl(gradedStem(crawl.files[0], key), 2));
+    expect(chapterGradeKey(99)).toBeUndefined();
+  });
+
+  test('a page draws its chapter’s variant (the SpriteGrade context)', async () => {
+    const key = chapterGradeKey(0)!;
+    const loader = new SpriteLoader(async () => 1);
+    await loader.preload(spriteUrls('baokaka.sit', 2, 'main', key));
+    const draw = (grade: string | undefined) =>
+      renderToStaticMarkup(createElement(SpriteGrade.Provider, { value: grade }, createElement('svg', null, createElement(SpriteAnim, { sprite: 'baokaka.sit', dpr: 2, loader, playing: false }))));
+    const sit = spriteDef('baokaka.sit');
+    expect(draw(key)).toContain(`href="${frameUrl(gradedStem(sit.files[0], key), 2)}"`);
+    // Outside a page (no grade) the plain frames are asked for: not loaded here, so the placeholder card
+    expect(draw(undefined)).toContain('data-placeholder');
+  });
+
+  test('the graded core set stays under the core budget (≤ 400 KB @3x)', () => {
+    const key = chapterGradeKey(0)!;
+    expect(payloadBytes(pageSprites(0), 3, key)).toBeLessThanOrEqual(400 * 1024);
   });
 });
 

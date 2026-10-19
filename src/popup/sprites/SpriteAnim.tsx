@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { POPUP as C } from '../../art/palette';
 import { eventsBetween, frameOfStep, spriteClock, stepAt, type SpriteClock } from './clock';
-import { deviceScale, floorUrl, frameUrl, spriteDef, spriteUrls, useFramesReady, type SpriteLoader } from './loader';
+import { deviceScale, floorUrl, frameUrl, shownStem, spriteDef, spriteUrls, useFramesReady, useSpriteGrade, type SpriteLoader } from './loader';
 import { spriteTransform, toPage, type Facing, type Scale } from './manifest';
 import { SPRITE_MANIFEST, type SpriteId } from './sprites.gen';
 
@@ -18,6 +18,7 @@ import { SPRITE_MANIFEST, type SpriteId } from './sprites.gen';
  * - **Loading**: until every frame of the animation is decoded, a placeholder card fills the
  *   frame's box (same size: no layout shift). Timing runs from mount regardless, so the game never
  *   waits on the network.
+ * - **Grade** (#96): inside a page (`SpriteGrade`), the chapter's half-graded variant is drawn.
  * - **Floor contact** (bible § 5): the shared soft ellipse under the footprint, behind the card,
  *   nudged toward the light's fall (+x).
  *
@@ -77,7 +78,9 @@ export function SpriteAnim({
   const def = spriteDef(sprite);
   const a = def.anims[anim] ?? def.anims.main;
   const res = useMemo(() => dpr ?? deviceScale(), [dpr]);
-  const urls = useMemo(() => spriteUrls(sprite, res, anim in def.anims ? anim : 'main'), [sprite, res, anim, def]);
+  // A page's chapter grade (#96): its baked half-graded variant of each frame
+  const grade = useSpriteGrade();
+  const urls = useMemo(() => spriteUrls(sprite, res, anim in def.anims ? anim : 'main', grade), [sprite, res, anim, def, grade]);
   const ready = useFramesReady(urls, loader);
   const [step, setStep] = useState(0);
   const cb = useRef({ onDone, onEvent });
@@ -119,7 +122,7 @@ export function SpriteAnim({
   const n = a.frames.length;
   const index = controlled ? ((Math.floor(shown) % n) + n) % n : live ? frameOfStep(a, step) : a.hold;
   const frame = a.frames[index];
-  const href = ready ? frameUrl(def.files[frame], res) : undefined;
+  const href = ready ? frameUrl(shownStem(def, frame, grade), res) : undefined;
   const s = scale * def.mapScale;
   const [w, h] = def.size;
 

@@ -110,7 +110,7 @@ describe('targets (what a finger can touch)', () => {
   test('the 土地公 is touchable only while he shows', () => {
     expect(targetsOf(c1p2, initialState(c1p2)).some((x) => x.kind === 'tudigong')).toBe(false);
     const flipped = withPartState(initialState(c1p2), 'board', 'flip');
-    expect(targetsOf(c1p2, flipped).find((x) => x.kind === 'tudigong')?.hit).toEqual({ cx: 120, cy: 160, r: TUDIGONG_R });
+    expect(targetsOf(c1p2, flipped).find((x) => x.kind === 'tudigong')?.hit).toEqual({ cx: 236, cy: 98, r: TUDIGONG_R });
   });
 
   test('no Mocha on 0-1: no perches, no Mocha (its 土地公 always shows); done pages drop Baokaka', () => {
@@ -241,10 +241,10 @@ describe('GestureTracker: taps', () => {
 
   test('a tap pauses on the way down, queues on the way up, resumes', () => {
     const g = new GestureTracker();
-    const down = g.down(1, [100, 150], 0, pageWorld(c1p2, s0));
+    const down = g.down(1, [100, 70], 0, pageWorld(c1p2, s0));
     expect(kinds(down)).toEqual(['pause']);
-    expect(g.flags.finger).toEqual([100, 150]);
-    const up = g.up(1, [100, 150], 80);
+    expect(g.flags.finger).toEqual([100, 70]);
+    const up = g.up(1, [100, 70], 80);
     expect(inputs(up)).toEqual([{ t: 'tap', id: 'board' }]);
     expect(kinds(up).at(-1)).toBe('resume');
     expect(g.flags.finger).toBeNull();
@@ -267,8 +267,8 @@ describe('GestureTracker: taps', () => {
 
   test('the 土地公 tap is an event, not an input, and he wins over the board he hides behind', () => {
     const g = new GestureTracker();
-    g.down(1, [120, 160], 0, pageWorld(c1p2, withPartState(s0, 'board', 'flip')));
-    const up = g.up(1, [120, 160], 40);
+    g.down(1, [232, 96], 0, pageWorld(c1p2, withPartState(s0, 'board', 'flip')));
+    const up = g.up(1, [232, 96], 40);
     expect(events(up)).toEqual(['tap', 'tudigong']);
     expect(inputs(up)).toEqual([]);
   });
@@ -276,31 +276,31 @@ describe('GestureTracker: taps', () => {
   test('under 8 px of travel is still a tap; double taps within 250 ms count once', () => {
     const g = new GestureTracker();
     const w = pageWorld(c1p2, s0);
-    g.down(1, [100, 150], 0, w);
-    g.move(1, [107, 150]);
-    expect(inputs(g.up(1, [107, 150], 60))).toEqual([{ t: 'tap', id: 'board' }]);
-    g.down(2, [100, 150], 100, w);
-    expect(inputs(g.up(2, [100, 150], 160))).toEqual([]);
-    g.down(3, [100, 150], 300, w);
-    expect(inputs(g.up(3, [100, 150], 340))).toEqual([{ t: 'tap', id: 'board' }]);
+    g.down(1, [100, 70], 0, w);
+    g.move(1, [107, 70]);
+    expect(inputs(g.up(1, [107, 70], 60))).toEqual([{ t: 'tap', id: 'board' }]);
+    g.down(2, [100, 70], 100, w);
+    expect(inputs(g.up(2, [100, 70], 160))).toEqual([]);
+    g.down(3, [100, 70], 300, w);
+    expect(inputs(g.up(3, [100, 70], 340))).toEqual([{ t: 'tap', id: 'board' }]);
   });
 
   test('a wobbly tap on a tap-only element counts if the finger lifts over it; not if it slid away', () => {
     const w = pageWorld(c1p2, s0);
     const g = new GestureTracker();
-    g.down(1, [100, 150], 0, w);
-    g.move(1, [120, 160]);
-    expect(inputs(g.up(1, [120, 160], 60))).toEqual([{ t: 'tap', id: 'board' }]);
+    g.down(1, [100, 70], 0, w);
+    g.move(1, [120, 80]);
+    expect(inputs(g.up(1, [120, 80], 60))).toEqual([{ t: 'tap', id: 'board' }]);
     const h = new GestureTracker();
-    h.down(1, [100, 150], 0, w);
+    h.down(1, [100, 70], 0, w);
     h.move(1, [100, 400]);
     expect(inputs(h.up(1, [100, 400], 60))).toEqual([]);
   });
 
   test('a miss is caught by the magnet', () => {
     const g = new GestureTracker();
-    g.down(1, [138, 200], 0, pageWorld(c1p2, s0)); // 16 units under the board's hit area
-    expect(inputs(g.up(1, [138, 200], 50))).toEqual([{ t: 'tap', id: 'board' }]);
+    g.down(1, [140, 120], 0, pageWorld(c1p2, s0)); // 16 units under the board's hit area
+    expect(inputs(g.up(1, [140, 120], 50))).toEqual([{ t: 'tap', id: 'board' }]);
   });
 });
 
@@ -397,7 +397,7 @@ describe('GestureTracker: palm, second finger, locks, hold', () => {
     const g = new GestureTracker();
     const w = pageWorld(c1p2, s0);
     expect(kinds(g.down(1, [80, 610], 0, w))).toEqual(['pause']);
-    expect(g.down(2, [100, 150], 10, w)).toEqual([]);
+    expect(g.down(2, [100, 70], 10, w)).toEqual([]);
     g.move(2, [300, 150]); // the second finger drags nothing
     g.move(1, [145, 610]);
     expect(kinds(g.up(2, [300, 150], 100))).toEqual([]);
@@ -420,8 +420,8 @@ describe('GestureTracker: palm, second finger, locks, hold', () => {
     expect(inputs(fx)).toEqual([]);
     expect(kinds(fx)).toEqual(['resume']);
     // The next touch works again
-    g.down(5, [100, 150], 400, w);
-    expect(inputs(g.up(5, [100, 150], 450))).toEqual([{ t: 'tap', id: 'board' }]);
+    g.down(5, [100, 70], 400, w);
+    expect(inputs(g.up(5, [100, 70], 450))).toEqual([{ t: 'tap', id: 'board' }]);
   });
 
   test('a locked part wobbles, Mocha glares, nope is heard; no state change is queued', () => {
@@ -455,7 +455,7 @@ describe('GestureTracker: palm, second finger, locks, hold', () => {
     moved.move(1, [300, 60]);
     expect(moved.hold(HOLD_MS)).toEqual([]);
     const onPart = new GestureTracker();
-    onPart.down(1, [100, 150], 0, w);
+    onPart.down(1, [100, 70], 0, w);
     expect(onPart.holdPending).toBe(false);
     const overlay = new GestureTracker();
     overlay.down(1, [330, 60], 0, { ...w, targets: [], hold: false });
