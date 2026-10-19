@@ -785,6 +785,11 @@ Each of the following is an error:
 11. Exactly one `goal` attractor. `tudigong` is present. `mischief` is present.
 12. The cascade never exceeds 32 iterations (fuzzed by running the solver).
 13. Warning only: a custom reaction function is present.
+14. Warning only: in the initial state, Baokaka's target ties with another candidate on priority, reachability and path length, so only distance or id decides (§ 6 risk 4).
+15. Warning only: a part's `lockedWhen`/`stateWhen` reads a part that reacts to the same event earlier in data order, so it sees that event's new state while reaction `when`s see the old one (D-45).
+16. Warning only: a perch on a `wet`/`steam` node has no `blockedWhen`, so Mocha refuses it forever (C7).
+
+**For engineers.** `core/lint.ts` (#86) implements this as `lintPage(def, script?) → { errors, warnings }`; every issue has a stable code (`L01-unknown-ref`, `L05-vanishing-ground`, `L09-hit-overlap` …; the table is in the file header), the page id and the ids it is about. The readings this list leaves open are in D-47. In short: rule 1 also covers enum values (presets, inputs, edge kinds, events, words), `drop`/`push`/`followsPushable` kinds, perch-node sharing, the reserved attractor id `'mocha'` and a `winged` creature's sky position; rule 3 checks the **compiled** states (`compilePart`'s defaults), `input ∈ PRESETS[preset].inputs`, pushable states, and the 2–4 / 2–8 stop counts; rule 4 also requires a gate's doorway node to stay put; rule 5 = a node an edge leads to never leaves the 390 × 560 page and never rides a pushable; rule 6 = a node Baokaka can stand on is never attached to a pushable or a carrier; rule 7's static half = every pushable is pushed by a perch and reactions may only put it back `onPerch` (`solutionPushables` names the ones a solution relies on; the dead-end half is the solver's); rule 9 measures interactive parts only (input not `none`), circles by radius, overlap as a share of the smaller area; text counts code points; rule 12's static half errors on cycles of unconditional `next`/`prev`/`toggle` reactions and warns (`L12-cascade-cycle`) on any other reaction cycle; rule 13 flags any function value in the page data. Line keys are checked only when a `script` table is passed. The lint never throws and takes ≈ 0.1 ms per page.
 
 ### 3.7 Solver (solvability as a test)
 
