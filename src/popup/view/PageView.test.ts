@@ -216,14 +216,15 @@ describe('PageView character animations (#95)', () => {
   const s0 = initialState(def);
   const pose = (html: string, actor: 'baby' | 'mocha') => html.match(new RegExp(`data-actor="${actor}"[^>]*data-pose="([^"]*)"`))?.[1];
 
-  test('idle sits; reaching reaches; a finger down is touch-watch (fallback, marked)', () => {
+  test('idle sits; reaching reaches; a finger down is touch-watch (its own frame since #141)', () => {
     expect(pose(render(def, s0, s0), 'baby')).toBe('sit');
     let s = s0;
     for (let i = 0; i < 3; i++) s = step(def, s, { t: 'none' }).state;
     expect(pose(render(def, s, s), 'baby')).toBe('reach');
     const watching = render(def, s, s, 0, false, { ...NO_GESTURE, finger: [300, 200] });
     expect(pose(watching, 'baby')).toBe('touchWatch');
-    expect(watching).toMatch(/data-actor="baby"[^>]*data-fallback=""/);
+    expect(watching).toMatch(/data-sprite="baokaka\.touchwatch"/);
+    expect(watching).not.toMatch(/data-fallback/);
   });
 
   test('Mocha hops along his step (jump frames) and turns toward where he goes; he glares while the finger is on a locked part', () => {
@@ -236,6 +237,24 @@ describe('PageView character animations (#95)', () => {
     const locked = { part: 'train', serial: 1 };
     expect(pose(render(def, s0, s0, 0, false, { ...NO_GESTURE, locked, finger: [100, 600] }), 'mocha')).toBe('glare');
     expect(pose(render(def, s0, s0, 0, false, { ...NO_GESTURE, locked }), 'mocha')).toBe('sit');
+  });
+
+  test('carried along by the train he giggles (ride-giggle, #141)', () => {
+    let s = step(def, s0, { t: 'set', part: 'train', to: 'half' }).state;
+    for (let i = 0; i < 6; i++) s = step(def, s, { t: 'none' }).state;
+    const r = step(def, s, { t: 'set', part: 'train', to: 'out' });
+    expect(r.events.some((e) => e.type === 'ride')).toBe(true);
+    const html = render(def, s, r.state, 200);
+    expect(pose(html, 'baby')).toBe('rideGiggle');
+    expect(html).toMatch(/data-sprite="baokaka\.giggle"/);
+  });
+
+  test('in a box perch Mocha is drawn at the perch as his head and paws over the rim (#141)', () => {
+    const boxed = { ...def, perches: def.perches.map((p) => (p.id === 'pillar' ? { ...p, hidesMocha: true } : p)) };
+    const s1 = step(boxed, s0, { t: 'mocha', perch: 'pillar' }).state;
+    const html = render(boxed, s1, s1);
+    expect(pose(html, 'mocha')).toBe('inBox');
+    expect(html).toMatch(/data-sprite="mocha\.inbox"/);
   });
 
   test('the eye-contact tick faces the camera from the landing on; the next tick pushes', () => {

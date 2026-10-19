@@ -3,8 +3,8 @@ import type { BabyMode, EdgeKind, Growth, Id, PageDef, SimState, Word } from '..
 import type { SpriteId } from '../../sprites';
 
 /**
- * Which animation each simulation mode shows (#95; GDD § 3.9 sprite needs, § 2.2.7 modes, § 2.3
- * Mocha; Art v2 § 5 coverage). Pure tables and functions: `Baby.tsx` / `Mocha.tsx` draw what these
+ * Which animation each simulation mode shows (#95, #141; GDD § 3.9 sprite needs, § 2.2.7 modes,
+ * § 2.3 Mocha; Art v2 § 5 coverage). Pure tables and functions: `Baby.tsx` / `Mocha.tsx` draw what these
  * return, `PageView` feeds them the tick, PageLab's sprite report (`#/pagelab?section=sprites`)
  * reads `FRAME_REPORT`.
  *
@@ -12,10 +12,15 @@ import type { SpriteId } from '../../sprites';
  *   `hold`, cuddle → `hug`, say → `point`, stand-cruise → `pull`/`wobble`, Mocha hop/land →
  *   `jump`, eye contact → `push` frame 1 (looking at the camera).
  * - **Cycles** are 8 frames (crawl, walk, Mocha walk), not the GDD's 6.
- * - **Fallbacks** stand in for frames not drawn yet (#141): look L/R → `sit` with a card flip away
- *   and back; touch-watch → `sit` tilted toward the finger; watch-sway → `sit` rocking ±3°;
- *   ride-giggle → `bounce`; Mocha glare → `sit` with the stiff lean; purr → `loaf`; in-box → the
- *   standee hidden behind the box art. Each one is logged once in dev (`noteFrameFallback`).
+ * - **#141's frames:** look L/R → `look` (over his shoulder, then far ahead), watch-sway → `watch`
+ *   (2, pingpong), touch-watch → `touchwatch` (looking up at the finger; the standee still tilts 3°
+ *   toward it), ride-giggle → `giggle`, reach → `reach` (2, pingpong), carried → `carried`, climb →
+ *   `climb` (pull-up, knee-over, up: frames over the step's progress), Mocha glare → `glare` (plus
+ *   the stiff lean per touch), purr → `purr`, in-box → `inbox` (head and paws, cut flat at the rim,
+ *   drawn at the box perch in front of the box art).
+ * - **Fallbacks** stand in for frames not drawn yet; each one is logged once in dev
+ *   (`noteFrameFallback`). Since #141 none is left for the GDD's rows (stand-cruise has 3 of its
+ *   4 frames: `pull` + `wobble`, a later row).
  * - **Growth guard** (bible § 5): art never shows a pose he can't do yet. Standing poses need the
  *   growth stage that allows them (cruise 2, walk 3); otherwise he crawls.
  */
@@ -57,15 +62,7 @@ export interface ActorAnim {
   readonly play: FramePlay;
   /** The GDD § 3.9 frame this is (null: a delivered extra with no GDD row, e.g. the done clap) */
   readonly gdd: string | null;
-  /** Watch-sway fallback: the standee rocks ±3° (a CSS loop) */
-  readonly sway?: boolean;
-  /** Look L/R fallback: a card flip away and back over the tick */
-  readonly lookAround?: boolean;
-  /** Mocha in a box: the standee is hidden behind the box art */
-  readonly hidden?: boolean;
-  /** Mocha's glare: the stiff lean (`.gx-glare`) */
-  readonly glare?: boolean;
-  /** A stand-in for a frame not drawn yet (#141): what it is, for the dev log and the report */
+  /** A stand-in for a frame not drawn yet: what it is, for the dev log and the report */
   readonly fallback?: string;
 }
 
@@ -76,6 +73,7 @@ export const HOP_AT = [0, 0.18, 0.82] as const;
 
 /** Lowest growth stage (GDD § 2.5) each standing pose needs; anything else shows from stage 0. */
 export const GROWTH_NEEDS: Readonly<Partial<Record<SpriteId, Growth>>> = {
+  'baokaka.climb': 1,
   'baokaka.pull': 2,
   'baokaka.wobble': 2,
   'baokaka.walk': 3,
@@ -98,15 +96,15 @@ const clock = (sprite: SpriteId, gdd: string | null): ActorAnim => ({ sprite, pl
 export const BABY_MODE_ANIM: Readonly<Record<BabyMode, ActorAnim>> = {
   idle: hold('baokaka.sit', 'sit'),
   moving: { sprite: 'baokaka.crawl', play: { kind: 'stride' }, gdd: 'crawl' },
-  reaching: hold('baokaka.reach', 'reach'),
-  looking: { ...hold('baokaka.sit', 'look'), lookAround: true, fallback: 'look L/R → sit + card flip away and back' },
+  reaching: clock('baokaka.reach', 'reach'),
+  looking: clock('baokaka.look', 'look'),
   crying: clock('baokaka.cry', 'cry'),
-  watching: { ...hold('baokaka.sit', 'watchSway'), sway: true, fallback: 'watch-sway → sit + ±3° rock' },
+  watching: clock('baokaka.watch', 'watchSway'),
   cuddling: hold('baokaka.hug', 'cuddle'),
   eating: hold('baokaka.eat', 'eat'),
   grabbing: hold('baokaka.hold', 'grab'),
   saying: hold('baokaka.point', 'say'),
-  carried: { ...hold('baokaka.sit', 'carried'), fallback: 'carried → sit' },
+  carried: hold('baokaka.carried', 'carried'),
   linked: { sprite: 'baokaka.crawl', play: { kind: 'stride' }, gdd: 'crawl' },
   done: clock('baokaka.clap', null),
 };
@@ -140,11 +138,11 @@ const RIDE_KEEPS: ReadonlySet<BabyMode> = new Set(['crying', 'saying', 'eating',
 export function babyAnim({ mode, edge, riding = false, growth, watching = false, word = null }: BabyAnimInput): ActorAnim {
   let anim: ActorAnim;
   if (watching) {
-    anim = { ...hold('baokaka.sit', 'touchWatch'), fallback: 'touch-watch → sit + 3° tilt toward the finger' };
+    anim = hold('baokaka.touchwatch', 'touchWatch');
   } else if (edge !== null && (mode === 'moving' || mode === 'linked')) {
     anim = moveAnim(edge);
   } else if (riding && !RIDE_KEEPS.has(mode)) {
-    anim = { ...clock('baokaka.bounce', 'rideGiggle'), fallback: 'ride-giggle → bounce' };
+    anim = hold('baokaka.giggle', 'rideGiggle');
   } else if (mode === 'saying' && word !== null && WORD_POSE[word] !== undefined) {
     const sprite = WORD_POSE[word]!;
     anim = sprite === 'baokaka.wave' || sprite === 'baokaka.refuse' ? clock(sprite, 'say') : hold(sprite, 'say');
@@ -157,6 +155,9 @@ export function babyAnim({ mode, edge, riding = false, growth, watching = false,
   return guardGrowth(anim, growth);
 }
 
+/** The climb's pull-up → knee-over → up split of a climb step (Art v2 § 5, `climb`). */
+export const CLIMB_AT = [0, 1 / 3, 2 / 3] as const;
+
 /** The step along one edge, by the edge's kind. */
 function moveAnim(edge: EdgeKind): ActorAnim {
   switch (edge) {
@@ -165,7 +166,7 @@ function moveAnim(edge: EdgeKind): ActorAnim {
     case 'walk':
       return { sprite: 'baokaka.walk', play: { kind: 'stride' }, gdd: 'walk' };
     case 'climb':
-      return { sprite: 'baokaka.crawl', play: { kind: 'stride' }, gdd: 'climb', fallback: 'climb → crawl' };
+      return { sprite: 'baokaka.climb', play: { kind: 'step', at: CLIMB_AT }, gdd: 'climb' };
     default:
       return { sprite: 'baokaka.crawl', play: { kind: 'stride' }, gdd: 'crawl' };
   }
@@ -188,12 +189,14 @@ export const MOCHA_STATE_ANIM: Readonly<Record<MochaState, ActorAnim>> = {
   eyeContact: hold('mocha.push', 'eyeContact', 0),
   // The tick after the stare: the shove (`push` frame 2) while the pushable starts its fall
   push: hold('mocha.push', 'push', 1),
-  glare: { ...hold('mocha.sit', 'glare'), glare: true, fallback: 'glare → sit + stiff lean' },
+  // The locked touch's stiff lean replays on top of it per touch (`Mocha.tsx`)
+  glare: hold('mocha.glare', 'glare'),
   puff: hold('mocha.puff', 'puff'),
   // 「喵？」 at an unreachable perch: he flicks his tail
   nope: clock('mocha.lure', null),
-  purr: { ...hold('mocha.loaf', 'purr'), fallback: 'purr → loaf' },
-  inBox: { ...hold('mocha.sit', 'inBox'), hidden: true, fallback: 'in-box → standee hidden behind the box' },
+  purr: hold('mocha.purr', 'purr'),
+  // Head and paws over the rim, drawn at the box perch in front of the box art
+  inBox: hold('mocha.inbox', 'inBox'),
 };
 
 export interface MochaAnimInput {
@@ -203,7 +206,7 @@ export interface MochaAnimInput {
   readonly landed?: boolean;
   /** The kind of that edge (`jump` or `squeeze`) */
   readonly edge?: EdgeKind | null;
-  /** He sits in a box perch (C9) */
+  /** He sits in a box perch (C9): only his head and paws show over the rim */
   readonly hidden?: boolean;
   /** The eye-contact tick before a push (C3, `mocha.stare`) */
   readonly staring?: boolean;
@@ -292,7 +295,7 @@ const logged = new Set<string>();
 export function noteFrameFallback(anim: ActorAnim): void {
   if (anim.fallback === undefined || logged.has(anim.fallback)) return;
   logged.add(anim.fallback);
-  if (import.meta.env.DEV && import.meta.env.MODE !== 'test') console.info(`[sprites] fallback frame (#141): ${anim.fallback}`);
+  if (import.meta.env.DEV && import.meta.env.MODE !== 'test') console.info(`[sprites] fallback frame: ${anim.fallback}`);
 }
 
 // ——— The missing-frame report (GDD § 3.9) ———
@@ -319,18 +322,18 @@ const d = (sprite: SpriteId, ...frames: number[]) => ({ sprite, frames });
 export const FRAME_REPORT: readonly FrameNeed[] = [
   { char: 'baokaka', id: 'crawl', label: 'crawl cycle', frames: 8, when: 'M1', delivered: [d('baokaka.crawl', 0, 1, 2, 3, 4, 5, 6, 7)] },
   { char: 'baokaka', id: 'sit', label: 'sit', frames: 1, when: 'M1', delivered: [d('baokaka.sit', 0)] },
-  { char: 'baokaka', id: 'reach', label: 'reach', frames: 2, when: 'M1', delivered: [d('baokaka.reach', 0)], fallback: 'the one frame held' },
-  { char: 'baokaka', id: 'look', label: 'look L/R', frames: 2, when: 'M1', delivered: [], fallback: BABY_MODE_ANIM.looking.fallback },
+  { char: 'baokaka', id: 'reach', label: 'reach', frames: 2, when: 'M1', delivered: [d('baokaka.reach', 0, 1)] },
+  { char: 'baokaka', id: 'look', label: 'look L/R', frames: 2, when: 'M1', delivered: [d('baokaka.look', 0, 1)] },
   { char: 'baokaka', id: 'cry', label: 'cry', frames: 2, when: 'M1', delivered: [d('baokaka.cry', 0, 1)] },
   { char: 'baokaka', id: 'grab', label: 'grab', frames: 1, when: 'M1', delivered: [d('baokaka.hold', 0)] },
   { char: 'baokaka', id: 'eat', label: 'eat', frames: 1, when: 'M1', delivered: [d('baokaka.eat', 0)] },
-  { char: 'baokaka', id: 'watchSway', label: 'watch-sway', frames: 2, when: 'M1', delivered: [], fallback: BABY_MODE_ANIM.watching.fallback },
+  { char: 'baokaka', id: 'watchSway', label: 'watch-sway', frames: 2, when: 'M1', delivered: [d('baokaka.watch', 0, 1)] },
   { char: 'baokaka', id: 'cuddle', label: 'cuddle', frames: 1, when: 'M1', delivered: [d('baokaka.hug', 0)] },
   { char: 'baokaka', id: 'say', label: 'say (mouth open)', frames: 1, when: 'M1', delivered: [d('baokaka.point', 0)] },
-  { char: 'baokaka', id: 'rideGiggle', label: 'ride-giggle', frames: 1, when: 'M1', delivered: [], fallback: 'ride-giggle → bounce' },
-  { char: 'baokaka', id: 'touchWatch', label: 'touch-watch head turn', frames: 1, when: 'M1', delivered: [], fallback: 'touch-watch → sit + 3° tilt toward the finger' },
-  { char: 'baokaka', id: 'carried', label: 'carried', frames: 1, when: 'later', delivered: [], fallback: BABY_MODE_ANIM.carried.fallback },
-  { char: 'baokaka', id: 'climb', label: 'climb', frames: 3, when: 'later', delivered: [], fallback: 'climb → crawl' },
+  { char: 'baokaka', id: 'rideGiggle', label: 'ride-giggle', frames: 1, when: 'M1', delivered: [d('baokaka.giggle', 0)] },
+  { char: 'baokaka', id: 'touchWatch', label: 'touch-watch head turn', frames: 1, when: 'M1', delivered: [d('baokaka.touchwatch', 0)] },
+  { char: 'baokaka', id: 'carried', label: 'carried', frames: 1, when: 'later', delivered: [d('baokaka.carried', 0)] },
+  { char: 'baokaka', id: 'climb', label: 'climb', frames: 3, when: 'later', delivered: [d('baokaka.climb', 0, 1, 2)] },
   { char: 'baokaka', id: 'standCruise', label: 'stand-cruise', frames: 4, when: 'later', delivered: [d('baokaka.pull', 0), d('baokaka.wobble', 0, 1)] },
   { char: 'baokaka', id: 'walk', label: 'walk (wobbly)', frames: 8, when: 'later', delivered: [d('baokaka.walk', 0, 1, 2, 3, 4, 5, 6, 7)] },
   { char: 'mocha', id: 'sit', label: 'sit', frames: 1, when: 'M1', delivered: [d('mocha.sit', 0)] },
@@ -339,10 +342,10 @@ export const FRAME_REPORT: readonly FrameNeed[] = [
   { char: 'mocha', id: 'land', label: 'land', frames: 1, when: 'M1', delivered: [d('mocha.jump', 2)] },
   { char: 'mocha', id: 'eyeContact', label: 'eye-contact', frames: 1, when: 'M1', delivered: [d('mocha.push', 0)] },
   { char: 'mocha', id: 'push', label: 'push', frames: 2, when: 'M1', delivered: [d('mocha.push', 0, 1)] },
-  { char: 'mocha', id: 'glare', label: 'glare', frames: 1, when: 'M1', delivered: [], fallback: MOCHA_STATE_ANIM.glare.fallback },
+  { char: 'mocha', id: 'glare', label: 'glare', frames: 1, when: 'M1', delivered: [d('mocha.glare', 0)] },
   { char: 'mocha', id: 'puff', label: 'puff (wet)', frames: 1, when: 'M1', delivered: [d('mocha.puff', 0)] },
-  { char: 'mocha', id: 'purr', label: 'purr', frames: 1, when: 'M1', delivered: [], fallback: MOCHA_STATE_ANIM.purr.fallback },
-  { char: 'mocha', id: 'inBox', label: 'in-box', frames: 1, when: 'M1', delivered: [], fallback: MOCHA_STATE_ANIM.inBox.fallback },
+  { char: 'mocha', id: 'purr', label: 'purr', frames: 1, when: 'M1', delivered: [d('mocha.purr', 0)] },
+  { char: 'mocha', id: 'inBox', label: 'in-box', frames: 1, when: 'M1', delivered: [d('mocha.inbox', 0)] },
   { char: 'mocha', id: 'walk', label: 'walk (linked)', frames: 8, when: 'later', delivered: [d('mocha.walk', 0, 1, 2, 3, 4, 5, 6, 7)] },
 ];
 

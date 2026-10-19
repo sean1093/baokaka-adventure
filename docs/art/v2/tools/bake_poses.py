@@ -9,8 +9,15 @@ Outputs (docs/art/v2/):
   poses-baokaka.png, poses-mocha.png   labelled pose sheets
   poses-cycles.png             contact sheet of the cycles + loop check
   preview-*.gif                animated previews of the cycles
+
+Only poses whose drawing changed are re-rendered (#141): Chromium's blurs are
+not bit-exact from run to run, so re-rendering an unchanged pose would churn
+its files.  `baked/poses-src.json` keeps a hash of each pose's SVG (ids
+normalised) and box; a pose with the same hash, a manifest entry and its
+files keeps them.  `--force` re-renders everything; `--adopt` only records
+the hashes of the current drawing for the files already baked (no render).
 """
-import io, json, os, subprocess, sys, tempfile
+import hashlib, io, json, os, re, subprocess, sys, tempfile
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -30,6 +37,20 @@ CHARS = {
 }
 DEFAULT_FPS = 4
 PAD = 6
+SRC_HASH = os.path.join(V2, "baked", "poses-src.json")
+FORCE = "--force" in sys.argv
+
+
+def svg_key(svgs, *extra):
+    """hash of a pose's frames with the global gradient/mask/filter ids
+    renumbered in order of appearance, so it only changes with the drawing"""
+    h = hashlib.sha1(repr(extra).encode())
+    for svg in svgs:
+        names = {}
+        for m in re.finditer(r'id="([^"]+)"', svg):
+            names.setdefault(m.group(1), f"_{len(names)}")
+        h.update(re.sub(r"[A-Za-z]+\d+", lambda m: names.get(m.group(), m.group()), svg).encode())
+    return h.hexdigest()[:16]
 
 
 def font(n):
@@ -44,26 +65,39 @@ def render_svg(svg, w, h, tmp, name):
     return Image.open(out).convert("RGBA")
 
 
-def bake_char(cname, cfg, tmp):
+def bake_char(cname, cfg, tmp, prev_man, prev_src, src):
     mod = cfg["mod"]
     vb = mod.VB
     s3 = cfg["pt"] * 3                      # px per unit @3x
     W3, H3 = round(vb[2] * s3), round(vb[3] * s3)
     jobs = []
+    svgs = {}
+    man = {}
     for pose, (_, n, label, keys) in mod.POSES.items():
+        svgs.update({(pose, i): mod.frame_svg(pose, i) for i in range(n)})
+        key = f"{cname}-{pose}"
+        src[key] = svg_key([svgs[(pose, i)] for i in range(n)], vb, cfg["pt"], PAD, label, keys, cfg["fps"].get(pose, DEFAULT_FPS))
+        old = prev_man.get(pose)
+        if not FORCE and old and prev_src.get(key) == src[key] and all(
+                os.path.exists(os.path.join(OUT, f.replace("@{2x,3x}.webp", "") + x)) for f in old["files"] for x in ("@2x.webp", "@3x.webp")):
+            man[pose] = dict(old)          # unchanged drawing: keep the delivered files
+            man[pose]["_imgs"] = [Image.open(os.path.join(OUT, f.replace("@{2x,3x}.webp", "@3x.webp"))).convert("RGBA") for f in old["files"]]
+            man[pose]["_new"] = False
+            continue
         for i in range(n):
             jobs.append((pose, i))
+    print(cname, "re-rendering", sorted({p for p, _ in jobs}) or "nothing")
 
     def work(job):
         pose, i = job
-        svg = mod.frame_svg(pose, i)
-        return job, render_svg(svg, W3, H3, tmp, f"{cname}-{pose}-{i}")
+        return job, render_svg(svgs[job], W3, H3, tmp, f"{cname}-{pose}-{i}")
     with ThreadPoolExecutor(4) as ex:
         imgs = dict(ex.map(work, jobs))
     ax3 = (-vb[0]) * s3                     # anchor (0,0) in canvas px @3x
     ay3 = (-vb[1]) * s3
-    man = {}
     for pose, (_, n, label, keys) in mod.POSES.items():
+        if pose in man:
+            continue
         frames = [imgs[(pose, i)] for i in range(n)]
         bb = None
         for im in frames:
@@ -92,7 +126,9 @@ def bake_char(cname, cfg, tmp):
                          files=[f + "@{2x,3x}.webp" for f in files],
                          bytes_3x=sum(os.path.getsize(os.path.join(OUT, f + "@3x.webp")) for f in files))
         man[pose]["_imgs"] = frames
-    return man
+        man[pose]["_new"] = True
+    # keep the table's order
+    return {pose: man[pose] for pose in mod.POSES}
 
 
 def loop_check(frames):
@@ -231,23 +267,46 @@ def gif(frames, fps, out, bg=(26, 30, 74)):
     print("wrote", out)
 
 
+def adopt():
+    src = {}
+    for cn, cfg in CHARS.items():
+        mod = cfg["mod"]
+        for pose, (_, n, label, keys) in mod.POSES.items():
+            src[f"{cn}-{pose}"] = svg_key([mod.frame_svg(pose, i) for i in range(n)], mod.VB, cfg["pt"], PAD, label, keys, cfg["fps"].get(pose, DEFAULT_FPS))
+    json.dump(src, open(SRC_HASH, "w"), indent=1)
+    print("wrote", SRC_HASH)
+
+
 def main():
+    if "--adopt" in sys.argv:
+        return adopt()
     os.makedirs(OUT, exist_ok=True)
+    prev_path = os.path.join(V2, "baked", "poses.json")
+    prev = json.load(open(prev_path)) if os.path.exists(prev_path) else {}
+    prev_src = json.load(open(SRC_HASH)) if os.path.exists(SRC_HASH) else {}
+    src = {}
     allman = {}
     with tempfile.TemporaryDirectory() as tmp:
         for cn, cfg in CHARS.items():
-            allman[cn] = bake_char(cn, cfg, tmp)
+            allman[cn] = bake_char(cn, cfg, tmp, prev.get("characters", {}).get(cn, {}), prev_src, src)
     pose_sheet("baokaka", "寶咖咖　動作表", "《翻翻台北》遊戲動作｜3/4 側面朝右（遊戲左右翻轉）｜每格都是烘焙好的 WebP，錨點＝腳底接地點",
                allman["baokaka"], os.path.join(V2, "poses-baokaka.png"))
     pose_sheet("mocha", "摩卡貓　動作表", "《翻翻台北》遊戲動作｜3/4 側面朝右｜貓的側對角步態（左後→左前→右後→右前）",
                allman["mocha"], os.path.join(V2, "poses-mocha.png"))
-    report = cycles_sheet(allman, os.path.join(V2, "poses-cycles.png"))
-    for cn, pose in [("baokaka", "crawl"), ("baokaka", "walk"), ("mocha", "walk")]:
-        m = allman[cn][pose]
-        gif(m["_imgs"], m["fps"], os.path.join(V2, f"preview-{cn}-{pose}.gif"))
+    cycles = [("baokaka", "crawl"), ("baokaka", "walk"), ("mocha", "walk")]
+    old_report = prev.get("loop_check", {})
+    if any(allman[cn][pose]["_new"] for cn, pose in cycles) or any(f"{cn}-{pose}" not in old_report for cn, pose in cycles):
+        report = cycles_sheet(allman, os.path.join(V2, "poses-cycles.png"))
+        for cn, pose in cycles:
+            m = allman[cn][pose]
+            gif(m["_imgs"], m["fps"], os.path.join(V2, f"preview-{cn}-{pose}.gif"))
+    else:
+        report = {f"{cn}-{pose}": old_report[f"{cn}-{pose}"] for cn, pose in cycles}   # the cycles are untouched
     for cn in allman:
         for pose in allman[cn]:
             allman[cn][pose].pop("_imgs")
+            allman[cn][pose].pop("_new")
+    json.dump(src, open(SRC_HASH, "w"), indent=1)
     man = dict(
         note="Baked gameplay frames. Facing right; mirror horizontally for left (anchor x -> size_pt[0]-anchor_x). "
              "anchor_pt = foot point (ground contact under the body) in points from the frame's top-left. "

@@ -272,7 +272,7 @@ def figure(doc, p):
     o = ""
     if p.get("shadow", True):
         sw = p.get("shadow_w", 170)
-        o += f'<ellipse cx="{p.get("shadow_x", 0)}" cy="4" rx="{sw}" ry="22" fill="#2A2030" opacity=".22" filter="{doc.blur(7)}"/>'
+        o += f'<ellipse cx="{p.get("shadow_x", 0)}" cy="{4 + p.get("shadow_y", 0)}" rx="{sw}" ry="22" fill="#2A2030" opacity=".22" filter="{doc.blur(7)}"/>'
     for k in order:
         o += L.get(k, "")
     return o
@@ -489,12 +489,112 @@ def P_eat():
                 order=["arm_f", "leg_f", "torso", "leg_n", "head", "prop", "arm_n"])
 
 
+# ------------------------------------------------------------- #141 extras
+# GDD § 3.9 frames that #141 adds.  The sitting ones are expression / head-turn
+# variants of `sit`; carried and climb are new body poses.
+
+def P_reach2():
+    """reach, frame 2: up on his knees a little higher, both hands stretched"""
+    hip = (-4, -196)
+    legs = {"n": dict(a1=-4, a2=-90, fa=-150), "f": dict(a1=-10, a2=-92, fa=-150)}
+    return dict(hip=hip, torso=0, legs=legs, shadow_w=200,
+                arms={"n": dict(a1=186, a2=180, hand="open", ha=-6), "f": dict(a1=164, a2=166, hand="open", ha=0)},
+                head=dict(expr="say", rot=-26, look=(6, -12)), order=["arm_f", "leg_f", "torso", "leg_n", "head", "arm_n"])
+
+
+def P_look(k):
+    """look L/R: nothing to want, he looks around.  Frame 1 looks back over
+    his shoulder (away from where he faces), frame 2 far ahead."""
+    hip, legs = sit_base()
+    if k == 0:
+        return dict(hip=hip, torso=-8, legs=legs, shadow_w=230, shadow_x=60,
+                    arms={"n": dict(a1=4, a2=14, hand="open", ha=-40), "f": dict(a1=16, a2=48, hand="open", ha=-20)},
+                    head=dict(expr="neutral", rot=8, turn=.6, look=(-16, -2), dx=0))
+    return dict(hip=hip, torso=2, legs=legs, shadow_w=230, shadow_x=60,
+                arms={"n": dict(a1=24, a2=64, hand="open", ha=-20), "f": dict(a1=18, a2=56, hand="open", ha=-20)},
+                head=dict(expr="neutral", rot=-8, turn=-.74, look=(14, -4), dx=18))
+
+
+def P_watch(k):
+    """watch-sway: sat at a lit lamp, rocking gently as he watches it glow"""
+    hip, legs = sit_base()
+    s = -1 if k == 0 else 1
+    return dict(hip=(hip[0] + 4 * s, hip[1]), torso=-4 + 6 * s, legs=legs, shadow_w=230, shadow_x=60,
+                arms={"n": dict(a1=20 + 4 * s, a2=66, hand="open", ha=-24), "f": dict(a1=14 + 4 * s, a2=58, hand="open", ha=-24)},
+                head=dict(expr="happy" if k == 0 else "wonder", rot=-12 - 4 * s, turn=-.55, look=(6, -10)))
+
+
+def P_giggle():
+    """ride-giggle: carried along by a part, leaning back, laughing, feet up"""
+    hip = (0, -70)
+    legs = {"n": dict(a1=100, a2=128, fa=170), "f": dict(a1=92, a2=120, fa=160)}
+    return dict(hip=hip, torso=-22, legs=legs, shadow_w=230, shadow_x=60,
+                arms={"n": dict(a1=30, a2=10, hand="open", ha=-60), "f": dict(a1=120, a2=150, hand="open", ha=0)},
+                head=dict(expr="laugh", rot=-18, turn=-.5, dx=4, dy=4), order=["arm_f", "leg_f", "torso", "leg_n", "arm_n", "head"])
+
+
+def P_touchwatch():
+    """touch-watch: a finger is on the page; he looks up at it, curious"""
+    hip, legs = sit_base()
+    return dict(hip=hip, torso=-10, legs=legs, shadow_w=230, shadow_x=60,
+                arms={"n": dict(a1=22, a2=70, hand="open", ha=-30), "f": dict(a1=16, a2=60, hand="open", ha=-30)},
+                head=dict(expr="wonder", rot=-24, turn=-.3, look=(4, -14), dx=6, dy=10))
+
+
+def P_carried():
+    """carried: lifted under the arms (the carrier's hands are theirs to draw);
+    arms up and out, legs dangling, toes pointing down"""
+    hip = (0, -ANK - 330)
+    legs = {"n": dict(a1=12, a2=-4, fa=30), "f": dict(a1=-6, a2=-16, fa=24)}
+    return dict(hip=hip, torso=2, legs=legs, shadow=False,
+                arms={"n": dict(a1=108, a2=92, hand="open", ha=10), "f": dict(a1=124, a2=112, hand="open", ha=10)},
+                head=dict(expr="happy", rot=-6, turn=-.5, dy=14), order=["arm_f", "leg_f", "torso", "leg_n", "head", "arm_n"])
+
+
+STEP = 240     # the riser a climb edge goes up (≈ 22 pt): the page draws it, not the frame
+
+
+def P_climb(k):
+    """climb (3): onto a step one riser high, ahead of him.  The anchor moves
+    up the edge as he climbs, so each frame stands on its own point:
+    1 pull-up (knees on the lower floor, hands on the step top),
+    2 knee-over (near knee up on the step, the anchor halfway),
+    3 up (on all fours on top, the far foot still trailing over the edge)."""
+    if k == 0:
+        hip = (-60, -196)
+        legs = {"n": dict(a1=-2, a2=-90, fa=-150), "f": dict(a1=-8, a2=-92, fa=-150)}
+        return dict(hip=hip, torso=22, legs=legs, shadow_w=200, shadow_x=-20,
+                    arms={"n": dict(ik=(120, -STEP - 6), bend=-1, hand="grab", ha=-80),
+                          "f": dict(ik=(150, -STEP - 14), bend=-1, hand="grab", ha=-80)},
+                    head=dict(expr="say", rot=-24, look=(6, -8), dx=20, dy=14),
+                    order=["arm_f", "leg_f", "torso", "leg_n", "head", "arm_n"])
+    if k == 1:
+        # the riser is just behind x = 0: the lower floor is y = +h, the step top y = -h
+        h = STEP / 2
+        hip = (16, -40)
+        legs = {"n": dict(a1=ang((10, -30), (150, -h - 30)), a2=-96, fa=-40),
+                "f": dict(a1=ang((-14, -26), (-60, h - 34)), a2=-88, fa=-150)}
+        return dict(hip=hip, torso=-55, legs=legs, shadow_w=150, shadow_x=-80, shadow_y=h,
+                    arms={"n": dict(ik=(360, -h - 30), bend=-1, hand="open", ha=-70),
+                          "f": dict(ik=(392, -h - 36), bend=-1, hand="open", ha=-70)},
+                    head=dict(expr="say", rot=-30, look=(6, -4), dx=40, dy=30),
+                    order=["arm_f", "leg_f", "torso", "leg_n", "arm_n", "head"])
+    p = crawl(0.0)
+    hip = p["hip"]
+    F = torso_frame(hip, p["torso"])
+    H_f = F((-14, 386))
+    # the far leg trails back over the edge, the shin hanging down the riser
+    p["legs"]["f"] = dict(a1=ang(H_f, (H_f[0] - 80, 20)), a2=-6, fa=40)
+    p["head"] = dict(expr="happy", rot=-24, dx=40, dy=30, look=(6, -4))
+    return p
+
+
 POSES = {
     # name: (builder(k) or builder, frames, label, keyframes)
     "crawl": (crawl, 8, "爬行循環", [0, 2, 4, 6]),
     "sit": (lambda k: P_sit(), 1, "坐著待機", None),
     "clap": (P_clap, 2, "拍手", None),
-    "reach": (lambda k: P_reach(), 1, "伸手抓高處", None),
+    "reach": (lambda k: [P_reach, P_reach2][k](), 2, "伸手抓高處", None),
     "hold": (lambda k: P_hold(), 1, "抓著東西", None),
     "eat": (lambda k: P_eat(), 1, "咬咬（吃）", None),
     "point": (lambda k: P_point(), 1, "指「這個！」", None),
@@ -509,6 +609,13 @@ POSES = {
     "walk": (walk, 8, "第一步走路循環", [0, 2, 4, 6]),
     "bounce": (P_bounce, 2, "開心彈跳", None),
     "zhuazhou": (lambda k: P_zhuazhou(), 1, "抓周拍照", None),
+    # #141: the GDD § 3.9 frames the first delivery left out
+    "look": (P_look, 2, "左看右看", None),
+    "watch": (P_watch, 2, "看燈搖搖", None),
+    "giggle": (lambda k: P_giggle(), 1, "搭便車咯咯笑", None),
+    "touchwatch": (lambda k: P_touchwatch(), 1, "抬頭看手指", None),
+    "carried": (lambda k: P_carried(), 1, "被抱起來", None),
+    "climb": (P_climb, 3, "爬上台階", None),
 }
 
 

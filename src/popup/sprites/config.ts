@@ -14,7 +14,10 @@
 
 export type PlayMode = 'loop' | 'once' | 'pingpong';
 
-/** `0`: the core set every page preloads; `n`: first needed in chapter n; `'ui'`: outside the pages (album, photo, ending). */
+/**
+ * `0`: the core set every page preloads; `n`: first needed in chapter n (preloaded by chapter n's
+ * pages and every later chapter's); `'ui'`: outside the pages (album, photo, ending).
+ */
 export type SpriteGroup = number | 'ui';
 
 export interface SpriteEvent {
@@ -48,7 +51,9 @@ export const POSE_CONFIG: Readonly<Record<string, PoseConfig>> = {
   // 飛機！ ch6 (wonder); 嗶！ (ch1) is `point`. He falls asleep only in the ending. ———
   'baokaka.crawl': { events: [{ frame: 0, name: 'step' }, { frame: 4, name: 'step' }] },
   'baokaka.clap': { mode: 'loop' },
-  'baokaka.reach': {},
+  // Not in the prologue (GDD § 4.3: no words, snacks or rides there; D-58), so they join in chapter 1
+  'baokaka.point': { group: 1 },
+  'baokaka.eat': { group: 1 },
   // 抱抱 is also the cuddle frame (GDD § 2.2.1 cuddling Mocha, from the prologue on; #95), so it is core
   'baokaka.hug': {},
   'baokaka.wonder': { group: 6 },
@@ -56,20 +61,39 @@ export const POSE_CONFIG: Readonly<Record<string, PoseConfig>> = {
   'baokaka.cry': { mode: 'loop' },
   'baokaka.refuse': { group: 3, mode: 'loop' },
   'baokaka.sleep': { group: 'ui', mode: 'once', hold: 1 },
-  'baokaka.bounce': { mode: 'loop' },
+  // No mode shows the bounce since ride-giggle has its own frame (#141): out of the core set
+  'baokaka.bounce': { group: 'ui', mode: 'loop' },
   'baokaka.pull': { group: 9, easel: true },
   'baokaka.wobble': { group: 9, mode: 'loop', easel: true },
   'baokaka.walk': { group: 10, easel: true },
   'baokaka.zhuazhou': { group: 'ui' },
+  // #141's frames. look, watch, touch-watch and the 2-frame reach show from the prologue on, so
+  // they are core; ride-giggle from chapter 1 (the first ride); carried from chapter 5 (5-3, 抱抱);
+  // climb from chapter 7 (7-3).
+  'baokaka.reach': { mode: 'pingpong' },
+  'baokaka.giggle': { group: 1 },
+  'baokaka.look': { mode: 'loop', fps: 1.5 },
+  'baokaka.watch': { mode: 'pingpong', fps: 1.5 },
+  'baokaka.carried': { group: 5 },
+  'baokaka.climb': { group: 7 },
   // ——— 摩卡 ———
   'mocha.walk': { group: 10, easel: true },
   'mocha.sit': { easel: true },
   'mocha.jump': { mode: 'once', hold: 1, events: [{ frame: 2, name: 'land' }] },
-  'mocha.perch': { easel: true },
+  // perch, stretch, sleep and rub are drawn but no game state shows them yet (#95's map): they
+  // load with the album, not with every page, to make room for #141's frames (D-58)
+  'mocha.perch': { group: 'ui', easel: true },
+  'mocha.stretch': { group: 'ui' },
+  'mocha.sleep': { group: 'ui' },
   'mocha.push': { mode: 'once', events: [{ frame: 1, name: 'push' }] },
   'mocha.lure': { mode: 'loop', easel: true },
-  'mocha.puff': { easel: true },
-  'mocha.rub': { easel: true },
+  // No locked parts, gaps or water in the prologue: glare, squeeze and puff join in chapter 1
+  'mocha.puff': { group: 1, easel: true },
+  'mocha.squeeze': { group: 1 },
+  'mocha.rub': { group: 'ui', easel: true },
+  'mocha.glare': { group: 1, easel: true },
+  // In a box: a head-and-paws frame cut flat at the rim, drawn in front of the box art
+  'mocha.inbox': {},
   'mocha.album': { group: 'ui', noMirror: true, easel: true },
 };
 

@@ -178,7 +178,8 @@ def figure(doc, p):
     L = {}
     puff = p.get("puff", 1.0)
     C = p["spine"]
-    L["body"] = body_draw(doc, C, p.get("widths", [176, 180, 200]), puff)
+    if C:
+        L["body"] = body_draw(doc, C, p.get("widths", [176, 180, 200]), puff)
     lw_f = [70, 54, 46, 44]
     lw_h = [150, 80, 50, 44]
     for k in ("ff", "hf", "fn", "hn"):
@@ -188,7 +189,8 @@ def figure(doc, p):
         L["tail"] = tail_draw(doc, p["tail"], puff=p.get("tpuff", 1.0))
     if p.get("necklace", True):
         L["neck"] = chest_patch(doc, C[-1], 160)
-    L["head"] = headg(doc, p["neckp"], p.get("head", {}))
+    if "neckp" in p:
+        L["head"] = headg(doc, p["neckp"], p.get("head", {}))
     for k, v in p.get("extra", {}).items():
         L[k] = v(doc) if callable(v) else v
     order = p.get("order", ["tail", "ff", "hf", "body", "neck", "hn", "fn", "head"])
@@ -392,6 +394,53 @@ def P_rub():
     return p
 
 
+# ------------------------------------------------------------- #141 extras
+def P_glare():
+    """glare: a touch on a part he has locked.  Sat bolt upright, head turned
+    to the camera (the finger), ears flattened back, eyes narrowed, tail up
+    and stiff behind him"""
+    tail = [(-160, -60), (-226, -120), (-252, -210), (-256, -300), (-246, -380), (-226, -440)]
+    p = sit(head=dict(expr="glare", rot=-4, turn=-.18), tail_t=tail)
+    p["tpuff"] = 1.15
+    return p
+
+
+def P_purr():
+    """purr: a loaf being cuddled, eyes shut, head tipped into it"""
+    p = P_loaf()
+    p["head"] = dict(expr="purr", rot=12, turn=-.36)
+    p["neckp"] = (p["neckp"][0] - 4, p["neckp"][1] + 6)
+    return p
+
+
+def P_inbox():
+    """in a box: only his head, shoulders and front paws over the rim.  The
+    anchor (0, 0) is the middle of the rim; everything below it is cut
+    off flat, for the box art in front of it to frame."""
+    def build(doc):
+        o = ""
+        cut = poly([(-400, -800), (400, -800), (400, 0), (-400, 0)])
+        # shoulders: one plush mass rising out of the box
+        sh = [(-124, 0), (-122, -52), (-100, -106), (-52, -136), (20, -142), (84, -122), (122, -70), (134, 0)]
+        sd = smooth(sh)
+        g = doc.lin([(0, FUR_HL), (.45, FUR), (1, FUR_SH)], 0, -160, 0, 10, "userSpaceOnUse")
+        body = P(sd, g)
+        ex = fur_tex(doc, sh) + chest_patch(doc, (52, -60), 160)
+        for k, x in enumerate((-96, -70)):   # flank stripes curling round the shoulder
+            ex += P(strand([(x, -96 + k * 30), (x - 10, -60 + k * 26), (x - 14, -20 + k * 20)], 12, bulge=.3, tip=.5), STRIPE, opacity=.8)
+        body += cel(doc, sd, FUR_SH, shift=(12, 8), extra=ex)
+        body += P(outline(sh, 2.6, 1.4, n=2), LN)
+        body += f'<rect x="-170" y="-26" width="340" height="40" fill="{FUR_SH2}" opacity=".3" filter="{doc.blur(10)}"/>'
+        o += clipped(doc, cut, body)
+        # front paws hooked over the rim, toes toward the reader
+        for x0, far in ((-46, True), (70, False)):
+            J = [(x0 - 6, -96), (x0, -62), (x0 + 4, -30), (x0 + 8, 2)]
+            o += leg_draw(doc, J, [64, 54, 48, 46], far=far, front=True)
+        o += headg(doc, (14, -100), dict(expr="content", rot=-6, turn=-.38, scale=1.05))
+        return o
+    return dict(spine=[], shadow=False, necklace=False, extra={"inbox": build}, order=["inbox"])
+
+
 POSES = {
     "walk": (walk, 8, "走路循環（側對角步態）", [0, 2, 4, 6]),
     "sit": (lambda k: P_sit(), 1, "坐", None),
@@ -405,6 +454,10 @@ POSES = {
     "stretch": (lambda k: P_stretch(), 1, "伸懶腰", None),
     "puff": (lambda k: P_puff(), 1, "嚇到炸毛", None),
     "rub": (lambda k: P_rub(), 1, "磨蹭寶咖咖", None),
+    # #141: the GDD § 3.9 frames the first delivery left out
+    "glare": (lambda k: P_glare(), 1, "瞪（耳朵往後壓）", None),
+    "purr": (lambda k: P_purr(), 1, "呼嚕（被抱）", None),
+    "inbox": (lambda k: P_inbox(), 1, "躲在箱子裡探頭", None),
 }
 
 

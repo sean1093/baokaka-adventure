@@ -879,6 +879,8 @@ All frames are at map scale (~70 px tall for Baokaka crawling, at 390-wide).
 
 **For engineers.** #95 mapped every mode to its frames (D-57): `view/actors/animMap.ts` holds the table (Art v2 § 5 names: grab → `hold`, cuddle → `hug`, say → `point`, stand-cruise → `pull`/`wobble`, Mocha hop/land → `jump`, eye contact → `push` frame 1), the fallbacks for frames #141 still draws, the growth guard and the missing-frame report (`#/pagelab?section=sprites`); `view/actors/standee.ts` the card motion (lean, landing wobble, look flips, reduced motion's fade-slide). Cycles are 8 frames (the table above says so since #95). The crawl stride is synced to the step's lerp (whole strides per edge; the 4-frame `key` cycle above 24 fps). Frames needed only from M3/M4 (carried, climb, stand-cruise, walk, Mocha's linked walk) are `later` in the report. The core set is now 396.6 KB @3x (`hug` joined it as the cuddle frame).
 
+**For engineers.** #141 drew the missing frames (D-58): reach's second, look L/R, watch-sway, ride-giggle, touch-watch, carried, climb (pull-up, knee-over, up on all fours), and Mocha's glare, purr and in-box (head and paws over the rim, drawn at the box perch). No M1 fallback is left; stand-cruise has 3 of its 4 frames. Preload groups now mean "this chapter and every later one", and the core set is the prologue's: 381.1 KB @3x, with chapter 1 adding 66 KB.
+
 **Performance budget:**
 - 60 fps on a mid-range phone (2021 Android).
 - ≤ 150 animated DOM/SVG nodes per page.

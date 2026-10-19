@@ -212,7 +212,8 @@ Hence the bitmap pass.
 | `poses-baokaka.png`, `poses-mocha.png` | Labelled pose sheets. Every frame shown is the baked bitmap. |
 | `poses-cycles.png` | Contact sheet of the three cycles. Each row shows frames 1–8, then frame 1 again (green box) so the loop seam is visible, an onion skin of the last frame over the first, and the numeric loop check. |
 | `preview-baokaka-crawl.gif`, `preview-baokaka-walk.gif`, `preview-mocha-walk.gif` | Animated previews of the cycles. |
-| `baked/poses/<char>-<pose>-<i>@2x.webp` / `@3x.webp` | 31 poses and 63 frames (Baokaka 18 poses / 39 frames, Mocha 13 / 24). About 450 KB total @2x and 580 KB @3x. |
+| `baked/poses/<char>-<pose>-<i>@2x.webp` / `@3x.webp` | 40 poses and 77 frames (Baokaka 24 poses / 50 frames, Mocha 16 / 27). About 550 KB total @2x and 710 KB @3x. |
+| `baked/poses-src.json` | A hash of each pose's drawing. `bake_poses.py` re-renders only the poses whose hash changed (see Rebuild). |
 | `baked/poses.json` | Manifest, per pose: Chinese label, `frames`, `keyframes`, `loop`, `fps`, `size_pt`, `anchor_pt` (the foot point, measured from the top-left), file names, byte count, plus the loop-check results. |
 
 **Rig** (`src/rig.py`, `src/bk_poses.py`, `src/mo_poses.py`):
@@ -252,13 +253,29 @@ Hence the bitmap pass.
 | Mocha eye-contact | `push` frame 1 (looks at the camera) |
 | Mocha puff (wet) | `puff` |
 | Mocha walk (linked) | `walk` (8) |
+| reach (2) | `reach` (2: frame 2 is higher on his knees, both hands up) |
+| look L/R | `look` (2: over his shoulder, then far ahead) |
+| watch-sway (2) | `watch` (2: rocking toward and away from the light) |
+| ride-giggle | `giggle` (leaning back, feet up, laughing) |
+| touch-watch head turn | `touchwatch` (head tipped up toward the finger, curious) |
+| carried | `carried` (lifted under the arms, legs dangling; the carrier's hands are the carrier's art, so there is no shadow) |
+| climb (3) | `climb` (pull-up, knee-over, up on all fours) |
+| Mocha glare | `glare` (the `glare` head: narrowed, slanted eyes, a furrow, ears flattened out and back; tail up and stiff) |
+| Mocha purr | `purr` (the loaf with the `purr` head: eyes closed) |
+| Mocha in-box | `inbox` (head, shoulders and front paws over the rim; cut flat at the anchor, which is the middle of the rim) |
 
-**Not yet drawn:**
-- Baokaka: look L/R, watch-sway, ride-giggle, carried, climb (3), touch-watch.
-- Mocha: glare, purr, in-box.
+The last ten rows were added in #141 (D-58). Every GDD frame is drawn except stand-cruise's fourth (`pull` + `wobble` are 3 of 4).
 
-Most of these are cheap with the rig (a head turn or expression swap on `sit`/`loaf`).
+**Climb.** The step is the page's art, not the frame's. A climb edge moves the anchor up the step while the frames play, so each frame stands on its own point:
+- frame 1 kneels on the lower floor (the anchor) with his hands on a step top about 22 pt (240 units) up;
+- frame 2 straddles the riser: the anchor is halfway up, the far knee on the lower floor below it, the near knee and the hands on the step top above it;
+- frame 3 is on all fours on top (the anchor), the far foot trailing back over the edge.
 
-**Engineers' note (#95, D-57).** The game maps its modes onto these poses in `src/popup/view/actors/animMap.ts` and shows a fallback for each frame not drawn yet (look L/R, watch-sway, ride-giggle, touch-watch, Mocha glare, purr, in-box; also `reach` has 1 of the GDD's 2 frames). `#/pagelab?section=sprites` lists every GDD § 3.9 frame as ✓ / ✗ / later, so you can see what is left. Cycles are 8 frames; the GDD table now says so.
+He does not stand on the step: climbing a step (growth 1) comes before standing (growth 2).
 
-**Rebuild:** `python3 docs/art/v2/tools/bake_poses.py` (about 2 minutes).
+**Engineers' note (#95, D-57).** The game maps its modes onto these poses in `src/popup/view/actors/animMap.ts`. `#/pagelab?section=sprites` lists every GDD § 3.9 frame as ✓ / ✗ / later, so you can see what is left. Cycles are 8 frames; the GDD table now says so. Since #141 (D-58) no M1 row is ✗ and no fallback is left.
+
+**Rebuild:** `python3 docs/art/v2/tools/bake_poses.py`, then `npm run sync:sprites` in the repo root.
+- Only poses whose drawing changed are re-rendered (a few seconds per pose). Chromium's blurs are not bit-exact from run to run, so re-rendering an untouched pose would churn its files.
+- `--force` re-renders everything (about 3 minutes).
+- `--adopt` records the hashes of the current drawing for files already baked, without rendering.

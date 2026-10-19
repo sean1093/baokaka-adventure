@@ -308,7 +308,7 @@ The anime-rendered characters (v2) are **printed illustrations mounted on card**
 - **Motion of standees:** they move as rigid cards. Each tick is a short hop-lerp (2 px up), with a 3–5° lean in the travel direction and a tiny wobble on landing. Turning around is a **card flip** (`scaleX` 1 → 0 → −1 over 120 ms): the classic paper-character turn, and cheaper than drawing back views.
 - **Touch-watch** (GDD: he watches your finger): swap the head frame to the curious face, and tilt the whole standee 3° toward the finger.
 
-**Engineers' note (#95, D-57).** The standee motion is `src/popup/view/actors/standee.ts`: the step finishes 120 ms before the tick ends so the ±2° landing wobble has its time, the card leans 4° into the travel direction at mid-step, look L/R card-flips away and back until #141's head turns exist, and under reduced motion a step is a short fade-slide. The lamp glow is a radial gradient (no filter on a mover) within 110 units of a lit light.
+**Engineers' note (#95, D-57).** The standee motion is `src/popup/view/actors/standee.ts`: the step finishes 120 ms before the tick ends so the ±2° landing wobble has its time, the card leans 4° into the travel direction at mid-step, look L/R is drawn frames since #141 (no card flip), and under reduced motion a step is a short fade-slide. The lamp glow is a radial gradient (no filter on a mover) within 110 units of a lit light.
 
 **Thought bubble:**
 - A die-cut cloud (`#FBF6EC`, z3) on a **coiled wire spring** from his head.

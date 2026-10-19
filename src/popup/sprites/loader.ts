@@ -44,10 +44,13 @@ export const floorUrl = (scale: Scale): string | undefined => frameUrl(SPRITE_MA
 export const groupSprites = (group: SpriteDef['group']): string[] =>
   Object.entries(SPRITE_MANIFEST.sprites).filter(([, s]) => s.group === group).map(([id]) => id);
 
-/** What a page of `chapter` preloads: the core poses, plus the poses its chapter first needs. */
+/**
+ * What a page of `chapter` preloads: the core poses, plus every pose first needed in this chapter
+ * or an earlier one (a word learnt in chapter 2 is still said in chapter 3; #141).
+ */
 export function pageSprites(chapter: number): string[] {
   return Object.entries(SPRITE_MANIFEST.sprites)
-    .filter(([, s]) => s.kind === 'pose' && (s.group === 0 || s.group === chapter))
+    .filter(([, s]) => s.kind === 'pose' && typeof s.group === 'number' && s.group <= chapter)
     .map(([id]) => id);
 }
 

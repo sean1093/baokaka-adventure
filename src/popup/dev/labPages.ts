@@ -37,6 +37,10 @@ const c0p1 = pageById('c0p1');
  *   the camera for a tick, then pushes the cup down beside 寶咖咖's side of the gap.
  * - `lab-cry`: 0-1 with the bead hidden until the mobile spins: nothing to want, he looks, then
  *   cries (GDD § 2.2.5).
+ * - `lab-lamp`: the same, with a night light on the mattress's far end: he crawls to it and
+ *   watches it, swaying (0-2's TV, #141's watch-sway frames).
+ * - `lab-box`: 1-2 with the bench as a box perch (C9, 0-4's laundry basket): Mocha shows only his
+ *   head and paws over the rim (#141's in-box frame).
  */
 const characterStages: PageDef[] = [
   ...(c1p2 === undefined
@@ -62,6 +66,26 @@ const characterStages: PageDef[] = [
           title: '找不到',
           attractors: c0p1.attractors.map((a) => ({ ...a, visibleWhen: { part: 'mobile', in: ['spin'] } })),
           solution: [{ set: 'crib-rail', to: 'down' }, { tap: 'mobile' }, { wait: 'goal' as const }],
+        },
+        {
+          ...c0p1,
+          id: 'lab-lamp',
+          title: '小夜燈',
+          attractors: [
+            ...c0p1.attractors.map((a) => ({ ...a, visibleWhen: { part: 'mobile', in: ['spin'] } })),
+            { id: 'nightlight', kind: 'light' as const, node: 'crib2' },
+          ],
+          solution: [{ set: 'crib-rail', to: 'down' }, { tap: 'mobile' }, { wait: 'goal' as const }],
+        },
+      ]),
+  ...(c1p2 === undefined
+    ? []
+    : [
+        {
+          ...c1p2,
+          id: 'lab-box',
+          title: '箱子裡的貓',
+          perches: c1p2.perches.map((p) => (p.id === 'bench' ? { ...p, hidesMocha: true } : p)),
         },
       ]),
 ];

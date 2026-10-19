@@ -57,15 +57,5 @@ export function fadeSlide(from: Pt, to: Pt, ms: number): { x: number; y: number;
   return { x: to[0] - dx * s, y: to[1] - dy * s, opacity: FADE_FROM + (1 - FADE_FROM) * k };
 }
 
-/** Look L/R: the facing he shows `ms` into a looking tick, flipping away at 30 % and back at 70 %. */
-export function lookFacing(facing: 'l' | 'r', ms: number, tickMs: number): { from: 'l' | 'r'; to: 'l' | 'r'; ms: number } {
-  const away = facing === 'r' ? 'l' : 'r';
-  const a = tickMs * 0.3;
-  const b = tickMs * 0.7;
-  if (ms < a) return { from: facing, to: facing, ms: 0 };
-  if (ms < b) return { from: facing, to: away, ms: ms - a };
-  return { from: away, to: facing, ms: ms - b };
-}
-
 /** The lamp glow behind 寶咖咖 (bible § 5): within this many units of a lit light. */
 export const LAMP_GLOW_R = 110;

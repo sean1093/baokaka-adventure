@@ -4,7 +4,6 @@ import { SpriteAnim } from '../../sprites';
 import { clamp01 } from '../interp';
 import { r2 } from '../parts/common';
 import { babyAnim, noteFrameFallback, type ActorAnim, type FrameChoice } from './animMap';
-import './actors.css';
 
 /**
  * 寶咖咖's sprite slot (GDD § 3.9 layer 6): the baked v2 standee frames (#94), his feet (the
@@ -16,8 +15,6 @@ import './actors.css';
  *   `standee.ts`); under reduced motion a step is a fade-slide (`opacity`).
  * - **Touch-watch** (GDD § 2.6, bible § 5): while a finger pauses the world he watches it, the
  *   whole standee tilted 3° toward it (`watch`: −1 left, 1 right).
- * - **Watch-sway** (fallback until #141): the card rocks ±3° (a CSS loop, so stills and reduced
- *   motion stop it).
  * - **Lamp glow** (bible § 5): a soft warm glow behind him near a lit light (`glow`).
  */
 
@@ -64,7 +61,6 @@ export function Baby({ x, y, mode, anim, frame, sx, tilt = 0, opacity = 1, watch
   useEffect(() => noteFrameFallback(anim), [anim.fallback]);
   const lean = tilt + (watch === undefined ? 0 : watch * WATCH_TILT);
   const rotate = Math.abs(lean) < 0.01 ? '' : ` rotate(${r2(lean)})`;
-  const sway = anim.sway === true && !reduced && !still;
   const sprite = <SpriteAnim sprite={anim.sprite} anim={frame.anim} frame={frame.frame} playing={frame.playing && !still} reduced={reduced} />;
   return (
     <g
@@ -78,7 +74,7 @@ export function Baby({ x, y, mode, anim, frame, sx, tilt = 0, opacity = 1, watch
       opacity={opacity < 1 ? r2(opacity) : undefined}
     >
       {glow !== undefined && <ellipse data-lamp-glow="" cx={0} cy={-32} rx={50} ry={44} fill={glow} />}
-      {sway ? <g className="actor-sway">{sprite}</g> : sprite}
+      {sprite}
     </g>
   );
 }
