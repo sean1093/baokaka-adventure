@@ -7,6 +7,10 @@ import { POPUP_FIXTURES, fixtureFrame, fixtureStore, popupFixture } from './fixt
 import { SPREAD_REGISTRY } from './labPages';
 import { GameShell } from '../view/screens/GameShell';
 import { SpritesAnchorsSheet } from './SpriteSheet';
+import { updateSettings } from '../game/progress';
+import { BIG_TEXT_SCALE } from '../game/settings';
+import { TextScaleContext } from '../view/textSize';
+import '../view/textSize.css';
 
 /**
  * The visual QA fixtures (#92, `fixtures.ts`) in PageLab.
@@ -20,11 +24,17 @@ import { SpritesAnchorsSheet } from './SpriteSheet';
  *   `play-check.mjs` reads `[data-popup-page-id]` to insist on a play scenario per page.
  */
 
-export function FixtureView({ name, still }: { name: string; still: boolean }) {
+export function FixtureView({ name, still, big: bigParam = false }: { name: string; still: boolean; big?: boolean }) {
   const fixture = popupFixture(name);
   const frame = useMemo(() => (fixture ? fixtureFrame(fixture) : null), [fixture]);
   const reg = fixture?.screen?.spread ? SPREAD_REGISTRY : undefined;
-  const store = useMemo(() => (fixture?.screen ? fixtureStore(fixture.screen.save, fixture.screen.spread ? SPREAD_REGISTRY : undefined) : null), [fixture]);
+  // 大字 (#104): the fixture's own, or `text=big` for any fixture (a screen reads it from its save)
+  const big = bigParam || fixture?.big === true;
+  const store = useMemo(() => {
+    if (!fixture?.screen) return null;
+    const save = big ? updateSettings(fixture.screen.save, { bigText: true }) : fixture.screen.save;
+    return fixtureStore(save, fixture.screen.spread ? SPREAD_REGISTRY : undefined);
+  }, [fixture, big]);
   useEffect(() => () => store?.dispose(), [store]);
   if (!fixture || !frame) {
     return (
@@ -38,33 +48,37 @@ export function FixtureView({ name, still }: { name: string; still: boolean }) {
   }
   // A still pins its motion look (the screenshot browser runs reduced); live, the OS decides
   const reduced = still ? fixture.look === 'reduced' : undefined;
+  // A screen fixture's shell sets its own scale and attribute from the save
+  const pageBig = big && !fixture.screen;
   return (
-    <div data-pagelab-fixture={fixture.name}>
-      {fixture.sheet === 'affordance-states' ? (
-        <AffordanceSheet still={still} reduced={reduced} />
-      ) : fixture.sheet === 'sprites-anchors' ? (
-        <SpritesAnchorsSheet still={still} />
-      ) : fixture.screen && store ? (
-        <GameShell key={`${fixture.name}-${still}`} store={store} initial={fixture.screen.nav} still={still} reduced={reduced} stickerCard={fixture.screen.card} chapterCard={fixture.screen.chapterCard} albumAfter={fixture.screen.albumAfter} registry={reg} />
-      ) : (
-        <PagePlayer
-          key={`${fixture.name}-${still}`}
-          def={frame.def}
-          from={frame.state}
-          prev={frame.prev}
-          events={frame.events}
-          talk={fixture.show?.talk}
-          still={still}
-          reduced={reduced}
-          showGesture={fixture.show?.gesture}
-          affordance={fixture.show?.affordance}
-          showWords={fixture.show?.words}
-          showHint={fixture.show?.hint}
-          showSticker={fixture.show?.sticker}
-          showPhoto={fixture.show?.photo}
-        />
-      )}
-    </div>
+    <TextScaleContext.Provider value={pageBig ? BIG_TEXT_SCALE : 1}>
+      <div data-pagelab-fixture={fixture.name} data-text-size={pageBig ? 'big' : undefined}>
+        {fixture.sheet === 'affordance-states' ? (
+          <AffordanceSheet still={still} reduced={reduced} />
+        ) : fixture.sheet === 'sprites-anchors' ? (
+          <SpritesAnchorsSheet still={still} />
+        ) : fixture.screen && store ? (
+          <GameShell key={`${fixture.name}-${still}-${big}`} store={store} initial={fixture.screen.nav} still={still} reduced={reduced} stickerCard={fixture.screen.card} chapterCard={fixture.screen.chapterCard} albumAfter={fixture.screen.albumAfter} registry={reg} />
+        ) : (
+          <PagePlayer
+            key={`${fixture.name}-${still}`}
+            def={frame.def}
+            from={frame.state}
+            prev={frame.prev}
+            events={frame.events}
+            talk={fixture.show?.talk}
+            still={still}
+            reduced={reduced}
+            showGesture={fixture.show?.gesture}
+            affordance={fixture.show?.affordance}
+            showWords={fixture.show?.words}
+            showHint={fixture.show?.hint}
+            showSticker={fixture.show?.sticker}
+            showPhoto={fixture.show?.photo}
+          />
+        )}
+      </div>
+    </TextScaleContext.Provider>
   );
 }
 

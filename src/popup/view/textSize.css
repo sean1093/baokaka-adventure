@@ -1,0 +1,42 @@
+/*
+ * 大字 (GDD § 2.11; #104, D-67): HTML text sized with Tailwind's text-[Npx] classes grows by 25 %
+ * under [data-text-size="big"] (the shell's root and <html>, so portalled sheets follow). Text
+ * sized in code reads `useTextScale()` instead (`textSize.ts`). Display type of 44 px and up (the
+ * album's word) is already far over the floor and keeps its size and its box.
+ */
+[data-text-size='big'] .text-\[15px\] {
+  font-size: 18.75px;
+}
+[data-text-size='big'] .text-\[16px\] {
+  font-size: 20px;
+}
+[data-text-size='big'] .text-\[18px\] {
+  font-size: 22.5px;
+}
+[data-text-size='big'] .text-\[20px\] {
+  font-size: 25px;
+}
+[data-text-size='big'] .text-\[22px\] {
+  font-size: 27.5px;
+}
+[data-text-size='big'] .text-\[24px\] {
+  font-size: 30px;
+}
+[data-text-size='big'] .text-\[28px\] {
+  font-size: 35px;
+}
+[data-text-size='big'] .text-\[30px\] {
+  font-size: 37.5px;
+}
+[data-text-size='big'] .text-\[34px\] {
+  font-size: 42.5px;
+}
+[data-text-size='big'] .leading-\[22px\] {
+  line-height: 27.5px;
+}
+[data-text-size='big'] .leading-\[24px\] {
+  line-height: 30px;
+}
+[data-text-size='big'] .leading-\[26px\] {
+  line-height: 32.5px;
+}

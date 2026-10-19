@@ -198,6 +198,8 @@ export interface TurnHooks {
   readonly interlude?: TurnInterlude;
   /** At the card's `settle`, while it hangs (its narration lines) */
   readonly card?: TurnInterlude;
+  /** Throw confetti off the leaf (default); low power drops it (bible § 9.3, #104) */
+  readonly confetti?: boolean;
 }
 
 export interface TurnRun {
@@ -377,9 +379,9 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
     addFree(strips[1].animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-26deg)', offset: 0.45 }, { transform: 'rotateX(8deg)', offset: 0.85 }, { transform: 'rotateX(0deg)' }], leafTiming));
     addFree(strips[2].animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(-22deg)', offset: 0.5 }, { transform: 'rotateX(10deg)', offset: 0.88 }, { transform: 'rotateX(0deg)' }], leafTiming));
     later(plan.leaf.start + plan.leaf.duration, () => stage.remove());
-    // Confetti: 14 paper flecks in the chapter palette thrown off the leaf's free edge
+    // Confetti: 14 paper flecks in the chapter palette thrown off the leaf's free edge (none in low power)
     const tones = [C.goldLight, C.washiPink, C.moonRim, C.page];
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < (hooks.confetti === false ? 0 : 14); i++) {
       const fx0 = ((i * 37) % 100) / 100;
       const fleck = el('div', {
         position: 'absolute',

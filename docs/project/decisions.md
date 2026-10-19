@@ -722,3 +722,36 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #113 adds the album's chapter navigation and the 淘氣大王 cover (`rewardFlags(save).mischiefCover`).
 - #105: the shutter click, the flash, the note pops (`[data-album-note]`).
 - New UI strings not in § 5.7: 「寶咖咖一歲的相簿」 (§ 2.9's name), 學會了 (D-62's), 返回, and 已收集 as the grid's accessible name.
+
+### D-67 · 2026-10-19 · Settings, 長輩模式 and 大字 (#104)
+
+**Context.** #104 builds GDD § 2.11: every setting, 長輩模式 (one switch that sets several things), 「重新開始」 behind a 3-second hold, and the modes of bible § 9.3 (the 長輩模式 extras, the optional gyro tilt, low power). The docs leave open:
+- how 長輩模式 "restores the individual settings the player had" (#93's note suggested applying its effects as a patch);
+- whether its 15 s auto-hint holds when the player had 自動提示 off (#100's `autoHintMs` kept 關);
+- what "hold-to-show-parts always on" means;
+- where the tilt setting lives in the save (§ 3.8 lists no such field);
+- how 大字 reaches every screen, and what happens where the larger text no longer fits.
+
+**Decision.**
+1. **長輩模式 is a view, never a write.** `Settings` keeps the player's own 速度, 字的大小 and 自動提示; `effectiveSettings` (`game/settings.ts`) reads 慢, 大字 and 15 秒 over them while `elder` is on. Turning it off restores them with nothing to snapshot. While it is on, a change to a held setting is dropped (`elderPatch`, inside `updateSettings`), and the settings screen shows those rows locked with a padlock and 「長輩模式幫你設好了」. The tilt row is locked off too.
+2. **15 秒 always in 長輩模式**, even over 關 (supersedes D-63's "unless it is off"): the GDD says "auto-hint at 15 s", and a held row must show one value.
+3. **Hold-to-show-parts always on** = the hold-to-reveal outlines (§ 2.6) are drawn all the time in 長輩模式, no hold needed. The other extras: perch markers bolder (a 1.4× paw with an ink edge on a stronger halo), the 28 px seals (#140's `sealR`), and #140's stronger L1 halo — all through `affordance.elder`.
+4. **The tilt** is `Settings.tilt`, optional so a save from before #104 still loads (the guard accepts it missing; § 3.8 is otherwise unchanged). Its row is 「書本傾斜」. Off by default; iOS is asked for the gyro on the tap that turns it on. It runs only when not in 長輩模式, reduced motion or low power. `useTilt` leans the whole page box, at most ±3°; per-layer parallax is left to #136.
+5. **Low power** latches for the session when the last 2 s of frames average over 20 ms *and* most of them are over 20 ms (a sustained slowdown, not one stall); a gap over 250 ms starts the measure over. It drops the tilt and the turn's confetti and halves the grab's sparkle burst. It is not saved.
+6. **震動**: `navigator.vibrate` pulses of 12 ms (a drag's snap), 22 ms (Mocha's push) and 16-60-16 ms (a sticker: earned mid-page, and the sticker card's slap).
+7. **大字 is +25 % everywhere.** The shell provides `TextScaleContext` (1 or 1.25) and sets `[data-text-size="big"]` on its root and on `<html>` (the pause menu's sheet is portalled). Text sized in code multiplies by the scale. HTML text sized with Tailwind's `text-[Npx]` grows by `textSize.css`, except display type of 44 px and up. Where the larger text would not fit:
+   - the HUD's clock chip grows with its digits and the chapter line is condensed with `textLength`;
+   - the chapter card scales with the screen's width (up to 1.25) and holds its smaller words at 24 px;
+   - on a small book (bubbles grown past 1.4×, e.g. 375 × 667) a subtitle beat holds one line instead of 3, and the chapter card's beats hold 2;
+   - three-glyph words in the word ring are 24 px, to stay on the disc's cream inside its rim;
+   - the album's buttons put the icon over the words.
+8. **The settings screen** is cream index cards on the 花磚 endpaper: 長輩模式 first, alone, with a one-line summary, then 速度 / 字的大小 / 自動提示, the two volume sliders, and 震動 / 減少動態 / 左手模式 / 書本傾斜. Every choice is a radio group of paper buttons: the chosen one is navy with a ✓ (a shape as well as a colour), and the rest are cream. 減少動態 shows the system's value with 「跟著手機的設定」 until the player picks one. 「重新開始（按住三秒）」 shows a countdown and a red bar while held; letting go cancels it. When it completes, the game is new (settings kept, D-55) and the cover opens.
+9. **New UI strings not in § 5.7:** 書本傾斜, the switches' 關／開, 「慢一點、字大一點、提示快一點」, 「長輩模式幫你設好了」, 「跟著手機的設定」, 返回 and %. The stub screen and its strings are gone.
+
+**Why.** A derived view makes "turning it off restores what you had" true by construction, and a reload in the middle cannot break it. Growing every text by one factor, with each screen fitted case by case, keeps 大字 honest. `check:ui:big` proves it on every fixture.
+
+**Consequences.**
+- `npm run check:ui:big` (`UI_TEXT=big`) opens every popup fixture with 大字 on; it passes today. New screens should pass it too (handbook § 5). `#/pagelab?fixture=<name>&text=big` shows any fixture with 大字.
+- `check:ui` no longer measures text clipped away by a scroller.
+- #105 reads `sfx` and `music` (0–100) from the save for its volumes.
+- #136: per-layer tilt parallax, and a device pass on low power and vibration.

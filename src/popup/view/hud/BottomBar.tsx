@@ -26,7 +26,8 @@ import './stickers.css';
  * - **A sticker earned mid-page** (#101, GDD § 2.8) slaps onto its dimple with a squash, and a kraft
  *   tag pops up over the tray: 「嘿嘿，淘氣！」 or 「找到土地公！」 (`pop`, keyed by its serial).
  *
- * Laid out in a 390 × 120 box, scaled like the HUD on narrow phones.
+ * Laid out in a 390 × 120 box, scaled like the HUD on narrow phones. With 大字 (`textScale`, #104)
+ * the labels are 25 px.
  */
 
 export interface BottomBarProps {
@@ -34,6 +35,8 @@ export interface BottomBarProps {
   readonly stickers?: readonly [boolean, boolean, boolean];
   readonly leftHand?: boolean;
   readonly scale?: number;
+  /** 大字 (#104): 1, or 1.25 */
+  readonly textScale?: number;
   /** The portrait glows (the first-use tutorial, #99) */
   readonly glow?: boolean;
   /** 重來 glows: the hint's way on starts over (#100) */
@@ -67,7 +70,7 @@ function discSvg(ctx: KitCtx, icon: string, ring: string, r = 28): string {
     + `<circle r="${r - 2.5}" fill="none" stroke="${ring}" stroke-width="2.2"/>${icon}`;
 }
 
-function BarButton({ label, onClick, children, testId }: { label: string; onClick?: () => void; children: ReactNode; testId: string }) {
+function BarButton({ label, onClick, children, testId, textScale = 1 }: { label: string; onClick?: () => void; children: ReactNode; testId: string; textScale?: number }) {
   return (
     <button
       type="button"
@@ -79,14 +82,14 @@ function BarButton({ label, onClick, children, testId }: { label: string; onClic
       onPointerDown={(e) => e.stopPropagation()}
     >
       {children}
-      <span className="font-body text-[20px] font-black leading-[24px] tracking-[0.08em]" style={{ color: C.barLabel }}>
+      <span className="font-body font-black tracking-[0.08em]" style={{ color: C.barLabel, fontSize: 20 * textScale, lineHeight: `${24 * textScale}px` }}>
         {label}
       </span>
     </button>
   );
 }
 
-export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow = false, retryGlow = false, reduced = false, onPortrait, onHint, onRetry, onMenu, pop = null }: BottomBarProps) {
+export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, textScale = 1, glow = false, retryGlow = false, reduced = false, onPortrait, onHint, onRetry, onMenu, pop = null }: BottomBarProps) {
   const ids = useSvgIds('bar');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('bar'), id: ids }), [ids]);
   const head = useMemo(() => {
@@ -146,16 +149,16 @@ export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, glow =
   const names = [UI.stickers.solved, UI.stickers.mischief, UI.stickers.tudigong];
   const got = names.filter((_, i) => earned(i));
   const buttons = [
-    <BarButton key="talk" label={UI.bar.talk} onClick={onPortrait} testId="talk">
+    <BarButton key="talk" label={UI.bar.talk} onClick={onPortrait} testId="talk" textScale={textScale}>
       {portrait}
     </BarButton>,
-    <BarButton key="hint" label={UI.bar.hint} onClick={onHint} testId="hint">
+    <BarButton key="hint" label={UI.bar.hint} onClick={onHint} testId="hint" textScale={textScale}>
       {disc(ICONS.hint)}
     </BarButton>,
-    <BarButton key="retry" label={UI.bar.retry} onClick={onRetry} testId="retry">
+    <BarButton key="retry" label={UI.bar.retry} onClick={onRetry} testId="retry" textScale={textScale}>
       {disc(ICONS.retry, ref(ctx, 'foil'), retryGlow)}
     </BarButton>,
-    <BarButton key="menu" label={UI.bar.menu} onClick={onMenu} testId="menu">
+    <BarButton key="menu" label={UI.bar.menu} onClick={onMenu} testId="menu" textScale={textScale}>
       {disc(ICONS.menu)}
     </BarButton>,
   ];

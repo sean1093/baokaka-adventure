@@ -18,8 +18,9 @@
  * narration strip, placed off Baokaka and the goal; the queue is `game/talk.ts`).
  * Landed (#99): `words/` (the word ring, the word card, the big speech bubble's effect ring, the
  * 「要！」 poke and the first-use tutorial's hand).
- * Planned (GDD § 3.5): `hud/` HintLayer, StickerCard; `screens/` ChapterCard, Spread +
- * photo, Album, Settings, Ending.
+ * Landed (#104): `screens/Settings.tsx` (設定, 長輩模式), `textSize.ts` (大字), `useTilt.ts`,
+ * `useLowPower.ts`.
+ * Planned (GDD § 3.5): `screens/` Ending.
  */
 export { PageView } from './PageView';
 export { PagePlayer } from './PagePlayer';

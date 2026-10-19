@@ -54,8 +54,10 @@ export const WAIVERS = [
 export const ART_TEXT = '[data-art-text]';
 
 export const fixtureIndexUrl = (base) => new URL('#/pagelab?section=fixtures', base).href;
+/** `UI_TEXT=big` opens every fixture with 大字 on (#104: `text=big`), so the 24 px rule covers every screen. */
+const TEXT_PARAM = process.env.UI_TEXT === 'big' ? '&text=big' : '';
 export const popupFixtureUrl = (base, name, still = true) =>
-  new URL(`#/pagelab?fixture=${encodeURIComponent(name)}${still ? '&still=1' : ''}`, base).href;
+  new URL(`#/pagelab?fixture=${encodeURIComponent(name)}${still ? '&still=1' : ''}${TEXT_PARAM}`, base).href;
 
 /** Popup fixture names and registered page ids, from PageLab's fixture index (null: no PageLab here). */
 export async function listPopupFixtures(page, base) {
@@ -69,6 +71,26 @@ export async function listPopupFixtures(page, base) {
     fixtures: await page.$$eval('[data-popup-fixture]', (items) => items.map((item) => item.getAttribute('data-popup-fixture'))),
     pages: await page.$$eval('[data-popup-page-id]', (items) => items.map((item) => item.getAttribute('data-popup-page-id'))),
   };
+}
+
+/**
+ * Fixtures per tab before the checks open a fresh one: a dev-server tab that has loaded dozens of
+ * fixtures (hundreds of unbundled modules and font slices each) starts failing requests with
+ * ERR_INSUFFICIENT_RESOURCES (#104).
+ */
+export const FIXTURES_PER_TAB = 15;
+
+/** Yields a page for each item, replaced by a fresh one every `FIXTURES_PER_TAB` items. */
+export async function* freshPages(open, items) {
+  let page = null;
+  for (let i = 0; i < items.length; i++) {
+    if (i % FIXTURES_PER_TAB === 0) {
+      await page?.close();
+      page = await open();
+    }
+    yield [page, items[i]];
+  }
+  await page?.close();
 }
 
 export async function openPopupFixture(page, base, name, still = true) {
@@ -138,6 +160,22 @@ function collect({ waivers, artText, minText, minTextBig }) {
   // While a modal dialog is open (the pause menu, #97) everything outside it is inert, dimmed under
   // its scrim, and not text to read: only the dialog's own text is checked
   const modal = document.querySelector('[aria-modal="true"]');
+  // Text scrolled out of a scroller (#104: a long page in 大字) is clipped away, not on screen:
+  // only the part inside every clipping ancestor is measured
+  const clipped = (el, rect) => {
+    let left = rect.left, top = rect.top, right = rect.right, bottom = rect.bottom;
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+      const o = getComputedStyle(a);
+      if (o.overflowX === 'visible' && o.overflowY === 'visible') continue;
+      const r = a.getBoundingClientRect();
+      left = Math.max(left, r.left);
+      top = Math.max(top, r.top);
+      right = Math.min(right, r.right);
+      bottom = Math.min(bottom, r.bottom);
+    }
+    const width = Math.max(0, right - left), height = Math.max(0, bottom - top);
+    return { left, top, right: left + width, bottom: top + height, width, height };
+  };
   const seen = new Set();
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -152,7 +190,7 @@ function collect({ waivers, artText, minText, minTextBig }) {
     if (modal && !modal.contains(el)) continue;
     const opacity = opacityOf(el);
     if (opacity < 0.05) continue;
-    const box = el.getBoundingClientRect();
+    const box = clipped(el, el.getBoundingClientRect());
     if (box.width < 1 || box.height < 1) continue;
     if (box.right < 0 || box.bottom < 0 || box.left > innerWidth || box.top > innerHeight) continue;
     const style = getComputedStyle(el);
@@ -336,8 +374,8 @@ export async function checkPopup(browser, base, viewports, report) {
 
   console.log('翻翻台北 R5 text and R6 hit areas');
   for (const viewport of viewports) {
-    const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1, reducedMotion: 'reduce', isMobile: true, hasTouch: true });
-    for (const name of fixtures) {
+    const open = () => browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1, reducedMotion: 'reduce', isMobile: true, hasTouch: true });
+    for await (const [page, name] of freshPages(open, fixtures)) {
       await openPopupFixture(page, base, name);
       await page.waitForTimeout(300);
       const { texts, hits, art, hitless } = await page.evaluate(collect, {
@@ -386,7 +424,6 @@ export async function checkPopup(browser, base, viewports, report) {
         else report.fail(`${label} hit areas under ${MIN_HIT_PX} px after the book scale (grown by the hit layer): ${grown.join(', ')}`);
       }
     }
-    await page.close();
   }
 
   console.log('翻翻台北 motion: reduced motion and flashing');
@@ -401,8 +438,7 @@ export async function checkPopup(browser, base, viewports, report) {
     ['reduced', 'reduce'],
     ['motion', 'no-preference'],
   ]) {
-    const page = await browser.newPage({ viewport: viewports[0], reducedMotion });
-    for (const name of fixtures) {
+    for await (const [page, name] of freshPages(() => browser.newPage({ viewport: viewports[0], reducedMotion }), fixtures)) {
       // Live: the fixture's last tick plays, then the clock runs on
       await openPopupFixture(page, base, name, false);
       const anims = await sampleAnimations(page, 1500);
@@ -415,7 +451,6 @@ export async function checkPopup(browser, base, viewports, report) {
       if (flashing.length === 0) pass(report, `no flashing > ${MAX_FLASH_HZ} Hz (${mode}): ${name}`);
       else report.fail(`flashing (${mode}): ${name}: ${flashing.join('; ')}`);
     }
-    await page.close();
   }
 
   console.log(`  ~ skipped ${artRuns} runs of lettering inside pictures (${ART_TEXT})`);

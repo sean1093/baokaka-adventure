@@ -77,9 +77,10 @@ describe('POPUP_FIXTURES', () => {
 });
 
 test('fixtureParams', () => {
-  expect(fixtureParams(hashParams('#/pagelab?fixture=c1p2-riding&still=1'))).toEqual({ fixture: 'c1p2-riding', still: true });
-  expect(fixtureParams(hashParams('#/pagelab?fixture=&still=yes'))).toEqual({ fixture: null, still: false });
-  expect(fixtureParams(hashParams('#/pagelab'))).toEqual({ fixture: null, still: false });
+  expect(fixtureParams(hashParams('#/pagelab?fixture=c1p2-riding&still=1'))).toEqual({ fixture: 'c1p2-riding', still: true, big: false });
+  expect(fixtureParams(hashParams('#/pagelab?fixture=&still=yes'))).toEqual({ fixture: null, still: false, big: false });
+  expect(fixtureParams(hashParams('#/pagelab'))).toEqual({ fixture: null, still: false, big: false });
+  expect(fixtureParams(hashParams('#/pagelab?fixture=settings&still=1&text=big'))).toEqual({ fixture: 'settings', still: true, big: true });
 });
 
 describe('the hint fixtures (#100) show what the solver says', () => {

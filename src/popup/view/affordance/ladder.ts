@@ -35,10 +35,13 @@ export const SHOW_ME_LEAD_REDUCED_MS = 300;
 /** …and stays this long after it. */
 export const SHOW_ME_TAIL_MS = 1100;
 
-/** The auto nudge's delay (§ 2.11 自動提示: 關 / 30 秒 / 15 秒; 15 s in 長輩模式 unless it is off), or null when off. */
+/**
+ * The auto nudge's delay (§ 2.11 自動提示: 關 / 30 秒 / 15 秒; always 15 s in 長輩模式, which holds the
+ * setting, D-67), or null when off.
+ */
 export function autoHintMs(settings: { readonly autoHint: 0 | 15 | 30; readonly elder: boolean }): number | null {
-  if (settings.autoHint === 0) return null;
-  return (settings.elder ? 15 : settings.autoHint) * 1000;
+  const seconds = settings.elder ? 15 : settings.autoHint;
+  return seconds === 0 ? null : seconds * 1000;
 }
 
 /** What the page shows for a hint (`PagePlayer` hands it to `PageView` and the bottom bar). */

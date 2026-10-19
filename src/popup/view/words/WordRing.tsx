@@ -11,6 +11,7 @@ import { ArtG, r2 } from '../parts/common';
 import { wordSeal, WORD_SEAL } from './icons';
 import { DISC, ringLayout, type RingLayout, type SafeArea } from './ringLayout';
 import './words.css';
+import { useTextScale } from '../textSize';
 
 /**
  * The word ring (GDD § 2.4; popup art bible § 7; #99): Baokaka's learned words as paper discs
@@ -80,6 +81,10 @@ const SERIF = "'Noto Serif TC', serif";
 export function WordRing({ around, words, safe, leftHand = false, fresh = null, hand = null, reduced, onSay, onClose }: WordRingProps) {
   const ids = useSvgIds('ring');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('ring'), id: ids }), [ids]);
+  // 大字 (#104): the glyphs grow 25 % (three-glyph words to 24 px, to stay on the cream inside the
+  // rim), and the seal moves up a little to make room
+  const k = useTextScale();
+  const big = k > 1;
   const ring = useMemo(() => ringLayout(around, words, { leftHand, safe }), [around[0], around[1], words.join(), leftHand, safe.x, safe.y, safe.w, safe.h]);
   const defs = useMemo(
     () => kitDefs(ctx, ['foil', 'softMarigold'], `<radialGradient id="${ctx.id('wrShade')}" cx=".5" cy=".42" r=".62"><stop offset=".88" stop-color="${C.pageDark}" stop-opacity="0"/><stop offset="1" stop-color="${C.pageDark}" stop-opacity=".5"/></radialGradient>`),
@@ -140,16 +145,16 @@ export function WordRing({ around, words, safe, leftHand = false, fresh = null, 
               )}
               <ArtG html={discArt(ctx, word === null ? C.gold : WORD_SEAL[word])} />
               {word === null ? (
-                <text y={8} textAnchor="middle" fontFamily={SERIF} fontWeight={900} fontSize={22} fill={C.ink}>
+                <text y={8 + (big ? 2 : 0)} textAnchor="middle" fontFamily={SERIF} fontWeight={900} fontSize={22 * k} fill={C.ink}>
                   {label}
                 </text>
               ) : (
                 <>
-                  <g transform="translate(0 -15)">
+                  <g transform={`translate(0 ${big ? -21 : -15})`}>
                     <ArtG html={wordSeal(word, 24)} />
                   </g>
                   {/* Three glyphs (飛機！, 咻——) are drawn a little narrower to stay inside the disc */}
-                  <text y={17} textAnchor="middle" fontFamily={SERIF} fontWeight={900} fontSize={20} fill={C.ink} textLength={[...label].length > 2 ? 50 : undefined} lengthAdjust="spacingAndGlyphs">
+                  <text y={17} textAnchor="middle" fontFamily={SERIF} fontWeight={900} fontSize={big && [...label].length > 2 ? 24 : 20 * k} fill={C.ink} textLength={[...label].length > 2 ? 50 : undefined} lengthAdjust="spacingAndGlyphs">
                     {label}
                   </text>
                 </>

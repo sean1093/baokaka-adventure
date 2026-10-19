@@ -27,11 +27,12 @@ export const TALK_FONT = 22;
 /**
  * How much the bubbles grow at book scale `scale` (page units → CSS px) so `TALK_FONT` stays
  * ≥ `MIN_TEXT_PX` on screen (with a hair of margin for rounding): 1 at 390 wide and up, ≈ 1.39 at
- * 375 × 667.
+ * 375 × 667. With 大字 (`textScale` 1.25, #104) they grow by that much more, and the floor with
+ * them (25 px; R5 asks ≥ 24).
  */
-export function talkScale(scale: number): number {
-  const need = (MIN_TEXT_PX + 0.2) / (TALK_FONT * Math.max(0.05, scale));
-  return Math.max(1, Math.round(need * 1000) / 1000);
+export function talkScale(scale: number, textScale = 1): number {
+  const need = (MIN_TEXT_PX * textScale + 0.2) / (TALK_FONT * Math.max(0.05, scale));
+  return Math.max(textScale, Math.round(need * 1000) / 1000);
 }
 
 /** Where bubbles may be: the page, under the HUD's edge (the page's top) and inside its sides. */

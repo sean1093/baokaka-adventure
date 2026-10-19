@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type Ref } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type MutableRefObject, type Ref } from 'react';
 import { POPUP } from '../../art/palette';
 import { useSvgIds } from '../../art/useSvgIds';
 import { useReducedMotion } from '../../components/motion';
@@ -11,7 +11,7 @@ import type { Input, LineKey, PageDef, SimState, Word } from '../core/types';
 import { loadLines, type TalkLine } from '../content/script';
 import type { LearnKey } from '../content/words';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
-import { EMPTY_TALK, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
+import { EMPTY_TALK, MAX_PER_BEAT, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
 import { WORD_MOTIF, firstUseLine, learnLines, learnedNow, ringWords, tutorialShow, tutorialWord } from '../game/words';
 import { FRESH_ATTEMPT, attemptResult, earnInAttempt, mischiefFired, type Attempt } from '../game/stickers';
 import type { PageResult, Sticker } from '../game/progress';
@@ -33,11 +33,14 @@ import './gestures.css';
 import { PART_SETTLE_MS } from './interp';
 import { PageView, VIEW_BOX } from './PageView';
 import { useGestures } from './useGestures';
-import { barkLog, barksOf, type BarkShow } from './talk';
+import { barkLog, barksOf, talkScale, type BarkShow } from './talk';
 import { sayingWord } from './actors';
 import { WordCard, WordRing, ringSafeArea, wantPoke } from './words';
 import { mochaInFrame, photoReady, type Shot } from '../game/photo';
 import { PhotoMoment } from './photo/PhotoMoment';
+import { pulse } from '../game/settings';
+import { useTextScale } from './textSize';
+import { useTilt } from './useTilt';
 
 /**
  * One page, played (GDD § 2.1 page anatomy; bible § 2.1, § 7): the navy-linen cover, the HUD slot
@@ -64,6 +67,12 @@ import { PhotoMoment } from './photo/PhotoMoment';
  *
  * Animation runs on `requestAnimationFrame` only while something moves (an actor mid-step, a part
  * mid-tween) and sleeps between ticks.
+ *
+ * Settings (#104, GDD § 2.11; `game/settings.ts`): 大字 grows the HUD, the bar and the bubbles by
+ * 25 % (`useTextScale`); 長輩模式 (`affordance.elder`) shows the hold-to-reveal outlines all the time,
+ * with bolder perch markers, 28 px seals and the stronger hint halo; 震動 (`vibrate`) pulses on a
+ * snap, Mocha's push and a sticker; `tilt` leans the page with the gyro; `lowPower` halves the
+ * grab's sparkles.
  *
  * Stickers (#101, GDD § 2.8; `game/stickers.ts`): the page's 淘氣 predicate is matched against every
  * tick's events and awarded the tick it comes true; tapping the 土地公 (while his `visibleWhen`
@@ -93,6 +102,9 @@ import { PhotoMoment } from './photo/PhotoMoment';
  * the `photoRect`) resumes it and he grabs the treasure. Should he reach it first (it came into
  * reach on the spot), the moment plays after the grab. A spread's `onDone` waits for its photo.
  */
+
+/** Bubbles grown past this (大字 on a short phone, ≈ 1.6×) have room for one line a beat (#104). */
+const BIG_BEAT_K = 1.4;
 
 /** Chapters where Mocha squints at the 土地公 on the first tap (GDD § 5.3: 4-x, 7-x, 10-x). */
 const SQUINT_CHAPTERS: ReadonlySet<number> = new Set([4, 7, 10]);
@@ -190,9 +202,15 @@ export interface PagePlayerProps {
   readonly onPhoto?: (shot: Shot) => void;
   /** Visual QA fixtures (#103): the photo moment up over the page, its clock at `at` ms */
   readonly showPhoto?: { readonly at: number };
+  /** 震動 (§ 2.11, #104): short pulses on a snap, Mocha's push and a sticker */
+  readonly vibrate?: boolean;
+  /** The gyro tilt (bible § 2.3, #104): the page leans as the phone tilts */
+  readonly tilt?: boolean;
+  /** Low power (bible § 9.3, #104): half the sparkles */
+  readonly lowPower?: boolean;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay, onSticker, showSticker, onPhoto, showPhoto }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay, onSticker, showSticker, onPhoto, showPhoto, vibrate = false, tilt = false, lowPower = false }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
   const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev, events }), [def, speed, from, prev, still, events]);
@@ -241,10 +259,13 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   const [pop, setPop] = useState<{ readonly sticker: Sticker; readonly serial: number } | null>(showSticker ? { sticker: showSticker, serial: 0 } : null);
   const onStickerRef = useRef(onSticker);
   onStickerRef.current = onSticker;
+  const vibrateRef = useRef(vibrate);
+  vibrateRef.current = vibrate && !still;
   const earn = useCallback((sticker: Sticker) => {
     if (attemptRef.current[sticker]) return;
     attemptRef.current = earnInAttempt(attemptRef.current, sticker);
     setPop((p) => ({ sticker, serial: (p?.serial ?? 0) + 1 }));
+    pulse('sticker', vibrateRef.current);
     onStickerRef.current?.(sticker);
   }, []);
   useEffect(() => {
@@ -298,6 +319,10 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   // What is said (#98): the subtitle queue (the intro, then lines the page's events fire; a tap on a
   // bubble advances) and the barks of the last few ticks
   const [talk, setTalk] = useState<TalkQueue>(EMPTY_TALK);
+  // 大字 on a small book (#104): the bubbles grow so much that a beat holds one line, not 3
+  const textScale = useTextScale();
+  const perBeatRef = useRef(MAX_PER_BEAT);
+  perBeatRef.current = textScale > 1 && talkScale(layout.scale, textScale) > BIG_BEAT_K ? 1 : MAX_PER_BEAT;
   const [barks, setBarks] = useState<readonly BarkShow[]>([]);
   // Words (#99): the ring, the learn beat in progress, the words said on this page
   const [ringOpen, setRingOpen] = useState(false);
@@ -318,12 +343,12 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     if (hold || pendingIntro.current === null) return;
     const lines = pendingIntro.current;
     pendingIntro.current = null;
-    setTalk((q) => enqueue(q, lines));
+    setTalk((q) => enqueue(q, lines, perBeatRef.current));
   }, [hold]);
   useEffect(() => {
     const open = openLines !== undefined ? loadLines(openLines) : from === undefined ? introLines(def) : [];
     pendingIntro.current = holdRef.current ? open : null;
-    setTalk(pendingIntro.current === null ? enqueue(EMPTY_TALK, open) : EMPTY_TALK);
+    setTalk(pendingIntro.current === null ? enqueue(EMPTY_TALK, open, perBeatRef.current) : EMPTY_TALK);
     setBarks(showWords?.poke ? [wantPoke(def, session.frame().state)] : []);
     setRingOpen(showWords?.ring === true);
     const card = showWords?.card;
@@ -352,8 +377,10 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       }
       onSayRef.current?.(word, WORD_MOTIF[word]);
     }
-    if (lines.length > 0) setTalk((q) => enqueue(q, lines));
+    if (lines.length > 0) setTalk((q) => enqueue(q, lines, perBeatRef.current));
     setBarks((log) => barkLog(log, barksOf(frame.prev, frame.state, frame.events), frame.state.tick));
+    // 震動: Mocha's push lands (§ 2.11)
+    if (frame.events.some((e) => e.type === 'push')) pulse('push', vibrateRef.current);
   }, [def, frame]);
   // The learn beat's lines read (or none): the word card comes up
   useEffect(() => {
@@ -427,6 +454,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     () => (event: GestureEvent) => {
       // The player's own move (a part, a perch, Mocha; a drag landing on a stop) puts the hint ladder back to rest
       if ((event.type === 'tap' && (event.target.kind === 'part' || event.target.kind === 'perch' || event.target.kind === 'mocha')) || event.type === 'snap') acted();
+      if (event.type === 'snap') pulse('snap', vibrateRef.current);
       if (event.type === 'tap' && event.target.kind === 'part' && !locked.includes(event.target.id)) {
         const part = def.parts.find((p) => p.id === event.target.id);
         if (part !== undefined && !wearsMarigold(part)) idle.poke(part.id);
@@ -444,7 +472,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         // at him the first time on chapters 4, 7 and 10
         const first = !attemptRef.current.tudigong;
         const keys = ['rec.uncle.tap', ...(first && SQUINT_CHAPTERS.has(def.chapter) && mochaNode(def, session.frame().state) !== null ? ['rec.mocha.squint'] : [])];
-        setTalk((q) => (q.beats.some((b) => b.some((l) => l.key === 'rec.uncle.tap')) ? q : enqueue(q, loadLines(keys))));
+        setTalk((q) => (q.beats.some((b) => b.some((l) => l.key === 'rec.uncle.tap')) ? q : enqueue(q, loadLines(keys), perBeatRef.current)));
         earn('tudigong');
       }
       onGesture?.(event);
@@ -453,7 +481,10 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   );
   const gestures = useGestures(def, session, layout, frame, ms, reduced, ringOpen, onEvent);
   const live = gestures.flags;
-  const flags = showGesture ? { ...live, ...showGesture } : live;
+  // 長輩模式: the hold-to-reveal outlines are always on (§ 2.11 "hold-to-show-parts always on")
+  const elder = affordance?.elder === true;
+  const shown = showGesture ? { ...live, ...showGesture } : live;
+  const flags = elder && !shown.reveal ? { ...shown, reveal: true } : shown;
   const down = live.finger !== null || live.dragging !== null;
   useEffect(() => setFingerDown(down), [down]);
   // The first-use tutorial (§ 2.4; 1-3): the portrait glows, the ghost hand taps him, then the word
@@ -510,6 +541,17 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   };
   // The HUD and the bar keep their 390 box (and their 20 px text, R5) down to 360 px wide, overhanging a few px of cover
   const hudScale = Math.min(1, layout.vw / 360);
+  // The gyro tilt leans the page box (never while held: a turn reads its layers)
+  const boxRef = useRef<HTMLDivElement | null>(null);
+  const setBox = useCallback(
+    (el: HTMLDivElement | null) => {
+      boxRef.current = el;
+      if (typeof pageRef === 'function') pageRef(el);
+      else if (pageRef) (pageRef as MutableRefObject<HTMLDivElement | null>).current = el;
+    },
+    [pageRef],
+  );
+  useTilt(boxRef, tilt && !still && !hold && !reduced);
   // The word ring opens round Baokaka's middle; the word card hangs over the middle of the page
   const babyAt = nodePos(def, frame.state, frame.state.baby.node);
   const ringAt = ringOpen ? toScreen(layout, babyAt ? [babyAt[0], babyAt[1] - 26] : [195, 400]) : null;
@@ -530,8 +572,8 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     >
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
       <div style={block} aria-hidden="true" />
-      <div style={page} ref={pageRef} data-page-box="">
-        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still} events={frame.events} barks={barks} talk={talkView} />
+      <div style={page} ref={setBox} data-page-box="">
+        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still} events={frame.events} barks={barks} talk={talkView} textScale={textScale} lowPower={lowPower} />
       </div>
       <TopHud
         landmark={chapterInfo(def.chapter).landmark}
@@ -541,9 +583,11 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         time={sky.time}
         coins={pageChrome?.coins ?? 0}
         scale={hudScale}
+        textScale={textScale}
       />
       <BottomBar
         scale={hudScale}
+        textScale={textScale}
         stickers={pageChrome?.stickers}
         leftHand={pageChrome?.leftHand}
         glow={tutorial.portrait}

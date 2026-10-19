@@ -376,8 +376,15 @@ export function perchPost(ctx: KitCtx, post: PerchPost): string {
   return depth(ctx, 4, body, `<rect x="${x - 29}" y="${top - 14}" width="58" height="20"/>`);
 }
 
-/** Mocha's empty-perch marker (GDD § 2.1: a faint paw print while Mocha is available). */
-export function perchMark(ctx: KitCtx, x: number, y: number): string {
+/**
+ * Mocha's empty-perch marker (GDD § 2.1: a faint paw print while Mocha is available). `bold`
+ * (長輩模式, § 2.11 "perch markers bolder"; #104): a larger paw with an ink edge on a stronger halo.
+ */
+export function perchMark(ctx: KitCtx, x: number, y: number, bold = false): string {
+  if (bold) {
+    return `<g data-affordance="perch" data-bold="" transform="${translate(x, y - 7)}">${softEllipse(ctx, 0, 3, 27, 8, 'marigold', 0.6)}`
+      + `<g stroke="${C.ink}" stroke-width="1.1">${paw(C.chalk, 1.4)}</g></g>`;
+  }
   return `<g data-affordance="perch" transform="${translate(x, y - 6)}" opacity=".92">${softEllipse(ctx, 0, 2, 20, 6, 'marigold', 0.32)}${paw()}</g>`;
 }
 

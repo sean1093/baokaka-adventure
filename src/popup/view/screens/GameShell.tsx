@@ -1,26 +1,30 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { POPUP as C } from '../../../art/palette';
-import { ReducedMotionContext, usePrefersReducedMotion } from '../../../components/motion';
+import { REDUCE_MOTION_CLASS, ReducedMotionContext, usePrefersReducedMotion } from '../../../components/motion';
 import { cardLines, chapterName, loadLines, UI } from '../../content';
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
 import { COVER, chapterStickers, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
 import { ProgressStore, type PageResult } from '../../game/progress';
 import type { TickSpeed } from '../../game/session';
-import { EMPTY_TALK, advance, currentBeat, enqueue, type TalkQueue } from '../../game/talk';
+import { EMPTY_TALK, MAX_PER_BEAT, advance, currentBeat, enqueue, type TalkQueue } from '../../game/talk';
 import { registry as gameRegistry, type PageRegistry } from '../../pages';
 import { autoHintMs } from '../affordance/ladder';
 import { bookLayout } from '../geometry';
 import { PagePlayer } from '../PagePlayer';
 import { PAGE_VIEW_BOX } from '../geometry';
-import { BOARD_H, CardTalk, ChapterBoard } from '../hud/ChapterBoard';
+import { BOARD_H, CardTalk, ChapterBoard, boardScale } from '../hud/ChapterBoard';
 import { CARD_OUT_MS, StickerCard, cardMs } from '../hud/StickerCard';
 import { CAMERA_ORIGIN, cameraTransform, playTurn, turnPlan, type TurnInterlude, type TurnKind, type TurnRun } from '../transitions/pageTurn';
 import { Contents } from './Contents';
 import { Cover } from './Cover';
 import { PauseMenu } from './PauseMenu';
 import { Quilt } from './paper';
-import { StubScreen } from './StubScreen';
+import { Settings } from './Settings';
+import { effectiveSettings, pulse } from '../../game/settings';
+import { TextScaleContext, textSizeAttr } from '../textSize';
+import '../textSize.css';
+import { useLowPower } from '../useLowPower';
 import { Album } from '../photo/Album';
 import { albumHome, keptPhoto, spreadPage, type Shot } from '../../game/photo';
 import type { Photo, SaveV1 } from '../../game/progress';
@@ -30,7 +34,7 @@ import './screens.css';
  * 翻翻台北's screens and flow (GDD § 2.13; #97): one `ProgressStore` for the app (the save,
  * `popup.save.v1`), the navigation state machine (`game/nav.ts`) and the screens it shows — the
  * cover, a page in the book frame with its HUD and bottom bar, the pause menu, the 目錄 and the
- * album / settings stubs — plus the page fold and the chapter turn between pages.
+ * album and the settings — plus the page fold and the chapter turn between pages.
  *
  * - Resume is one tap: the cover's 「繼續」 opens `save.current` (R7: ≤ 2).
  * - Opening the page makes it current in the save; completing it records the solve and turns to
@@ -53,9 +57,14 @@ import './screens.css';
  *   print flying in and the four notes popping on. 「再拍一次」 replays the 3-second moment;
  *   「放進相簿」 goes on to the sticker card and the chapter turn. The cover's 相簿 opens the
  *   album at the latest chapter with a photo (#113 adds the other chapters).
- * - Settings read from the save: tick speed (0/1/2 → slow/normal/fast), 左手模式, 減少動態 (null
- *   follows the OS), 自動提示 (the hint nudge's delay; 15 s in 長輩模式, #100). #104 builds the
- *   settings screen that changes them.
+ * - **Settings** (GDD § 2.11; #104, D-67): the 設定 screen (`Settings.tsx`) writes them through the
+ *   store and they apply live, read through `effectiveSettings` (長輩模式 over the player's own
+ *   values): tick speed, 大字 (`TextScaleContext` and `[data-text-size="big"]` on the root and on
+ *   `<html>` for portalled sheets), 自動提示 (the hint nudge's delay), 左手模式, 減少動態 (null
+ *   follows the OS), 震動 (pulses on a snap, a push and a sticker), the gyro tilt, and 長輩模式's
+ *   extras on the page. Low power (`useLowPower`: frames over 20 ms for 2 s) drops the tilt and
+ *   the confetti and halves the sparkles. 「重新開始」 (a 3-second hold) starts a new game with the
+ *   same settings and goes to the cover.
  */
 
 export interface GameShellProps {
@@ -114,8 +123,25 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
 
   const osReduced = usePrefersReducedMotion();
   const reduceSetting = save.settings.reduceMotion;
-  const reduced = reducedProp ?? reduceSetting ?? osReduced;
-  const speed = SPEEDS[save.settings.speed] ?? 'normal';
+  const lowPower = useLowPower(!still);
+  const settings = useMemo(() => effectiveSettings(save.settings, { osReduced, lowPower }), [save.settings, osReduced, lowPower]);
+  const reduced = reducedProp ?? settings.reduceMotion;
+  const speed = SPEEDS[settings.speed] ?? 'normal';
+  const textSize = textSizeAttr(settings.textScale);
+  const elderLook = useMemo(() => (settings.elder ? { elder: true } : undefined), [settings.elder]);
+  // 大字 and 減少動態 on <html> too: the pause menu's sheet is portalled out of the shell
+  useEffect(() => {
+    const root = document.documentElement;
+    if (textSize) root.setAttribute('data-text-size', textSize);
+    else root.removeAttribute('data-text-size');
+    root.classList.toggle(REDUCE_MOTION_CLASS, reduceSetting === true);
+    return () => {
+      root.removeAttribute('data-text-size');
+      root.classList.remove(REDUCE_MOTION_CLASS);
+    };
+  }, [textSize, reduceSetting]);
+  const vibrateRef = useRef(settings.vibrate);
+  vibrateRef.current = settings.vibrate && !still;
 
   const base = nav.base;
   const def: PageDef | undefined = base.kind === 'page' ? reg.pageById(base.id) : undefined;
@@ -162,6 +188,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
           );
         };
         setCard({ id, leaving: false, end });
+        // 震動: the stickers slap on (§ 2.11)
+        pulse('sticker', vibrateRef.current);
         cardTimers.current.push(window.setTimeout(end, cardMs(reduced)));
       }),
     [reduced],
@@ -177,7 +205,11 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
 
   // ——— The chapter card (#102): the board hanging in a chapter turn, and its lines ———
   const [board, setBoard] = useState<number | null>(chapterCard ?? null);
-  const [cardTalk, setCardTalk] = useState<TalkQueue>(() => (chapterCard === undefined ? EMPTY_TALK : enqueue(EMPTY_TALK, loadLines(cardLines(chapterCard)))));
+  // 大字 (#104): the card's lines are bigger, so a beat holds 2 of them under the card
+  const cardPerBeat = settings.textScale > 1 ? 2 : MAX_PER_BEAT;
+  const cardPerBeatRef = useRef(cardPerBeat);
+  cardPerBeatRef.current = cardPerBeat;
+  const [cardTalk, setCardTalk] = useState<TalkQueue>(() => (chapterCard === undefined ? EMPTY_TALK : enqueue(EMPTY_TALK, loadLines(cardLines(chapterCard)), cardPerBeat)));
   const cardTalkRef = useRef(cardTalk);
   cardTalkRef.current = cardTalk;
   /** Resolves the turn's hold once the last beat is tapped away */
@@ -195,7 +227,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
           const lines = loadLines(cardLines(chapter));
           if (lines.length === 0) return resolve();
           linesDone.current = resolve;
-          setCardTalk(enqueue(EMPTY_TALK, lines));
+          setCardTalk(enqueue(EMPTY_TALK, lines, cardPerBeatRef.current));
         }),
     }),
     [],
@@ -223,7 +255,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
           card: withCard ? () => boardLayerRef.current?.querySelector<HTMLElement>('[data-chapter-board]') ?? null : undefined,
         },
         swap,
-        { interlude, card: withCard ? cardHold(next.chapter) : undefined },
+        { interlude, card: withCard ? cardHold(next.chapter) : undefined, confetti: !settings.lowPower },
       );
       turnRef.current = run;
       setTurning(true);
@@ -239,7 +271,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
       });
       return true;
     },
-    [reduced, cardHold],
+    [reduced, cardHold, settings.lowPower],
   );
 
   // A chapter's first page opened from the cover or the 目錄 (not by a turn, not 重來): the card first
@@ -327,6 +359,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
     [def, save, go],
   );
 
+  // 大字 (#104): the chapter card as large as the screen allows
+  const boardK = boardScale(settings.textScale, Number(size.split('x')[0]));
   /** The chapter card's lines are up (#102) */
   const reading = board !== null && currentBeat(cardTalk) !== null;
   const resumeId = resumeTarget(save, reg);
@@ -337,123 +371,139 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
 
   return (
     <ReducedMotionContext.Provider value={reduceSetting === true}>
-      <div className="fixed inset-0 overflow-hidden" style={{ backgroundColor: C.quilt }} data-shell="" data-base={base.kind} data-layer-open={layer?.kind}>
-        {base.kind === 'cover' && !covered && (
-          <Cover
-            first={isFirstLaunch(save, reg)}
-            resume={{ chapter: resumeDef?.chapter ?? 0, title: resumeDef?.title ?? '' }}
+      <TextScaleContext.Provider value={settings.textScale}>
+        <div className="fixed inset-0 overflow-hidden" style={{ backgroundColor: C.quilt }} data-shell="" data-base={base.kind} data-layer-open={layer?.kind} data-text-size={textSize} data-elder={settings.elder ? '' : undefined}>
+          {base.kind === 'cover' && !covered && (
+            <Cover
+              first={isFirstLaunch(save, reg)}
+              resume={{ chapter: resumeDef?.chapter ?? 0, title: resumeDef?.title ?? '' }}
+              onResume={() => go({ t: 'resume' })}
+              onContents={() => go({ t: 'contents' })}
+              onAlbum={() => go({ t: 'album' })}
+              onSettings={() => go({ t: 'settings' })}
+              still={still}
+              reduced={reduced}
+            />
+          )}
+          {def && base.kind === 'page' && (
+            <>
+              {/* The quilt under the book: seen when the camera pulls back in a chapter turn */}
+              <Quilt />
+              <div
+                ref={bookRef}
+                className="fixed inset-0"
+                data-book=""
+                data-size={size}
+                data-folded={stickerCard ? '' : undefined}
+                aria-hidden={reading ? true : undefined}
+                // The chapter card's still: the camera pulled back to the book on the quilt
+                style={{ ...(covered ? { visibility: 'hidden' } : {}), ...(chapterCard !== undefined ? { transform: cameraTransform(true), transformOrigin: CAMERA_ORIGIN } : {}) }}
+              >
+                <PagePlayer
+                  key={`${def.id}-${base.run}`}
+                  def={def}
+                  speed={speed}
+                  still={still}
+                  reduced={reduced}
+                  // A page that opens with its chapter card is held from its first frame (its intro waits for the card)
+                  hold={holdsPage(nav) || turning || opening || chapterCard !== undefined}
+                  onDone={(_, result) => onDone(def, result)}
+                  onPhoto={(shot) => onPhoto(def, shot)}
+                  onSticker={(sticker) => onSticker(def.id, sticker)}
+                  chrome={chrome || undefined}
+                  pageRef={pageBoxRef}
+                  affordance={elderLook}
+                  vibrate={settings.vibrate}
+                  tilt={settings.tilt}
+                  lowPower={settings.lowPower}
+                />
+                <div ref={overlayRef} className="pointer-events-none absolute inset-0" data-turn-overlay="" />
+              </div>
+              {/* The chapter card hangs above the camera, never tilted; its lines under it */}
+              {/* While its lines play, the card is a modal: the book under it is out of reach, a tap is the next beat */}
+              <div
+                ref={boardLayerRef}
+                className={`pointer-events-none fixed inset-0 ${reading ? 'z-[45]' : 'z-30'}`}
+                data-board-layer=""
+                data-still={still ? '' : undefined}
+                role={reading ? 'dialog' : undefined}
+                aria-modal={reading ? true : undefined}
+                aria-label={reading && board !== null ? chapterName(board) : undefined}
+              >
+                {board !== null && <ChapterBoard key={board} chapter={board} hidden={chapterCard === undefined} top={BOARD_TOP} scale={boardK} />}
+                <div className="absolute inset-x-0 flex justify-center" style={{ top: `calc(${BOARD_TOP + BOARD_H * boardK + 4}px + env(safe-area-inset-top))` }}>
+                  <CardTalk beat={currentBeat(cardTalk)} serial={cardTalk.serial} width={Math.min(Number(size.split('x')[0]) - 24, 366)} reduced={reduced} />
+                </div>
+                {reading && <button type="button" className="pointer-events-auto absolute inset-0 cursor-default opacity-0" aria-label={UI.chapterCard.more} onClick={onSkip} data-card-next="" />}
+              </div>
+              {(card !== null || stickerCard) && (
+                <CardLayer title={reg.pageById(card?.id ?? def.id)?.title ?? def.title} stickers={pageStickers(save, card?.id ?? def.id)} leaving={card?.leaving ?? false} reduced={reduced} still={still} />
+              )}
+              {turning && !reading && <button type="button" className="fixed inset-0 z-40 cursor-default opacity-0" aria-label={card ? UI.card.next : UI.chapterCard.skip} onClick={onSkip} data-turn-skip="" />}
+            </>
+          )}
+          <PauseMenu
+            open={layer?.kind === 'menu'}
             onResume={() => go({ t: 'resume' })}
             onContents={() => go({ t: 'contents' })}
-            onAlbum={() => go({ t: 'album' })}
             onSettings={() => go({ t: 'settings' })}
-            still={still}
-            reduced={reduced}
+            onCover={() => go({ t: 'cover' })}
           />
-        )}
-        {def && base.kind === 'page' && (
-          <>
-            {/* The quilt under the book: seen when the camera pulls back in a chapter turn */}
-            <Quilt />
-            <div
-              ref={bookRef}
-              className="fixed inset-0"
-              data-book=""
-              data-size={size}
-              data-folded={stickerCard ? '' : undefined}
-              aria-hidden={reading ? true : undefined}
-              // The chapter card's still: the camera pulled back to the book on the quilt
-              style={{ ...(covered ? { visibility: 'hidden' } : {}), ...(chapterCard !== undefined ? { transform: cameraTransform(true), transformOrigin: CAMERA_ORIGIN } : {}) }}
-            >
-              <PagePlayer
-                key={`${def.id}-${base.run}`}
-                def={def}
-                speed={speed}
-                still={still}
-                reduced={reduced}
-                // A page that opens with its chapter card is held from its first frame (its intro waits for the card)
-                hold={holdsPage(nav) || turning || opening || chapterCard !== undefined}
-                onDone={(_, result) => onDone(def, result)}
-                onPhoto={(shot) => onPhoto(def, shot)}
-                onSticker={(sticker) => onSticker(def.id, sticker)}
-                chrome={chrome || undefined}
-                pageRef={pageBoxRef}
+          {layer?.kind === 'contents' && (
+            <div className="fixed inset-0 z-50">
+              <Contents
+                save={save}
+                registry={reg}
+                chapter={layer.chapter}
+                locked={layer.locked}
+                resumeId={resumeId}
+                backLabel={base.kind === 'page' ? UI.menu.resume : UI.contents.back}
+                onBack={() => go({ t: 'close' })}
+                onStation={(chapter) => go({ t: 'station', chapter })}
+                onPlay={(id) => go({ t: 'play', id })}
               />
-              <div ref={overlayRef} className="pointer-events-none absolute inset-0" data-turn-overlay="" />
             </div>
-            {/* The chapter card hangs above the camera, never tilted; its lines under it */}
-            {/* While its lines play, the card is a modal: the book under it is out of reach, a tap is the next beat */}
-            <div
-              ref={boardLayerRef}
-              className={`pointer-events-none fixed inset-0 ${reading ? 'z-[45]' : 'z-30'}`}
-              data-board-layer=""
-              data-still={still ? '' : undefined}
-              role={reading ? 'dialog' : undefined}
-              aria-modal={reading ? true : undefined}
-              aria-label={reading && board !== null ? chapterName(board) : undefined}
-            >
-              {board !== null && <ChapterBoard key={board} chapter={board} hidden={chapterCard === undefined} top={BOARD_TOP} />}
-              <div className="absolute inset-x-0 flex justify-center" style={{ top: `calc(${BOARD_TOP + BOARD_H + 4}px + env(safe-area-inset-top))` }}>
-                <CardTalk beat={currentBeat(cardTalk)} serial={cardTalk.serial} width={Math.min(Number(size.split('x')[0]) - 24, 366)} reduced={reduced} />
-              </div>
-              {reading && <button type="button" className="pointer-events-auto absolute inset-0 cursor-default opacity-0" aria-label={UI.chapterCard.more} onClick={onSkip} data-card-next="" />}
+          )}
+          {after !== null && (
+            <div className="fixed inset-0 z-50">
+              <Album
+                chapter={after.chapter}
+                def={spreadPage(after.chapter, reg)}
+                photo={after.photo}
+                stickers={chapterStickers(save, after.chapter, reg)}
+                mode="after"
+                fresh={after.fresh}
+                mocha={after.mocha}
+                retaken={after.retaken}
+                reduced={reduced}
+                still={still}
+                onKeep={(photo) => store.keepPhoto(after.chapter, photo)}
+                onDone={after.go}
+              />
             </div>
-            {(card !== null || stickerCard) && (
-              <CardLayer title={reg.pageById(card?.id ?? def.id)?.title ?? def.title} stickers={pageStickers(save, card?.id ?? def.id)} leaving={card?.leaving ?? false} reduced={reduced} still={still} />
-            )}
-            {turning && !reading && <button type="button" className="fixed inset-0 z-40 cursor-default opacity-0" aria-label={card ? UI.card.next : UI.chapterCard.skip} onClick={onSkip} data-turn-skip="" />}
-          </>
-        )}
-        <PauseMenu
-          open={layer?.kind === 'menu'}
-          onResume={() => go({ t: 'resume' })}
-          onContents={() => go({ t: 'contents' })}
-          onSettings={() => go({ t: 'settings' })}
-          onCover={() => go({ t: 'cover' })}
-        />
-        {layer?.kind === 'contents' && (
-          <div className="fixed inset-0 z-50">
-            <Contents
-              save={save}
-              registry={reg}
-              chapter={layer.chapter}
-              locked={layer.locked}
-              resumeId={resumeId}
-              backLabel={base.kind === 'page' ? UI.menu.resume : UI.contents.back}
-              onBack={() => go({ t: 'close' })}
-              onStation={(chapter) => go({ t: 'station', chapter })}
-              onPlay={(id) => go({ t: 'play', id })}
-            />
-          </div>
-        )}
-        {after !== null && (
-          <div className="fixed inset-0 z-50">
-            <Album
-              chapter={after.chapter}
-              def={spreadPage(after.chapter, reg)}
-              photo={after.photo}
-              stickers={chapterStickers(save, after.chapter, reg)}
-              mode="after"
-              fresh={after.fresh}
-              mocha={after.mocha}
-              retaken={after.retaken}
-              reduced={reduced}
-              still={still}
-              onKeep={(photo) => store.keepPhoto(after.chapter, photo)}
-              onDone={after.go}
-            />
-          </div>
-        )}
-        {layer?.kind === 'album' && (
-          <div className="fixed inset-0 z-50">
-            <AlbumLayer save={save} reg={reg} reduced={reduced} still={still} onKeep={(chapter, photo) => store.keepPhoto(chapter, photo)} onBack={() => go({ t: 'close' })} />
-          </div>
-        )}
-        {layer?.kind === 'settings' && (
-          <div className="fixed inset-0 z-50">
-            <StubScreen kind={layer.kind} onBack={() => go({ t: 'close' })} />
-          </div>
-        )}
-      </div>
+          )}
+          {layer?.kind === 'album' && (
+            <div className="fixed inset-0 z-50">
+              <AlbumLayer save={save} reg={reg} reduced={reduced} still={still} onKeep={(chapter, photo) => store.keepPhoto(chapter, photo)} onBack={() => go({ t: 'close' })} />
+            </div>
+          )}
+          {layer?.kind === 'settings' && (
+            <div className="fixed inset-0 z-50">
+              <Settings
+                settings={save.settings}
+                osReduced={osReduced}
+                still={still}
+                onChange={(patch) => store.updateSettings(patch)}
+                onReset={() => {
+                  store.reset();
+                  go({ t: 'cover' });
+                }}
+                onBack={() => go({ t: 'close' })}
+              />
+            </div>
+          )}
+        </div>
+      </TextScaleContext.Provider>
     </ReducedMotionContext.Provider>
   );
 }

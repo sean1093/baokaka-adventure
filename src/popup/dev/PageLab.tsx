@@ -31,7 +31,7 @@ export default function PageLab() {
   const query = hashParams(useSyncExternalStore(subscribe, readHash));
   const params = parseLabParams(query);
   const section = params.section;
-  const { fixture, still } = fixtureParams(query);
+  const { fixture, still, big } = fixtureParams(query);
 
   // Settings changes rewrite the hash in place (no history entry per checkbox) and re-read it
   const setParams = useCallback(
@@ -44,7 +44,7 @@ export default function PageLab() {
     [],
   );
 
-  if (fixture) return <FixtureView name={fixture} still={still} />;
+  if (fixture) return <FixtureView name={fixture} still={still} big={big} />;
 
   return (
     <main className="min-h-dvh font-body" style={{ backgroundColor: section === 'kit' ? POPUP.page : POPUP.cover, color: section === 'kit' ? POPUP.ink : POPUP.goldLight }} lang="zh-Hant">

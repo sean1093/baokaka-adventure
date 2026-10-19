@@ -12,6 +12,7 @@ import { STICKER_KINDS } from '../hud/stickerArt';
 import { AlbumIcon, BackIcon, RetakeIcon } from '../screens/icons';
 import { wordSeal } from '../words';
 import { PHOTO_H, PHOTO_SPRITES, PHOTO_W, PhotoScene } from './PhotoScene';
+import { useTextScale } from '../textSize';
 import './photo.css';
 
 /**
@@ -213,6 +214,8 @@ const LEAF: CSSProperties = {
 };
 
 function InstantPrint({ chapter, def, shot, treasure }: { chapter: number; def?: Pick<PageDef, 'backdrop' | 'photoRect'>; shot: Shot | null; treasure: string }) {
+  // 大字 (#104): the caption's 25 px glyphs sit tight in the foot strip, clear of the picture
+  const big = useTextScale() > 1;
   return (
     <div className="relative" style={{ width: PRINT_W, height: PRINT_H, backgroundColor: C.printWhite, boxShadow: `inset 0 -1px 0 ${C.printShade}, 2px 4px 0 ${withAlpha(C.shadow, 0.25)}, 4px 9px 16px ${withAlpha(C.shadow, 0.4)}` }}>
       <div className="absolute overflow-hidden" style={{ left: BORDER, top: BORDER, width: PIC_W, height: PIC_H, backgroundColor: C.nightInk }}>
@@ -228,8 +231,8 @@ function InstantPrint({ chapter, def, shot, treasure }: { chapter: number; def?:
         {/* The print's gloss */}
         <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(125deg, ${withAlpha(C.printWhite, 0.18)} 0%, transparent 38%)` }} />
       </div>
-      <p className="absolute inset-x-0 flex justify-center" style={{ bottom: 5 }}>
-        <span className="font-body text-[20px] font-bold" style={{ color: C.ink }}>
+      <p className="absolute inset-x-0 flex justify-center" style={{ bottom: big ? 6 : 5 }}>
+        <span className="font-body text-[20px] font-bold" style={{ color: C.ink, lineHeight: big ? 1.1 : undefined }}>
           {treasure}
         </span>
       </p>
@@ -292,16 +295,18 @@ function StickerGrid({ ctx, stickers, label }: { ctx: KitCtx; stickers: readonly
 
 function ActionButton({ action, main }: { action: AlbumAction; main: boolean }) {
   const label = action.id === 'keep' ? UI.photo.keep : action.id === 'retake' ? UI.photo.retake : UI.album.back;
+  // 大字 (#104): the icon goes over the words, so 「再拍一次」 and 「放進相簿」 stay on one line
+  const big = useTextScale() > 1;
   return (
     <button
       type="button"
       onClick={action.onClick}
       data-button={action.id}
-      className="kit-press flex min-h-[60px] flex-1 items-center justify-center gap-2 rounded-[12px] px-3"
+      className={`kit-press flex min-h-[60px] flex-1 items-center justify-center rounded-[12px] px-3 ${big ? 'flex-col gap-0 py-1' : 'gap-2'}`}
       style={{ ...(main ? MAIN_BUTTON : QUIET_BUTTON), WebkitTapHighlightColor: 'transparent' }}
     >
       <span aria-hidden="true">{action.id === 'retake' ? <RetakeIcon /> : action.id === 'keep' ? <AlbumIcon /> : <BackIcon />}</span>
-      <span className="font-serif text-[22px] font-black tracking-[0.08em]" style={{ color: C.ink }}>
+      <span className={`whitespace-nowrap font-serif text-[22px] font-black ${big ? 'tracking-[0.02em]' : 'tracking-[0.08em]'}`} style={{ color: C.ink }}>
         {label}
       </span>
     </button>

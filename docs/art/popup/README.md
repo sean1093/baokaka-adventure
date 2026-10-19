@@ -476,6 +476,12 @@ Keep sounds **dry and close**, like paper on a table, with no reverb tails. The 
 - **長輩模式:** all of the above stays available, plus bigger seals (28 px), a stronger halo on hint L1 and a slower tick (GDD).
 - **Low-power** (auto when frame time > 20 ms for 2 s): drop tilt parallax and confetti, and halve the sparkles.
 
+*Engineers' note (#104, D-67):*
+- 長輩模式 (`affordance.elder`) also keeps the hold-to-reveal outlines on all the time and draws Mocha's perch markers bolder: a 1.4× paw with an ink edge on a stronger halo.
+- The tilt is the 書本傾斜 setting, off by default. `useTilt` leans the page box by up to ±3°; per-layer parallax is #136's.
+- Low power (`useLowPower`) latches for the session when the frames of the last 2 s average over 20 ms and most of them are over it.
+- Proofs: `docs/screenshots/104/`.
+
 ---
 
 ## 10. Prioritised build list

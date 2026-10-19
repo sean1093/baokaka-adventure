@@ -8,7 +8,10 @@ import { BottomBar } from '../hud/BottomBar';
 import { TopHud, runWidth } from '../hud/TopHud';
 import { Contents, ROUTE, STATIONS, chapterComplete, collected, pageIdOf, routeLength } from './Contents';
 import { Cover } from './Cover';
-import { StubScreen } from './StubScreen';
+import { Settings } from './Settings';
+import { DEFAULT_SETTINGS, type Settings as SettingsValue } from '../../game/progress';
+import { TextScaleContext } from '../textSize';
+import { UI } from '../../content';
 
 /**
  * The UI shell's screens, rendered to static markup (#97): what each shows for a save, the R5 text
@@ -148,10 +151,59 @@ describe('Contents (目錄)', () => {
   });
 });
 
-test('the album and settings stubs lead back', () => {
-  for (const kind of ['album', 'settings'] as const) {
-    const m = html(createElement(StubScreen, { kind, onBack: noop }));
-    expect(m).toContain(`data-screen="${kind}"`);
+describe('設定 (#104)', () => {
+  const settings = (patch: Partial<SettingsValue> = {}, scale = 1) =>
+    html(createElement(TextScaleContext.Provider, { value: scale }, createElement(Settings, { settings: { ...DEFAULT_SETTINGS, ...patch }, osReduced: false, onChange: noop, onReset: noop, onBack: noop })));
+
+  test('every § 5.7 setting, each with its icon and words, and the way back', () => {
+    const m = settings();
+    expect(m).toContain('data-screen="settings"');
     expect(m).toContain('data-button="back"');
-  }
+    const s = UI.settings;
+    for (const word of [s.speed, ...s.speeds, s.textSize, ...s.textSizes, s.elder, s.autoHint, ...s.autoHints, s.sound, s.music, s.vibration, s.reduceMotion, s.leftHand, s.reset]) expect(m).toContain(word);
+    for (const key of ['elder', 'speed', 'text-size', 'auto-hint', 'sfx', 'music', 'vibrate', 'reduce-motion', 'left-hand', 'tilt']) expect(m).toContain(`data-setting="${key}"`);
+    // Choices are ≥ 52 px tall, the reset 64 px, the sliders 48 px (settings.css)
+    expect(m.match(/role="radio"/g)?.length).toBe(2 + 3 + 2 + 3 + 2 * 4);
+    expect([...m.matchAll(/role="radio"[^>]*class="([^"]*)"/g)].every(([, cls]) => cls.includes('min-h-[52px]'))).toBe(true);
+    expect(m).toContain('data-button="reset"');
+    expect(m).toContain('min-h-[64px]');
+  });
+
+  test('the defaults are chosen: 普通, 標準, 30秒, 開 for 震動, 關 for the rest', () => {
+    const m = settings();
+    const chosen = (setting: string) => new RegExp(`data-choice="${setting}"[\\s\\S]*?aria-checked="true"[^>]*data-option="([^"]+)"`).exec(m)?.[1];
+    expect(chosen('speed')).toBe('1');
+    expect(chosen('text-size')).toBe('false');
+    expect(chosen('auto-hint')).toBe('30');
+    expect(chosen('vibrate')).toBe('true');
+    expect(chosen('elder')).toBe('false');
+    expect(chosen('left-hand')).toBe('false');
+    expect(m).not.toContain('data-held');
+  });
+
+  test('長輩模式 on: its three rows (and the tilt) show the held values, locked, with the note', () => {
+    const m = settings({ elder: true, speed: 2, bigText: false, autoHint: 0 }, 1.25);
+    expect(m.match(/data-held=""/g)?.length).toBe(4);
+    const chosen = (setting: string) => new RegExp(`data-choice="${setting}"[\\s\\S]*?aria-checked="true"[^>]*data-option="([^"]+)"`).exec(m)?.[1];
+    expect(chosen('speed')).toBe('0');
+    expect(chosen('text-size')).toBe('true');
+    expect(chosen('auto-hint')).toBe('15');
+    expect(chosen('tilt')).toBe('false');
+    expect(m).toContain(UI.settings.elderHeld);
+    expect(/data-choice="speed"[\s\S]*?disabled=""/.test(m)).toBe(true);
+  });
+
+  test('大字: every word on the screen is ≥ 24 px (R5); standard, ≥ 20 px', () => {
+    for (const px of uiSizes(settings({}, 1.25))) expect(px).toBeGreaterThanOrEqual(24);
+    for (const px of uiSizes(settings())) expect(px).toBeGreaterThanOrEqual(20);
+  });
+
+  test('大字 on the page: the HUD and the bar are ≥ 24 px', () => {
+    const hud = html(createElement(TopHud, { landmark: '台北車站', title: '月台的縫', chapter: 1, index: 2, time: '00:20', coins: 3, textScale: 1.25 }));
+    const bar = html(createElement(BottomBar, { stickers: [true, false, false], textScale: 1.25 }));
+    // The clock's digits are drawn 20 px inside the chip, and the chip is drawn 25 % larger
+    expect(hud).toMatch(/scale\(1\.25\)"><g>.*00:20/s);
+    const clockless = hud.replace(/<text[^>]*>00:20<\/text>/, '');
+    for (const px of [...uiSizes(clockless), ...uiSizes(bar)]) expect(px).toBeGreaterThanOrEqual(24);
+  });
 });

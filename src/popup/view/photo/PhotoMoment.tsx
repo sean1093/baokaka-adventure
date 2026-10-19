@@ -5,6 +5,7 @@ import type { PageDef } from '../../core/types';
 import { AUTO_SNAP_MS, PHOTO_LOOP_MS, approachAt, photoFrameAt, wowMeter, type Shot } from '../../game/photo';
 import { useSpritesPreload } from '../../sprites';
 import { PHOTO_H, PHOTO_SPRITES, PHOTO_W, PhotoScene } from './PhotoScene';
+import { useTextScale } from '../textSize';
 import './photo.css';
 
 /**
@@ -170,15 +171,18 @@ function Brackets({ w, h }: { w: number; h: number }) {
 
 /** The 「哇！」 meter: a paper thermometer, its magenta ink rising to the star at the peak. */
 function WowMeter({ x, y, h, level }: { x: number; y: number; h: number; level: number }) {
-  const labelH = 34;
+  // 大字 (#104): the label grows 25 %, on a taller tag that overhangs the tube a little
+  const k = useTextScale();
+  const labelH = 34 * k;
+  const wide = k > 1 ? 8 : 0;
   const tubeTop = labelH + 8;
   const tubeH = h - tubeTop;
   const w = METER_W - 14;
   return (
     <div className="absolute" style={{ left: x, top: y, width: w, height: h }} data-wow-meter={level.toFixed(2)}>
       <svg width={w} height={h} className="overflow-visible" aria-hidden="true">
-        <rect x={0} y={0} width={w} height={labelH} rx={4} fill={C.page} />
-        <text x={w / 2} y={24} textAnchor="middle" fontFamily="'Noto Serif TC', serif" fontWeight={900} fontSize={20} fill={C.sealInk}>
+        <rect x={-wide} y={0} width={w + 2 * wide} height={labelH} rx={4} fill={C.page} />
+        <text x={w / 2} y={24 * k} textAnchor="middle" fontFamily="'Noto Serif TC', serif" fontWeight={900} fontSize={20 * k} fill={C.sealInk}>
           {WORD_LABEL.wow}
         </text>
         <rect x={w / 2 - 11} y={tubeTop} width={22} height={tubeH} rx={11} fill={C.cameraEdge} />

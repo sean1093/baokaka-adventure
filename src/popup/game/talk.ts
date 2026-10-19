@@ -23,17 +23,18 @@ export interface TalkQueue {
 
 export const EMPTY_TALK: TalkQueue = { beats: [], serial: 0 };
 
-/** Cuts a group of lines into beats of ≤ `MAX_PER_BEAT`. */
-export function beatsOf(lines: readonly TalkLine[]): TalkLine[][] {
+/** Cuts a group of lines into beats of ≤ `perBeat` (`MAX_PER_BEAT`; 1 when 大字 bubbles are too big for 3 on a small book, #104). */
+export function beatsOf(lines: readonly TalkLine[], perBeat = MAX_PER_BEAT): TalkLine[][] {
+  const n = Math.max(1, Math.min(MAX_PER_BEAT, Math.floor(perBeat)));
   const out: TalkLine[][] = [];
-  for (let i = 0; i < lines.length; i += MAX_PER_BEAT) out.push(lines.slice(i, i + MAX_PER_BEAT));
+  for (let i = 0; i < lines.length; i += n) out.push(lines.slice(i, i + n));
   return out;
 }
 
 /** Queues a group of lines after what is already waiting (a new group never joins a beat on screen). */
-export function enqueue(q: TalkQueue, lines: readonly TalkLine[]): TalkQueue {
+export function enqueue(q: TalkQueue, lines: readonly TalkLine[], perBeat = MAX_PER_BEAT): TalkQueue {
   if (lines.length === 0) return q;
-  const beats = [...q.beats, ...beatsOf(lines)];
+  const beats = [...q.beats, ...beatsOf(lines, perBeat)];
   return { beats, serial: q.beats.length === 0 ? q.serial + 1 : q.serial };
 }
 

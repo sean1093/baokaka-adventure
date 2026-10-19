@@ -110,7 +110,7 @@ describe('the key and a fresh save', () => {
     expect(GAME.pages).toHaveLength(65);
     expect(freshSave(GAME)).toEqual({ v: 1, pages: {}, photos: {}, furthest: 'c0p1', current: 'c0p1', settings: DEFAULT_SETTINGS });
     expect(DEFAULT_SETTINGS).toEqual({
-      speed: 1, bigText: false, elder: false, autoHint: 30, sfx: 80, music: 50, vibrate: true, reduceMotion: null, leftHand: false,
+      speed: 1, bigText: false, elder: false, autoHint: 30, sfx: 80, music: 50, vibrate: true, reduceMotion: null, leftHand: false, tilt: false,
     });
     expect(freshSave().furthest).toBe(PAGES[0].id);
   });

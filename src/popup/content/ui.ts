@@ -1,6 +1,6 @@
 /**
  * UI strings (GDD § 5.7), zh-Hant. Screens refer to these, never to literals. Strings the GDD does
- * not list (the stub screens, the portrait disc's label) are marked; D-60 records them.
+ * not list (the portrait disc's label, the settings' extras…) are marked; D-60 and D-67 record them.
  */
 export const UI = {
   cover: { start: '開始', resume: '繼續', contents: '目錄', album: '相簿', settings: '設定' },
@@ -27,17 +27,21 @@ export const UI = {
    * word card's 學會了, D-62) and 返回. Not in § 5.7 (D-66): the sticker count's accessible name.
    */
   album: { title: '寶咖咖一歲的相簿', learned: '學會了', back: '返回', stickers: '已收集' },
-  /** § 5.7 Settings (#104) */
+  /**
+   * § 5.7 Settings (#104). Not in § 5.7 (D-67): the gyro tilt's name (書本傾斜), the switches'
+   * 關／開 (§ 2.11's options), 長輩模式's one-line summary, the note on the rows it holds, 減少動態's
+   * note while it follows the phone, 返回, and the volume's unit.
+   */
   settings: {
+    title: '設定', back: '返回',
     speed: '速度', speeds: ['慢', '普通', '快'],
     textSize: '字的大小', textSizes: ['標準', '大字'],
-    elder: '長輩模式',
+    elder: '長輩模式', elderSummary: '慢一點、字大一點、提示快一點', elderHeld: '長輩模式幫你設好了',
     autoHint: '自動提示', autoHints: ['關', '30秒', '15秒'],
-    sound: '音效', music: '音樂', vibration: '震動', reduceMotion: '減少動態', leftHand: '左手模式',
+    sound: '音效', music: '音樂', vibration: '震動', reduceMotion: '減少動態', leftHand: '左手模式', tilt: '書本傾斜',
+    onOff: ['關', '開'], percent: '%', followsSystem: '跟著手機的設定',
     reset: '重新開始（按住三秒）',
   },
   /** § 5.7 Bonus (#135) */
   bonus: '象山的日出',
-  /** Not in § 5.7 (D-60): the album and settings screens until #103 / #104 build them */
-  stub: { soon: '這一頁，還在畫。', back: '返回' },
 } as const;

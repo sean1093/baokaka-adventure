@@ -17,6 +17,7 @@
     "visual": "node scripts/visual-check.mjs --serve",
     "visual:update": "node scripts/visual-check.mjs --serve --update",
     "check:ui": "node scripts/ui-check.mjs --serve",
+    "check:ui:big": "UI_TEXT=big node scripts/ui-check.mjs --serve --popup",
     "check:play": "node scripts/play-check.mjs --serve",
     "qa": "npm run visual && npm run check:ui && npm run check:play"
   },

@@ -15,6 +15,11 @@ describe('beats', () => {
     expect(MAX_PER_BEAT).toBe(3);
     expect(beatsOf(lines(7)).map((b) => b.length)).toEqual([3, 3, 1]);
     expect(beatsOf([])).toEqual([]);
+    // 大字 on a small book (#104): one line a beat; never more than 3, never fewer than 1
+    expect(beatsOf(lines(3), 1).map((b) => b.length)).toEqual([1, 1, 1]);
+    expect(enqueue(EMPTY_TALK, lines(4), 2).beats.map((b) => b.length)).toEqual([2, 2]);
+    expect(beatsOf(lines(4), 9).map((b) => b.length)).toEqual([3, 1]);
+    expect(beatsOf(lines(2), 0).map((b) => b.length)).toEqual([1, 1]);
   });
 
   test('a tap shows the next beat; the last tap clears the page', () => {
