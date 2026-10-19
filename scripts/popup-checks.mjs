@@ -47,12 +47,7 @@ export const MAX_FLASH_HZ = 3;
  * the rule ids waived there. Remove an entry in the issue it names.
  */
 export const WAIVERS = [
-  {
-    selector: '[data-bubble]',
-    rules: ['text-size'],
-    issue: '#98',
-    why: 'the thought bubble\'s 「要！」 is 22 page units, so under 20 px where the book scales below 0.91 (375×667); #98 rebuilds the bubbles',
-  },
+  // None since #98 (the bubbles counter-scale their text against the book scale)
 ];
 
 /** Lettering inside a picture, not text to read (see above). */

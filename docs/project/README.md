@@ -121,7 +121,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
   - Each fixture pins what it shows with `expect: { mode?, event? }`.
   - `fixtures.test.ts` fails if a fixture stops showing it. When that happens, fix the steps, not the expectation.
   - **Screens (#97):** a fixture can be a game-shell screen instead of a bare page: `screen: { nav, save }` renders `GameShell` at that navigation state over a seeded in-memory save (`fixtureStore`; the real save is never touched): `cover-first`, `cover-continue`, `contents-ch1`, `contents-locked`, `page-hud`, `page-hud-left`, `page-menu`. Screens that are not pages mark themselves `data-screen` and `data-screen-ready` once their bitmaps are decoded; the QA scripts wait for that.
-  - Today's fixtures: `c0p1-start`, `c1p2-reaching` (on the jammed train at the gap) and `c1p2-riding` (the train carries him back: a `ride`); from #140, `affordance-states` (a specimen sheet: one touchable in every bible § 4.1 state), `c1p2-hold-reveal`, `c1p2-dragging`, `c1p2-reduced-motion` and `c0p1-hint-how` (the L2 ghost hand).
+  - Today's fixtures: `c0p1-start`, `c1p2-reaching` (on the jammed train at the gap) and `c1p2-riding` (the train carries him back: a `ride`); from #140, `affordance-states` (a specimen sheet: one touchable in every bible § 4.1 state), `c1p2-hold-reveal`, `c1p2-dragging`, `c1p2-reduced-motion` and `c0p1-hint-how` (the L2 ghost hand); from #98, `bubble-reaching`, `lab-change-of-mind` and `subtitle-3`. A fixture passes its last tick's events to the page (its barks show in the still), and `show: { talk: [lineKeys] }` puts a subtitle beat on it.
   - A fixture can also `show` gesture flags (as if a finger were doing them: `reveal`, `dragging`…) and affordance flags (a `hint`, `done` knots, `elder`), pin its still's motion `look` (`motion`, the default, or `reduced`: the screenshot browser always runs reduced, so the still decides which idle cues it shows), or draw a `sheet` instead of the page.
 - **Viewing a fixture.**
   - `#/pagelab?fixture=<name>&still=1` shows the fixture full screen as a player sees it, with no lab chrome. The clock is held, the frame is drawn at its tick's end, and `[data-still]` turns off every CSS animation and transition. **Idle loops must be CSS animations** (not rAF or `element.animate()`) so that stills stop them.
@@ -139,7 +139,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
   - **Self-test.** Before the motion rules run, a self-test injects a 5 Hz blink, a slide and a slow fade, and checks that the detectors judge them correctly.
 - **Exceptions.**
   - **Lettering inside a picture** (a station's name plate, a split-flap digit, a verb seal's glyph) carries `data-art-text` in the art and is skipped. Never mark UI text this way.
-  - **Known gaps** are listed in `WAIVERS`, each with the issue that removes it. Waivers are printed on every run. Today: the bubble's 「要！」 at 375×667 (#98). (#97 removed the HUD and bottom-bar waiver: they are live and at R5.)
+  - **Known gaps** are listed in `WAIVERS`, each with the issue that removes it. Waivers are printed on every run. None today: #97 removed the HUD and bottom-bar waiver, #98 the bubble's (bubbles grow by `talkScale` against the book scale, so their text is ≥ 20 px at 375×667).
 - **`npm run check:play`** also fails when a registered page has no scenario in `SCENARIOS`.
 
 ### Character sprites: `npm run sync:sprites` (#94, D-56)
@@ -175,6 +175,10 @@ npm run art:report             # the per-page payload report from the committed 
 - `src/popup/env/env.test.ts` fails when files and `env.gen.ts` disagree, when a source changed without a re-bake (the source hashes), when a page's art passes **350 KB**, or when the first load passes **2.5 MB**.
 - The characters' half grade is baked by `npm run sync:sprites` per graded chapter (`g/<grade>/` variants); re-run it when a page in a new chapter is registered.
 - Needs Playwright's Chromium and Python 3 with Pillow, like `sync:sprites`; CI needs neither.
+
+### Bubbles and subtitles: `view/talk/` (#98, D-61)
+
+Everything said on the page: the thought bubble (change of mind: pop, inflate, wobble), bark bubbles (`barks.ts`), subtitle bubbles and the narration strip. Lines come from `content/script.ts` (`SCRIPT`, `SPEAKERS`, `loadLine`) and are queued by `game/talk.ts` (beats of ≤ 3, tap to advance). `layoutTalk` places them all so none covers Baokaka or the goal, and `talkScale` grows them so their text is ≥ 20 screen px at every viewport. Animations are CSS (`talk.css`), so stills stop them, and they are fades under reduced motion.
 
 ### The game shell: `#/popup` (#97, D-60)
 

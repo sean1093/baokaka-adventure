@@ -1,0 +1,255 @@
+import { useMemo, type PointerEvent as ReactPointerEvent } from 'react';
+import { POPUP as C } from '../../../art/palette';
+import type { KitCtx } from '../../art';
+import type { Speaker } from '../../content/script';
+import type { PageDef, SimState } from '../../core/types';
+import { thoughtContent, type BubbleShow } from '../art/placeholders';
+import type { Pt } from '../geometry';
+import { ArtG, r2 } from '../parts/common';
+import { barkCard, cloudCard, labelTab, paHorn, speechCard, springEnd, stripCard, talkSpring } from './art';
+import { LABEL_H, LABEL_RISE, type PlacedBark, type PlacedStrip, type PlacedSub, type PlacedThought } from './layout';
+import { TALK_FONT, textEm } from './place';
+import './talk.css';
+
+/**
+ * The bubbles drawn (#98; GDD § 2.2.6, § 2.13; popup art bible § 5, § 7, § 8), from `layoutTalk`'s
+ * placements: the thought bubble on its spring with the change-of-mind pop, inflate and wobble,
+ * the bark bubbles, the narration strip and the subtitle bubbles (a tap on any of them advances
+ * the beat). Page units; `k` (`talkScale`) grows them so their text stays ≥ 20 screen px.
+ */
+
+/** What the thought bubble shows for his state, or null for none (GDD § 2.2.6). */
+export function bubbleShow(def: PageDef, state: SimState): BubbleShow | null {
+  const { mode, target } = state.baby;
+  const kind = target === null ? null : target === 'mocha' ? 'mocha' : def.attractors.find((a) => a.id === target)?.kind ?? null;
+  switch (mode) {
+    case 'moving':
+      return kind === null ? null : { kind: 'want', target: kind, reach: false };
+    case 'reaching':
+      return kind === null ? { kind: 'text', text: '要！' } : { kind: 'want', target: kind, reach: true };
+    case 'looking':
+      return { kind: 'text', text: '？' };
+    case 'crying':
+      return { kind: 'cry' };
+    case 'watching':
+      return { kind: 'note' };
+    case 'cuddling':
+    case 'eating':
+    case 'grabbing':
+    case 'done':
+      return { kind: 'heart' };
+    default:
+      return null;
+  }
+}
+
+/** A stable key for what a bubble shows (its identity changes every frame). */
+export const showKey = (show: BubbleShow | null): string => (show === null ? '' : JSON.stringify(show));
+
+const SERIF = "'Noto Serif TC', serif";
+
+export interface ThoughtProps {
+  readonly ctx: KitCtx;
+  readonly show: BubbleShow;
+  /** What it showed before this tick when that differs (the change of mind), else null */
+  readonly was: BubbleShow | null;
+  /** It just appeared (nothing before this tick) */
+  readonly appeared: boolean;
+  readonly placed: PlacedThought;
+  /** His head at the tick's end (page units) */
+  readonly head: Pt;
+  /** How far he is from his tick-end spot this frame (the bubble rides with him) */
+  readonly offset: Pt;
+  readonly k: number;
+  readonly reduced: boolean;
+  /** Stills draw the settled bubble only */
+  readonly still: boolean;
+}
+
+/**
+ * The thought bubble (GDD § 2.2.6; bible § 5, § 8): a die-cut cloud on a coiled wire spring from
+ * his head. When the target changes the old icon pops and the new one inflates (200 ms) while the
+ * spring wobbles; 「要！」 pulses while he reaches. Under reduced motion: fades only.
+ */
+export function ThoughtBubble({ ctx, show, was, appeared, placed, head, offset, k, reduced, still }: ThoughtProps) {
+  const key = showKey(show);
+  const wasKey = showKey(was);
+  const now = useMemo(() => thoughtContent(ctx, JSON.parse(key) as BubbleShow), [ctx, key]);
+  const old = useMemo(() => (wasKey === '' ? '' : thoughtContent(ctx, JSON.parse(wasKey) as BubbleShow)), [ctx, wasKey]);
+  const cloud = useMemo(() => cloudCard(placed.w, placed.h), [placed.w, placed.h]);
+  const [cx, cy] = placed.c;
+  // The spring meets the cloud itself (the placed box has room for its bumps)
+  const end = springEnd({ x: cx - (placed.w * k) / 2, y: cy - (placed.h * k) / 2, w: placed.w * k, h: placed.h * k }, head);
+  const spring = useMemo(() => talkSpring(head, end, k), [head[0], head[1], end[0], end[1], k]);
+  const changed = !still && was !== null && wasKey !== key;
+  const pulse = show.kind === 'want' && show.reach && !reduced && !still;
+  const inClass = changed ? (reduced ? 'tb-fade-in tb-late' : 'tb-inflate tb-late') : undefined;
+  return (
+    <g data-bubble={show.kind} data-anim="" transform={`translate(${r2(offset[0])} ${r2(offset[1])})`}>
+      {/* The wobble turns the spring and the cloud about his head; keyed so a change replays it */}
+      <g transform={`translate(${r2(head[0])} ${r2(head[1])})`}>
+        <g key={changed && !reduced ? `w:${key}` : 'w'} className={changed && !reduced ? 'tb-wobble' : undefined}>
+          <g transform={`translate(${r2(-head[0])} ${r2(-head[1])})`}>
+            <ArtG html={spring} />
+            <g transform={`translate(${r2(cx)} ${r2(cy)}) scale(${k})`}>
+              <g key={appeared && !still ? `a:${key}` : 'a'} className={appeared && !still ? (reduced ? 'tb-fade-in' : 'tb-inflate') : undefined}>
+                <ArtG html={cloud} />
+                {changed && old && <ArtG key={`o:${wasKey}`} html={old} className={reduced ? 'tb-fade-out' : 'tb-pop'} />}
+                <g key={`n:${key}`} className={inClass}>
+                  <g className={pulse ? 'tb-pulse' : undefined}>
+                    <ArtG html={now} />
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  );
+}
+
+/** A bark bubble beside the speaker's head: pops in, holds, fades out (a fade under reduced motion). */
+export function BarkBubble({ placed, offset, k, reduced }: { placed: PlacedBark; offset: Pt; k: number; reduced: boolean }) {
+  const { box, to, bark } = placed;
+  const card = useMemo(() => barkCard(box, to), [box, to]);
+  const f = TALK_FONT * k;
+  const baby = bark.who === 'baby';
+  return (
+    <g data-bark={bark.who} data-anim="" transform={`translate(${r2(offset[0])} ${r2(offset[1])})`}>
+      <g key={`${bark.who}:${bark.tick}:${bark.bark}`} className={reduced ? 'tb-bark-fade' : 'tb-bark'}>
+        <ArtG html={card} />
+        <text
+          x={r2(box.x + box.w / 2)}
+          y={r2(box.y + box.h / 2 + f * 0.36)}
+          textAnchor="middle"
+          fontFamily={SERIF}
+          fontWeight={900}
+          fontSize={r2(f)}
+          fill={baby ? C.sealInk : C.ink}
+        >
+          {bark.text}
+        </text>
+      </g>
+    </g>
+  );
+}
+
+/** Each speaker's label colour (GDD § 5.1): dark inks that keep the cream label text ≥ 7:1. */
+export const SPEAKER_INK: Readonly<Record<Speaker, string>> = {
+  nar: C.ink,
+  baby: C.lockBadge,
+  mocha: C.kraftFiber,
+  grandma: C.sealDark,
+  mom: C.printDark,
+  dad: C.cover,
+  pa: C.nightInk,
+  uncle: C.foldAo,
+  clerk: C.tile,
+  pack: C.coverLight,
+  shushu: C.nightCardDeep,
+  npc: C.inkSoft,
+};
+
+export interface SubtitlesProps {
+  readonly strip: PlacedStrip | null;
+  readonly subs: readonly PlacedSub[];
+  readonly horn: Pt | null;
+  readonly k: number;
+  /** How far each rider is from his tick-end spot this frame */
+  readonly ride: { readonly baby: Pt; readonly mocha: Pt };
+  /** Counts beats: a new beat replays the entrances */
+  readonly serial: number;
+  readonly reduced: boolean;
+  readonly onAdvance?: () => void;
+}
+
+/**
+ * The beat on the page (GDD § 2.13): the narration strip at the top and up to three subtitle
+ * bubbles, each on a spring from its speaker (§ 5.1). Tapping any of them advances; the tap never
+ * reaches the page (no play input, no pause).
+ */
+export function Subtitles({ strip, subs, horn, k, ride, serial, reduced, onAdvance }: SubtitlesProps) {
+  const tap = (e: ReactPointerEvent<SVGGElement>) => {
+    e.stopPropagation();
+    onAdvance?.();
+  };
+  const f = TALK_FONT * k;
+  return (
+    <g data-talk={serial} onPointerDown={tap}>
+      {strip && (
+        <g key={`s:${serial}`} data-narration="" className={reduced ? 'tb-fade-in' : 'tb-strip'}>
+          <StripArt strip={strip} f={f} />
+        </g>
+      )}
+      {horn && <HornArt at={horn} />}
+      {subs.map((sub, i) => {
+        const off = sub.rides === null ? ([0, 0] as Pt) : ride[sub.rides];
+        return (
+          <g key={`${serial}:${i}`} data-subtitle={sub.line.who} data-anim={sub.rides ? '' : undefined} transform={sub.rides ? `translate(${r2(off[0])} ${r2(off[1])})` : undefined}>
+            <g className={reduced ? 'tb-fade-in' : 'tb-sub'} style={{ animationDelay: `${(i + (strip ? 1 : 0)) * 180}ms` }}>
+              <SubtitleArt sub={sub} f={f} k={k} />
+            </g>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+function StripArt({ strip, f }: { strip: PlacedStrip; f: number }) {
+  const card = useMemo(() => stripCard(strip.box), [strip.box]);
+  const rows = strip.rows.flat();
+  const lh = f * 1.32;
+  const top = strip.box.y + (strip.box.h - rows.length * lh) / 2;
+  return (
+    <>
+      <ArtG html={card} />
+      {rows.map((row, i) => (
+        <text key={i} x={r2(strip.box.x + strip.box.w / 2)} y={r2(top + lh * i + lh * 0.5 + f * 0.36)} textAnchor="middle" fontFamily={SERIF} fontStyle="italic" fontWeight={600} fontSize={r2(f)} fill={C.ink}>
+          {row}
+        </text>
+      ))}
+    </>
+  );
+}
+
+function HornArt({ at }: { at: Pt }) {
+  const html = useMemo(() => paHorn(), []);
+  return (
+    <g data-pa-horn="" transform={`translate(${r2(at[0] + 22)} ${r2(at[1])})`}>
+      <ArtG html={html} />
+    </g>
+  );
+}
+
+function SubtitleArt({ sub, f, k }: { sub: PlacedSub; f: number; k: number }) {
+  const { box, rows, label, from } = sub;
+  const top = label === null ? 0 : LABEL_H * k * LABEL_RISE;
+  const card = { x: box.x, y: box.y + top, w: box.w, h: box.h - top };
+  // The part of the tab that hangs inside the card: the text sits below it
+  const inside = label === null ? 0 : LABEL_H * k - top;
+  const springTo = from === null ? null : springEnd(card, from);
+  const art = useMemo(() => {
+    const spring = from && springTo ? talkSpring(from, springTo, k) : '';
+    const tab = label === null ? '' : labelTab(card.x + 10, box.y, (textEm(label) * TALK_FONT + 24) * k, LABEL_H * k, SPEAKER_INK[sub.line.who]);
+    return spring + speechCard(card, 12 * k) + tab;
+  }, [box, label, from?.[0], from?.[1], k, sub.line.who]);
+  const lh = f * 1.32;
+  const textTop = card.y + inside + (card.h - inside - rows.length * lh) / 2;
+  return (
+    <>
+      <ArtG html={art} />
+      {label !== null && (
+        <text x={r2(card.x + 10 + 12 * k)} y={r2(box.y + (LABEL_H * k) / 2 + f * 0.36)} fontFamily={SERIF} fontWeight={900} fontSize={r2(f)} fill={C.sealGlyph}>
+          {label}
+        </text>
+      )}
+      {rows.map((row, i) => (
+        <text key={i} x={r2(card.x + card.w / 2)} y={r2(textTop + lh * i + lh * 0.5 + f * 0.36)} textAnchor="middle" fontFamily={SERIF} fontWeight={700} fontSize={r2(f)} fill={C.ink}>
+          {row}
+        </text>
+      ))}
+    </>
+  );
+}

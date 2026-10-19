@@ -1,0 +1,87 @@
+/*
+ * Bubbles (#98; GDD § 2.2.6, popup art bible § 5, § 8). Transforms and opacity only, no filters
+ * (GDD § 3.9), every one a CSS animation so a screenshot still (`[data-still]`, gestures.css) stops
+ * it. The view picks the `-fade` classes under reduced motion (the OS setting or 減少動態): fades
+ * only. Nothing here repeats faster than the 1.2 s 「要！」 pulse (≤ 3 Hz, and it is a scale, not a
+ * flash).
+ *
+ * SVG groups animate about their own origin (the view places that origin: the cloud's centre, the
+ * spring's root at his head), so no `transform-box` is needed except where noted.
+ */
+
+/* Bible § 8 bubble change: the old icon pops (1 → 1.2 → 0, 100 ms), the new one inflates (0 → 1.1 → 1, 200 ms) */
+.tb-pop { animation: tb-pop 100ms ease-in forwards; }
+.tb-inflate { animation: tb-inflate 200ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+.tb-late { animation-delay: 100ms; }
+/* The spring wobbles: a damped three-cycle sine about his head */
+.tb-wobble { animation: tb-wobble 720ms linear; }
+/* 「要！」 pulses while he reaches */
+.tb-pulse { animation: tb-pulse 1200ms ease-in-out infinite; }
+
+@keyframes tb-pop {
+  0% { transform: scale(1); opacity: 1; }
+  45% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0); opacity: 0; }
+}
+@keyframes tb-inflate {
+  0% { transform: scale(0); }
+  65% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+@keyframes tb-wobble {
+  0% { transform: rotate(0deg); }
+  8% { transform: rotate(7deg); }
+  25% { transform: rotate(-5deg); }
+  42% { transform: rotate(3.4deg); }
+  58% { transform: rotate(-2.2deg); }
+  75% { transform: rotate(1.1deg); }
+  90% { transform: rotate(-0.5deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes tb-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.14); }
+}
+
+/* Barks: pop in, hold, fade out (1.4 s; a bark lives three ticks) */
+.tb-bark { transform-box: fill-box; transform-origin: center; animation: tb-bark 1400ms ease-out forwards; }
+@keyframes tb-bark {
+  0% { transform: scale(0.6); opacity: 0; }
+  12% { transform: scale(1.08); opacity: 1; }
+  22% { transform: scale(1); opacity: 1; }
+  78% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* Subtitles: each bubble springs in after the one before; the narration strip drops in */
+.tb-sub { transform-box: fill-box; transform-origin: 50% 100%; animation: tb-sub 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+.tb-strip { animation: tb-strip 260ms ease-out both; }
+@keyframes tb-sub {
+  0% { transform: scale(0.82); opacity: 0; }
+  70% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes tb-strip {
+  0% { transform: translateY(-10px); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+
+/* Reduced motion: the same beats as fades */
+.tb-fade-in { animation: tb-fade-in 200ms ease-out both; }
+.tb-fade-out { animation: tb-fade-out 100ms ease-in forwards; }
+.tb-bark-fade { animation: tb-bark-fade 1400ms linear forwards; }
+@keyframes tb-fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes tb-fade-out { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes tb-bark-fade { 0% { opacity: 0; } 12%, 78% { opacity: 1; } 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-wobble,
+  .tb-pulse { animation: none; }
+  .tb-pop { animation: tb-fade-out 100ms ease-in forwards; }
+  .tb-inflate,
+  .tb-sub,
+  .tb-strip { animation: tb-fade-in 200ms ease-out both; }
+  .tb-bark { animation: tb-bark-fade 1400ms linear forwards; }
+}
+
+[data-talk] { cursor: pointer; }

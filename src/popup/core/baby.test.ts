@@ -19,7 +19,8 @@ import {
   selectTarget,
   type BabyOptions,
 } from './baby';
-import { BARK_TEXT, type SimEvent } from './events';
+import { BABY_BARKS as BARK_TEXT } from '../content/barks';
+import type { SimEvent } from './events';
 import { initialState } from './state';
 import type { AttractorDef, BabyMode, EdgeDef, NodeDef, PageDef, SimState } from './types';
 

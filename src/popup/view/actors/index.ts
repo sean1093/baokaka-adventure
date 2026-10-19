@@ -6,6 +6,5 @@
 export { Baby, babySprite, flipScale, FLIP_MS, WATCH_TILT } from './Baby';
 export { Mocha } from './Mocha';
 export { Creature } from './Creature';
-export { Bubble, bubbleShow, bubbleSide } from './Bubble';
 export * from './animMap';
 export * from './standee';

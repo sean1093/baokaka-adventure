@@ -6,8 +6,11 @@ import { nodePos } from '../core/graph';
 import { partLocked } from '../core/step';
 import { cover, kitCtx, kitDefs, type KitCtx } from '../art';
 import { chapterInfo, chapterLine as contentChapterLine } from '../content';
-import type { Input, PageDef, SimState } from '../core/types';
+import type { SimEvent } from '../core/events';
+import type { Input, LineKey, PageDef, SimState } from '../core/types';
+import { loadLines } from '../content/script';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
+import { EMPTY_TALK, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
 import { usePagePreload } from '../sprites';
 import { usePageArt } from '../env/loader';
 import { nextPage } from '../pages';
@@ -22,6 +25,7 @@ import './gestures.css';
 import { PART_SETTLE_MS } from './interp';
 import { PageView, VIEW_BOX } from './PageView';
 import { useGestures } from './useGestures';
+import { barkLog, barksOf, type BarkShow } from './talk';
 
 /**
  * One page, played (GDD § 2.1 page anatomy; bible § 2.1, § 7): the navy-linen cover, the HUD slot
@@ -91,6 +95,13 @@ export interface PagePlayerProps {
    * tick's tween. Ignored without `from`.
    */
   readonly prev?: SimState;
+  /** The events of `from`'s latest tick (visual QA fixtures, #98: its barks show). Ignored without `from`. */
+  readonly events?: readonly SimEvent[];
+  /**
+   * Lines to open the page with instead of its intro (visual QA fixtures, #98). Without it a page
+   * started fresh (no `from`) plays its `lines.intro`.
+   */
+  readonly talk?: readonly LineKey[];
   /** Hold the clock (dev `paused=1`, screenshots) */
   readonly paused?: boolean;
   /**
@@ -119,10 +130,10 @@ export interface PagePlayerProps {
   readonly pageRef?: Ref<HTMLDivElement>;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
-  const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev }), [def, speed, from, prev, still]);
+  const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev, events }), [def, speed, from, prev, still, events]);
   const [frame, setFrame] = useState<SessionFrame>(() => session.frame());
   const [ms, setMs] = useState(0);
   const raf = useRef(0);
@@ -175,6 +186,23 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
     doneFired.current = true;
     onDoneRef.current?.(frame.state);
   }, [frame.state, still]);
+
+  // What is said (#98): the subtitle queue (the intro, then lines the page's events fire; a tap on a
+  // bubble advances) and the barks of the last few ticks
+  const [talk, setTalk] = useState<TalkQueue>(EMPTY_TALK);
+  const [barks, setBarks] = useState<readonly BarkShow[]>([]);
+  useEffect(() => {
+    const open = openLines !== undefined ? loadLines(openLines) : from === undefined ? introLines(def) : [];
+    setTalk(enqueue(EMPTY_TALK, open));
+    setBarks([]);
+  }, [session, def, from, openLines]);
+  useEffect(() => {
+    const fired = firedLines(def, frame.prev, frame.state, frame.events);
+    if (fired.length > 0) setTalk((q) => enqueue(q, fired));
+    setBarks((log) => barkLog(log, barksOf(frame.prev, frame.state, frame.events), frame.state.tick));
+  }, [def, frame]);
+  const onAdvance = useMemo(() => () => setTalk(advance), []);
+  const talkView = useMemo(() => ({ beat: currentBeat(talk), serial: talk.serial, onAdvance }), [talk, onAdvance]);
 
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
@@ -253,7 +281,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
       <div style={block} aria-hidden="true" />
       <div style={page} ref={pageRef} data-page-box="">
-        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still} events={frame.events} />
+        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still} events={frame.events} barks={barks} talk={talkView} />
       </div>
       <TopHud
         landmark={chapterInfo(def.chapter).landmark}

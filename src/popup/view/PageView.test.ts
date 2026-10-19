@@ -174,6 +174,51 @@ describe('PageView motion', () => {
   });
 });
 
+describe('PageView thought bubble change of mind (#98, GDD § 2.2.6)', () => {
+  const def = labPageById('lab-lamp')!;
+  let s = initialState(def);
+  for (let i = 0; i < 2; i++) s = step(def, s, { t: 'none' }).state;
+  const watching = s;
+  const r = step(def, watching, { t: 'tap', id: 'mobile' });
+  const wants = r.state;
+  const renderK = (prev: SimState, state: SimState, opts: { reduced?: boolean; still?: boolean } = {}) =>
+    layers(renderToStaticMarkup(createElement(PageView, { def, prev, state, ms: 50, tickMs: 500, reduced: opts.reduced ?? false, still: opts.still, events: r.events }))).fx;
+
+  test('the lab stage: watching the night light, then the bead appears and he wants it', () => {
+    expect(watching.baby.mode).toBe('watching');
+    expect(wants.baby.target).toBe('bead');
+  });
+
+  test('the old icon pops, the new one inflates late, the spring wobbles, 「要！」 pulses, he barks', () => {
+    const fx = renderK(watching, wants);
+    expect(fx).toContain('data-bubble="want"');
+    expect(fx).toContain('class="tb-pop"');
+    expect(fx).toContain('class="tb-inflate tb-late"');
+    expect(fx).toContain('class="tb-wobble"');
+    expect(fx).toContain('class="tb-pulse"');
+    expect(fx).toMatch(/data-bark="baby"[\s\S]*要！/);
+  });
+
+  test('reduced motion: the same beats as fades, no wobble or pulse', () => {
+    const fx = renderK(watching, wants, { reduced: true });
+    expect(fx).toContain('class="tb-fade-out"');
+    expect(fx).toContain('class="tb-fade-in tb-late"');
+    expect(fx).not.toMatch(/tb-wobble|tb-pulse|tb-pop|tb-inflate/);
+    expect(fx).toContain('class="tb-bark-fade"');
+  });
+
+  test('no change, no animation; a still draws only the settled bubble', () => {
+    expect(renderK(wants, wants)).not.toMatch(/tb-pop|tb-wobble|tb-inflate/);
+    expect(renderK(watching, wants, { still: true })).not.toMatch(/tb-pop|tb-wobble|tb-inflate|tb-pulse/);
+  });
+
+  test('the bubble grows against a small book so its text stays ≥ 20 screen px (R5)', () => {
+    const at = (scale: number) => renderToStaticMarkup(createElement(PageView, { def, prev: wants, state: wants, ms: 0, tickMs: 500, scale }));
+    expect(at(0.661)).toMatch(/scale\(1\.3[89]\d*\)/);
+    expect(at(1)).toContain('scale(1)');
+  });
+});
+
 describe('PageView gesture flags (#90)', () => {
   const def = pageById('c1p2')!;
   const s0 = initialState(def);
