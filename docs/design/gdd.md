@@ -450,6 +450,8 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 - No flashing above 3 Hz.
 - All text in Traditional Chinese; numbers in Arabic digits; clock times in HH:MM.
 
+**For engineers.** #104 built it (D-67). `game/settings.ts` holds the rules: `effectiveSettings` applies 長輩模式 over the player's own values and never writes them, so turning it off restores them; while it is on, changes to the settings it holds are dropped. It also has the low-power `FrameWatch` and the `pulse` vibrations. The screen is `view/screens/Settings.tsx` (設定 from the cover and the pause menu). 大字 is `TextScaleContext` plus `[data-text-size="big"]`, and every screen passes `npm run check:ui:big`. The extras of 長輩模式 are the reveal outlines always on, bolder perch markers, 28 px seals and a stronger L1 halo. It always sets the auto-hint to 15 s, even over 關. The optional gyro tilt (bible § 2.3) is the 書本傾斜 row, `Settings.tilt`. 「重新開始」 keeps the settings (D-55).
+
 ### 2.12 Audio cues
 
 All sound is **synthesised with WebAudio**, extending `src/shared/audio.ts` (no mp3s). Music is a tiny music-box sequencer, one 8–16 bar loop per chapter in a pentatonic key. Baby barks are pitched "voice blips" plus a bubble; there are no recorded voices.
