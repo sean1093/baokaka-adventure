@@ -3,8 +3,8 @@
 exports[`PageView layers and budget > node counts per layer (1-2 is far below the animated budget) 1`] = `
 {
   "actors": {
-    "animated": 37,
-    "elements": 38,
+    "animated": 10,
+    "elements": 11,
   },
   "backdrop": {
     "animated": 0,

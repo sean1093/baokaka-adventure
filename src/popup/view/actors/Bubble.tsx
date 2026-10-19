@@ -39,11 +39,17 @@ export function bubbleShow(def: PageDef, state: SimState): BubbleShow | null {
 /** The bubble flips to his left near the page's right side so it stays on the page. */
 export const bubbleSide = (x: number): 1 | -1 => (x > 280 ? -1 : 1);
 
-export function Bubble({ ctx, show, x, y }: { ctx: KitCtx; show: BubbleShow; x: number; y: number }) {
+/**
+ * `head` is where the spring attaches: the top of his head relative to his feet, from the shown
+ * frame's manifest (`spriteHead`, #94), so the bubble rides each pose at its own height.
+ */
+export function Bubble({ ctx, show, x, y, head }: { ctx: KitCtx; show: BubbleShow; x: number; y: number; head?: readonly [number, number] }) {
   const side = bubbleSide(x);
   // Keyed on what it shows, not the object's identity (a new object every frame)
   const key = JSON.stringify(show);
-  const html = useMemo(() => thoughtBubble(ctx, JSON.parse(key) as BubbleShow, side), [ctx, key, side]);
+  const hx = head?.[0] ?? side * 8;
+  const hy = head?.[1] ?? -68;
+  const html = useMemo(() => thoughtBubble(ctx, JSON.parse(key) as BubbleShow, side, [hx, hy]), [ctx, key, side, hx, hy]);
   return (
     <g data-bubble={show.kind} data-anim="" transform={`translate(${r2(x)} ${r2(y)})`}>
       <ArtG html={html} />

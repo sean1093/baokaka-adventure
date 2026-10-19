@@ -81,7 +81,7 @@ export async function listPopupFixtures(page, base) {
 export async function openPopupFixture(page, base, name, still = true) {
   await page.goto('about:blank');
   await page.goto(popupFixtureUrl(base, name, still), { waitUntil: 'load' });
-  await page.waitForSelector(`[data-pagelab-fixture="${name}"] svg[data-page]`, { timeout: 20000 });
+  await page.waitForSelector(`[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) svg[data-page]`, { timeout: 20000 });
   await page.evaluate(() => document.fonts.ready);
 }
 
@@ -193,7 +193,9 @@ function collect({ waivers, artText, minText, minTextBig }) {
     if (box.width === 0 && box.height === 0) continue;
     hits.push({ label: label(el), w: Math.round(box.width * 10) / 10, h: Math.round(box.height * 10) / 10, page: el.hasAttribute('data-hit'), grown: el.hasAttribute('data-hit-grown'), waived: waivedFor(el, 'hit') });
   }
-  return { texts, hits, art };
+  // A specimen sheet with nothing to touch (the #94 sprite sheet) says so; pages never do
+  const hitless = document.querySelector('[data-pagelab-fixture] [data-specimen-hitless]') !== null;
+  return { texts, hits, art, hitless };
 }
 
 /** Hides every text run (fill, stroke, colour, shadow) so a screenshot shows only what is behind it. */
@@ -335,7 +337,7 @@ export async function checkPopup(browser, base, viewports, report) {
     for (const name of fixtures) {
       await openPopupFixture(page, base, name);
       await page.waitForTimeout(300);
-      const { texts, hits, art } = await page.evaluate(collect, {
+      const { texts, hits, art, hitless } = await page.evaluate(collect, {
         waivers: WAIVERS.map(({ selector, rules, issue }) => ({ selector, rules, issue })),
         artText: ART_TEXT,
         minText: MIN_TEXT_PX,
@@ -372,7 +374,7 @@ export async function checkPopup(browser, base, viewports, report) {
       else report.fail(`${label} text size: ${small.join('; ')}`);
       if (faint.length === 0) pass(report, `${label}: text contrast ≥ ${MIN_CONTRAST}:1 (or waived)`);
       else report.fail(`${label} contrast: ${faint.join('; ')}`);
-      if (pageHits === 0) report.fail(`${label}: no [data-hit] touchables found (the page's hit layer is missing)`);
+      if (pageHits === 0 && !hitless) report.fail(`${label}: no [data-hit] touchables found (the page's hit layer is missing)`);
       else if (tiny.length === 0) pass(report, `${label}: ${hits.length} hit areas ≥ ${MIN_HIT_PX}×${MIN_HIT_PX}`);
       else report.fail(`${label} hit areas: ${tiny.join('; ')}`);
       if (viewport.name === REFERENCE_VIEWPORT) {

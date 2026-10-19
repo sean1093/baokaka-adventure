@@ -9,7 +9,8 @@ import { partLocked } from '../core/step';
 import { nodePos } from '../core/graph';
 import { mochaNode, perchHidesMocha } from '../core/mocha';
 import type { CreatureDef, Id, PageDef, PerchDef, SimState } from '../core/types';
-import { Baby, Bubble, Creature, Mocha, bubbleShow, flipScale } from './actors';
+import { spriteHead } from '../sprites';
+import { Baby, Bubble, Creature, Mocha, babySprite, bubbleShow, flipScale } from './actors';
 import './affordance/affordance.css';
 import { haloShape, handGesture, linkThread } from './affordance/hints';
 import { GhostHand, HintHalo, LinkThread } from './affordance/Hints';
@@ -68,6 +69,8 @@ export interface PageViewProps {
   readonly gesture?: GestureFlags;
   /** Hints, idle wiggles, done knots, 長輩模式 (#140; the hint ladder is #100's) */
   readonly affordance?: AffordanceFlags;
+  /** A still (screenshots, #92): the character sprites hold their key frames */
+  readonly still?: boolean;
 }
 
 function Layer({ id, children, html }: { id: LayerId; children?: ReactNode; html?: string }) {
@@ -87,7 +90,7 @@ function creaturePoint(def: PageDef, creature: CreatureDef, state: SimState, oth
   return anchor === undefined ? null : offpagePoint(anchor);
 }
 
-export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE }: PageViewProps) {
+export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false }: PageViewProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
   const ids = useSvgIds(`pg-${def.id}`);
@@ -224,6 +227,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const watch = finger === null || babyPose === null ? undefined : finger[0] < babyPose.x ? -1 : 1;
   const sx = flipScale(prev.baby.facing, state.baby.facing, ms, reduced);
   const show = bubbleShow(def, state);
+  const head = spriteHead(babySprite(state.baby.mode).sprite, state.baby.facing);
+  // Mocha sits turned toward him (frames face right; mirrored about his feet)
+  const mochaFacing = mochaPose && babyPose && babyPose.x < mochaPose.x - 4 ? 'l' : 'r';
 
   // ——— 土地公, when his condition shows him ———
   const tdg = def.tudigong;
@@ -275,11 +281,11 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       </Layer>
       <Layer id="creatures">{creatures}</Layer>
       <Layer id="actors">
-        {mochaPose && <Mocha ctx={ctx} x={mochaPose.x} y={mochaPose.y} glare={locked?.serial} />}
-        {babyPose && <Baby ctx={ctx} x={babyPose.x} y={babyPose.y} mode={state.baby.mode} sx={sx} watch={watch} />}
+        {mochaPose && <Mocha x={mochaPose.x} y={mochaPose.y} glare={locked?.serial} facing={mochaFacing} reduced={reduced} />}
+        {babyPose && <Baby x={babyPose.x} y={babyPose.y} mode={state.baby.mode} sx={sx} watch={watch} reduced={reduced} still={still} />}
       </Layer>
       <Layer id="fx">
-        {babyPose && show && <Bubble ctx={ctx} show={show} x={babyPose.x} y={babyPose.y} />}
+        {babyPose && show && <Bubble ctx={ctx} show={show} x={babyPose.x} y={babyPose.y} head={head} />}
         {thread && <LinkThread from={thread[0]} to={thread[1]} />}
         {hand && <GhostHand gesture={hand} reduced={reduced} />}
       </Layer>

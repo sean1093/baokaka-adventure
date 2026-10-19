@@ -45,7 +45,7 @@ export interface PopupFixture {
    */
   readonly look?: 'motion' | 'reduced';
   /** A specimen sheet drawn instead of the page (`page` and `steps` still name a valid frame) */
-  readonly sheet?: 'affordance-states';
+  readonly sheet?: 'affordance-states' | 'sprites-anchors';
 }
 
 export const POPUP_FIXTURES: readonly PopupFixture[] = [
@@ -76,6 +76,13 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     sheet: 'affordance-states',
     note: 'The touchable states side by side (bible § 4.1, #140): idle, hint L1 halo, hint L2 ghost hand, dragging, locked, done, hold-to-reveal, reduced motion.',
+  },
+  {
+    name: 'sprites-anchors',
+    page: 'c1p2',
+    steps: [],
+    sheet: 'sprites-anchors',
+    note: 'The baked character sprites at map scale (#94): stills, heads and poses, mirrored pairs, with the frame box, foot anchor, head and footprint marked.',
   },
   {
     name: 'c1p2-hold-reveal',

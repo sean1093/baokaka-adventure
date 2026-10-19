@@ -529,12 +529,13 @@ export type BubbleShow =
 
 /**
  * The thought bubble on its spring (GDD § 2.2.6, bible § 5), in baby-local space (his feet at the
- * origin), the cloud `side` (+1 right, −1 left) of his head so it stays on the page. #98 adds the
+ * origin): the spring rises from `head` (the top of his head) to the cloud, `side` (+1 right, −1
+ * left) of it so it stays on the page. #98 adds the
  * change-of-mind pop and the spring wobble; this is the static bubble.
  */
-export function thoughtBubble(ctx: KitCtx, show: BubbleShow, side: 1 | -1 = 1): string {
-  const cx = side * 20;
-  const cy = -142;
+export function thoughtBubble(ctx: KitCtx, show: BubbleShow, side: 1 | -1 = 1, head: readonly [number, number] = [side * 8, -68]): string {
+  const cx = head[0] + side * 12;
+  const cy = head[1] - 74;
   let content: string;
   const text = (t: string, x: number, size = 22, fill: string = C.sealInk) =>
     `<text x="${x}" y="${cy + 8}" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="${size}" fill="${fill}">${t}</text>`;
@@ -557,7 +558,7 @@ export function thoughtBubble(ctx: KitCtx, show: BubbleShow, side: 1 | -1 = 1): 
       content = `<path d="M${cx - 3} ${cy + 8}V${cy - 10}l10 -3v16" stroke="${C.ink}" stroke-width="2" fill="none"/><ellipse cx="${cx - 6}" cy="${cy + 8}" rx="4" ry="3" fill="${C.ink}"/><ellipse cx="${cx + 4}" cy="${cy + 5}" rx="4" ry="3" fill="${C.ink}"/>`;
       break;
   }
-  return springBubble(ctx, side * 8, -68, cx, cy, content, { w: 92, h: 46 });
+  return springBubble(ctx, head[0], head[1], cx, cy, content, { w: 92, h: 46 });
 }
 
 /** A foreground card for a near corner (bible § 2.2): a paper potted plant, its foot at the origin. */

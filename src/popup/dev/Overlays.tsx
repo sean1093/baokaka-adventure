@@ -1,10 +1,13 @@
 import { useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { PAGELAB } from '../../art/palette';
-import type { Point } from '../core/graph';
+import { nodePos, type Point } from '../core/graph';
+import { mochaNode } from '../core/mocha';
 import type { Id, PageDef, SimState } from '../core/types';
 import type { Hit } from '../view/geometry';
 import { minHit, targetsOf } from '../view/gestures';
+import { babySprite } from '../view/actors';
 import { VIEW_BOX } from '../view/PageView';
+import { SpriteMarks } from './SpriteSheet';
 import type { Overlay } from './labParams';
 import { EDGE_COLORS, HEIGHT_COLORS, overlayModel, type EdgeMark } from './labModel';
 
@@ -21,6 +24,8 @@ import { EDGE_COLORS, HEIGHT_COLORS, overlayModel, type EdgeMark } from './labMo
  * - `hits` — every touchable's hit shape as data has it (solid) and grown to 48 screen px (dashed,
  *   what `hitTest` uses);
  * - `target` — Baokaka's line to his target and his path preview, and Mocha's remaining trip.
+ * - `anchors` — the character sprites' frame box, foot anchor, head (bubble anchor) and footprint
+ *   at their nodes (#94, `SpriteMarks`).
  *
  * In edit mode the nodes and the ends of every part's track get handles: drag them and the page
  * re-lints at once (`onMoveNode`, `onMoveTrack`). Only the handles take the pointer.
@@ -104,6 +109,9 @@ export function Overlays({ def, state, overlays, scale, edit, onMoveNode, onMove
   const catEdges = m.edges.filter((e) => e.cat);
   const targets = on('hits') ? targetsOf(def, state) : [];
   const tracks = def.parts.filter((p) => p.track !== undefined);
+  const babyAt = on('anchors') ? nodePos(def, state, state.baby.node) : undefined;
+  const mochaNodeId = on('anchors') ? mochaNode(def, state) : null;
+  const mochaAt = mochaNodeId === null ? undefined : nodePos(def, state, mochaNodeId);
 
   return (
     <svg
@@ -173,6 +181,13 @@ export function Overlays({ def, state, overlays, scale, edit, onMoveNode, onMove
               <Label x={(m.target.from[0] + m.target.to[0]) / 2} y={(m.target.from[1] + m.target.to[1]) / 2 - 26} anchor="middle" color={PAGELAB.target}>{`target → ${m.target.id}`}</Label>
             </g>
           )}
+        </g>
+      )}
+
+      {on('anchors') && (
+        <g data-overlay="anchors">
+          {mochaAt && <SpriteMarks sprite="mocha.sit" facing={babyAt && babyAt[0] < mochaAt[0] - 4 ? 'l' : 'r'} x={mochaAt[0]} y={mochaAt[1]} />}
+          {babyAt && <SpriteMarks sprite={babySprite(state.baby.mode).sprite} facing={state.baby.facing} x={babyAt[0]} y={babyAt[1]} />}
         </g>
       )}
 

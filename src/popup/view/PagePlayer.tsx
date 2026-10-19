@@ -15,6 +15,7 @@ import type { GestureEvent, GestureFlags } from './gestures';
 import './gestures.css';
 import { PART_SETTLE_MS } from './interp';
 import { PageView, VIEW_BOX } from './PageView';
+import { usePagePreload } from '../sprites';
 import { useGestures } from './useGestures';
 
 /**
@@ -29,6 +30,9 @@ import { useGestures } from './useGestures';
  *
  * Animation runs on `requestAnimationFrame` only while something moves (an actor mid-step, a part
  * mid-tween) and sleeps between ticks.
+ *
+ * Character sprites (#94): the page preloads its chapter's baked frames as it opens
+ * (`usePagePreload`) and marks itself `data-sprites="ready"` once they are decoded.
  *
  * Touchable states (#140): the idle wiggle runs on its own timer (`useIdleWiggle`; off in a still,
  * under reduced motion and while a finger is down), and a tapped prop shakes. `affordance` passes
@@ -149,6 +153,9 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
   useEffect(() => setFingerDown(down), [down]);
   const pageAffordance = useMemo(() => ({ ...affordance, wiggle: idle.wiggle }), [affordance, idle.wiggle]);
 
+  // The page's character frames (#94): preloaded and decoded as it opens; placeholders until then
+  const spritesReady = usePagePreload(def.chapter);
+
   const ids = useSvgIds('book');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('book'), id: ids }), [ids]);
   const sky = chapterSky(def.chapter);
@@ -192,12 +199,13 @@ export function PagePlayer({ def, speed = 'normal', from, prev, paused: pausedPr
       lang="zh-Hant"
       data-popup-page={def.id}
       data-still={still ? '' : undefined}
+      data-sprites={spritesReady ? 'ready' : 'loading'}
       {...gestures.handlers}
     >
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
       <div style={block} aria-hidden="true" />
       <div style={page}>
-        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} />
+        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still} />
       </div>
       <svg
         className="absolute left-1/2 top-0 font-body"

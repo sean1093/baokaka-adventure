@@ -4,6 +4,7 @@ import { PAGES } from '../pages';
 import { PagePlayer } from '../view/PagePlayer';
 import { AffordanceSheet } from './AffordanceSheet';
 import { POPUP_FIXTURES, fixtureFrame, popupFixture } from './fixtures';
+import { SpritesAnchorsSheet } from './SpriteSheet';
 
 /**
  * The visual QA fixtures (#92, `fixtures.ts`) in PageLab.
@@ -36,6 +37,8 @@ export function FixtureView({ name, still }: { name: string; still: boolean }) {
     <div data-pagelab-fixture={fixture.name}>
       {fixture.sheet === 'affordance-states' ? (
         <AffordanceSheet still={still} reduced={reduced} />
+      ) : fixture.sheet === 'sprites-anchors' ? (
+        <SpritesAnchorsSheet still={still} />
       ) : (
         <PagePlayer
           key={`${fixture.name}-${still}`}
