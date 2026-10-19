@@ -363,6 +363,8 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 
 **Hint text:** at most one short line (≤ 12 chars), always optional, for example 「拉拉看這裡」「讓摩卡上去」「試試看『嗶！』」.
 
+**For engineers.** #100 built it: `core/hint.ts` (`nextHint`: the solver from the current state with `stopAtGoal`, else `solutionAction`, the stored solution step whose part states match, else 重來 + step 1; `applyHint` plays an answer), `workers/hint.worker.ts` over `workers/protocol.ts` (`{ id, pageId, state, def? } → { id, action, source }`), `workers/hintClient.ts` (every failure or a 2 s silence falls back on the main thread), and the ladder in `view/affordance/ladder.ts` + `useHintLadder.ts`, run by `PagePlayer` from the bottom bar's 提示 and the 自動提示 timer (`autoHintMs`). Mocha's cues (`affordance.mocha`: the stretch as the yawn, a look, the paw tap) and the lines (`content/hints.ts`, his bark) are in the view. `pages/hints.test.ts` presses "show me" to `done` on every registered page. Readings in D-63.
+
 ### 2.8 Page completion, stickers, 淘氣
 
 **Completion:**
