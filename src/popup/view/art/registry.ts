@@ -1,20 +1,53 @@
 import { PRESET_ART, PRESET_DEFS, kitDefs, type KitCtx, type PartArtOptions, type PartPreset, type PresetArt } from '../../art';
+import type { PageDef } from '../../core/types';
+import { origamiBird, placeholderBackdrop } from './placeholders';
 
 /**
- * The art registry (GDD § 3.5, § 3.9): a part's `art` key → what draws it. Until a key has its own
- * art (chapter art issues) or a baked bitmap (#96), the part falls back to its preset's kit art
- * (`src/popup/art/presets.ts`, #139), so M0/M1 pages already look like paper, not coloured cards.
+ * The art registry (GDD § 3.5, § 3.9): an art key → what draws it. Until a key has its own art
+ * (chapter art issues) or a baked bitmap (#96), it falls back to a placeholder: a part to its
+ * preset's kit art (`src/popup/art/presets.ts`, #139), a backdrop to the chapter's placeholder
+ * stage, a creature to an origami bird. So M0/M1 pages already look like paper, not coloured
+ * cards. Each missing key is logged once in dev builds, so the gap list is visible in the console.
  *
  * The in-game path calls this with a `filters: false` context (GDD § 3.9: no runtime SVG filters on
  * moving parts); PageLab may pass `filters: true` to preview the bake.
  */
 
-/** Art registered under an explicit key (e.g. 'c1/train-blue'). Empty until chapter art lands. */
+/** Draws a page's backdrop (sky, standing cut-outs, floor page, gutter) in page units. */
+export type BackdropArt = (ctx: KitCtx, def: Pick<PageDef, 'chapter'>) => string;
+/** Draws a creature in its local space: feet at the origin, facing +x. */
+export type CreatureArt = (ctx: KitCtx) => string;
+
+/** Part art registered under an explicit key (e.g. 'c1/train-blue'). Empty until chapter art lands. */
 const KEYED: Readonly<Record<string, PresetArt>> = {};
+/** Backdrops by key (e.g. 'c1/hall-night'). Empty until #96 bakes them. */
+const BACKDROPS: Readonly<Record<string, BackdropArt>> = {};
+/** Creatures by key (e.g. 'common/pigeon'). */
+const CREATURES: Readonly<Record<string, CreatureArt>> = {};
+
+export type ArtKind = 'part' | 'backdrop' | 'creature';
+
+const reported = new Set<string>();
+
+/** Notes (once per kind and key, dev builds only) that `key` has no art and shows a placeholder. */
+export function noteFallback(kind: ArtKind, key: string): void {
+  if (!import.meta.env.DEV) return;
+  const k = `${kind}:${key}`;
+  if (reported.has(k)) return;
+  reported.add(k);
+  console.info(`[art] no ${kind} art for '${key}' yet; drawing the placeholder`);
+}
+
+/** Forgets which fallbacks were logged (tests). */
+export function resetFallbackLog(): void {
+  reported.clear();
+}
 
 /** The art for a part: its key's own art if registered, otherwise its preset's default kit art. */
 export function partArt(key: string, preset: PartPreset): PresetArt {
-  return KEYED[key] ?? PRESET_ART[preset];
+  const own = KEYED[key];
+  if (own === undefined) noteFallback('part', key);
+  return own ?? PRESET_ART[preset];
 }
 
 /** True when `key` has no art of its own yet (the part shows its preset's placeholder). */
@@ -23,4 +56,18 @@ export const isPlaceholder = (key: string): boolean => !(key in KEYED);
 /** A part's art as a self-contained SVG fragment (its scoped defs plus the drawing). */
 export function renderPart(ctx: KitCtx, key: string, preset: PartPreset, opts: PartArtOptions = {}): string {
   return kitDefs(ctx, PRESET_DEFS) + partArt(key, preset).draw(ctx, opts);
+}
+
+/** The art for a page's backdrop: its key's own, else the chapter's placeholder stage. */
+export function backdropArt(key: string): BackdropArt {
+  const own = BACKDROPS[key];
+  if (own === undefined) noteFallback('backdrop', key);
+  return own ?? placeholderBackdrop;
+}
+
+/** The art for a creature: its key's own, else the origami bird. */
+export function creatureArt(key: string): CreatureArt {
+  const own = CREATURES[key];
+  if (own === undefined) noteFallback('creature', key);
+  return own ?? origamiBird;
 }

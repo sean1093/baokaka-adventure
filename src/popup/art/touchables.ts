@@ -45,16 +45,18 @@ export type PullTabOptions = {
   track?: number;
   /** The three idle tick marks at the grip end (bible § 4.1 idle) */
   ticks?: boolean;
+  /** Draw the verb seal (false when the caller draws it upright beside a rotated tab) */
+  sealed?: boolean;
 };
 
 /**
  * 拉 Pull-tab (bible § 4): a marigold tongue with a ridged grip end, a seal and an arrow, riding a
  * dotted track to its end stop. The card's top-left is at (x, y).
  */
-export function pullTab(ctx: KitCtx, x: number, y: number, { w = 112, h = 44, dir = 1, label = VERBS.tab, track = 120, ticks = true }: PullTabOptions = {}): string {
+export function pullTab(ctx: KitCtx, x: number, y: number, { w = 112, h = 44, dir = 1, label = VERBS.tab, track = 120, ticks = true, sealed = true }: PullTabOptions = {}): string {
   const rx = f1(h * 0.34);
   const mid = h / 2;
-  const trackSvg = `<g opacity=".85" fill="none" stroke="${C.marigoldLight}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">`
+  const trackSvg = track <= 0 ? '' : `<g opacity=".85" fill="none" stroke="${C.marigoldLight}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">`
     + `<path d="M${w + 4} ${mid}H${w + track}" stroke-dasharray="1 7"/><path d="M${w + track - 8} ${mid - 6}L${w + track} ${mid}L${w + track - 8} ${mid + 6}"/></g>`;
   const tickSvg = ticks
     ? `<path d="M-8 6l-6 -4M-9 ${mid}h-7M-8 ${h - 6}l-6 4" stroke="${C.marigoldLight}" stroke-width="1.8" stroke-linecap="round" opacity=".9"/>`
@@ -65,7 +67,8 @@ export function pullTab(ctx: KitCtx, x: number, y: number, { w = 112, h = 44, di
     + `<rect x="${w - 30}" y="6" width="22" height="${h - 12}" rx="4" fill="${ref(ctx, 'ridges')}"/>${arrow}`;
   return `<g transform="${translate(x, y)} scale(${dir} 1)">${trackSvg}${tickSvg}`
     + depth(ctx, 3, body, `<rect width="${w}" height="${h}" rx="${rx}"/>`)
-    + `<g transform="scale(${dir} 1)">${seal(ctx, dir * 22, mid, label, 14)}</g></g>`;
+    + (sealed ? `<g transform="scale(${dir} 1)">${seal(ctx, dir * 22, mid, label, 14)}</g>` : '')
+    + `</g>`;
 }
 
 /** The scalloped rim of a paper wheel: `teeth` bumps around radius `r`, as a closed `d`. */

@@ -86,6 +86,18 @@ export const TARGETS = [
     fullPage: true,
     artlab: true,
   },
+  {
+    name: 'popup-c0p1',
+    // 翻翻台北 page 0-1 in the book frame (#89): the placeholder home stage, the crib rail closed, Baokaka reaching
+    hash: '#/popup?page=c0p1&tick=2&paused=1',
+    waitFor: '[data-popup-page="c0p1"] [data-actor="baby"][data-mode="reaching"]',
+  },
+  {
+    name: 'popup-c1p2',
+    // 翻翻台北 page 1-2 (#89; proof A's page): the station stage, the train tab at `out`, Mocha on the bench, the pigeon
+    hash: '#/popup?page=c1p2&tick=3&paused=1',
+    waitFor: '[data-popup-page="c1p2"] [data-actor="baby"][data-mode="reaching"]',
+  },
 ];
 
 /** The screenshot target for one art lab fixture. */

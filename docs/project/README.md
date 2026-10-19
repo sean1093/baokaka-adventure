@@ -117,6 +117,16 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
 
 ### PageLab sections (dev builds only)
 
+### Pages in the book: `#/popup?page=<id>` (every build)
+
+Since #89, `#/popup?page=c0p1` (any registered page id) plays one page in the book frame on the session clock. Dev parameters:
+- `tick=N` starts N idle ticks in;
+- `paused=1` holds the clock (screenshots);
+- `speed=slow|normal|fast` sets the tick length;
+- `demo=1` plays three idle ticks, then the page's authored solution, which is how to watch rides and part tweens until gestures land (#90).
+
+The visual targets are `popup-c0p1` and `popup-c1p2`, each paused with Baokaka reaching.
+
 - **Kit** (`#/pagelab?section=kit`, since #139): proof D rebuilt from the TS kit port (`src/popup/art/`, with filters), every GDD part preset's default art in its idle state (with filters, as PageLab and the bake show it, and without, as the game draws it until bitmaps are baked), and the artist's `proof-d-swatches.png` below for comparison. Visual target `kit-swatches`.
 
 ### The art lab: `#/artlab` (dev builds only)

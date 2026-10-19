@@ -301,3 +301,48 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 **Decision.** (#88.) (1) The report logic is `src/popup/pages/report.ts` (`reportPage`, `judge`, `formatTable`, `formatDetails`, `formatSummary`, `reportFailed`, `parseArgs`, `selectPages`, `PAR_BAND`, `CI_BUDGET_MS`), not `src/popup/dev/` (whose rule is "import nothing from here outside PageLab's lazy import") and not `scripts/` (outside `tsc -b` and vitest's `src/**` include). `scripts/solve-pages.ts` is a thin CLI over it, run by `vite-node`; `pages.test.ts` reuses `PAR_BAND`, `CI_BUDGET_MS` and the table, so the test and the CLI judge a page identically. (2) **Failures** = lint errors, the authored solution not reaching `done` (the CLI replays it too), the state cap or any other early stop, a cascade overflow, unsolvable (complete search), dead ends, trivial without `allowTrivial`, and 淘氣/土地公 unreachable (only judged on a complete search: on a capped one `false` means "not found" and the cap already fails the page). **Warnings** = lint warnings and par outside the band. (3) **Fail fast**: a page over its cap ends the run at once (exit 1) with its row and a line naming it; the pages after it are not solved. (4) **Budget**: the total is the wall time of the whole run (lint + replay + solve, all selected pages); at or over 60 s the run fails, also for a `--page`/`--chapter` subset (a subset over budget means the full run is too). (5) Exit codes 0 ok / 1 failure / 2 usage (bad argument, or a filter matching no page). (6) `--cap N` overrides the solver's 2,000,000 default for exploring a page; there is still no per-page cap field (D-48). (7) The table pads by terminal display width (CJK titles count 2 columns).
 **Why.** One judgement shared by CI and the designer's command means a green `npm run solve` and a green `pages.test.ts` always agree; failing fast on the cap is what the issue asks and keeps a runaway page from eating the budget for the rest.
 **Consequences.** #91's PageLab solver panel can call `reportPage` for its badges (ok / dead-end / over cap). New page-level checks go into `judge` so both the CLI and the test see them.
+
+### D-50 · 2026-10-19 · The page renderer: the readings #89 left open
+**Decision.** (#89.) `src/popup/view/` (`PageView`, `PagePlayer`, `geometry`, `interp`, `stage`, `layers`, `parts/`, `actors/`, `art/placeholders`, `art/registry`) and `src/popup/game/session.ts`:
+1. **Book geometry.**
+   - The 390 × 560 page model is drawn from y 0 to the floor page's front edge at **y 650**, plus 14 units of page-block edges below it. The pull tabs ride the band between 560 and 650 (proof A; 1-2's track is at y 610).
+   - The gutter is at **y 360**.
+   - Everything is scaled by one factor: `min((vw − 36) / 390, (vh − 96 − 120 − 12) / 664, 1.25)`. That is 0.9077 at 390 × 844 and 0.66 at 375 × 667.
+   - Leftover height is split above and below the book (cover, never page).
+2. **Layers.** GDD § 3.9 draws the floor before every part. The bible's z table puts the train (z3) behind the platforms (z4) it slides past.
+   - So parts are split around the floor by `PRESET_Z`: carriages, `section`, `lift` and `loop` sit behind the ledges, every other preset in front.
+   - The order is: backdrop (z0–z2) · cut-outs · parts-mid (z3) · floor (z4 ledges) · parts-near · creatures · actors · fx · foreground (z5) · hit.
+   - Attractors and perch paw marks draw with the near parts.
+3. **Placeholder stage from the walk graph.** Pages have no ledge art until #96 bakes it, so the view draws paper only where Baokaka can go:
+   - **Ledges.** A ledge for each level run of static baby nodes joined by unconditional edges, padded 24 units and snapped to the page side within 70. A single node becomes a cushion (indoors) or a crate.
+   - **Ramps.** A ramp for each unconditional edge between levels.
+   - **Rails.** A rail for each conditional static crossing, standing 50 units past the guarded node, clear of his head; its ledge runs on to it. The rail folds flat (`scaleY`) as the condition opens, and its ramp fades in.
+   - **Perch furniture.** A pillar for a height-2 perch, a bench for a seat, standing on the ledge below.
+   - **Carriages.** A carriage under the nodes attached to a non-lift, non-carrier part with one level of travel. Its pit shows only in the stretch of travel no ledge covers.
+   - **Themes.** The prologue and page E get the home room; chapters 1–10 get the city night with a generic 重簷 hall as the landmark (folded with `vFold`).
+4. **Motion.**
+   - **Actors** lerp ease-in-out over the tick with a 2 px hop (Mocha 24 px, a jump). A creature going off the page leaves past the nearer side.
+   - **Parts.** Part tweens use an ease-out-back tuned so the peak is exactly 1.06 (c ≈ 1.29); the "2 px settle" is that curve's return. The 60 ms 0.97 squash follows, about the part's centre. Transforms only.
+   - **Rides.** An attached node is drawn at its part's tween; an actor stepping onto it lerps to that moving point.
+   - **Reduced motion:** instant swaps.
+5. **Animated-node budget.** It is counted strictly: every element inside a `data-anim` group, not just the groups.
+   - To fit, `depth()` puts a single-element outline's copy attributes on the element itself, and stand-ins draw one path per colour.
+   - The worst frame of 1-2 is ≤ 120 nodes in 8–9 moving groups. The render test holds every page to ≤ 150.
+6. **Session.**
+   - **Pause** is by named reason. `elapsed()` stands still while paused, so the view freezes mid-step.
+   - **Resume** runs only after a 150 ms grace with no reason left; a new pause cancels the grace.
+   - **Fast-forward:** while Baokaka is `moving` with more than 4 edges left on his BFS path and nothing is queued, a tick is a quarter long. A queued input ends it at once.
+   - **Done:** at `done` the clock stops scheduling ticks but keeps time, so the last frame plays out.
+7. **Registry.** Unknown part keys fall back to the preset's kit art, unknown backdrop keys to `placeholderBackdrop`, unknown creature keys to `origamiBird`. Each missing key is `console.info`-logged once per kind in dev builds.
+8. **Dev parameters** on `#/popup?page=<id>`: `tick=N`, `paused=1`, `speed=` and `demo=1` (three idle ticks, then the authored solution through the session). Production will open the save's page (#93).
+
+**Why.** Reading the scenery off the walk graph means every page is legible the moment its data exists, and the drawing can never disagree with where he can go. Splitting parts by z is the only order in which a train can slide behind a platform. Counting the budget strictly leaves headroom for the real bitmaps, which replace whole subtrees with one `<image>`.
+
+**Consequences.**
+- #90 adds gestures on the hit layer and calls `session.pause('finger')` / `resume('finger')`.
+- #94/#95 replace the stand-ins inside `actors/` and add hop lean, landing wobble and touch-watch.
+- #96 registers baked backdrops and parts in `art/registry.ts` (the walk-graph ledges then come from the bake).
+- #97 replaces the HUD and bar placeholders in `PagePlayer`.
+- #98 animates the bubble's change of mind.
+- #136 decides tilt (`perspective` already sits on the page container only).
+- On 375 × 667 the book is 0.66 scale and 1-2's tab hit area falls to ≈ 37 px (R6). #90's tap magnet and #97's layout must answer that.

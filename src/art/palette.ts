@@ -13,6 +13,7 @@
  * - `MRT`: the five 月亮線 line colours.
  * - `POPUP`, `POPUP_FOIL`, `POPUP_CHAPTER_CLOCK`: 翻翻台北's pop-up book (popup art bible): cover,
  *   page, ink, marigold touchables, seal, light, paper stocks, standees, UI; foils; colour clock.
+ * - `POPUP_STAGE`: the page renderer's placeholder stage (floors, ledges, facade, stand-in characters).
  * - `SKY_KEYS` / `skyAt()` / `gradeTokens()` / `gradeCharacter()`: the night clock (§ 3.2).
  *
  * Pure TypeScript with no imports, so the Tailwind config, the engine and tests can all load it.
@@ -796,6 +797,91 @@ export const POPUP = {
   bulbInk: '#8A5E1E',
   /** The 土地公 sticker's hat */
   hatRed: '#C8342C',
+} as const;
+
+/**
+ * The page renderer's placeholder stage (#89, `src/popup/view/art/placeholders.ts`): what a page
+ * shows until its own baked backdrop, ledges and character frames land (#94, #96). Values follow
+ * proof A (台北車站) and the bible § 6 chapter palettes. Decorative yellows are ochre, never
+ * marigold (bible § 4: the tactile strip, the 土地公's hat band).
+ */
+export const POPUP_STAGE = {
+  // City floor page: printed checker (contrast kept low, bible § 11 proof A note) and night shade
+  floorCard: '#D6C6B4',
+  floorCheck: '#9A90AE',
+  floorShade: '#1A1440',
+  // City landmark facade (a pop-up box standing in front of the backdrop)
+  facadeTop: '#8A7790',
+  facadeMid: '#B89A8C',
+  facadeLow: '#E8C394',
+  facadeRecess: '#4E3A5A',
+  roofTop: '#5A3446',
+  roofLow: '#3A2236',
+  roofTile: '#7A4A5A',
+  roofRidge: '#C9A04A',
+  drumTop: '#7C6A86',
+  drumLow: '#9C8590',
+  lampPost: '#2A2346',
+  lampShade: '#FFE7A8',
+  // City ledges: brick platforms with a printed top and an ochre tactile strip
+  brickTop: '#B85A4E',
+  brickLow: '#8A3E40',
+  brickMortar: '#6E2E36',
+  brickSide: '#5E2A3A',
+  platTop: '#B8A6A4',
+  platTopNear: '#D9C3A6',
+  platEdge: '#8C7C8E',
+  // The track pit and rails under a carriage
+  pit: '#1C1840',
+  rail: '#7A7FA8',
+  sleeper: '#4A4878',
+  // A carriage (the card a tab or slider moves, e.g. the train): cream card, a line stripe
+  carriageTop: '#F4EEE0',
+  carriageLow: '#C9C2C8',
+  carriageStripe: '#2F5FB0',
+  carriageNose: '#2A3366',
+  // Perch furniture: pillar card and a wooden bench
+  pillarLit: '#D8BFA0',
+  pillarMid: '#C2A88E',
+  pillarShade: '#8E7A86',
+  pillarCap: '#E2CBA8',
+  benchSeat: '#6A4A3A',
+  benchBack: '#7A5644',
+  benchLeg: '#4A3028',
+  // The room (序章 home): plum wallpaper, wood wainscot and floor, a rose rug, curtains
+  wallTop: '#3A2C5A',
+  wallLow: '#5A3E66',
+  wallStripe: '#6A4E78',
+  wainscot: '#6A4232',
+  wood: '#8A5A3A',
+  woodDark: '#5E3A26',
+  woodLight: '#A87452',
+  rugTop: '#C77C7C',
+  rugLow: '#9A5458',
+  rugStitch: '#F2D6C8',
+  curtain: '#7A5A9A',
+  curtainDeep: '#563C78',
+  // Foreground card: a potted plant
+  leaf: '#2E5A4A',
+  leafLight: '#4A7A5E',
+  // Placeholder characters (vector standees until the v2 frames are baked, #94)
+  skin: '#F6D2B8',
+  skinShade: '#E8B49A',
+  blush: '#EE9A92',
+  hair: '#3A2A2E',
+  onesie: '#F4DFA0',
+  onesieShade: '#D9BE7E',
+  diaper: '#FBF6EC',
+  catFur: '#9A8C7E',
+  catFurDark: '#5E544C',
+  catBelly: '#E8DFD2',
+  catEye: '#8CB860',
+  catCollar: '#3A6AB0',
+  catNose: '#D98A8A',
+  // Origami creatures
+  pigeon: '#E6E2F2',
+  pigeonShade: '#B7B0D0',
+  pigeonBeak: '#D9825A',
 } as const;
 
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */

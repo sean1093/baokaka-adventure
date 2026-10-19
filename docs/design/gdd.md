@@ -866,6 +866,11 @@ Validated with a type guard on load. A bad or missing save means a fresh save, a
 
 All frames are at map scale (~70 px tall for Baokaka crawling, at 390-wide).
 
+**For engineers.** #89 built the renderer:
+- **Code.** `view/PageView.tsx` (layers in `view/layers.ts`: the bible § 2.2 z table mapped onto the order above, with mid parts (z3, the train) behind the near ledges) and `view/PagePlayer.tsx` (book frame at ≈ 0.91, HUD and bottom-bar slots), driven by `game/session.ts` (tick clock, pause, 150 ms resume grace, fast-forward). `view/interp.ts` holds the tweens; `view/stage.ts` and `view/art/placeholders.ts` draw a placeholder stage from the walk graph.
+- **Budget.** Moving pieces are `data-anim` groups (transforms only). The ≤ 150 budget below is counted as every element inside them.
+- **Readings** in D-50.
+
 **Performance budget:**
 - 60 fps on a mid-range phone (2021 Android).
 - ≤ 150 animated DOM/SVG nodes per page.

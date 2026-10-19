@@ -13,14 +13,20 @@ import { f1, f2, filterAttr, ref, seeded, translate, type KitCtx } from './svg';
  * With filters (PageLab, bake) it is kit.js `filter="url(#zN)"`. Without (the in-game path) the
  * same read comes from flat copies of `outline`, the piece's silhouette with no `fill` of its own:
  * a two-step soft shadow, a tight contact shadow and the 1 px top-left cut-edge rim, all offsets
- * from the depth filter's formula, under the body. Three extra nodes, no filter.
+ * from the depth filter's formula, under the body. Four extra nodes for a one-element outline
+ * (eight when it needs a wrapping group), no filter.
  */
 export function depth(ctx: KitCtx, z: Depth, body: string, outline: string): string {
   if (ctx.filters) return `<g${filterAttr(ctx, `z${z}`)}>${body}</g>`;
   const sdx = 1 + z * 1.1, sdy = 2 + z * 2.2;
   const cdx = 0.5 + z * 0.25, cdy = 0.8 + z * 0.45;
-  const copy = (fill: string, opacity: number, x: number, y: number) =>
-    `<g fill="${fill}" opacity="${f2(opacity)}" transform="${translate(x, y)}">${outline}</g>`;
+  // A single self-closing outline element takes the copy's attributes itself: one node per copy, not two
+  const single = /^<([a-zA-Z]+)((?:(?!\/>)[^<>])*)\/>$/.exec(outline.trim());
+  const copy = (fill: string, opacity: number, x: number, y: number) => {
+    const attrs = `fill="${fill}" opacity="${f2(opacity)}" transform="${translate(x, y)}"`;
+    if (single && !/\b(fill|opacity|transform)=/.test(single[2])) return `<${single[1]}${single[2]} ${attrs}/>`;
+    return `<g ${attrs}>${outline}</g>`;
+  };
   return copy(C.shadow, 0.1 + z * 0.015, sdx, sdy)
     + copy(C.shadow, 0.12 + z * 0.015, sdx / 2, sdy / 2)
     + copy(C.shadow, 0.45, cdx, cdy)

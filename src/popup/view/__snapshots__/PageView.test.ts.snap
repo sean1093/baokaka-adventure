@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PageView layers and budget > node counts per layer (1-2 is far below the animated budget) 1`] = `
+{
+  "actors": {
+    "animated": 37,
+    "elements": 38,
+  },
+  "backdrop": {
+    "animated": 0,
+    "elements": 341,
+  },
+  "creatures": {
+    "animated": 11,
+    "elements": 12,
+  },
+  "cutouts": {
+    "animated": 0,
+    "elements": 5,
+  },
+  "floor": {
+    "animated": 0,
+    "elements": 75,
+  },
+  "foreground": {
+    "animated": 0,
+    "elements": 44,
+  },
+  "fx": {
+    "animated": 0,
+    "elements": 1,
+  },
+  "hit": {
+    "animated": 0,
+    "elements": 2,
+  },
+  "parts-mid": {
+    "animated": 16,
+    "elements": 17,
+  },
+  "parts-near": {
+    "animated": 35,
+    "elements": 63,
+  },
+}
+`;
