@@ -10,5 +10,12 @@
  *
  * The boundary is enforced by `boundary.test.ts`: files here may import only each other and
  * `src/shared/random.ts`, and may not touch DOM globals, the wall clock or `Math.random`.
+ *
+ * Landed so far: `types.ts`, `cond.ts`, `presets.ts`, `state.ts` (`initialState`, `canonicalKey`)
+ * and `define.ts` (`definePage`), all from #80.
  */
-export {};
+export * from './types';
+export * from './cond';
+export * from './presets';
+export * from './state';
+export { definePage } from './define';

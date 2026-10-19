@@ -1,0 +1,299 @@
+/**
+ * The data contract of 《翻翻台北》 (GDD § 3.2). Pages are data; every part is a finite state
+ * machine compiled from a preset (`presets.ts`). These types follow GDD § 3.2 verbatim, with the
+ * tweaks recorded in decisions.md D-41 (and mirrored in the GDD): `PartDef.states` / `initial`
+ * may be omitted where the preset has defaults, and `LineKey` / `BabyMode` / `PartInput` are
+ * named here because the GDD uses them without spelling them out.
+ *
+ * Pure types plus one constant (`PART_PRESETS`): no behaviour lives in this file.
+ */
+
+export type Id = string;
+export type Kind = 'shiny' | 'mocha' | 'snack' | 'light';
+/** 嗶 掰掰 不要 哇 抱抱 飛機 咻 一起 */
+export type Word = 'beep' | 'bye' | 'no' | 'wow' | 'hug' | 'plane' | 'whoosh' | 'together';
+/** 0 crawl, 1 climb, 2 cruise (stand), 3 walk */
+export type Growth = 0 | 1 | 2 | 3;
+export type EdgeKind = 'crawl' | 'climb' | 'cruise' | 'walk' | 'jump' | 'squeeze';
+
+/** A script line key, e.g. `c1.intro.2` (GDD § 5.1). `content/script.ts` narrows it later. */
+export type LineKey = string;
+
+export type Cond =
+  /** part state is one of */
+  | { part: Id; in: string[] }
+  /** Mocha is settled on perch */
+  | { mochaAt: Id }
+  | { babyAt: Id }
+  /** pushable has landed */
+  | { landed: Id }
+  /** creature at named position */
+  | { creature: Id; at: string }
+  | { consumed: Id }
+  /** page-local flag set by reactions */
+  | { flag: Id }
+  | { all: Cond[] }
+  | { any: Cond[] }
+  | { not: Cond };
+
+export interface NodeDef {
+  id: Id;
+  x: number;
+  y: number;
+  height: 0 | 1 | 2;
+  /** position per part state */
+  attach?: { part: Id; pos: Record<string, [number, number]> };
+  tags?: ('wet' | 'steam' | 'glass' | 'box')[];
+}
+
+export interface EdgeDef {
+  a: Id;
+  b: Id;
+  kind: EdgeKind;
+  when?: Cond;
+  oneWay?: boolean;
+}
+
+export interface PerchDef {
+  id: Id;
+  /** cat-graph node (height ≥ 1 or cat-only) */
+  node: Id;
+  /** where Baokaka goes when Mocha here is his target */
+  reachNode?: Id;
+  /** sitting on a part (C4): presses buttons, locks lockedByCat parts */
+  onPart?: Id;
+  /** pushable to knock off on arrival (C3) */
+  push?: Id;
+  /** arrival sets a part state ("pull the cord") */
+  set?: { part: Id; to: string };
+  /** box perch (C9) */
+  hidesMocha?: boolean;
+  /** e.g. water present (C7) */
+  blockedWhen?: Cond;
+}
+
+export type Reaction = {
+  /** within: units from event origin (default per event) */
+  on: EventType | { type: EventType; within?: number };
+  when?: Cond;
+  to: string | 'next' | 'prev' | 'toggle';
+  setFlag?: Id;
+};
+
+/** The 14 part presets of GDD § 2.1. Core owns this list; the art layer imports it (D-40). */
+export const PART_PRESETS = [
+  'tab',
+  'slider',
+  'wheel',
+  'flap',
+  'section',
+  'gate',
+  'button',
+  'lift',
+  'loop',
+  'pushable',
+  'light',
+  'blowable',
+  'carrier',
+  'prop',
+] as const;
+export type PartPreset = (typeof PART_PRESETS)[number];
+
+/** How the player drives a part. `none` = event- or weight-driven only. */
+export type PartInput = 'drag-linear' | 'drag-rotary' | 'tap-toggle' | 'tap-cycle' | 'none';
+
+export interface PartDef {
+  id: Id;
+  preset: PartPreset;
+  /** Optional where the preset has defaults (`presets.ts`); count-based presets must list them. */
+  states?: string[];
+  /** Defaults to the first state. */
+  initial?: string;
+  /** Defaults per preset (`presets.ts`); a loop's crank is `drag-rotary`, a tappable light `tap-toggle`. */
+  input?: PartInput;
+  /** linear parts: stop i is evenly spaced */
+  track?: { from: [number, number]; to: [number, number] };
+  /** rotary parts */
+  center?: [number, number];
+  radius?: number;
+  hit: { x: number; y: number; w: number; h: number } | { cx: number; cy: number; r: number };
+  /** C4 */
+  lockedByCat?: boolean;
+  /** whole part can't move */
+  lockedWhen?: Cond;
+  /** a state can only be entered while its cond holds; drags snap to the furthest allowed stop */
+  stateWhen?: Record<string, Cond>;
+  react?: Reaction[];
+  /** e.g. reader 'down' emits 'beep' */
+  emit?: { onEnter: string; event: EventType }[];
+  // preset-specific:
+  /** pushable */
+  fall?: { path: [number, number][]; fallTo: Id; landSets?: { part: Id; to: string } };
+  /** carrier */
+  route?: Id[];
+  /** light owns a light attractor */
+  attractor?: Id;
+  /** art registry key, e.g. 'c1/train-blue' */
+  art: string;
+}
+
+export interface AttractorDef {
+  id: Id;
+  kind: Kind;
+  node: Id;
+  /** height 1 needs reachHigh (stage 2) or adjacency rules */
+  height?: 0 | 1;
+  visibleWhen?: Cond;
+  activeWhen?: Cond;
+  /** never grabbable (node unreachable by design); lint checks it isn't a goal */
+  decoy?: boolean;
+  goal?: boolean;
+  /** a creature holds it (stays at the creature's node) until a reaction with `drop` */
+  heldBy?: Id;
+  /** node follows a part's state (spotlight aim) */
+  nodeBy?: { part: Id; map: Record<string, Id> };
+  /** at `node` while onPerch, at the pushable's fallTo once landed */
+  followsPushable?: Id;
+}
+
+export interface CreatureDef {
+  id: Id;
+  positions: Record<string, Id | 'offpage'>;
+  initial: string;
+  /** occupied node is not traversable (default true) */
+  blocks?: boolean;
+  winged?: boolean;
+  lonely?: boolean;
+  fleesFromCat?: { nearPerches: Id[]; to: string };
+  react?: { on: EventType; within?: number; when?: Cond; to: string; drop?: Id }[];
+  art: string;
+}
+
+export interface PageDef {
+  /** 'c1p2' */
+  id: Id;
+  /** 0..10 (prologue uses chapter 0) */
+  chapter: number;
+  /** 1..6 */
+  index: number;
+  /** zh-Hant, ≤ 10 chars */
+  title: string;
+  spread?: boolean;
+  photoRect?: { x: number; y: number; w: number; h: number };
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  nodes: NodeDef[];
+  edges: EdgeDef[];
+  parts: PartDef[];
+  perches: PerchDef[];
+  attractors: AttractorDef[];
+  creatures: CreatureDef[];
+  /** growth defaults to "learned by this page" */
+  baby: { start: Id; facing: 'l' | 'r'; growth?: Growth };
+  /** perch id, or null = not on page */
+  mocha: { start: Id | null };
+  /** defaults to words learned before this page */
+  words?: Word[];
+  learns?: { word?: Word; growth?: Growth; when: Cond | { event: EventType } };
+  mischief: { text: string; when: EventPredicate };
+  tudigong: { x: number; y: number; visibleWhen?: Cond; hat: string };
+  /** intended solution, replayed in tests */
+  solution: SolutionStep[];
+  /** tutorial beats / page E only */
+  allowTrivial?: boolean;
+  /** page E only */
+  priorityOverride?: Partial<Record<Kind, number>>;
+  lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey }[] };
+  /** baked art key */
+  backdrop: string;
+}
+
+/** The identity helper every page file uses (`core/define.ts`, re-exported by `pages/`). */
+export type DefinePage = (def: PageDef) => PageDef;
+
+export type SolutionStep =
+  /** gesture result */
+  | { set: Id; to: string }
+  | { mocha: Id }
+  /** pet = tap Mocha (repeat perch action) */
+  | { pet: true }
+  | { say: Word }
+  | { tap: Id }
+  | { wait: number | 'settle' | 'goal' };
+
+export type EventType =
+  | 'beep'
+  | 'wave'
+  | 'wow'
+  | 'hug'
+  | 'sky'
+  | 'whoosh'
+  | 'together'
+  | 'cry'
+  | 'catArrive'
+  | 'catLeave'
+  | 'push'
+  | 'land'
+  | 'babyEnter'
+  | 'ride'
+  | 'grab'
+  | 'eat'
+  | 'partEnter';
+
+export type EventPredicate = { type: EventType; id?: Id; count?: number; when?: Cond };
+
+/**
+ * Baokaka's modes (GDD § 2.2.7). The GDD's parameters live elsewhere in `SimState.baby`:
+ * `looking(n)` → `lookCount`, `carried(by, k)` → `carriedBy`; `saying(word)` lasts one tick and
+ * its word travels as the queued event (§ 3.3 phases 1 and 5).
+ */
+export const BABY_MODES = [
+  'idle',
+  'moving',
+  'reaching',
+  'looking',
+  'crying',
+  'watching',
+  'cuddling',
+  'eating',
+  'grabbing',
+  'saying',
+  'carried',
+  'linked',
+  'done',
+] as const;
+export type BabyMode = (typeof BABY_MODES)[number];
+
+/** Runtime state: plain JSON, structurally comparable; `canonicalKey` hashes it for the solver. */
+export interface SimState {
+  tick: number;
+  parts: Record<Id, string>;
+  baby: {
+    node: Id;
+    mode: BabyMode;
+    facing: 'l' | 'r';
+    refused: Id[];
+    lookCount: number;
+    carriedBy?: { id: Id; k: number };
+    linked: boolean;
+  };
+  /** floorNode in linked mode */
+  mocha: { perch: Id | null; path: Id[]; floorNode?: Id };
+  creatures: Record<Id, string>;
+  pushables: Record<Id, 'onPerch' | 'falling' | 'landed'>;
+  consumed: Id[];
+  flags: Id[];
+  /** for mischief predicates (e.g. ride count) */
+  counters: Record<string, number>;
+  done: boolean;
+}
+
+export type Input =
+  /** from a drag release / tap */
+  | { t: 'set'; part: Id; to: string }
+  | { t: 'mocha'; perch: Id }
+  | { t: 'pet' }
+  | { t: 'say'; word: Word }
+  | { t: 'tap'; id: Id }
+  /** floor = linked mode */
+  | { t: 'floor'; node: Id }
+  | { t: 'none' };
