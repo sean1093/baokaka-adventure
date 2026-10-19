@@ -1,6 +1,7 @@
 import { initialState, replay, step } from '../core';
 import type { SimEvent } from '../core/events';
 import type { BabyMode, Id, LineKey, PageDef, SimState, SolutionStep } from '../core/types';
+import type { LearnKey } from '../content/words';
 import type { NavState } from '../game/nav';
 import { completePage, earnSticker, encodeSave, freshSave, ProgressStore, SAVE_KEY, updateSettings, type SaveV1 } from '../game/progress';
 import type { StorageLike } from '../../shared/storage';
@@ -45,6 +46,8 @@ export interface PopupFixture {
     readonly affordance?: AffordanceFlags;
     /** Subtitle lines on the page (#98): script keys, shown as the opening beat (≤ 3 lines a beat) */
     readonly talk?: readonly LineKey[];
+    /** Words (#99): the word ring open, a word card up, the 「要！」 poke of a tap on Baokaka */
+    readonly words?: { readonly ring?: boolean; readonly card?: LearnKey; readonly poke?: boolean };
   };
   /**
    * The still's motion look: `motion` (default) draws the idle cues of full motion, `reduced` the
@@ -256,6 +259,45 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     show: { affordance: { hint: { level: 2, key: 'crib-rail' } } },
     note: '0-1 with hint L2: the rail tab glows (L1) and the vellum ghost hand pulls it down to its stop.',
+  },
+  {
+    name: 'word-poke',
+    page: 'lab-gates',
+    steps: [{ wait: 3 }],
+    show: { words: { poke: true } },
+    note: 'Before any word is learned (GDD § 6 risk 1, #99): tapping Baokaka shows 「要！」 with a chalk pointer to what he wants (the bead past the gates). Lab stage until #107 adds 1-3.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'word-card-beep',
+    page: 'lab-gates',
+    steps: [{ mocha: 'counter' }, { wait: 2 }],
+    show: { words: { card: 'beep' } },
+    note: 'The learn beat\'s word card (GDD § 5.4, #99): the card hit the reader, gate A opened and he copied it: 「嗶！：閘門開開」 with its seal, taped over the dimmed page; a tap puts it away. Lab stage until #107 adds 1-3.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'word-ring-open',
+    page: 'lab-gates',
+    steps: [{ mocha: 'counter' }, { wait: 'settle' }],
+    show: { words: { ring: true } },
+    note: 'The word ring (GDD § 2.4, bible § 7, #99): stuck at gate B he was tapped; 嗶！ (glowing: new) and 「好了」 fan round him on the volvelle band, the page dims 30 %, and the tutorial\'s ghost hand taps 嗶！. Lab stage until #107 adds 1-3.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'word-ring-full',
+    page: 'lab-words',
+    steps: [{ wait: 3 }],
+    show: { words: { ring: true } },
+    note: 'The full word ring (#99): all eight words in learning order from beside 「好了」 round over the top, each disc with its icon on its own seal colour; the ring closes the circle. Lab stage (every word available).',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'word-say-beep',
+    page: 'lab-gates',
+    steps: [{ mocha: 'counter' }, { wait: 'settle' }, { say: 'beep' }],
+    note: 'Saying 嗶！ (#99): the big speech bubble, the word\'s 120-unit reach in its seal colour, gate B open and the robot spinning (the 淘氣); Mocha\'s 「……閘門真的開了。」 Lab stage until #107 adds 1-3.',
+    expect: { mode: 'saying', event: 'beep' },
   },
 ];
 
