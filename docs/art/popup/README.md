@@ -388,6 +388,8 @@ Each chapter has **2 dominant hues + 1 accent**, a **signature material**, and a
 
 **Sticker card** (after the page fold): a little kraft card where the three stickers **slap on** with a squash, one at a time, 200 ms apart.
 
+*Engineers' note (#101, D-64):* `src/popup/view/hud/StickerCard.tsx`, shown in the turn's interlude over the folded page: kraft stock with a fibre pattern and two washi tapes, the page title on a cream label in red serif, the stickers as 60 px foil discs on pressed dimples (an unearned one shows its icon's silhouette in the kraft), names and 「下一頁！」 on cream tags (kraft fails 7:1 for text). Earning 淘氣 or 土地公 mid-page pops a kraft tag over the bottom bar's tray and slaps the tray's disc on.
+
 **Album** (GDD §2.9): 「寶咖咖一歲的相簿」.
 - A linen album opening on 花磚 endpapers.
 - Photos are **instant prints** (white border, slight rotation, washi corners).

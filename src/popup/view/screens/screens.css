@@ -25,3 +25,19 @@
 .reduce-motion .cover-sway {
   animation: none;
 }
+
+/*
+ * A page held folded flat (#101: the sticker-card fixture, the frame the turn's interlude shows):
+ * only its baked backdrop stays up; every pop-up layer is down.
+ */
+[data-folded] [data-layer='cutouts'],
+[data-folded] [data-layer='parts-mid'],
+[data-folded] [data-layer='floor'],
+[data-folded] [data-layer='parts-near'],
+[data-folded] [data-layer='creatures'],
+[data-folded] [data-layer='actors'],
+[data-folded] [data-layer='fx'],
+[data-folded] [data-layer='foreground'],
+[data-folded] [data-layer='hit'] {
+  visibility: hidden;
+}

@@ -36,6 +36,9 @@ describe('turnPlan', () => {
     expect(p.swapAt).toBe(p.leaf!.start);
     expect(p.card).not.toBeNull();
     expect(p.card!.leave).toBeLessThan(p.end);
+    // The card waits for any interlude at the swap (the sticker card, #101) before it drops
+    expect(p.card!.start).toBeGreaterThan(p.swapAt);
+    expect(p.card!.start).toBeLessThan(p.card!.leave);
   });
 
   test('reduced motion: a 0.25 s cross-fade, no fold, no leaf, no camera, no card', () => {

@@ -23,6 +23,11 @@ import type { LayerId } from '../layers';
  * **Reduced motion:** a 0.25 s cross-fade plus a single 4 px rise of the new layers: no camera, no
  * leaf, no confetti.
  *
+ * **The interlude** (#101, GDD § 2.8): a turn can stop at `swapAt` — the old pop-ups folded flat,
+ * the leaf not yet lifted (with reduced motion: before the fade) — and wait for something to happen
+ * over the flat page (the sticker card) before it goes on. Every running animation and pending step
+ * is held meanwhile; the chapter card only starts dropping after it.
+ *
  * The pop-ups are the page's own layers (`data-layer` groups of `PageView`), folded and raised with
  * a `scaleY` about their base (an SVG group takes 2D transforms only; the cosine of the bible's
  * rotateX is the same silhouette). The leaf's faces are the pages' baked backdrops (bible § 9.2:
@@ -36,6 +41,8 @@ export type TurnKind = 'fold' | 'chapter';
 export const FOLD_MS = { settle: 150, foldEnd: 600, leafEnd: 900, end: 1500 } as const;
 export const CHAPTER_MS = { dolly: 450, leafStart: 450 + 450, leaf: 1400, end: 2400 } as const;
 export const REDUCED_MS = 250;
+/** The chapter card starts dropping this long after the leaf starts to lift (#101). */
+export const CARD_AFTER_LEAF_MS = 60;
 
 /** Per pop-up timing (bible § 8: fold 220 ms ease-in; rise 320 ms, staggered 60 ms by z). */
 export const FOLD_EACH_MS = 220;
@@ -99,7 +106,8 @@ export function turnPlan(kind: TurnKind, reduced: boolean): TurnPlan {
     leaf: { start: leafStart, duration: leafEnd - leafStart },
     rise: { start: leafEnd, each: RISE_EACH_MS, stagger: STAGGER_MS },
     camera: { outEnd: CHAPTER_MS.dolly, inStart: CHAPTER_MS.end - CHAPTER_MS.dolly },
-    card: { start: CHAPTER_MS.dolly - 100, leave: CHAPTER_MS.end - CHAPTER_MS.dolly - 150 },
+    // The card drops in as the leaf lifts, after any interlude (the sticker card, #101)
+    card: { start: leafStart + CARD_AFTER_LEAF_MS, leave: CHAPTER_MS.end - CHAPTER_MS.dolly - 150 },
     end: CHAPTER_MS.end,
   };
 }
@@ -127,6 +135,12 @@ export interface TurnPages {
   readonly toBackdrop: string | null;
   /** The new chapter, for the card */
   readonly card?: { readonly chapter: string; readonly title: string; readonly landmark: string; readonly time: string };
+}
+
+/** Something played over the folded page before the leaf turns (the sticker card, #101). */
+export interface TurnInterlude {
+  /** Resolves when the turn may go on */
+  run(): Promise<void>;
 }
 
 export interface TurnRun {
@@ -179,9 +193,8 @@ const based = (g: SVGGElement) => {
 };
 
 /** Builds and plays a turn. `swap` replaces the old page with the new one (the shell's state change). */
-export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages, swap: () => void): TurnRun {
+export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages, swap: () => void, interlude?: TurnInterlude): TurnRun {
   const anims: Animation[] = [];
-  const timers: number[] = [];
   const temp: HTMLElement[] = [];
   const s = targets.scale;
   let swapped = false;
@@ -193,7 +206,40 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
     anims.push(a);
     return a;
   };
-  const later = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+  // Steps at a time from the turn's start; held, with the running animations, during the interlude
+  const steps: { at: number; fn: () => void; handle: number; fired: boolean }[] = [];
+  let held: { at: number; anims: Animation[] } | null = null;
+  const arm = (st: (typeof steps)[number], from: number) => {
+    st.handle = window.setTimeout(() => {
+      st.fired = true;
+      st.fn();
+    }, Math.max(0, st.at - from));
+  };
+  // Every step is set while the turn is built, so all count from the same 0 and steps due at the same
+  // time keep their order (the interlude first)
+  const later = (at: number, fn: () => void) => {
+    const st = { at, fn, handle: 0, fired: false };
+    steps.push(st);
+    arm(st, 0);
+  };
+  if (interlude) {
+    // Registered first: at `swapAt` it runs before the steps due at the same time (the leaf, the swap)
+    later(plan.swapAt, () => {
+      if (done) return;
+      const now = plan.swapAt;
+      const running = anims.filter((a) => a.playState === 'running');
+      running.forEach((a) => a.pause());
+      for (const st of steps) if (!st.fired) window.clearTimeout(st.handle);
+      held = { at: now, anims: running };
+      void interlude.run().then(() => {
+        const h = held;
+        held = null;
+        if (done || h === null) return;
+        h.anims.forEach((a) => a.play());
+        for (const st of steps) if (!st.fired) arm(st, h.at);
+      });
+    });
+  }
   const doSwap = () => {
     if (swapped) return;
     swapped = true;
@@ -290,10 +336,12 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
     }
   } else {
     // Reduced motion: the old page's backdrop fades over the new page
-    const fade = el('div', { position: 'absolute', ...box, ...paint(pages.fromBackdrop, s, 0) }, targets.overlay, { 'data-turn': 'fade' });
-    temp.push(fade);
-    add(fade.animate([{ opacity: 1 }, { opacity: 0 }], { duration: REDUCED_MS, easing: 'ease-out', fill: 'forwards' }));
-    doSwap();
+    later(0, () => {
+      const fade = el('div', { position: 'absolute', ...box, ...paint(pages.fromBackdrop, s, 0) }, targets.overlay, { 'data-turn': 'fade' });
+      temp.push(fade);
+      add(fade.animate([{ opacity: 1 }, { opacity: 0 }], { duration: REDUCED_MS, easing: 'ease-out', fill: 'forwards' }));
+      doSwap();
+    });
   }
 
   // ——— The chapter card on two strings ———
@@ -324,15 +372,13 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
     }));
   };
   // The new page mounts on the swap: raise it on the next frame (it is under the leaf until then)
-  const afterSwap = () => requestAnimationFrame(() => raise());
-  if (plan.swapAt === 0) afterSwap();
-  else later(plan.swapAt + 1, afterSwap);
+  later(plan.swapAt + 1, () => requestAnimationFrame(() => raise()));
 
   const finish = () => {
     if (done) return;
     done = true;
     doSwap();
-    for (const t of timers) clearTimeout(t);
+    for (const st of steps) window.clearTimeout(st.handle);
     for (const a of anims) a.cancel();
     for (const node of temp) node.remove();
     targets.overlay.querySelectorAll('[data-turn],[data-confetti]').forEach((n) => n.remove());

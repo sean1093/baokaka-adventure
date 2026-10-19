@@ -3,7 +3,7 @@ import type { SimEvent } from '../core/events';
 import type { BabyMode, Id, LineKey, PageDef, SimState, SolutionStep } from '../core/types';
 import type { LearnKey } from '../content/words';
 import type { NavState } from '../game/nav';
-import { completePage, earnSticker, encodeSave, freshSave, ProgressStore, SAVE_KEY, updateSettings, type SaveV1 } from '../game/progress';
+import { completePage, earnSticker, encodeSave, freshSave, ProgressStore, SAVE_KEY, updateSettings, type SaveV1, type Sticker } from '../game/progress';
 import type { StorageLike } from '../../shared/storage';
 import { labPageById } from './labPages';
 import type { AffordanceFlags } from '../view/affordance/look';
@@ -50,6 +50,8 @@ export interface PopupFixture {
     readonly words?: { readonly ring?: boolean; readonly card?: LearnKey; readonly poke?: boolean };
     /** The hint ladder at this level for the fixture's state (#100: 0 nudge, 1 where, 2 how), the hint computed by the solver */
     readonly hint?: 0 | 1 | 2;
+    /** The sticker pop over the bar's tray, as if just earned (#101) */
+    readonly sticker?: Sticker;
   };
   /**
    * The still's motion look: `motion` (default) draws the idle cues of full motion, `reduced` the
@@ -64,7 +66,12 @@ export interface PopupFixture {
    * save it reads (a seeded in-memory store; the real save is never touched). `page` and `steps`
    * still name a valid frame (the page under a page screen is `nav`'s).
    */
-  readonly screen?: { readonly nav: NavState; readonly save: SaveV1 };
+  readonly screen?: {
+    readonly nav: NavState;
+    readonly save: SaveV1;
+    /** The page folded flat under its sticker card (#101; the save says which stickers it shows) */
+    readonly card?: boolean;
+  };
 }
 
 /** The saves the screen fixtures read (#97). */
@@ -73,6 +80,10 @@ const FRESH = freshSave();
 const PLAYED = earnSticker(completePage(FRESH, 'c0p1', { mischief: true, tudigong: true, moves: 1 }), 'c1p2', 'mischief');
 const LEFT_HANDED = updateSettings(PLAYED, { leftHand: true });
 const ON_PAGE: NavState = { base: { kind: 'page', id: 'c1p2', run: 0 }, layer: null };
+/** 1-2 just completed: solved, its 淘氣 earned on the way, the 土地公 not found (#101). */
+const C1P2_DONE = completePage(PLAYED, 'c1p2', { mischief: true, moves: 6 });
+/** 0-1 solved without its 淘氣, 1-2 solved with it: the 目錄 shows each page's mischief (#101). */
+const MISCHIEF_LIST = completePage(completePage(FRESH, 'c0p1', { tudigong: true }), 'c1p2', { mischief: true });
 
 export const POPUP_FIXTURES: readonly PopupFixture[] = [
   {
@@ -233,6 +244,42 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     screen: { nav: { base: { kind: 'page', id: 'c1p2', run: 0 }, layer: { kind: 'menu' } }, save: PLAYED },
     note: 'The pause menu over 1-2 (#97): 繼續 / 目錄 / 設定 / 封面 on the paper sheet; the page is held.',
+  },
+  {
+    name: 'c1p2-grab',
+    page: 'c1p2',
+    steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { set: 'train', to: 'full' }, { wait: 'goal' }],
+    note: '1-2 completed (GDD § 2.8 step 1, #101): Baokaka grabs the bead — 「這個！」 and the foil sparkle burst where it lay (live: it flashes out once); the simulation stops, the page will fold.',
+    expect: { mode: 'grabbing', event: 'grab' },
+  },
+  {
+    name: 'sticker-card',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ON_PAGE, save: C1P2_DONE, card: true },
+    note: 'The sticker card (GDD § 2.8, bible § 7; #101): 1-2 done and folded flat, the kraft card taped over it — 「月台的縫」, 解開 and 淘氣 slapped on (live: 200 ms apart, with a squash), 土地公 an empty dimple with his hat\'s silhouette, 「下一頁！」. A tap or 1.5 s turns the page.',
+  },
+  {
+    name: 'sticker-mischief',
+    page: 'c1p2',
+    steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }, { set: 'train', to: 'out' }, { wait: 1 }, { set: 'train', to: 'half' }, { wait: 1 }, { set: 'train', to: 'out' }, { wait: 1 }, { set: 'train', to: 'half' }],
+    show: { sticker: 'mischief' },
+    note: '1-2 淘氣 (#101): the fourth ride on the train — 「嘿嘿，淘氣！」 pops on a kraft tag over the tray (live: the 嘿 sticker slaps on, the tag fades after 2 s), the page not finished.',
+    expect: { event: 'ride' },
+  },
+  {
+    name: 'sticker-tudigong',
+    page: 'c1p2',
+    steps: [{ tap: 'board' }, { wait: 1 }],
+    show: { sticker: 'tudigong', talk: ['rec.uncle.tap'] },
+    note: '1-2 土地公 (#101): the board flipped, he peeks from its corner; tapped, he says 「呵呵，囡仔，慢慢仔來。」 in his bubble and 「找到土地公！」 pops over the tray.',
+  },
+  {
+    name: 'contents-mischief',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 1 } }, save: MISCHIEF_LIST },
+    note: 'The 目錄 after 1-2\'s first completion (#101, GDD § 2.8): under the strip, the page\'s 淘氣 — its sticker and 「讓寶咖咖坐火車來回兩次」 — never shown before the page is solved.',
   },
   {
     name: 'bubble-reaching',

@@ -22,6 +22,10 @@ describe('barksOf', () => {
     expect(texts(at(0), at(1), [{ type: 'bark', bark }])).toEqual([`baby:${text}`]);
   });
 
+  test('「這個！」 when he grabs (the completion beat, § 2.8; #101), over a bark on the same tick', () => {
+    expect(texts(at(0), at(1, { mode: 'grabbing' }), [{ type: 'bark', bark: 'want' }, { type: 'grab', id: 'bead' }])).toEqual(['baby:這個！']);
+  });
+
   test('好吃！ on eating, 哇—— when he starts crying (not every tick of it)', () => {
     expect(texts(at(0), at(1), [{ type: 'eat', id: 'milk' }])).toEqual(['baby:好吃！']);
     expect(texts(at(0, { mode: 'looking' }), at(1, { mode: 'crying' }), [{ type: 'cry' }])).toEqual(['baby:哇——']);

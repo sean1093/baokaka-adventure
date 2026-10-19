@@ -13,12 +13,14 @@ import type { LearnKey } from '../content/words';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
 import { EMPTY_TALK, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
 import { WORD_MOTIF, firstUseLine, learnLines, learnedNow, ringWords, tutorialShow, tutorialWord } from '../game/words';
+import { FRESH_ATTEMPT, attemptResult, earnInAttempt, mischiefFired, type Attempt } from '../game/stickers';
+import type { PageResult, Sticker } from '../game/progress';
 import { usePagePreload } from '../sprites';
 import { usePageArt } from '../env/loader';
 import { nextPage } from '../pages';
 import { chapterSky } from './art/placeholders';
 import { bookLayout, toScreen, type BookLayout } from './geometry';
-import { BottomBar } from './hud/BottomBar';
+import { BottomBar, STICKER_POP_MS } from './hud/BottomBar';
 import { TopHud } from './hud/TopHud';
 import { wearsMarigold, type AffordanceFlags } from './affordance/look';
 import { hintDisplay, type HintLevel } from './affordance/ladder';
@@ -61,6 +63,13 @@ import { WordCard, WordRing, ringSafeArea, wantPoke } from './words';
  * Animation runs on `requestAnimationFrame` only while something moves (an actor mid-step, a part
  * mid-tween) and sleeps between ticks.
  *
+ * Stickers (#101, GDD § 2.8; `game/stickers.ts`): the page's 淘氣 predicate is matched against every
+ * tick's events and awarded the tick it comes true; tapping the 土地公 (while his `visibleWhen`
+ * holds) says 「呵呵，囡仔，慢慢仔來。」 in his subtitle bubble and earns his sticker. Either pops a tag
+ * over the bar's tray (「嘿嘿，淘氣！」 / 「找到土地公！」) and is handed to `onSticker` at once (the
+ * shell saves it); `onDone` gets the attempt's stickers and moves for `completePage`. A sticker is
+ * earned once per attempt; the save never loses one.
+ *
  * Images (#94, #96): the page preloads its chapter's baked character frames (`usePagePreload`)
  * and its own environment bitmaps (`usePageArt`, then the next page's backdrop) as it opens, and
  * marks itself `data-sprites="ready"` once both are decoded (screenshots wait for it).
@@ -76,6 +85,9 @@ import { WordCard, WordRing, ringSafeArea, wantPoke } from './words';
  * the nudge (Mocha's yawn and look, a single shimmer) comes after that long without a change. A
  * lost page glows 重來. Fixtures pin a level with `showHint` (computed in-process).
  */
+
+/** Chapters where Mocha squints at the 土地公 on the first tap (GDD § 5.3: 4-x, 7-x, 10-x). */
+const SQUINT_CHAPTERS: ReadonlySet<number> = new Set([4, 7, 10]);
 
 const subscribeResize = (onChange: () => void) => {
   window.addEventListener('resize', onChange);
@@ -150,8 +162,12 @@ export interface PagePlayerProps {
   readonly reduced?: boolean;
   /** Hold the session: a layer (the menu, the 目錄, the settings) is open over the page (GDD § 2.6) */
   readonly hold?: boolean;
-  /** The page was completed (its goal grabbed): called once per session */
-  readonly onDone?: (state: SimState) => void;
+  /** The page was completed (its goal grabbed): called once per session, with the attempt's stickers and moves (#101) */
+  readonly onDone?: (state: SimState, result: PageResult) => void;
+  /** 淘氣 or 土地公 was earned just now, mid-page (#101): save it at once */
+  readonly onSticker?: (sticker: Sticker) => void;
+  /** Visual QA fixtures (#101): the sticker pop over the bar's tray, as if just earned */
+  readonly showSticker?: Sticker;
   /** The HUD's and the bottom bar's state and buttons (#97) */
   readonly chrome?: PageChrome;
   /** Visual QA fixtures (#100): show the hint ladder at this level for the state (0 nudge, 1 where, 2 how) */
@@ -164,7 +180,7 @@ export interface PagePlayerProps {
   readonly pageRef?: Ref<HTMLDivElement>;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay, onSticker, showSticker }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
   const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev, events }), [def, speed, from, prev, still, events]);
@@ -208,6 +224,29 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     return () => session.resume('layer');
   }, [session, hold]);
 
+  // Stickers (#101): what this attempt earned, and the pop over the tray
+  const attemptRef = useRef<Attempt>(FRESH_ATTEMPT);
+  const [pop, setPop] = useState<{ readonly sticker: Sticker; readonly serial: number } | null>(showSticker ? { sticker: showSticker, serial: 0 } : null);
+  const onStickerRef = useRef(onSticker);
+  onStickerRef.current = onSticker;
+  const earn = useCallback((sticker: Sticker) => {
+    if (attemptRef.current[sticker]) return;
+    attemptRef.current = earnInAttempt(attemptRef.current, sticker);
+    setPop((p) => ({ sticker, serial: (p?.serial ?? 0) + 1 }));
+    onStickerRef.current?.(sticker);
+  }, []);
+  useEffect(() => {
+    attemptRef.current = FRESH_ATTEMPT;
+  }, [session]);
+  useEffect(() => {
+    if (pop === null || still) return undefined;
+    const t = window.setTimeout(() => setPop(null), STICKER_POP_MS);
+    return () => window.clearTimeout(t);
+  }, [pop, still]);
+  useEffect(() => {
+    if (!still && mischiefFired(def, frame.prev, frame.state, frame.events)) earn('mischief');
+  }, [def, frame, still, earn]);
+
   // The page completes once per session
   const doneFired = useRef(false);
   const onDoneRef = useRef(onDone);
@@ -218,8 +257,8 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   useEffect(() => {
     if (!frame.state.done || doneFired.current || still) return;
     doneFired.current = true;
-    onDoneRef.current?.(frame.state);
-  }, [frame.state, still]);
+    onDoneRef.current?.(frame.state, attemptResult({ ...attemptRef.current, moves: session.moves }));
+  }, [frame.state, still, session]);
 
   // What is said (#98): the subtitle queue (the intro, then lines the page's events fire; a tap on a
   // bubble advances) and the barks of the last few ticks
@@ -353,9 +392,17 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
           else setBarks((log) => barkLog(log, [wantPoke(def, now)], now.tick));
         }
       }
+      if (event.type === 'tudigong') {
+        // 「呵呵，囡仔，慢慢仔來。」 (§ 5.3) — once in the queue however often he is tapped; Mocha squints
+        // at him the first time on chapters 4, 7 and 10
+        const first = !attemptRef.current.tudigong;
+        const keys = ['rec.uncle.tap', ...(first && SQUINT_CHAPTERS.has(def.chapter) && mochaNode(def, session.frame().state) !== null ? ['rec.mocha.squint'] : [])];
+        setTalk((q) => (q.beats.some((b) => b.some((l) => l.key === 'rec.uncle.tap')) ? q : enqueue(q, loadLines(keys))));
+        earn('tudigong');
+      }
       onGesture?.(event);
     },
-    [def, session, locked, idle.poke, onGesture, acted],
+    [def, session, locked, idle.poke, onGesture, acted, earn],
   );
   const gestures = useGestures(def, session, layout, frame, ms, reduced, ringOpen, onEvent);
   const live = gestures.flags;
@@ -459,6 +506,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         onHint={onHint}
         onRetry={pageChrome?.onRetry}
         onMenu={pageChrome?.onMenu}
+        pop={pop}
       />
       {ringAt && (
         <WordRing

@@ -7,10 +7,12 @@
  * `ProgressStore`, and retiring the RPG saves for #109). `nav.ts` (#97: the screens' navigation
  * state machine, the resume target, first launch, the HUD's tray and the bar's stickers).
  * `talk.ts` (#98: the subtitle queue). `words.ts` (#99: the ring's words, the learn beat, the
- * one-time translation, the first-use tutorial, the word motifs).
+ * one-time translation, the first-use tutorial, the word motifs). `stickers.ts` (#101: 淘氣
+ * detection, the attempt's stickers and moves, the § 2.8 rewards).
  */
 export * from './session';
 export * from './progress';
 export * from './nav';
 export * from './talk';
 export * from './words';
+export * from './stickers';

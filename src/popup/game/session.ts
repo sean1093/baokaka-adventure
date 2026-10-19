@@ -104,6 +104,8 @@ export class PageSession {
   private timer: unknown = null;
   private graceTimer: unknown = null;
   private started = false;
+  /** Moves applied since the page (re)started: inputs that aren't a wait (§ 3.7 par; #101's `bestPar`) */
+  private applied = 0;
 
   constructor(def: PageDef, { speed = 'normal', clock = systemClock, from, prev, events }: SessionOptions = {}) {
     this.def = def;
@@ -126,6 +128,11 @@ export class PageSession {
   /** True while the clock is not running (paused, in the resume grace, or not started). */
   get paused(): boolean {
     return this.runningSince === null;
+  }
+
+  /** Moves (non-wait inputs) applied since the page started or was reset (§ 3.7 par). */
+  get moves(): number {
+    return this.applied;
   }
 
   /** Inputs waiting for their tick (one is applied per tick, in order). */
@@ -198,6 +205,7 @@ export class PageSession {
     const running = this.runningSince !== null;
     this.halt();
     const input = this.queue.shift() ?? { t: 'none' };
+    if (input.t !== 'none' && !this.current.state.done) this.applied++;
     const { state, events } = step(this.def, this.current.state, input);
     this.current = { def: this.def, prev: this.current.state, state, events, tickMs: this.tickLength(state), serial: this.current.serial + 1 };
     this.banked = 0;
@@ -211,6 +219,7 @@ export class PageSession {
     const running = this.runningSince !== null;
     this.halt();
     this.queue.length = 0;
+    this.applied = 0;
     this.banked = 0;
     this.current = { def: this.def, prev: from, state: from, events: [], tickMs: TICK_MS[this.speed], serial: this.current.serial + 1 };
     if (running) this.run();
