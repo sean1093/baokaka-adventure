@@ -264,6 +264,8 @@ Mocha is the player's one movable "piece". He is a cat, so he only goes where ca
 
 **Mocha's lines** (bark bubbles, no dialogue box): 「喵。」 on arrival; a slow 「……」 before a push; 「喵？」 at an unreachable perch; 「不要。」 at water; purring 「呼嚕嚕」 while cuddled.
 
+**For engineers.** `core/mocha.ts` (#83) implements this section as `mochaCommand` (§ 3.3 phase 1, input `mocha`), `mochaPet` (phase 1, input `pet`) and `mochaTick` (phase 3), plus `catLocked`, `catPath`, `perchRefusal` and `mochaAttractorNode` (C5/C9, read by `baby.ts`). The precise readings — the path is committed when tapped, the eye contact is a tick of its own (`mocha.stare`), push → `falling` the next tick → `landed` the tick after, a press or `set` always emits `partEnter` (so `pet` re-presses a held button), `wet`/`steam` perches use `blockedWhen` as the tag's condition (always, without one), refused perches are avoided en route, and the UI events `mochaNope` / `mochaPuff` / `mochaStare` — are in D-44.
+
 ### 2.4 Words: the ability system
 
 Baokaka knows about 12 words (`docs/story/script.md` vocabulary). Some are **barks** (automatic flavour lines): 要！, 喵喵！, ㄋㄟㄋㄟ, 好吃！, 好看！, 這個！, 哇——, ㄅㄚ！. Eight become **abilities** the player triggers.
@@ -634,7 +636,9 @@ export interface SimState {
   baby: { node: Id; mode: BabyMode; facing: 'l' | 'r'; refused: Id[]; lookCount: number;
           target: Id | null; reachTicks: number;   // current target ('mocha' = Mocha) and reach beat 0–3 (D-43)
           carriedBy?: { id: Id; k: number }; linked: boolean };
-  mocha: { perch: Id | null; path: Id[]; floorNode?: Id };    // floorNode in linked mode
+  mocha: { perch: Id | null; path: Id[]; to?: Id; stare?: Id; floorNode?: Id };
+      // settled: perch set, path []; travelling: perch null, path = [current node, …, perch node], to = target perch;
+      // stare = the pushable of the eye-contact beat (pushes next tick, D-44); floorNode in linked mode
   creatures: Record<Id, string>;
   pushables: Record<Id, 'onPerch' | 'falling' | 'landed'>;   // pushable parts live here, not in `parts`
   consumed: Id[]; flags: Id[];          // refused, consumed and flags are sets: canonicalKey sorts them
