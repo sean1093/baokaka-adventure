@@ -285,3 +285,20 @@ Format:
 - Run: c0p1 par 1, 22 states, ≈ 4 ms; c1p2 par 2, 182 states, ≈ 25 ms; total 0.04 s of 60 s; exit 0.
 - Tests: `report.test.ts` (judge per failure kind, cap-only reporting, allowTrivial, lint vs warnings, table snapshot and alignment with CJK titles, details, summary/budget, exit status, argument parsing and filters, display width, the registered pages green, a tiny cap, a broken solution). 1482 tests.
 - Follow-ups: #91 can reuse `reportPage` for the PageLab solver badges.
+
+### 2026-10-19 · Staff engineer · #89 PageView: book frame, layered renderer, part views, interpolation, session (PR #154)
+- **`src/popup/view/`.**
+  - `PageView.tsx` (layers per `layers.ts`, a pure function of `(def, prev, state, ms)`) and `PagePlayer.tsx` (the cover, book block, page, and the kit HUD/bottom bar in their slots).
+  - `geometry.ts` (0.91 book scale, floor perspective on art only), `interp.ts` (actor lerp, the 250 ms part tween with 6 % overshoot and snap squash, rides) and `stage.ts` (ledges, ramps, rails, perch furniture and carriages from the walk graph; the foreground card slot).
+  - `parts/*View.tsx` for every preset (transforms only, no filters), `actors/` (Baby, Mocha, Creature, Bubble stand-in standees), `art/placeholders.ts` (city night and home stages from the kit, the `vFold` crease helper, the gutter AO) and `art/registry.ts` (fallbacks logged once in dev).
+- **`src/popup/game/session.ts`:**
+  - The tick clock (0.75/0.5/0.33 s), pause by reason with a 150 ms resume grace, and 4× fast-forward on walks of more than 4 edges.
+  - Queued inputs, one per tick.
+- **Routes.** `#/popup?page=c0p1|c1p2` plays a page. Dev parameters: `tick`, `paused`, `speed`, `demo=1` (plays the authored solution).
+- **Visual QA.** Visual targets `popup-c0p1` and `popup-c1p2` with baselines. Screenshots are in `docs/screenshots/89/`.
+- **Kit.** `pullTab({ sealed })`. `depth()` single-element copies are one node each (`kit-swatches` unchanged, 0 px).
+- **Tests.** Session, interpolation, geometry (hit areas ≥ 48 px at 390), stage, registry, and the render test: layers, no filters, animated nodes ≤ 150; 1-2 ≤ 120 in its worst frame. Decision D-50.
+- **Roadmap.** Fixed #88's row to `done (#153)`.
+- **Follow-ups.**
+  - At 375 × 667 the book is 0.66 scale, so tab hit areas drop under 48 px (noted on #90).
+  - #94/#95 swap the stand-ins for baked frames; #96 registers baked art; #97 makes the HUD and bar live; #98 animates the bubble.
