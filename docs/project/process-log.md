@@ -468,7 +468,7 @@ Format:
   - #105: play the word motifs.
   - Learn lines advance only on a tap (as all subtitles do), so the card waits for that tap. Playtest (#110) should check that players find it.
 
-### 2026-10-19 · Staff engineer · #100 Hint system via the solver: levels 0–3, hint worker, ghost hand, 「等等看」
+### 2026-10-19 · Staff engineer · #100 Hint system via the solver: levels 0–3, hint worker, ghost hand, 「等等看」 (PR #169)
 - **Source (`core/hint.ts`, pure).**
   - `nextHint`: the solver from the current state (`cap 200_000`, `timeMs 300`, `stopAtGoal`) and its `nextAction`.
   - The fallback, `solutionAction`: the stored solution step whose part states match (exactly, then on the parts the solution drives), waiting first where the solution settled. Failing that, `restart` (重來 + step 1).
