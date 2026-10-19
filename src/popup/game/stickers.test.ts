@@ -114,7 +114,7 @@ describe('persistence (#93): a sticker is saved the moment it is earned', () => 
   test('淘氣 mid-page, unfinished: on disk at once', () => {
     const storage = memory();
     const store = new ProgressStore({ storage, visibility: null });
-    store.completePage('c0p1');
+    for (const id of ['c0p1', 'c0p2', 'c0p3', 'c0p4']) store.completePage(id);
     store.earnSticker('c1p2', 'mischief');
     expect(JSON.parse(storage.data.get(SAVE_KEY)!).pages.c1p2).toBe('m');
     expect(loadSave(storage).pages.c1p2).toEqual({ mischief: true });
@@ -123,7 +123,7 @@ describe('persistence (#93): a sticker is saved the moment it is earned', () => 
   test('土地公 then completion: both kept, with the best moves', () => {
     const storage = memory();
     const store = new ProgressStore({ storage, visibility: null });
-    store.completePage('c0p1');
+    for (const id of ['c0p1', 'c0p2', 'c0p3', 'c0p4']) store.completePage(id);
     store.earnSticker('c1p2', 'tudigong');
     store.completePage('c1p2', attemptResult({ mischief: false, tudigong: true, moves: 4 }));
     expect(loadSave(storage).pages.c1p2).toEqual({ solved: true, tudigong: true, bestPar: 4 });

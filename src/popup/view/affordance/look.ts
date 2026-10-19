@@ -87,6 +87,8 @@ export interface AffordanceFlags {
   readonly hint?: HintShow | null;
   /** Mocha's part in the hint (#100) */
   readonly mocha?: MochaCue | null;
+  /** The scripted tutorial's spotlight on his thought bubble (0-2, #106) */
+  readonly bubble?: boolean;
   /** Each wiggling part's current run */
   readonly wiggle?: Readonly<Record<Id, WigglePhase>>;
   /** Parts showing the done check knot (bible § 4.1 done, optional per page: solved wheels on 101) */

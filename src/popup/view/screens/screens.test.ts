@@ -21,7 +21,8 @@ import { UI } from '../../content';
 const noop = () => undefined;
 const html = (el: Parameters<typeof renderToStaticMarkup>[0]) => renderToStaticMarkup(el);
 const fresh = freshSave(registry);
-const played = earnSticker(completePage(fresh, 'c0p1', { mischief: true, tudigong: true }), 'c1p2', 'mischief');
+/** 0-1 solved with both stickers, 0-2…0-4 solved, 1-2 current with its 淘氣. */
+const played = earnSticker(['c0p2', 'c0p3', 'c0p4'].reduce((s, id) => completePage(s, id), completePage(fresh, 'c0p1', { mischief: true, tudigong: true })), 'c1p2', 'mischief');
 
 /** Every font size the markup sets (SVG attributes, inline styles and Tailwind `text-[Npx]`). */
 function fontSizes(markup: string): number[] {
@@ -113,10 +114,11 @@ describe('Contents (目錄)', () => {
   });
 
   test('stickers collected per chapter and completeness', () => {
-    expect(collected(played, 0)).toBe(3);
+    expect(collected(played, 0)).toBe(6);
     expect(collected(played, 1)).toBe(1);
     expect(collected(fresh, 0)).toBe(0);
-    expect(chapterComplete(played, 0)).toBe(false); // 0-2…0-4 are not solved (nor built) yet
+    expect(chapterComplete(played, 0)).toBe(true);
+    expect(chapterComplete(completePage(fresh, 'c0p1'), 0)).toBe(false); // 0-2…0-4 not solved yet
     expect(pageIdOf(1, 6)).toBe('c1p6');
   });
 
@@ -124,7 +126,7 @@ describe('Contents (目錄)', () => {
     const m = html(createElement(Contents, { save: played, registry, chapter: 1, resumeId: 'c1p2', backLabel: '封面', onBack: noop, onStation: noop, onPlay: noop }));
     expect(m).toContain('data-screen="contents"');
     expect(m.match(/data-station="\d+" data-open=""/g)).toHaveLength(2);
-    expect(m).toContain('3/12');
+    expect(m).toContain('6/12');
     expect(m).toContain('1/18');
     expect(m).toContain('第一章');
     expect(m).toContain('已收集 <span class="font-num font-semibold">1／18</span>');

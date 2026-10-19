@@ -91,8 +91,9 @@ export interface PopupFixture {
 
 /** The saves the screen fixtures read (#97). */
 const FRESH = freshSave();
-/** 0-1 solved with both its stickers, 1-2 current with its 淘氣 already earned. */
-const PLAYED = earnSticker(completePage(FRESH, 'c0p1', { mischief: true, tudigong: true, moves: 1 }), 'c1p2', 'mischief');
+/** 0-1 solved with both its stickers, the rest of the prologue solved, 1-2 current with its 淘氣 already earned. */
+const PROLOGUE = (['c0p2', 'c0p3', 'c0p4'] as const).reduce((s, id) => completePage(s, id, { moves: id === 'c0p4' ? 2 : 1 }), completePage(FRESH, 'c0p1', { mischief: true, tudigong: true, moves: 1 }));
+const PLAYED = earnSticker(PROLOGUE, 'c1p2', 'mischief');
 const LEFT_HANDED = updateSettings(PLAYED, { leftHand: true });
 /** 大字 on (#104). */
 const BIG_TEXT = updateSettings(PLAYED, { bigText: true });
@@ -101,8 +102,8 @@ const ELDER_ON = updateSettings(updateSettings(PLAYED, { speed: 2, autoHint: 0 }
 const ON_PAGE: NavState = { base: { kind: 'page', id: 'c1p2', run: 0 }, layer: null };
 /** 1-2 just completed: solved, its 淘氣 earned on the way, the 土地公 not found (#101). */
 const C1P2_DONE = completePage(PLAYED, 'c1p2', { mischief: true, moves: 6 });
-/** 0-1 solved without its 淘氣, 1-2 solved with it: the 目錄 shows each page's mischief (#101). */
-const MISCHIEF_LIST = completePage(completePage(FRESH, 'c0p1', { tudigong: true }), 'c1p2', { mischief: true });
+/** 0-1 solved without its 淘氣, 0-2…0-4 solved, 1-2 solved with it: the 目錄 shows each page's mischief (#101). */
+const MISCHIEF_LIST = completePage((['c0p2', 'c0p3', 'c0p4'] as const).reduce((s, id) => completePage(s, id), completePage(FRESH, 'c0p1', { tudigong: true })), 'c1p2', { mischief: true });
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -212,32 +213,84 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: '1-2 under reduced motion: no idle wiggle, the touchable carries the static double outline instead.',
   },
   {
-    name: 'lab-eye-contact',
-    page: 'lab-push',
-    steps: [{ mocha: 'pillar' }],
-    note: 'Mocha lands on the pillar beside a cup and looks straight at the camera for a tick (C3; #95). Lab stage: 1-2 with a cup, until #106 adds 0-3 (c0p3-eye-contact).',
+    name: 'c0p2-start',
+    page: 'c0p2',
+    steps: [],
+    note: '0-2 「沙發山」 as it opens (#106): Dad asleep on the sofa under his newspaper, the floor cushion at the sofa\'s foot (the bead is behind it, unseen), the TV\'s standby light; Baokaka on the rug. Placeholder environment art until #108.',
+    expect: { mode: 'idle' },
+  },
+  {
+    name: 'c0p2-watching',
+    page: 'c0p2',
+    steps: [{ wait: 2 }],
+    note: '0-2: nothing shiny in sight, so he crawled to the TV and watches it, swaying (watch-sway, #141); his bubble is a music note.',
+    expect: { mode: 'watching' },
+  },
+  {
+    name: 'c0p2-bubble-tutorial',
+    page: 'c0p2',
+    steps: [{ wait: 2 }],
+    show: { affordance: { bubble: true } },
+    note: '0-2\'s scripted tutorial (#106, first play only): while he watches the TV, his thought bubble wears the pulsing marigold halo — "his bubble shows what he wants". Live, it comes back for the flip once the cushion shows the bead.',
+    expect: { mode: 'watching' },
+  },
+  {
+    name: 'c0p3-join',
+    page: 'c0p3',
+    steps: [],
+    show: { talk: ['c0p3.join.1', 'c0p3.join.2', 'c0p3.join.3'] },
+    note: '0-3 「摩卡起床」 as it opens (#106): Mocha wakes on the sofa arm and his join lines play (§ 5.2 P, first beat); the bead on the high 抓周 table, 阿嬤\'s 紅包 on the shelf, the paw prints on the table and the shelf (the first perches).',
+    expect: { mode: 'idle' },
+  },
+  {
+    name: 'c0p3-tutorial',
+    page: 'c0p3',
+    steps: [{ wait: 4 }],
+    show: { affordance: { hint: { level: 2, key: 'perch:table' } } },
+    note: '0-3\'s scripted tutorial (#106, first play only): after 4 s of reaching under the table, the ghost hand taps the table\'s paw print.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c0p3-eye-contact',
+    page: 'c0p3',
+    steps: [{ mocha: 'table' }],
+    note: 'Mocha lands on the 抓周 table beside the bead and looks straight at the camera for a tick before the shove (C3; #95, #106).',
     expect: { event: 'mochaStare' },
   },
   {
-    name: 'lab-crying',
-    page: 'lab-cry',
-    steps: [{ wait: 3 }],
-    note: 'Nothing to want: after looking for two ticks Baokaka cries (GDD § 2.2.5; #95). Lab stage: 0-1 with the bead hidden, until #106 adds 0-4 (c0p4-crying).',
-    expect: { mode: 'crying' },
+    name: 'c0p3-envelope',
+    page: 'c0p3',
+    steps: [{ wait: 2 }, { mocha: 'shelf' }, { wait: 2 }],
+    note: '0-3\'s 淘氣 (#106): Mocha pushed 阿嬤\'s 紅包 off the shelf and it landed beside Baokaka, who pats it — 「這個！」 (flavour: he still wants the bead).',
+    expect: { event: 'land' },
   },
   {
-    name: 'lab-looking',
-    page: 'lab-cry',
-    steps: [{ wait: 1 }],
-    note: 'Nothing to want yet: Baokaka looks around, over his shoulder and far ahead (look L/R, #141). Lab stage until #106 adds 0-4.',
+    name: 'c0p4-start',
+    page: 'c0p4',
+    steps: [{ wait: 'settle' }],
+    note: '0-4 「窗外的月亮線」 (#106): the curtain closed, Mocha on the windowsill; Baokaka crawled to him and cuddles. The laundry basket by the wall, the balcony door shut.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c0p4-mocha-inbox',
+    page: 'c0p4',
+    steps: [{ wait: 'settle' }, { mocha: 'basket' }],
+    note: '0-4: Mocha hid in the laundry basket — only his head and paws show over the rim (in-box, #141) — and with nothing left to want Baokaka looks around, over his shoulder and far ahead (look L/R).',
     expect: { mode: 'looking' },
   },
   {
-    name: 'lab-watching',
-    page: 'lab-lamp',
-    steps: [{ wait: 2 }],
-    note: 'Baokaka sits at a night light and watches it, swaying (watch-sway, #141). Lab stage until #106 adds 0-2 (the TV).',
-    expect: { mode: 'watching' },
+    name: 'c0p4-crying',
+    page: 'c0p4',
+    steps: [{ wait: 'settle' }, { mocha: 'basket' }, { wait: 2 }],
+    note: 'Nothing to want: after looking for two ticks Baokaka cries 「哇——」 (GDD § 2.2.5); the cry opens the balcony door and wakes the 月亮線 train behind the curtain (#106).',
+    expect: { mode: 'crying' },
+  },
+  {
+    name: 'c0p4-train',
+    page: 'c0p4',
+    steps: [{ wait: 'settle' }, { mocha: 'basket' }, { wait: 2 }, { tap: 'curtain' }],
+    note: '0-4 after the cry (#106): the curtain open on the lit 月亮線 train, the bead on its step, the door open; Baokaka crawls out to it. The 土地公 stands on the street below.',
+    expect: { mode: 'moving' },
   },
   {
     name: 'c0p1-touch-watch',
@@ -252,12 +305,6 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     show: { gesture: { locked: { part: 'train', serial: 1 }, finger: [200, 520] } },
     note: '1-2 with a finger on a locked part: Mocha glares at it, ears back (#141), and Baokaka watches the finger.',
-  },
-  {
-    name: 'lab-mocha-inbox',
-    page: 'lab-box',
-    steps: [],
-    note: 'Mocha in a box perch: only his head and paws show over the rim, in front of the box (in-box, #141). Lab stage until #106 adds 0-4 (the laundry basket).',
   },
   {
     name: 'cover-first',
@@ -402,11 +449,11 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     expect: { mode: 'reaching', event: 'bark' },
   },
   {
-    name: 'lab-change-of-mind',
-    page: 'lab-lamp',
-    steps: [{ wait: 2 }, { tap: 'mobile' }],
-    note: 'The change of mind (GDD § 2.2.6, #98): he watched the night light (a note) until the bead appeared; the bubble flips to the bead and 「要！」 (live: the note pops, the bead inflates, the spring wobbles) and he barks 「要！」. Lab stage until #106 adds 0-2 (c0p2-change-of-mind: the cushion).',
-    expect: { mode: 'reaching', event: 'bark' },
+    name: 'c0p2-change-of-mind',
+    page: 'c0p2',
+    steps: [{ wait: 2 }, { tap: 'cushion' }],
+    note: 'The change of mind (GDD § 2.2.6, #98, #106): he watched the TV (a note) until the cushion showed the bead; the bubble flips to the bead and 「要！」 (live: the note pops, the bead inflates, the spring wobbles), he barks 「要！」 and turns back for it.',
+    expect: { event: 'bark' },
   },
   {
     name: 'subtitle-3',

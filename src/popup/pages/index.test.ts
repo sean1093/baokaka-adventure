@@ -30,14 +30,15 @@ describe('the registry (PAGES)', () => {
     for (const p of PAGES) expect(p.id).toBe(`c${p.chapter}p${p.index}`);
   });
 
-  test('starts with 0-1 and 1-2', () => {
-    expect(PAGES.map((p) => p.id).slice(0, 2)).toEqual(['c0p1', 'c1p2']);
+  test('starts with the prologue, 0-1 to 0-4, then 1-2', () => {
+    expect(PAGES.map((p) => p.id).slice(0, 5)).toEqual(['c0p1', 'c0p2', 'c0p3', 'c0p4', 'c1p2']);
   });
 
   test('pageById, nextPage and chapterOf', () => {
     expect(pageById('c1p2')?.title).toBe('月台的縫');
     expect(pageById('nope')).toBeUndefined();
-    expect(nextPage('c0p1')?.id).toBe('c1p2');   // across chapters
+    expect(nextPage('c0p1')?.id).toBe('c0p2');
+    expect(nextPage('c0p4')?.id).toBe('c1p2');   // across chapters
     expect(nextPage(PAGES[PAGES.length - 1].id)).toBeNull();
     expect(nextPage('nope')).toBeNull();
     expect(chapterOf('c0p1')).toBe(0);

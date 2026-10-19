@@ -1,6 +1,6 @@
 import { useMemo, type PointerEvent as ReactPointerEvent } from 'react';
 import { POPUP as C } from '../../../art/palette';
-import type { KitCtx } from '../../art';
+import { ref, type KitCtx } from '../../art';
 import type { Speaker } from '../../content/script';
 import type { PageDef, SimState } from '../../core/types';
 import { thoughtContent, type BubbleShow } from '../art/placeholders';
@@ -64,6 +64,20 @@ export interface ThoughtProps {
   readonly reduced: boolean;
   /** Stills draw the settled bubble only */
   readonly still: boolean;
+  /**
+   * The scripted tutorial's spotlight (0-2, #106): a moonlight glow and a dotted chalk ring round the
+   * cloud, breathing — "look at what he wants". Not marigold: the bubble is not a touchable.
+   */
+  readonly spotlight?: boolean;
+}
+
+/** The spotlight behind the cloud (centred on it, cloud units). */
+function spotlightArt(ctx: KitCtx, w: number, h: number): string {
+  const rx = w / 2 + 14;
+  const ry = h / 2 + 12;
+  return `<ellipse rx="${r2(rx + 14)}" ry="${r2(ry + 12)}" fill="${ref(ctx, 'softLamp')}" opacity=".95"/>`
+    + `<ellipse rx="${r2(rx)}" ry="${r2(ry)}" fill="${C.lamp}" opacity=".22"/>`
+    + `<ellipse rx="${r2(rx)}" ry="${r2(ry)}" fill="none" stroke="${C.chalk}" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="1 7" opacity=".95"/>`;
 }
 
 /**
@@ -71,12 +85,13 @@ export interface ThoughtProps {
  * his head. When the target changes the old icon pops and the new one inflates (200 ms) while the
  * spring wobbles; 「要！」 pulses while he reaches. Under reduced motion: fades only.
  */
-export function ThoughtBubble({ ctx, show, was, appeared, placed, head, offset, k, reduced, still }: ThoughtProps) {
+export function ThoughtBubble({ ctx, show, was, appeared, placed, head, offset, k, reduced, still, spotlight = false }: ThoughtProps) {
   const key = showKey(show);
   const wasKey = showKey(was);
   const now = useMemo(() => thoughtContent(ctx, JSON.parse(key) as BubbleShow), [ctx, key]);
   const old = useMemo(() => (wasKey === '' ? '' : thoughtContent(ctx, JSON.parse(wasKey) as BubbleShow)), [ctx, wasKey]);
   const cloud = useMemo(() => cloudCard(placed.w, placed.h), [placed.w, placed.h]);
+  const spot = useMemo(() => (spotlight ? spotlightArt(ctx, placed.w, placed.h) : ''), [ctx, spotlight, placed.w, placed.h]);
   const [cx, cy] = placed.c;
   // The spring meets the cloud itself (the placed box has room for its bumps)
   const end = springEnd({ x: cx - (placed.w * k) / 2, y: cy - (placed.h * k) / 2, w: placed.w * k, h: placed.h * k }, head);
@@ -93,6 +108,11 @@ export function ThoughtBubble({ ctx, show, was, appeared, placed, head, offset, 
             <ArtG html={spring} />
             <g transform={`translate(${r2(cx)} ${r2(cy)}) scale(${k})`}>
               <g key={appeared && !still ? `a:${key}` : 'a'} className={appeared && !still ? (reduced ? 'tb-fade-in' : 'tb-inflate') : undefined}>
+                {spot && (
+                  <g data-bubble-spotlight="">
+                    <ArtG html={spot} className={reduced || still ? undefined : 'tb-spot'} />
+                  </g>
+                )}
                 <ArtG html={cloud} />
                 {changed && old && <ArtG key={`o:${wasKey}`} html={old} className={reduced ? 'tb-fade-out' : 'tb-pop'} />}
                 <g key={`n:${key}`} className={inClass}>

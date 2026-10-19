@@ -69,6 +69,8 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'p.intro.10': { who: 'shushu', label: '小小的雲', text: '對、對不起——！' },
   'p.intro.11': { who: 'nar', text: '阿嬤送的立體書，也被吹開了。' },
   'p.intro.12': { who: 'baby', text: '……哇。' },
+  // § 4.3 0-2: Dad sleep-talks under his newspaper (the 淘氣, 0-2's `lines.onEvent`)
+  'c0p2.dad.1': { who: 'dad', text: '叫……爸爸……' },
   // § 5.2 0-3 Mocha joins (on page open: 0-3's `lines.intro`, #106)
   'c0p3.join.1': { who: 'mocha', text: '……喵？盤子……空的？' },
   'c0p3.join.2': { who: 'mocha', text: '完了完了完了。' },
@@ -80,6 +82,8 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c0p3.join.8': { who: 'mocha', text: '他說：『我也要去。這是我的生日。』' },
   'c0p3.join.9': { who: 'mocha', text: '……我在跟誰翻譯？' },
   'c0p3.join.10': { who: 'mocha', text: '……好啦。跟緊我。' },
+  // § 4.3 0-3: the 紅包 lands beside him and he pats it (the 淘氣's flavour, 0-3's `lines.onEvent`)
+  'c0p3.envelope.1': { who: 'baby', text: '這個！' },
   // § 5.2 0-4 The train wakes (on the cry → `train: on`: 0-4's `lines.onEvent`, #106)
   'c0p4.train.1': { who: 'pa', text: '月亮線列車，即將進站。' },
   'c0p4.train.2': { who: 'pa', text: '本列車，只載還沒睡的人。' },

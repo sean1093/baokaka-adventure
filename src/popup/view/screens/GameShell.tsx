@@ -459,6 +459,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                     vibrate={settings.vibrate}
                     tilt={settings.tilt}
                     lowPower={settings.lowPower}
+                    // The prologue's scripted tutorials (#106) play until the page is first solved
+                    tutorials={save.pages[def.id]?.solved !== true}
                   />
                   <div ref={overlayRef} className="pointer-events-none absolute inset-0" data-turn-overlay="" />
                 </div>

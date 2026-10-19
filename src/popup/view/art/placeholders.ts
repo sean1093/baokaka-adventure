@@ -362,9 +362,17 @@ export function rail(ctx: KitCtx, theme: StageTheme, linked: boolean): string {
     + (linked ? brad(ctx, 0, -h + 3.5, 3.2, true) : '');
 }
 
-/** Perch furniture: a pillar (high perch) or a bench (a seat), standing on its ledge. */
+/** Perch furniture: a pillar (high perch) or a bench (a seat) standing on its ledge, a wall shelf, or a laundry basket. */
 export function perchPost(ctx: KitCtx, post: PerchPost): string {
   const { x, top, foot } = post;
+  if (post.kind === 'shelf') {
+    // A plank on two brackets, its top at the perch node (indoors, on the standing page)
+    const body = `<path d="M${x - 24} ${top + 8}l8 0l-8 16z M${x + 24} ${top + 8}l-8 0l8 16z" fill="${S.woodDark}"/>`
+      + `<rect x="${x - 34}" y="${top}" width="68" height="8" rx="1.5" fill="${ref(ctx, 'wood')}"/>`
+      + `<path d="M${x - 34} ${top + 0.5}h68" stroke="${C.cutRim}" stroke-width="1" opacity=".7"/>`;
+    return depth(ctx, 3, body, `<rect x="${x - 34}" y="${top}" width="68" height="8"/><path d="M${x - 24} ${top + 8}l8 0l-8 16z M${x + 24} ${top + 8}l-8 0l8 16z"/>`);
+  }
+  if (post.kind === 'basket') return laundryBasket(ctx, x, top, foot);
   if (post.kind === 'pillar') {
     const body = `<rect x="${x - 15}" y="${top + 12}" width="30" height="${foot - top - 12}" fill="${ref(ctx, 'pillar')}"/>`
       + `<rect x="${x - 21}" y="${top}" width="42" height="14" rx="2" fill="${S.pillarCap}"/><rect x="${x - 19}" y="${top + 12}" width="38" height="4" fill="${S.drumLow}"/>`
@@ -374,6 +382,39 @@ export function perchPost(ctx: KitCtx, post: PerchPost): string {
   const body = `<rect x="${x - 29}" y="${top - 14}" width="58" height="5" rx="2" fill="${S.benchBack}"/><rect x="${x - 29}" y="${top}" width="58" height="6" rx="2" fill="${S.benchSeat}"/>`
     + `<path d="M${x - 23} ${top - 10}V${top}M${x + 23} ${top - 10}V${top}M${x - 23} ${top + 6}V${foot}M${x + 23} ${top + 6}V${foot}" stroke="${S.benchLeg}" stroke-width="3.5"/>`;
   return depth(ctx, 4, body, `<rect x="${x - 29}" y="${top - 14}" width="58" height="20"/>`);
+}
+
+/**
+ * The laundry basket (0-4's box perch, C9; #106): a woven wicker tub on its ledge, its rim at the
+ * perch node `top` so Mocha's in-box frame (his head and paws, cut flat at the rim) sits on it; a
+ * striped towel hangs over the front edge and a sock peeks out at the back.
+ */
+export function laundryBasket(ctx: KitCtx, x: number, top: number, foot: number): string {
+  const w0 = 38;
+  const w1 = 31;
+  const y0 = top + 4;
+  const h = Math.max(30, foot - y0);
+  const at = (t: number) => w0 + (w1 - w0) * t;
+  const tub = `M${x - w0} ${y0}L${x + w0} ${y0}L${x + w1} ${y0 + h}L${x - w1} ${y0 + h}Z`;
+  let weave = '';
+  for (let i = 1; i < 6; i++) {
+    const t = i / 6;
+    const y = y0 + h * t;
+    weave += `M${f1(x - at(t))} ${f1(y)}L${f1(x + at(t))} ${f1(y)}`;
+  }
+  let stakes = '';
+  for (let i = -3; i <= 3; i++) stakes += `M${f1(x + (i * w0) / 3.6)} ${y0 + 4}L${f1(x + (i * w1) / 3.6)} ${f1(y0 + h - 2)}`;
+  const body = `<path d="M${x + 12} ${top + 1}q6 -9 13 -5q3 3 -2 7z" fill="${C.printLilac}"/>`
+    + `<path d="${tub}" fill="${ref(ctx, 'wood')}"/>`
+    + `<path d="${stakes}" stroke="${S.woodDark}" stroke-width="2" opacity=".45"/>`
+    + `<path d="${weave}" stroke="${S.woodLight}" stroke-width="3.2" opacity=".85"/>`
+    + `<path d="${weave}" stroke="${S.woodDark}" stroke-width=".8" opacity=".5" transform="translate(0 2)"/>`
+    + `<rect x="${x - w0 - 3}" y="${top - 2}" width="${(w0 + 3) * 2}" height="9" rx="4.5" fill="${S.woodLight}"/>`
+    + `<path d="M${x - w0 - 1} ${top - 1.5}h${(w0 + 1) * 2}" stroke="${C.cutRim}" stroke-width="1" opacity=".75"/>`
+    // The towel over the front edge, a little left of centre
+    + `<path d="M${x - 24} ${top + 2}h22l-2 26q-9 4 -19 0z" fill="${S.rugStitch}"/>`
+    + `<path d="M${x - 23.5} ${top + 12}h20.5M${x - 22.8} ${top + 18}h19" stroke="${S.rugTop}" stroke-width="2.4"/>`;
+  return depth(ctx, 3, body, `<path d="${tub}"/><rect x="${x - w0 - 3}" y="${top - 2}" width="${(w0 + 3) * 2}" height="9"/>`);
 }
 
 /**

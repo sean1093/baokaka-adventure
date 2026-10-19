@@ -18,6 +18,32 @@ export const ENV_MANIFEST: EnvManifest = {
       },
       "source": "44ac6c8a6041c2be"
     },
+    "c0/living-room": {
+      "file": "backdrops/c0/living-room",
+      "bytes": 164276,
+      "chapter": 0,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "44ac6c8a6041c2be"
+    },
+    "c0/home-window": {
+      "file": "backdrops/c0/home-window",
+      "bytes": 164276,
+      "chapter": 0,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "44ac6c8a6041c2be"
+    },
     "c1/hall-night": {
       "file": "backdrops/c1/hall-night",
       "bytes": 157646,

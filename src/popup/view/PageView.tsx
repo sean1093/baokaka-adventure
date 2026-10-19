@@ -467,6 +467,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
             k={k}
             reduced={reduced}
             still={still}
+            spotlight={affordance.bubble === true}
           />
         )}
         {said.barks.map((b) => (
