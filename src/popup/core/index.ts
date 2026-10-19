@@ -15,7 +15,9 @@
  * and `define.ts` (`definePage`), all from #80; `graph.ts` (node positions, open edges, blocked
  * nodes, BFS, reach sets, nearest reachable node) from #81;
  * `baby.ts` (Baokaka's decision loop) and the first `events.ts` (`SimEvent`, barks) from #82;
- * `mocha.ts` (perch pathing, arrival actions, pet, cat rules C1–C9) from #83.
+ * `mocha.ts` (perch pathing, arrival actions, pet, cat rules C1–C9) from #83; `step.ts` (the tick,
+ * the cascade, rides, counters, `matchPredicate`), `words.ts`, `creatures.ts`, `replay.ts` and the
+ * full `events.ts` from #84.
  */
 export * from './types';
 export * from './cond';
@@ -25,4 +27,8 @@ export * from './graph';
 export * from './events';
 export * from './baby';
 export * from './mocha';
+export * from './words';
+export * from './creatures';
+export * from './step';
+export * from './replay';
 export { definePage } from './define';

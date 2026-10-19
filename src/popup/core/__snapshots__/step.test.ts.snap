@@ -1,0 +1,48 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`determinism: event-log snapshots of three scripted scenarios > c0p4 crying is a tool 1`] = `
+[
+  "0 {"t":"mocha","perch":"rod"} → {"type":"catLeave","id":"sill"} {"type":"catArrive","id":"rod"} {"type":"bark","id":"mocha","bark":"meow"} {"type":"babyEnter","id":"R2"}",
+  "1 {"t":"tap","id":"curtain"} → {"type":"partEnter","id":"curtain","state":"open","at":[230,280]} {"type":"bark","id":"bead","bark":"want"} {"type":"babyEnter","id":"R3"}",
+  "2 {"t":"tap","id":"curtain"} → {"type":"partEnter","id":"curtain","state":"closed","at":[230,280]} {"type":"bark","id":"mocha","bark":"meow"}",
+  "3 {"t":"mocha","perch":"basket"} → {"type":"catLeave","id":"rod"} {"type":"catArrive","id":"basket"}",
+  "4 {"t":"none"} → ",
+  "5 {"t":"none"} → {"type":"cry","at":[200,430],"within":220} {"type":"partEnter","id":"balconyDoor","state":"open","at":[260,390]} {"type":"partEnter","id":"train","state":"on","at":[335,380]}",
+  "6 {"t":"none"} → {"type":"cry","at":[200,430],"within":220}",
+  "7 {"t":"tap","id":"curtain"} → {"type":"partEnter","id":"curtain","state":"open","at":[230,280]} {"type":"babyEnter","id":"door"}",
+  "8 {"t":"none"} → {"type":"babyEnter","id":"trainStep"} {"type":"grab","id":"bead"}",
+]
+`;
+
+exports[`determinism: event-log snapshots of three scripted scenarios > c1p2 ride and solve 1`] = `
+[
+  "0 {"t":"set","part":"train","to":"half"} → {"type":"partEnter","id":"train","state":"half","at":[131,618]} {"type":"bark","id":"bead","bark":"want"} {"type":"babyEnter","id":"L2"}",
+  "1 {"t":"none"} → {"type":"babyEnter","id":"L3"}",
+  "2 {"t":"none"} → {"type":"babyEnter","id":"T1"}",
+  "3 {"t":"none"} → {"type":"babyEnter","id":"T2"}",
+  "4 {"t":"none"} → {"type":"bark","id":"bead","bark":"wantWant"}",
+  "5 {"t":"none"} → ",
+  "6 {"t":"set","part":"train","to":"out"} → {"type":"partEnter","id":"train","state":"out","at":[131,618]} {"type":"ride","id":"train"}",
+  "7 {"t":"set","part":"train","to":"half"} → {"type":"partEnter","id":"train","state":"half","at":[131,618]} {"type":"ride","id":"train"}",
+  "8 {"t":"set","part":"train","to":"out"} → {"type":"partEnter","id":"train","state":"out","at":[131,618]} {"type":"bark","id":"bead","bark":"wantWant"} {"type":"ride","id":"train"}",
+  "9 {"t":"set","part":"train","to":"half"} → {"type":"partEnter","id":"train","state":"half","at":[131,618]} {"type":"ride","id":"train"}",
+  "10 {"t":"mocha","perch":"pillar"} → {"type":"catLeave","id":"bench"} {"type":"catArrive","id":"pillar"}",
+  "11 {"t":"set","part":"train","to":"full"} → {"type":"partEnter","id":"train","state":"full","at":[131,618]} {"type":"babyEnter","id":"R1"}",
+  "12 {"t":"none"} → {"type":"babyEnter","id":"R2"} {"type":"grab","id":"bead"}",
+]
+`;
+
+exports[`determinism: event-log snapshots of three scripted scenarios > c1p3 fare gates 1`] = `
+[
+  "0 {"t":"mocha","perch":"counter"} → {"type":"catLeave","id":"ticketMachine"} {"type":"catArrive","id":"counter"} {"type":"mochaStare","id":"card"} {"type":"bark","id":"bead","bark":"want"} {"type":"babyEnter","id":"A2"}",
+  "1 {"t":"none"} → {"type":"push","id":"card"} {"type":"bark","id":"bead","bark":"wantWant"}",
+  "2 {"t":"none"} → {"type":"land","id":"card"} {"type":"partEnter","id":"reader","state":"down"} {"type":"beep","id":"reader","at":[120,390],"within":120} {"type":"partEnter","id":"gateA","state":"open","at":[150,430]} {"type":"babyEnter","id":"gA"} {"type":"learn","word":"beep"}",
+  "3 {"t":"none"} → {"type":"babyEnter","id":"M1"}",
+  "4 {"t":"none"} → {"type":"babyEnter","id":"M2"}",
+  "5 {"t":"none"} → {"type":"bark","id":"bead","bark":"wantWant"}",
+  "6 {"t":"none"} → ",
+  "7 {"t":"say","word":"beep"} → {"type":"beep","id":"M2","at":[250,430],"within":120} {"type":"partEnter","id":"gateB","state":"open","at":[300,430]} {"type":"partEnter","id":"robot","state":"spin","at":[230,520]}",
+  "8 {"t":"none"} → {"type":"babyEnter","id":"gB"}",
+  "9 {"t":"none"} → {"type":"babyEnter","id":"B1"} {"type":"grab","id":"bead"}",
+]
+`;

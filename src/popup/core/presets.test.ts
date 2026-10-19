@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { compilePart, nextState, PRESETS, tapTarget, type TapRule } from './presets';
+import { compilePart, nextState, PRESETS, reactionTarget, tapTarget, type TapRule } from './presets';
 import { PART_PRESETS, type PartDef, type PartInput, type PartPreset } from './types';
 
 const HIT = { x: 0, y: 0, w: 48, h: 48 };
@@ -134,5 +134,27 @@ describe('nextState', () => {
     expect(nextState(['a', 'b'], 'a')).toBe('b');
     expect(nextState(['a', 'b'], 'b')).toBe('a');
     expect(nextState(['a', 'b'], 'x')).toBe('a');
+  });
+});
+
+describe('reactionTarget', () => {
+  const lift = compilePart({ id: 'l', preset: 'lift', states: ['f0', 'f1', 'f2'], hit: { x: 0, y: 0, w: 48, h: 48 }, art: 'l' });
+  const solo = compilePart({ id: 's', preset: 'prop', states: ['only'], hit: { x: 0, y: 0, w: 48, h: 48 }, art: 's' });
+  test.each([
+    ['next', 'f0', 'f1'],
+    ['next', 'f2', 'f0'],
+    ['prev', 'f1', 'f0'],
+    ['prev', 'f0', 'f2'],
+    ['prev', 'unknown', 'f0'],
+    ['toggle', 'f0', 'f1'],
+    ['toggle', 'f1', 'f0'],
+    ['toggle', 'f2', 'f0'],
+    ['f2', 'f0', 'f2'],
+    ['nowhere', 'f0', null],
+  ] as const)('%s from %s → %s', (to, from, expected) => {
+    expect(reactionTarget(lift, from, to)).toBe(expected);
+  });
+  test('toggle on a one-state part stays', () => {
+    expect(reactionTarget(solo, 'only', 'toggle')).toBe('only');
   });
 });

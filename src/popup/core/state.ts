@@ -1,5 +1,5 @@
 import { compilePart } from './presets';
-import type { PageDef, SimState } from './types';
+import type { Id, PageDef, SimState } from './types';
 
 /**
  * The state a page starts in (GDD § 3.2 `SimState`): every part at its initial state, every
@@ -61,4 +61,13 @@ export function canonicalKey(state: SimState): string {
     consumed: sorted(state.consumed),
     flags: sorted(state.flags),
   });
+}
+
+/**
+ * `state` with part `id` in state `to`, written where that part's state lives: `pushables` for a
+ * pushable already there, `parts` otherwise (D-41).
+ */
+export function withPartState(state: SimState, id: Id, to: string): SimState {
+  if (id in state.pushables) return { ...state, pushables: { ...state.pushables, [id]: to as SimState['pushables'][string] } };
+  return { ...state, parts: { ...state.parts, [id]: to } };
 }
