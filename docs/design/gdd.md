@@ -766,6 +766,8 @@ scripts/
   solve-pages.ts           `npm run solve` — solver report table for all pages (par, states, dead-ends, mischief/土地公 reachable)
 ```
 
+**For engineers.** `pages/index.ts` (#87) is the ordered registry: `PAGES` (play order, the prologue as chapter 0), `pageById`, `nextPage` (across chapters; null after the last page) and `chapterOf`, built by `buildRegistry`, which rejects duplicate ids and pages out of (chapter, index) order. It fills in the § 3.2 defaults that depend on the order: `words` = the words learned (`learns.word`) on earlier pages, `baby.growth` = the highest growth learned on earlier pages (else 0); a page's own `learns` is not in its own defaults, and explicit fields win. Adding a page = a file under `pages/cN/` plus one line in the registry; `pages/pages.test.ts` lints (with `content/script.ts`'s table), replays and solves every registered page and prints a report table (page, difficulty, par, states, dead ends, ms, lint) on failure. Readings in D-48.
+
 **Routes** (`src/shared/route.ts`): add `pagelab` (dev only). `#/` becomes the new game when M1 ships. Until then, `#/popup` serves it, behind no flag; it's just unlinked.
 
 ### 3.6 Lint (runs in tests and in PageLab on every edit)
