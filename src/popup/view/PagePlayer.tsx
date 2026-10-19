@@ -7,7 +7,7 @@ import { partLocked } from '../core/step';
 import { cover, kitCtx, kitDefs, type KitCtx } from '../art';
 import { chapterInfo, chapterLine as contentChapterLine } from '../content';
 import type { SimEvent } from '../core/events';
-import type { Input, LineKey, PageDef, SimState, Word } from '../core/types';
+import type { Id, Input, LineKey, PageDef, SimState, Word } from '../core/types';
 import { loadLines, type TalkLine } from '../content/script';
 import type { LearnKey } from '../content/words';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
@@ -41,6 +41,7 @@ import { PhotoMoment } from './photo/PhotoMoment';
 import { pulse } from '../game/settings';
 import { useTextScale } from './textSize';
 import { useTilt } from './useTilt';
+import { gestureSounds, stickerSounds, tickSounds, useSound } from './sound';
 
 /**
  * One page, played (GDD § 2.1 page anatomy; bible § 2.1, § 7): the navy-linen cover, the HUD slot
@@ -81,6 +82,13 @@ import { useTilt } from './useTilt';
  * shell saves it); `onDone` gets the attempt's stickers and moves for `completePage`. A sticker is
  * earned once per attempt; the save never loses one.
  *
+ * Sound (#105, GDD § 2.12; `sound.ts`): each tick's events sound through `tickSounds` (the word's
+ * motif, the barks as voice blips, the ding, crawl, hops, the push and its drop, the creatures, the
+ * grab), gestures through `gestureSounds` (the swish, the stop's click / ratchet / flop, the boop),
+ * a wheel ratchets at every stop it passes under the finger, a sticker pops, 提示 rings. A part the
+ * player just moved sounded on release, so its tick stays quiet for it. Outside a live shell (the
+ * art lab, PageLab) and in a still the sink is silent.
+ *
  * Images (#94, #96): the page preloads its chapter's baked character frames (`usePagePreload`)
  * and its own environment bitmaps (`usePageArt`, then the next page's backdrop) as it opens, and
  * marks itself `data-sprites="ready"` once both are decoded (screenshots wait for it).
@@ -105,6 +113,9 @@ import { useTilt } from './useTilt';
 
 /** Bubbles grown past this (大字 on a short phone, ≈ 1.6×) have room for one line a beat (#104). */
 const BIG_BEAT_K = 1.4;
+
+/** A part the player moved sounded on release; its tick within this long stays quiet for it (ms; > the slowest tick) */
+const MOVED_MS = 1500;
 
 /** Chapters where Mocha squints at the 土地公 on the first tap (GDD § 5.3: 4-x, 7-x, 10-x). */
 const SQUINT_CHAPTERS: ReadonlySet<number> = new Set([4, 7, 10]);
@@ -254,6 +265,12 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     return () => session.resume('layer');
   }, [session, hold]);
 
+  // Sound (#105): the shell's sink (silent in a still), and the parts the player just moved
+  const sink = useSound();
+  const soundRef = useRef(sink);
+  soundRef.current = still ? () => undefined : sink;
+  const movedRef = useRef(new Map<Id, number>());
+
   // Stickers (#101): what this attempt earned, and the pop over the tray
   const attemptRef = useRef<Attempt>(FRESH_ATTEMPT);
   const [pop, setPop] = useState<{ readonly sticker: Sticker; readonly serial: number } | null>(showSticker ? { sticker: showSticker, serial: 0 } : null);
@@ -266,6 +283,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     attemptRef.current = earnInAttempt(attemptRef.current, sticker);
     setPop((p) => ({ sticker, serial: (p?.serial ?? 0) + 1 }));
     pulse('sticker', vibrateRef.current);
+    soundRef.current(stickerSounds(sticker));
     onStickerRef.current?.(sticker);
   }, []);
   useEffect(() => {
@@ -381,6 +399,14 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     setBarks((log) => barkLog(log, barksOf(frame.prev, frame.state, frame.events), frame.state.tick));
     // 震動: Mocha's push lands (§ 2.11)
     if (frame.events.some((e) => e.type === 'push')) pulse('push', vibrateRef.current);
+    // Its sounds (§ 2.12): the parts the player moved in the last 1.5 s already sounded on release
+    if (frame.state.tick !== frame.prev.tick) {
+      const now = performance.now();
+      const moved = new Set<Id>();
+      for (const [id, at] of movedRef.current) if (now - at < MOVED_MS) moved.add(id);
+      for (const e of frame.events) if (e.type === 'partEnter' && e.id !== undefined) movedRef.current.delete(e.id);
+      soundRef.current(tickSounds(def, frame.prev, frame.state, frame.events, moved));
+    }
   }, [def, frame]);
   // The learn beat's lines read (or none): the word card comes up
   useEffect(() => {
@@ -433,6 +459,13 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     if (line === null || mochaNode(def, now) === null) return;
     setBarks((log) => barkLog(log, [{ who: 'mocha', bark: 'hint', text: line, tick: now.tick }], now.tick));
   }, [def, session, hintShown.line, hintSerial]);
+  // 提示 or the nudge shows a hint: the soft bell with its shimmer (§ 2.12)
+  const hintRung = useRef(ladder.serial);
+  useEffect(() => {
+    if (ladder.serial === hintRung.current) return;
+    hintRung.current = ladder.serial;
+    soundRef.current([{ cue: 'hint' }]);
+  }, [ladder.serial]);
   const onHint = useCallback(() => {
     pressHint();
     pageChrome?.onHint?.();
@@ -455,6 +488,10 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       // The player's own move (a part, a perch, Mocha; a drag landing on a stop) puts the hint ladder back to rest
       if ((event.type === 'tap' && (event.target.kind === 'part' || event.target.kind === 'perch' || event.target.kind === 'mocha')) || event.type === 'snap') acted();
       if (event.type === 'snap') pulse('snap', vibrateRef.current);
+      // Its sound now, on release (§ 2.12); the tick that applies it stays quiet for that part
+      if (event.type === 'snap') movedRef.current.set(event.part, performance.now());
+      if (event.type === 'tap' && event.target.kind === 'part' && !locked.includes(event.target.id)) movedRef.current.set(event.target.id, performance.now());
+      soundRef.current(gestureSounds(def, event));
       if (event.type === 'tap' && event.target.kind === 'part' && !locked.includes(event.target.id)) {
         const part = def.parts.find((p) => p.id === event.target.id);
         if (part !== undefined && !wearsMarigold(part)) idle.poke(part.id);
@@ -487,6 +524,21 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   const flags = elder && !shown.reveal ? { ...shown, reveal: true } : shown;
   const down = live.finger !== null || live.dragging !== null;
   useEffect(() => setFingerDown(down), [down]);
+  // A wheel under the finger ratchets at every stop it passes (§ 2.12 wheel step)
+  const dragStop = useRef<{ readonly part: Id; readonly stop: number } | null>(null);
+  const preview = live.preview;
+  useEffect(() => {
+    if (preview === null) {
+      dragStop.current = null;
+      return;
+    }
+    const stop = Math.round(preview.index);
+    const was = dragStop.current;
+    dragStop.current = { part: preview.part, stop };
+    if (was === null || was.part !== preview.part || was.stop === stop) return;
+    const p = def.parts.find((x) => x.id === preview.part);
+    if (p?.preset === 'wheel' || p?.preset === 'loop') soundRef.current([{ cue: 'ratchet' }]);
+  }, [def, preview]);
   // The first-use tutorial (§ 2.4; 1-3): the portrait glows, the ghost hand taps him, then the word
   const tWord = useMemo(() => tutorialWord(def), [def]);
   const tutorial = tutorialShow({

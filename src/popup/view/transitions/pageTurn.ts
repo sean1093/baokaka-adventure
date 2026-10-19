@@ -1,5 +1,6 @@
 import { POPUP as C } from '../../../art/palette';
 import { GUTTER_Y, PAGE_VIEW_BOX } from '../geometry';
+import type { SfxCue } from '../../../shared/audio';
 import type { LayerId } from '../layers';
 
 /**
@@ -200,6 +201,15 @@ export interface TurnHooks {
   readonly card?: TurnInterlude;
   /** Throw confetti off the leaf (default); low power drops it (bible § 9.3, #104) */
   readonly confetti?: boolean;
+  /**
+   * Its sounds (#105, GDD § 2.12, bible § 8), each as its motion starts: the old pop-ups fold
+   * (`fold`), the leaf turns (`leaf`: paper whoosh plus the chime), the new ones land (`fwump`), the
+   * chapter card drops (`cardDrop`), flips its row (`flaps`) and lifts (`cardLift`). Timed by the
+   * turn's own steps, so they wait out a hold and stop with a skip — except the new page's `fwump`
+   * in a fold or a chapter turn, which, like its rise, goes on under the card: it is set off at the
+   * swap, `delayMs` ahead.
+   */
+  readonly sound?: (cue: SfxCue, delayMs?: number) => void;
 }
 
 export interface TurnRun {
@@ -311,6 +321,28 @@ export function playTurn(plan: TurnPlan, targets: TurnTargets, pages: TurnPages,
     swapped = true;
     swap();
   };
+
+  // ——— Its sounds, on the turn's clock ———
+  const sfx = hooks.sound;
+  if (sfx) {
+    const at = (t: number, cue: SfxCue) => later(t, () => !done && sfx(cue));
+    if (plan.reduced) {
+      // The cross-fade: one turn of the page
+      if (plan.kind !== 'open') at(0, 'leaf');
+    } else {
+      if (plan.fold) at(plan.fold.start, 'fold');
+      if (plan.leaf) at(plan.leaf.start, 'leaf');
+      // The new pop-ups land (their overshoot's peak, 70 % in)
+      const land = plan.rise.start + plan.rise.each * 0.7;
+      if (plan.kind === 'open') at(land, 'fwump');
+      else later(plan.swapAt + 1, () => !done && sfx('fwump', land - plan.swapAt));
+      if (plan.card && pages.card) {
+        at(plan.card.start + (plan.card.settle - plan.card.start) * 0.3, 'cardDrop');
+        at(plan.card.start + CARD_MS.flipAt, 'flaps');
+        at(plan.card.leave, 'cardLift');
+      }
+    }
+  }
 
   // ——— The old page: settle hop, then fold flat, near first ———
   const oldGroups = groupsOf(targets.pageBox(), FOLD_GROUPS);

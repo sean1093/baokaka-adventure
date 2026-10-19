@@ -7,6 +7,7 @@ import { useSpritesPreload } from '../../sprites';
 import { PHOTO_H, PHOTO_SPRITES, PHOTO_W, PhotoScene } from './PhotoScene';
 import { useTextScale } from '../textSize';
 import './photo.css';
+import { useSound } from '../sound';
 
 /**
  * The photo moment (GDD § 2.9 steps 1–4; bible § 7 "the shutter moment"; #103): over the paused
@@ -68,10 +69,15 @@ export function PhotoMoment({ chapter, def, mocha, reduced, still = false, at, v
     return () => cancelAnimationFrame(raf);
   }, [held, start]);
 
+  // The shutter's click with the flash (#105, § 2.12)
+  const sound = useSound();
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
   const snap = useCallback((shot: Shot) => {
     if (snapped.current) return;
     snapped.current = true;
     setFlash(true);
+    soundRef.current([{ cue: 'shutter' }]);
     window.setTimeout(() => onSnapRef.current(shot), FLASH_MS);
   }, []);
   // § 2.9: no tap in 6 s → Frame B

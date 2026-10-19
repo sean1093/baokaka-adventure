@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
 import { POPUP as C, withAlpha } from '../../../art/palette';
 import { useSvgIds } from '../../../art/useSvgIds';
 import { kitCtx, kitDefs, ref, type KitCtx } from '../../art';
@@ -14,6 +14,7 @@ import { wordSeal } from '../words';
 import { PHOTO_H, PHOTO_SPRITES, PHOTO_W, PhotoScene } from './PhotoScene';
 import { useTextScale } from '../textSize';
 import './photo.css';
+import { useSound } from '../sound';
 
 /**
  * One chapter's page in 「寶咖咖一歲的相簿」 (GDD § 2.9; bible § 7 Album; #103): a cream album leaf
@@ -78,6 +79,17 @@ export function AlbumPage({ chapter, def, shots, chosen = shots.length - 1, stic
   const ready = spritesReady && (back === null || backReady);
   const bg = useMemo(() => kitDefs(ctx, ['tiles', 'linen', 'foil']), [ctx]);
   const animate = fresh && !still;
+  // Sound (#105): the print lands with a soft slap, each note pops on with a rising blip
+  const sound = useSound();
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
+  const noteCount = notes.length;
+  useEffect(() => {
+    if (!animate) return undefined;
+    const timers = [window.setTimeout(() => soundRef.current([{ cue: 'slap', gain: 0.6 }]), reduced ? 0 : PRINT_LAND_MS * 0.85)];
+    for (let i = 0; i < noteCount; i++) timers.push(window.setTimeout(() => soundRef.current([{ cue: 'note', pitch: 2 ** ((i * 3) / 12) }]), PRINT_LAND_MS + i * NOTE_GAP_MS));
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [animate, reduced, chosen, noteCount]);
   const collected = stickers.reduce((n, s) => n + s.filter(Boolean).length, 0);
   const total = stickers.length * 3;
   const choosing = shots.length > 1 && onChoose !== undefined;
