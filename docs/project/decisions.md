@@ -1010,3 +1010,19 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 6. **Outline changes** (listed in `pages/c3.md`): 3-2's bell is the delivery bike's, rung by tapping Mocha on the seat (the first three pages show at most three touchables); 3-3's 淘氣 is the goose honking at Mocha twice (the chase is the reveal, a tick before the grab); 3-4's Mocha waits on the gate's pillar. Chapter 3's cameo is the 店員小哥 on 3-2 (Mocha's new line 「……連腳踏車也是你的？」), its music box an 8-bar loop in A.
 
 **Why.** It keeps every page solver-green with no dead ends, soft traps, walkable decoys or ties and 0 lint warnings, without new engine features, and keeps the grandparent rule: what is marigold is what you move, and what he wants is drawn as what it is.
+
+### D-80 · 2026-10-20 · Chapter 3's art: the campus kit, a held decoy on its holder's face, the squeeze cut-out (#117)
+
+**Context.** #117 draws 台灣大學 over #116's pages: six backdrops, every part, the goose, 藍教授 and the poster's student, the decoys, the 書, the 土地公's 藍色校工帽 (#116 drew it on the live figure) and 3-5's 淘氣. A few things were left open: how 3-6's glasses sit on a creature drawn by this issue; what 3-5's 「he squeezes out on top」 shows without moving Mocha's standee; what the stage draws for the chapter's single-node runs (3-3's nest, 3-6's stack); and whether the doors and the flaps need new machinery.
+
+**Decision.**
+1. **The palette kit** is `POPUP_CAMPUS` (bible § 6 row 3: lake blue and palm green, the library's warm amber as the one accent; every warm token ≥ ΔE 12 from marigold, `affordance.test.ts`) with reusable cut-outs in `env/art/c3.ts`: `royalPalm` (a tall thin flat whose fronds are serrated paper combs, in receding rows on 3-2), `campusLamp`, `campusBuilding` (the 1930s halls' arcade, lit windows, hipped roof), `azaleas`, `lakeWater` (glassine), `bookRow`, `bookStack`, `bookcase`, `archWindow`, `readingLamp`.
+2. **New ledge styles** (`view/art/ledges.ts`): the 松山新店線 car body (green), the campus walk (pavers, curb, azaleas), 醉月湖's promenade (ashlar embankment), the stacks' gallery and the reading room's floor, the desk and the giant book's page block. Single-node runs draw what the node is: on the lake, the goose's nest on a grassy hummock; on the book spread, a pile of books (where 藍教授 sits). The bank's slope is a flight of stone steps. Foreground card `azalea`.
+3. **Reuse, not machinery:** 2-1's doors became `carDoors(band, bandDeep)` (2-1's bitmaps unchanged, byte for byte), and `popFlap` moved to `env/art/common.ts`; 3-6's pages pop up with it (the bookmark folds flat over the gap, the turned page arches from the lamp to the stack, the cat page stands up).
+4. **A held decoy sits on its holder's face** at a fixed offset from the holder's feet (`HELD_DECOY_FACE`, (−11, −31), 0.62 scale: 藍教授's eye; only 3-6 holds a decoy). A per-creature anchor can come when a second page needs one.
+5. **3-5's 淘氣 is a cut-out**, `c3/squeeze` (`visibleWhen`: Mocha in the cart with aisle 2 shut): books tumbling off the shelves over the aisle, chalk squeeze lines, his 「哼。」. Mocha's standee stays where the engine puts him.
+6. **Not drawn** (as D-78): the photo frames stay #103's composites with the 書 drawn in (`treasureArt` chapter 3); the chapter card has no landmark slot and the 目錄 shows the new backdrops; the 月亮線 window strip does not scroll. The 3-2 cameo is the 店員小哥's delivery bike (外送 box) and his lines, not a drawn figure (the walkway is the play path).
+
+**Why.** Each reading keeps the art baked and the view unchanged where it could, keeps the page data's hit areas (only 3-4's plate key moved to `c3/plate`), and stays inside the payload and animated-node budgets (c3p1 128 nodes at its busiest tick, every page ≤ 308 KB).
+
+**Consequences.** Later chapters reuse `carDoors`, `popFlap`, the campus ledge pattern (a single node drawn as what it is) and `HELD_DECOY_FACE` until a page needs a per-creature anchor.
