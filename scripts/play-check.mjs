@@ -25,6 +25,9 @@
  * A `drag` through more than two points follows them in turn (1-4's turntable is turned on its rim).
  * `{ heard: [cues] }` checks the shell played those sounds (#105; the dev build lists them in
  * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
+ * `talk-anywhere-c1p1` reads lines away with taps off the bubbles (one on a touchable that must not
+ * move), `c0p4-curtain-first` plays 0-4 in its other order, `nope-c1p5` taps a perch Mocha can't
+ * reach and `tutorial-c1p5` waits for 1-5's nudge (#183).
  * Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
  * and UI checks.
  */
@@ -164,9 +167,61 @@ const SCENARIOS = {
     { settle: 1500 },
     { drag: [[304, 604], [260, 604]] },
     { settle: 1200 },
+    // Mocha's translation of 嗶！ is still up: a tap reads it away first (#183; the drag played under it)
+    { readTalk: true },
     { tap: [270, 386] },
-    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    // No line is left up under the camera (#183: one was stranded under the HUD)
+    { expect: '[data-photo-moment][data-photo-mocha]', absent: '[data-subtitle], [data-narration]', timeout: 10_000 },
     { tapEl: '[data-shutter]', paused: true },
+  ],
+  // A tap anywhere reads the lines on (#183): 1-1's opening announcements, cleared by a tap on the
+  // sway tab — which must not move it — then the map's punchline cleared by a tap on empty floor
+  'talk-anywhere-c1p1': [
+    { expect: '[data-subtitle]' },
+    { tap: [150, 610] },
+    { settle: 400 },
+    { absent: '[data-subtitle]' },
+    { expect: 'svg[data-page][data-parts*="sway=level"]' },
+    { wait: 'reaching' },
+    { tap: [286, 280] },
+    { expect: '[data-subtitle]', timeout: 6_000 },
+    { tap: [40, 520] },
+    { settle: 400 },
+    { tap: [40, 520] },
+    { settle: 400 },
+    { absent: '[data-subtitle]' },
+  ],
+  // 0-4 in the other order (#183, the AI playtest's order trap): the curtain first shows a dark
+  // train and no bead; hide Mocha, he cries, the train lights and he crawls out
+  'c0p4-curtain-first': [
+    { wait: 'cuddling' },
+    { tap: [300, 263] },
+    { settle: 1500 },
+    { absent: '[data-attractor="bead"]' },
+    { wait: 'cuddling' },
+    { tap: [34, 414] },
+    // He cries (the curtain is open, so the lit train's bead sets him off at once): 廣播姊姊 announces it
+    { expect: '[data-subtitle]', timeout: 9_000 },
+    { readTalk: true },
+  ],
+  // 1-5 (#183): a tap on the counter's paw from B1 — Mocha can't get there: his 「喵？」
+  'nope-c1p5': [
+    { wait: 'reaching' },
+    { tap: [244, 242] },
+    { settle: 2500 },
+    { wait: 'reaching' },
+    { tap: [330, 220] },
+    { expect: '[data-bark-kind="nope"]' },
+    { tapEl: '[data-actor="mocha"]' },
+  ],
+  // 1-5's first-play nudge (#183): the car down, Mocha taps his paw on the panel and shimmers once
+  'tutorial-c1p5': [
+    { wait: 'reaching' },
+    { tap: [244, 242] },
+    { settle: 2500 },
+    { wait: 'reaching' },
+    { expect: '[data-hint-halo="nudge"]', timeout: 9_000 },
+    { tapEl: '[data-actor="mocha"]' },
   ],
   // The hint ladder (#100, GDD § 2.7) on 1-2: 提示 shows where (the halo), then how (the ghost hand),
   // then "show me" plays the solver's next step for real — pressed again and again, it finishes the page
@@ -202,6 +257,8 @@ const SCENARIOS = {
     { expect: '[data-sticker="土地公"][data-earned]' },
     { expect: '[data-subtitle]' },
     { settle: 800 },
+    // His 「呵呵，囡仔，慢慢仔來。」 is up: a tap reads it away first (#183)
+    { readTalk: true },
     { tap: [280, 234] },
     { settle: 2500 },
     { drag: [[140, 610], [205, 610]] },
@@ -243,6 +300,8 @@ const SCENARIOS = {
     { settle: 1500 },
     { drag: [[304, 604], [260, 604]] },
     { settle: 1200 },
+    // Mocha's translation of 嗶！ is still up: a tap reads it away first (#183; the drag played under it)
+    { readTalk: true },
     { tap: [270, 386] },
     { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
     { tapEl: '[data-shutter]', paused: true },
@@ -283,6 +342,10 @@ const SCENARIO_URLS = {
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',
   'tutorial-c0p2': '#/popup?page=c0p2&tutorial=1',
   'tutorial-c0p3': '#/popup?page=c0p3&tutorial=1',
+  'talk-anywhere-c1p1': '#/popup?page=c1p1&speed=fast',
+  'c0p4-curtain-first': '#/popup?page=c0p4&speed=fast',
+  'nope-c1p5': '#/popup?page=c1p5&speed=fast',
+  'tutorial-c1p5': '#/popup?page=c1p5&tutorial=1',
 };
 
 const VIEWPORTS = [
