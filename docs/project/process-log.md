@@ -681,7 +681,7 @@ Format:
   - the map, the card, the reader and the gate (shared by 1-3, 1-4 and 1-6);
   - the robot (happy when spinning);
   - **the turntable**: a checker disk with the aisle runner and travellers printed on it, inside a marigold knurled rim. The 土地公 is printed upside down in state 2, so he reads upright once the disk is turned. Before this he was hidden under the disk;
-  - the elevator car, its panel, the 叮咚 bell and the bento lid (a baked flap).
+  - the elevator car, its panel, the 叮咚 bell and the bento lid (a baked flap). The halo fix also covers the chapter card's line cards (「好吃！」 on chapter-end-c1).
 - **Dress:** car body ledges and owned straps and rack on 1-1; granite walkways; the shop floor's cut slab on 1-5; 1-6 split from granite to brick at the spine; owned posts for the counter, the ticket machine, the robot lid, the clock, the lightbox and the B1 rack.
 - **Notes from the issue thread:**
   - **The train's hit area on 1-2** now starts at the tab card's left end: x 28, w 178. The engine fixture and GDD § 3.4 are updated, along with the hint-thread test and the step snapshot's event origins.
@@ -689,7 +689,7 @@ Format:
   - The squint test darkened the station's sandstone and terrazzo toward night.
   - `check:ui` caught two runs whose glyphs overhang their card onto the now-lighter page art: the speaker tab's name (「背包客」 on 1-1) and a bark (「好吃！」). The tab name now has a halo in the tab's ink, and bark text has one in the card's warm white (paint-order stroke), so both read at ≥ 7:1 over any art.
 - **QA.** `npm test` and `npm run build` pass. The solver passes all 10 pages. Visual baselines are updated; `check:ui` and `check:play` pass. The squint and grey sheet is `docs/screenshots/108/squint-grey-c1.png`.
-- **Payload** (page art, KB of 350): c1p1 148, c1p2 174, c1p3 100, c1p4 269 (the turntable's four 180-unit states), c1p5 107, c1p6 120.
+- **Payload** (page art, KB of 350): c1p1 147, c1p2 174, c1p3 127, c1p4 278 (the turntable's four 180-unit states), c1p5 127, c1p6 141; first load 1244 KB of 2560.
 - **Cover.** The book on 阿嬤's low table (#97) already matches the bible; it is unchanged here.
 - **Follow-ups.**
   - #110 playtest: whether 1-4's printed travellers read as a turnable floor without the hint ladder.
