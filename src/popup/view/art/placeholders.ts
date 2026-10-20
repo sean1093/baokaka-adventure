@@ -483,7 +483,8 @@ export function origamiBird(ctx: KitCtx): string {
  * with an ochre band (the prologue); `站務帽` is chapter 1's navy station cap with a peak and a
  * foil badge (#108); `斗笠` is chapter 2's wide straw hat (#114) with his 掃把 on his shoulder (#115);
  * `藍色校工帽` is chapter 3's blue campus janitor's cap with a short peak (#116); `算命墨鏡` is chapter 4's
- * fortune-teller's round dark glasses in gold wire under his red 員外帽 (#118, #119).
+ * fortune-teller's round dark glasses in gold wire under his red 員外帽 (#118, #119); `鴨舌帽` is chapter 5's
+ * night-market duck-bill cap, worn peak forward (#121).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -491,7 +492,11 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
     + `<path d="M-4.6 -1.2q1.6 -1.2 3 0M1.6 -1.2q1.6 -1.2 3 0" stroke="${C.standeeCard}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`
     + `<path d="M-3.6 .9q.9 .8 1.8 0M1.8 .9q.9 .8 1.8 0" stroke="${C.ink}" stroke-width=".9" stroke-linecap="round" fill="none"/>`
     + `<circle cx="-4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/><circle cx="4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/>`;
-  const cap = hat === '藍色校工帽'
+  const cap = hat === '鴨舌帽'
+    ? `<path d="M-7.6 -2.4q0 -7.4 7.6 -7.4q7.6 0 7.6 7.4z" fill="${C.hatRed}"/><path d="M-3 -9.2q3 -1 6 0v6.6h-6z" fill="${C.chalk}" opacity=".9"/>`
+      + `<path d="M5.6 -2.8q7.4 -1 11.6 1.8q-5.4 1.4 -11.6 .6z" fill="${C.peonyDeep}"/><path d="M-8 -2.6h16" stroke="${C.peonyDeep}" stroke-width="1.4"/>`
+      + `<circle cx="0" cy="-9.6" r="1.2" fill="${C.peonyDeep}"/>`
+    : hat === '藍色校工帽'
     ? `<path d="M-7.6 -2.6q0 -7 7.6 -7q7.6 0 7.6 7z" fill="${C.wordBeep}"/><path d="M-8 -3.4h16v2h-16z" fill="${C.nightCardDeep}"/>`
       + `<path d="M4 -2.4q6 -.4 9.4 1.6l-9.4 .8z" fill="${C.nightCardDeep}"/><circle cx="0" cy="-9.4" r="1.2" fill="${C.nightCardDeep}"/>`
     : hat === '斗笠'
@@ -546,7 +551,8 @@ export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string 
  * as a bead and never in the bead's cup of light, so the player can tell it from the goal. By its
  * art key: `c3/moon` the moon's reflection on the water (a foil ellipse under glassine ripples, its
  * origin on the water), `c3/bell` the brass 傅鐘 (origin at its crown), `c3/glasses` reading glasses
- * (origin at the bridge); any other key a cold silver glint. Drawn in the campus kit by #117.
+ * (origin at the bridge); `c5/phone` 5-1's glowing phone and `c5/griddle` 5-6's shining griddle (#121,
+ * placeholders until #122); any other key a cold silver glint. Drawn in the campus kit by #117.
  */
 export function decoyArt(ctx: KitCtx, key?: string): string {
   const glint = (x: number, y: number, r: number) => sparkle(ctx, x, y, r);
@@ -600,6 +606,26 @@ export function decoyArt(ctx: KitCtx, key?: string): string {
         + `<path d="M-15 -11H15M-15 -7H15M-15 -3H15M-15 1H15M-15 5H15M-15 9H15M-15 13H15M-11 -15V15M-7 -15V15M-3 -15V15M1 -15V15M5 -15V15M9 -15V15M13 -15V15" stroke="${C.printLilacDeep}" stroke-width=".5" opacity=".7"/></g>`
         + `<circle r="15" fill="none" stroke="${C.printLilacDeep}" stroke-width="1"/><ellipse cx="-5" cy="-6" rx="4" ry="3" fill="${C.foilShine}" opacity=".8"/>`
         + glint(-20, -10, 4) + glint(18, 12, 3.4);
+    }
+    case 'c5/phone': {
+      // 5-1's phone in a dozing passenger's lap (#121, a placeholder until #122): a dark handset, its
+      // screen glowing cold in the dark car — a video playing, a progress bar. Within ±18 units
+      const body = 'M-9 -16H9Q12 -16 12 -13V13Q12 16 9 16H-9Q-12 16 -12 13V-13Q-12 -16 -9 -16Z';
+      return softEllipse(ctx, 0, 0, 22, 22, 'lamp', 0.14, 'blur8')
+        + depth(ctx, 3, `<path d="${body}" fill="${C.printDark}"/><rect x="-9.6" y="-12.6" width="19.2" height="23" rx="1.6" fill="${C.neonCyan}" opacity=".85"/>`
+          + `<path d="M-3 -4.6L4 -.6L-3 3.4Z" fill="${C.chalk}"/><rect x="-7" y="6.4" width="14" height="1.6" rx=".8" fill="${C.nightCardDeep}" opacity=".6"/>`
+          + `<rect x="-7" y="6.4" width="6" height="1.6" rx=".8" fill="${C.neonPink}"/>`, `<path d="${body}"/>`)
+        + glint(15, -14, 3.6);
+    }
+    case 'c5/griddle': {
+      // 5-6's griddle on the counter (#121, a placeholder until #122): a big round steel plate seen
+      // from the front, shining, a pancake sizzling on it, steam curls. Within ±18 units
+      return softEllipse(ctx, 0, 0, 24, 12, 'lamp', 0.16, 'blur8')
+        + depth(ctx, 3, `<ellipse rx="18" ry="7" fill="${C.printDark}"/><ellipse cy="-1.4" rx="16.4" ry="5.6" fill="${ref(ctx, 'foil')}"/>`
+          + `<ellipse cx="-3" cy="-1.6" rx="7" ry="2.6" fill="${C.ochre}"/><path d="M-8 -2q5 -1.4 10 0" stroke="${C.ochreDark}" stroke-width=".8" fill="none"/>`
+          + `<path d="M8 -3.2q3 -.8 5 .6" stroke="${C.foilShine}" stroke-width="1.2" stroke-linecap="round" fill="none"/>`, `<ellipse rx="18" ry="7"/>`)
+        + `<path d="M-6 -9q-2 -4 0 -7t0 -7M2 -9q-2 -4 0 -7t0 -7" stroke="${C.vellum}" stroke-width="1.2" fill="none" opacity=".7" stroke-linecap="round"/>`
+        + glint(-18, -10, 3.6) + glint(17, -6, 3.2);
     }
     default:
       return softEllipse(ctx, 0, 0, 16, 16, 'lamp', 0.16, 'blur8') + `<circle r="7" fill="${C.glassine}" stroke="${C.moonRim}" stroke-width="1.2"/>`

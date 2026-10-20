@@ -132,6 +132,10 @@ const ON_SPREAD_C3: NavState = { base: { kind: 'page', id: 'c3p6', run: 0 }, lay
 const AT_SPREAD_C4 = (['c4p1', 'c4p2', 'c4p3', 'c4p4', 'c4p5'] as const).reduce((s, id) => completePage(s, id, { moves: 3 }), C3_DONE);
 const C4_DONE = keepPhoto(completePage(AT_SPREAD_C4, 'c4p6', { moves: 4 }), 4, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 17, 50) });
 const ON_SPREAD_C4: NavState = { base: { kind: 'page', id: 'c4p6', run: 0 }, layer: null };
+// Chapter 5 (#121): every page before 5-6 done, then 5-6 with its photo
+const AT_SPREAD_C5 = (['c5p1', 'c5p2', 'c5p3', 'c5p4', 'c5p5'] as const).reduce((s, id) => completePage(s, id, { moves: 3 }), C4_DONE);
+const C5_DONE = keepPhoto(completePage(AT_SPREAD_C5, 'c5p6', { moves: 4 }), 5, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 18, 20) });
+const ON_SPREAD_C5: NavState = { base: { kind: 'page', id: 'c5p6', run: 0 }, layer: null };
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -236,11 +240,25 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'Chapter 4\'s end (GDD § 5.2 4-6 end; #118): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——麥克風。」 Live, the tap fills the 抓周 tray\'s fourth slot.',
   },
   {
-    name: 'chapter-soon-c5',
-    page: 'c4p6',
+    name: 'spread-shell-c5',
+    page: 'c5p6',
     steps: [],
-    screen: { nav: ON_SPREAD_C4, save: C4_DONE, soonCard: 5 },
-    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 5 since #118): chapter 4 done, the chapter turn drops chapter 5\'s card over the book on the quilt — 第五章, 「夜市抱抱」, 02:20, 劍潭 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
+    screen: { nav: ON_SPREAD_C5, save: AT_SPREAD_C5 },
+    note: '5-6 in the game shell (#121): play it live — Mocha onto the sign, 不要！ to the griddle, 抱抱 the vendor over the counter, Mocha onto the tray stack (it sinks), the photo moment with the 蔥, the album page, the chapter-end lines, the tray\'s fifth coin, the sticker card, chapter 6\'s card with 「未完待續」, then the 目錄 (`check:play` scenario `photo-spread-c5`).',
+  },
+  {
+    name: 'chapter-end-c5',
+    page: 'c5p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C5, save: C5_DONE, endLinesOf: 5 },
+    note: 'Chapter 5\'s end (GDD § 5.2 5-6 end; #121): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——蔥。」 and 摩卡\'s 「蔥抓餅……加蛋。……我什麼都沒說。」 Live, the last tap fills the 抓周 tray\'s fifth slot.',
+  },
+  {
+    name: 'chapter-soon-c6',
+    page: 'c5p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C5, save: C5_DONE, soonCard: 6 },
+    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 6 since #121): chapter 5 done, the chapter turn drops chapter 6\'s card over the book on the quilt — 第六章, 「飛機睡著的時候」, 02:50, 松山機場 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
   },
   {
     name: 'album-c1-retake',
@@ -731,6 +749,123 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     show: { talk: ['c4p6.king.1', 'c4p6.king.2'] },
     note: '4-6: 不要！ to the disco ball took him onto the stage, under the lights; his 哇！ switched them on — the karaoke king sings 「這首歌，獻給一歲的你！」 (Mocha: 「……耳朵。我的耳朵。」) and the lift rises with the 麥克風.',
   },
+  // ——— Chapter 5 「夜市抱抱」 (#121; its art #122) ———
+  {
+    name: 'c5p1-start',
+    page: 'c5p1',
+    steps: [{ wait: 3 }],
+    note: '5-1 「往劍潭」 (#121): a 淡水信義線 car in the tunnel, its lights out. In the dark a dozing passenger\'s phone glows — a decoy (drawn as itself): Baokaka crawled under it and reaches up. Mocha on a hand strap, a paw print on the luggage rack at the far end.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c5p1-lights',
+    page: 'c5p1',
+    steps: [{ mocha: 'rack' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'wow' }],
+    note: '5-1: Mocha on the rack, 不要！ to the phone — Baokaka crawled to the end of the car and reaches up for Mocha; his 哇！ switched the car\'s lights on: the passengers blink, the phone fades into the light and the bead shines by the door (the 土地公 on the route map).',
+  },
+  {
+    name: 'c5p2-start',
+    page: 'c5p2',
+    steps: [{ wait: 2 }],
+    note: '5-2 「射氣球攤」 (#121): the balloon-dart stall, its prize shelf dark. The empty balloon basket floats level with the shelf; Baokaka cuddles Mocha under the stall\'s pole. The knot of the balloon bunch is the 淘氣.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c5p2-clerk',
+    page: 'c5p2',
+    steps: [{ mocha: 'rim' }, { wait: 1 }],
+    show: { talk: ['c5p2.clerk.1', 'c5p2.clerk.2', 'c5p2.clerk.3'] },
+    note: '5-2: Mocha jumped into the balloon basket and his weight sank it to the ground; the 店員小哥 runs this stall too — 「叮咚～歡迎光臨！」「……射氣球也是你們的？」「我們是連鎖的。」',
+  },
+  {
+    name: 'c5p2-risen',
+    page: 'c5p2',
+    steps: [{ mocha: 'rim' }, { wait: 'settle' }, { mocha: 'awning' }, { wait: 'settle' }],
+    note: '5-2: Baokaka crawled into the basket after Mocha; Mocha jumped out onto the awning and, without his weight, the basket floated up with Baokaka to the prize shelf (Mocha is a weight). From up here 哇！ reaches the bulbs.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c5p3-start',
+    page: 'c5p3',
+    steps: [{ wait: 1 }],
+    note: '5-3 「抱抱」 (#121): a crowded lane of 士林夜市 — a wall of legs between Baokaka and the 雞排 stall, where the bead shines behind the counter. He crawled up to the crowd, beside the 夜市阿姨: 「來，阿姨抱！」',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'c5p3-learn',
+    page: 'c5p3',
+    steps: [{ wait: 1 }],
+    show: { words: { card: 'hug' } },
+    note: 'Learning 抱抱 (GDD § 5.4, #121): beside the 夜市阿姨 at the crowded lane — 「來，阿姨抱！」「抱抱！」 — the word card 「抱抱：大人載你走」 is taped over the dimmed page.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'c5p3-carried',
+    page: 'c5p3',
+    steps: [{ wait: 1 }, { say: 'hug' }, { wait: 1 }],
+    note: 'Carried (GDD § 2.4 抱抱, #120, on the real page since #121): the 夜市阿姨 walks the lane one edge a tick with him in her arms (the `carried` frame, legs dangling), over the crowd of legs that blocks his own crawl.',
+    expect: { mode: 'carried' },
+  },
+  {
+    name: 'c5p3-boss',
+    page: 'c5p3',
+    steps: [{ wait: 'settle' }, { say: 'hug' }, { wait: 'settle' }, { mocha: 'bell' }, { wait: 1 }],
+    show: { talk: ['c5p3.boss.1', 'c5p3.boss.2'] },
+    note: '5-3: the 阿姨 set him down by the 雞排 stall; Mocha sits on the counter\'s bell, and the 雞排老闆 comes to the counter — 「來了！要切嗎？要辣嗎？」 (Mocha: 「……他只要抱抱。」). 抱抱 now, and he lifts Baokaka over the counter.',
+  },
+  {
+    name: 'c5p4-start',
+    page: 'c5p4',
+    steps: [{ wait: 'settle' }],
+    note: '5-4 「彈珠台」 (#121): an old pachinko board; the bead is its ball, in the launcher at the top, and Baokaka reaches up for it. Two flipper tabs on the board (both to the right), the launch knob, the 彈珠台阿伯 dozing on his stool. Mocha on a stool.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c5p4-jackpot',
+    page: 'c5p4',
+    steps: [{ set: 'flipA', to: 'l' }, { mocha: 'knob' }, { wait: 1 }],
+    show: { talk: ['c5p4.uncle.1'] },
+    note: '5-4\'s 淘氣: the upper flipper to the left, the lower still to the right — Mocha leaned on the knob and the ball rattled into the jackpot hole; the 彈珠台阿伯 wakes up laughing 「哈哈哈！大獎！……沒有獎品啦。」',
+  },
+  {
+    name: 'c5p4-tray',
+    page: 'c5p4',
+    steps: [{ set: 'flipA', to: 'l' }, { set: 'flipB', to: 'l' }, { mocha: 'knob' }, { wait: 1 }],
+    note: '5-4: both flippers to the left, and Mocha on the knob: the ball ran down the left lane and out into the tray at Baokaka\'s side; he crawls to it.',
+  },
+  {
+    name: 'c5p5-start',
+    page: 'c5p5',
+    steps: [{ wait: 'settle' }],
+    note: '5-5 「按摩椅」 (#121): two coin massage chairs, upright; the bead on the top shelf over them. Baokaka reaches up from the foot of the chairs, beside the sleepy 阿伯 (a carrier); a stray dog naps on the second chair. Mocha on the shop\'s sign, a coin on each chair\'s coin box.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c5p5-steps',
+    page: 'c5p5',
+    steps: [{ mocha: 'box1' }, { wait: 'settle' }, { mocha: 'box2' }, { wait: 'settle' }, { say: 'bye' }, { wait: 1 }],
+    note: '5-5: Mocha knocked a coin into each chair\'s slot — they hum and recline, their backs steps up to the shelf — and 掰掰 sent the dog padding off. The way is clear: 抱抱 the 阿伯 now.',
+  },
+  {
+    name: 'c5p6-spread',
+    page: 'c5p6',
+    steps: [{ wait: 2 }],
+    note: '5-6 「蔥抓餅」 as it opens (#121): the centrefold — the lane in front of the 蔥抓餅 stall (left), the counter with its shining griddle, the stall behind it upstage with the vendor and a tall stack of trays (right). The griddle is a decoy: Baokaka crawled under it and reaches up.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c5p6-over',
+    page: 'c5p6',
+    steps: [{ mocha: 'sign' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'hug' }, { wait: 1 }],
+    show: { talk: ['c5p6.vendor.1', 'c5p6.vendor.2'] },
+    note: '5-6: Mocha on the stall\'s sign and 不要！ to the griddle brought him along the counter to the vendor; 抱抱, and she lifts him across the counter — 「小帥哥，要不要加蛋？」 (Mocha: 「……不要問我。」).',
+  },
+  {
+    name: 'c5p6-trays',
+    page: 'c5p6',
+    steps: [{ mocha: 'sign' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'hug' }, { wait: 'settle' }, { mocha: 'trays' }, { wait: 2 }],
+    note: '5-6: inside the stall, Mocha jumped onto the tray stack and his weight sank it: the 蔥 on the bottom tray comes into view, and Baokaka crawls to it (the photo moment is next).',
+  },
   {
     name: 'c0p2-start',
     page: 'c0p2',
@@ -1195,13 +1330,6 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [{ wait: 1 }, { say: 'hug' }],
     note: 'Saying 抱抱 next to a carrier (GDD § 2.4, #120): the big speech bubble, and the 夜市阿姨 lifts him into her arms (carried).',
     expect: { mode: 'carried', event: 'hug' },
-  },
-  {
-    name: 'c5p3-carried',
-    page: 'toy-hug',
-    steps: [{ wait: 1 }, { say: 'hug' }, { wait: 1 }],
-    note: 'Carried (GDD § 2.4 抱抱, #120): the 夜市阿姨 walks her route one edge a tick with him in her arms (the `carried` frame, legs dangling), over the crowd of legs that blocks his own crawl.',
-    expect: { mode: 'carried' },
   },
   {
     name: 'm3-carousel',

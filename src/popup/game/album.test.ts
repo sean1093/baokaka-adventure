@@ -32,8 +32,8 @@ describe('leaves', () => {
     const atChapter1 = ['c0p1', 'c0p2', 'c0p3', 'c0p4'].reduce((s, id) => completePage(s, id), fresh);
     expect(chapterLeaf(atChapter1, 1)).toMatchObject({ state: 'open', photo: null });
     expect(chapterLeaf(finished, 1)).toMatchObject({ state: 'photo', photo: A });
-    // The line hasn't reached chapter 5 (not built yet): a placeholder
-    expect(chapterLeaf(finished, 5)).toMatchObject({ state: 'locked', photo: null });
+    // The line hasn't reached chapter 6 (not built yet): a placeholder
+    expect(chapterLeaf(finished, 6)).toMatchObject({ state: 'locked', photo: null });
   });
 
   test('a kept photo always shows, whatever the registry holds', () => {

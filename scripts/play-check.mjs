@@ -23,8 +23,8 @@
  * `photo-spread` plays 1-6 in the shell (#103, #107: the photo moment, the album, a retake, the
  * chapter-end lines, the tray's first coin, the sticker card, chapter 2's card, into 2-1); since #114
  * `photo-spread-c2` plays 2-6 the same way into chapter 3's card and 3-1 (#116), `photo-spread-c3`
- * plays 3-6 into chapter 4's card and 4-1 (#118), and `photo-spread-c4` plays 4-6 through chapter 5's
- * 「未完待續」 card to the 目錄.
+ * plays 3-6 into chapter 4's card and 4-1 (#118), `photo-spread-c4` plays 4-6 into chapter 5's card
+ * and 5-1 (#121), and `photo-spread-c5` plays 5-6 through chapter 6's 「未完待續」 card to the 目錄.
  * A `drag` through more than two points follows them in turn (1-4's turntable is turned on its rim).
  * `{ heard: [cues] }` checks the shell played those sounds (#105; the dev build lists them in
  * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
@@ -422,6 +422,100 @@ const SCENARIOS = {
     { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
     { tapEl: '[data-shutter]', paused: true },
   ],
+  // Chapter 5 「夜市抱抱」 (#121). 5-1 「往劍潭」: 廣播姊姊's line, Mocha onto the luggage rack, 不要！ to the
+  // glowing phone (he crawls to the end of the car), then 哇！: the lights come on and the bead shows
+  c5p1: [
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [318, 270] },
+    { settle: 1200 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 3000 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="wow"]', paused: true },
+  ],
+  // 5-2 「射氣球攤」: Mocha into the balloon basket (it sinks; the 店員小哥 cameo), he crawls in after him,
+  // Mocha out onto the awning (the basket floats up with him), 哇！ to the bulbs over the prize shelf
+  c5p2: [
+    { wait: 'cuddling' },
+    { tap: [214, 290] },
+    { expect: '[data-subtitle]', timeout: 6_000 },
+    { readTalk: true },
+    { wait: 'cuddling' },
+    { tap: [290, 214] },
+    { settle: 1500 },
+    { wait: 'cuddling' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="wow"]', paused: true },
+  ],
+  // 5-3 「抱抱」: beside the 夜市阿姨 he learns 抱抱 (the beat and its card), 抱抱 — she carries him over
+  // the crowd's legs — Mocha onto the counter's bell (the 雞排老闆 comes out), 抱抱 him over the counter
+  c5p3: [
+    { wait: 'reaching' },
+    { readTalk: true },
+    { tapEl: '[data-word-card]', paused: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    { settle: 2500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [296, 404] },
+    { expect: '[data-subtitle]', timeout: 6_000 },
+    { readTalk: true },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+  ],
+  // 5-4 「彈珠台」: both flippers to the left (a tap each), Mocha onto the launch knob: the ball runs
+  // down the left lane into the tray at his side
+  c5p4: [
+    { wait: 'reaching' },
+    { tap: [276, 190] },
+    { settle: 600 },
+    { tap: [196, 340] },
+    { settle: 600 },
+    { tap: [330, 412] },
+  ],
+  // 5-5 「按摩椅」: Mocha knocks a coin into each chair's slot (they recline into steps), 掰掰 to the dog
+  // napping on the second chair, then 抱抱: the 阿伯 carries him up the chairs to the bead
+  c5p5: [
+    { wait: 'reaching' },
+    { tap: [236, 330] },
+    { settle: 2500 },
+    { tap: [290, 270] },
+    { settle: 2500 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="bye"]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+  ],
+  // 5-6 「蔥抓餅」: Mocha onto the stall's sign, 不要！ to the griddle (he crawls along the counter to the
+  // vendor), 抱抱 — she lifts him over the counter — Mocha onto the tray stack (it sinks: the 蔥),
+  // the photo moment, 咔嚓, the grab
+  c5p6: [
+    { wait: 'reaching' },
+    { tap: [54, 226] },
+    { settle: 1200 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 3000 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    { settle: 2500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [346, 204] },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+  ],
   // A tap anywhere reads the lines on (#183): 1-1's opening announcements, cleared by a tap on the
   // sway tab — which must not move it — then the map's punchline cleared by a tap on empty floor
   'talk-anywhere-c1p1': [
@@ -671,7 +765,38 @@ const SCENARIOS = {
     { tapEl: '[data-end-next]' },
     { expect: '[data-tray-fill="4"]', timeout: 3_000 },
     { expect: '[data-sticker-card]', timeout: 5_000 },
-    { expect: '[data-chapter-board="5"][data-card-soon]', timeout: 8_000 },
+    // Chapter 5 is built (#121): its card, 廣播姊姊 first, then 5-1 opens
+    { expect: '[data-chapter-board="5"]', absent: '[data-card-soon]', timeout: 8_000 },
+    { expect: '[data-card-talk] [data-card-line="pa"]', timeout: 6_000 },
+    { tapEl: '[data-card-next]' },
+  ],
+  // Chapter 5's spread (#121) in the game shell: 5-6 played up to Mocha on the tray stack (in the
+  // frame); 咔嚓, the album, 放進相簿, the two end lines (one beat), the tray's fifth coin, the sticker
+  // card, chapter 6's card with 「未完待續」, the 目錄
+  'photo-spread-c5': [
+    { wait: 'reaching' },
+    { tap: [54, 226] },
+    { settle: 1200 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 3000 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    { settle: 2500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [346, 204] },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+    { expect: '[data-screen="album"] [data-album-note="mocha"]', timeout: 10_000 },
+    { tapEl: '[data-button="keep"]' },
+    { expect: '[data-end-layer] [data-card-line="nar"] ~ [data-card-line="mocha"]', timeout: 5_000 },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-tray-fill="5"]', timeout: 3_000 },
+    { expect: '[data-sticker-card]', timeout: 5_000 },
+    { expect: '[data-chapter-board="6"][data-card-soon]', timeout: 8_000 },
     { expect: '[data-card-talk] [data-card-line="nar"]', timeout: 6_000 },
     { tapEl: '[data-card-next]' },
   ],
@@ -703,7 +828,7 @@ const SCENARIOS = {
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
 const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
 
@@ -715,6 +840,7 @@ const SCENARIO_URLS = {
   'photo-spread-c2': '#/pagelab?fixture=spread-shell-c2',
   'photo-spread-c3': '#/pagelab?fixture=spread-shell-c3',
   'photo-spread-c4': '#/pagelab?fixture=spread-shell-c4',
+  'photo-spread-c5': '#/pagelab?fixture=spread-shell-c5',
   'prologue-card': '#/',
   'album-flip': '#/pagelab?fixture=album-multi',
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',

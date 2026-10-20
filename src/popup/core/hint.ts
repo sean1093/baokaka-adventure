@@ -104,6 +104,13 @@ const sameWorld = (a: SimState, b: SimState, ids: readonly Id[]) =>
   sameParts(a, b, ids) && Object.keys(b.creatures).every((id) => a.creatures[id] === b.creatures[id]);
 
 /**
+ * The same world with Mocha on the same perch (#121): where Mocha's moves are the puzzle and the parts
+ * come back to where they were (5-2's basket sinks under him and floats up again when he jumps out),
+ * the part states alone can't tell which of the solution's steps comes next.
+ */
+const sameScene = (a: SimState, b: SimState, ids: readonly Id[]) => sameWorld(a, b, ids) && a.mocha.perch === b.mocha.perch;
+
+/**
  * A 不要！ gesture refuses what he wants, so it matches only while he wants what he wanted when the
  * solution said it (#116: after 3-6's 不要！ to the glasses the parts are unchanged, and saying it
  * again would refuse Mocha instead).
@@ -113,11 +120,21 @@ const sameRefusal = (g: SolutionGesture, state: SimState) =>
 
 const inputKey = (i: Input) => JSON.stringify(i);
 
-/** Whether `input` does something from `state` a wait wouldn't (and is one the player could make now). */
+/** What a word can change: the parts, the creatures, what he refuses, who carries him (not his own pose or path). */
+const worldKey = (s: SimState) => JSON.stringify([s.parts, s.creatures, s.baby.refused, s.baby.carriedBy ?? null, s.pushables, s.flags, s.dropped ?? null]);
+
+/**
+ * Whether `input` does something from `state` a wait wouldn't (and is one the player could make now).
+ * A word must change the world (#121): said out of reach, or 抱抱 with no carrier near, it only
+ * holds him still for a tick — a hint that would repeat forever.
+ */
 function effective(def: PageDef, state: SimState, input: Input): boolean {
   if (!candidateInputs(def, state).some((c) => inputKey(c) === inputKey(input))) return false;
   try {
-    return solverKey(def, step(def, state, input).state) !== solverKey(def, step(def, state, NONE).state);
+    const said = step(def, state, input).state;
+    const waited = step(def, state, NONE).state;
+    if (input.t === 'say') return worldKey(said) !== worldKey(waited);
+    return solverKey(def, said) !== solverKey(def, waited);
   } catch {
     return false;
   }
@@ -128,20 +145,27 @@ function effective(def: PageDef, state: SimState, input: Input): boolean {
  * to the current ones that still does something now (one already done — Mocha already on that
  * perch — is skipped), and only once the page has settled if the solution let it settle first
  * (until then: wait); a 不要！ only while he wants what he wanted then (`sameRefusal`, #116).
- * The parts and the creatures' positions compare exactly first (a page whose puzzle is a
- * creature, like 2-4's squirrel, has few parts or none: #114), then the parts alone,
- * then only the parts the solution drives (a spun 床鈴 doesn't hide the way). A match with nothing
- * left to do, or the part states the solution's last gesture left, mean "wait" — while a wait still
- * changes something. Null when nothing
- * matches (or the page has settled with nothing to do).
+ * The parts, the creatures' positions and Mocha's perch compare exactly first (#121: 5-2's basket
+ * goes down and up again with Mocha), then the parts and the creatures (a page whose puzzle is a
+ * creature, like 2-4's squirrel, has few parts or none: #114), then the parts alone, then the
+ * scene without its props (5-2's untied balloon knot), then only the parts the solution drives (a
+ * spun 床鈴 doesn't hide the way). A match with nothing left to do, or the part states the
+ * solution's last gesture left, mean "wait" — while a wait still changes something; so does a carry
+ * (#121: a carrier's walk matches no gesture). Null when nothing matches (or the page has settled
+ * with nothing to do).
  */
 export function solutionAction(def: PageDef, state: SimState): Input | null {
   if (state.done) return null;
+  // Carried (抱抱, #120), he is on his way: the carrier's states mid-walk match no gesture, and the walk ends by itself
+  if (state.baby.mode === 'carried') return NONE;
   const { gestures, after, driven } = trace(def);
   const all = Object.keys(state.parts);
+  // Props are discoveries, never the puzzle (GDD § 2.1): 5-2's untied balloon knot doesn't hide the way (#121)
+  const puzzle = all.filter((id) => def.parts.find((p) => p.id === id)?.preset !== 'prop');
   // Waiting only helps while something is still moving: a settled page that matches nothing to do is lost
   const moving = waitMoves(def, state);
-  for (const [ids, same] of [[all, sameWorld], [all, sameParts], [driven, sameParts]] as const) {
+  const tiers = [[all, sameScene], [all, sameWorld], [all, sameParts], [puzzle, sameScene], [driven, sameParts]] as const;
+  for (const [ids, same] of tiers) {
     const matches = gestures.filter((g) => same(g.before, state, ids) && sameRefusal(g, state));
     const next = matches.find((g) => effective(def, state, g.input));
     if (next !== undefined) return next.settled && moving ? NONE : next.input;
