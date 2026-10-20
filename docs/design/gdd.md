@@ -607,6 +607,7 @@ export interface AttractorDef {
   heldBy?: Id;                      // a creature holds it (stays at the creature's node) until a reaction with `drop`
   nodeBy?: { part: Id; map: Record<string, Id> };   // node follows a part's state (spotlight aim)
   followsPushable?: Id;             // at `node` while onPerch, at the pushable's fallTo once landed
+  art?: string;                     // its look, when not the kind's default (a decoy's moon, bell, glasses; #116); view only
 }
 
 export interface CreatureDef {
@@ -1210,14 +1211,16 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 
 #### Chapter 3 「醉月湖的鵝」 (台灣大學, 01:20) · treasure 書 · word 不要！
 
+**Specified in full** (the § 4.3 format, node/edge sketches, the solver's numbers): [`docs/design/pages/c3.md`](pages/c3.md) (#116, D-79). The rows below are the outline, updated where the full spec changed it.
+
 | Page | Title | Key mechanic → aha | 淘氣 | Diff |
 |---|---|---|---|---|
 | 3-1 | 綠線 | Review: 嗶！ the doors, 掰掰 the 背包客 out of the aisle (「Where is 101?」 #2). | 掰掰 to the ad poster: the poster person waves back | 2 |
-| 3-2 | 椰林大道 | Three parked-bike **sliders** form a sliding-block path between palm trees. Mocha sits on one bike to **hold** it (lockedByCat), because bikes push their neighbours. → *Sometimes Mocha's job is to stay still.* | Ring a bike bell five times | 3 |
-| 3-3 | 醉月湖 | **Learn 不要！**: the moon's reflection is a **decoy** shiny he fixates on. The goose honks 「嘎！不要過來！」 at Mocha, and he copies. Say 不要！ to the moon, and he follows Mocha past the goose, which chases Mocha and uncovers the bead. | Let the goose chase Mocha around the lake twice | 2 |
-| 3-4 | 傅鐘 | The brass bell is a decoy (shiny!). Pull the bell-rope **tab** to ring it: the pigeons' reaction to the bell's `partEnter` scatters them off a gate button. Then 不要！ the bell to get him moving. | Ring the bell 21 times (傅鐘二十一響) | 3 |
-| 3-5 | 總圖書館 | Mobile compact shelving: four **sliders** cranked by wheels. Only one aisle opens at a time, and moving one shelf shoves its neighbour. Mocha locks one shelf while you crank another. | Shut Mocha between two shelves (he squeezes out on top, unimpressed) | 4 |
-| 3-6 | 藍教授的書 (spread) | A giant book whose pages are **flaps** that become bridges. 藍教授 (a magpie creature) sits on the 書 and won't budge for 掰掰 (「根據我的研究——」); she hops off only when Mocha lands next to her. Her shiny reading glasses are a decoy: 不要！ | Open the book to the page with a cat in it; Mocha sits on it | 4 |
+| 3-2 | 椰林大道 | Three parked-bike **sliders** block the path between palm trees. Pulling an outer bike back into the rack shoves the middle one (the 店員小哥's delivery bike, the chapter's cameo; nothing to pull) out across the path. Mocha sits on its seat to **hold** it: shoves don't move it, and his landing rolls it back. → *Sometimes Mocha's job is to stay still.* | Ring a bike bell five times | 3 |
+| 3-3 | 醉月湖 | **Learn 不要！**: the moon's reflection is a **decoy** shiny he fixates on. The goose honks 「嘎！不要過來！」 at Mocha, and he copies. Say 不要！ to the moon, and he follows Mocha past the goose, which chases Mocha and uncovers the bead. | Let the goose honk at Mocha twice (D-79: the chase is the reveal) | 2 |
+| 3-4 | 傅鐘 | The brass bell is a decoy (shiny!). Pull the bell-rope **tab** to ring it: the pigeons' reaction to the rope's `partEnter` scatters them off the gate's plate. Then 不要！ the bell, and he follows Mocha (on the gate's pillar) over the plate: the gate opens. | Ring the bell 21 times (傅鐘二十一響) | 3 |
+| 3-5 | 總圖書館 | Mobile compact shelving: four **sliders**, the end two cranked by wheels; each inner shelf rolls with its outer neighbour. An aisle opens only when its shelves roll apart, and the way is *through* the stacks (in by one aisle, out by another). Mocha holds an inner shelf while you crank its neighbour. | Shut Mocha between two shelves (he squeezes out on top, unimpressed) | 4 |
+| 3-6 | 藍教授的書 (spread) | A giant book whose pages are **flaps** that become bridges. 藍教授 (a magpie creature) sits on the 書 and won't budge for 掰掰 (「根據我的研究——」); she hops off only when Mocha lands next to her. Her shiny reading glasses are a decoy: he sits on the very page that turns into Mocha's bridge, reaching for them, and the page won't turn under him until 不要！ moves him. | Open the book to the page with a cat in it; Mocha sits on it | 4 |
 
 #### Chapter 4 「霓虹燈睡著了」 (西門町, 01:50) · treasure 麥克風 · word 哇！
 
@@ -1342,7 +1345,7 @@ Unlocked by collecting all 65 土地公 stickers. It's a gentle sunrise page on 
 
 The chapter card shows: 第N章｜title｜HH:MM｜下一站 (≤ 8 chars). The lines below play over the card or the first page. They are all skippable with a tap.
 
-**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines.
+**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines.
 
 **P · 序章「度晬前一晚」 00:00** (card, then 0-1)
 
@@ -1416,6 +1419,8 @@ nar：椰林大道上，椰子樹排排站。
 mocha：「這裡的鵝，比警衛還兇。」
 ```
 
+- **3-1 背包客** (掰掰 moves him out of the aisle; #116): `pack：「Excuse me… where is 101?」`, `mocha：「一直走，抬頭就看到了。」`
+- **3-2 店員小哥** (Mocha sits on his delivery bike; #116): `clerk：「叮咚～歡迎光臨！」`, `mocha：「……連腳踏車也是你的？」`, `clerk：「我們是連鎖的。」`
 - **3-6 藍教授:** `npc(藍教授)：「根據我的研究——」`, `npc(藍教授)：「我學富五車……腳踏車。」`, `mocha：「成語不是這樣用的。」`
 - **3-6 end:** `nar：找到了！抓周寶物——書。`
 
