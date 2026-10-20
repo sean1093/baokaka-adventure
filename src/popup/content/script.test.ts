@@ -60,9 +60,10 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
     expect(SCRIPT['c1p6.end.2'].text).toBe('雞腿，一世人呷好料。');
   });
 
-  test('chapter 1 ends on its four end lines after the album; chapter 2\'s card reads 未完待續 until it exists (#107)', () => {
+  test('chapter 1 ends on its four end lines after the album; a chapter\'s card reads 未完待續 until it exists (#107)', () => {
     expect(endLines(1)).toEqual(['c1p6.end.1', 'c1p6.end.2', 'c1p6.end.3', 'c1p6.end.4']);
-    expect(endLines(2)).toEqual([]);
+    expect(endLines(2)).toEqual(['c2p6.end.1', 'c2p6.end.2']);
+    expect(endLines(3)).toEqual([]);
     expect(SOON_LINES.map((k) => SCRIPT[k].who)).toEqual(['nar']);
     expect(hasNextChapter(1)).toBe(true);
     expect(hasNextChapter(10)).toBe(false);

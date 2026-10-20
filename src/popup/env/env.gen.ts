@@ -134,6 +134,84 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "d948217d4c979917"
+    },
+    "c2/xinyi-car": {
+      "file": "backdrops/c2/xinyi-car",
+      "bytes": 157820,
+      "chapter": 2,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "9bb0664e08c359dd"
+    },
+    "c2/bandshell": {
+      "file": "backdrops/c2/bandshell",
+      "bytes": 157820,
+      "chapter": 2,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "9bb0664e08c359dd"
+    },
+    "c2/bridge": {
+      "file": "backdrops/c2/bridge",
+      "bytes": 157820,
+      "chapter": 2,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "9bb0664e08c359dd"
+    },
+    "c2/tree": {
+      "file": "backdrops/c2/tree",
+      "bytes": 157820,
+      "chapter": 2,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "9bb0664e08c359dd"
+    },
+    "c2/pond": {
+      "file": "backdrops/c2/pond",
+      "bytes": 157820,
+      "chapter": 2,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "9bb0664e08c359dd"
+    },
+    "c2/painter-spread": {
+      "file": "backdrops/c2/painter-spread",
+      "bytes": 157820,
+      "chapter": 2,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "9bb0664e08c359dd"
     }
   },
   "parts": {
@@ -591,6 +669,117 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "204d08f4726bed12"
+    },
+    "c2/umbrella": {
+      "preset": "pushable",
+      "box": {
+        "x": -50,
+        "y": -35,
+        "w": 112,
+        "h": 99
+      },
+      "states": {
+        "onPerch": {
+          "file": "parts/c2/umbrella.onPerch",
+          "bytes": 4178
+        },
+        "falling": {
+          "file": "parts/c2/umbrella.falling",
+          "bytes": 4410
+        },
+        "landed": {
+          "file": "parts/c2/umbrella.landed",
+          "bytes": 3472
+        }
+      },
+      "source": "4cbaedf70ed772a6"
+    },
+    "c2/curtain": {
+      "preset": "lift",
+      "box": {
+        "x": -52,
+        "y": -167,
+        "w": 113,
+        "h": 213
+      },
+      "states": {
+        "down": {
+          "file": "parts/c2/curtain.down",
+          "bytes": 4006
+        },
+        "up": {
+          "file": "parts/c2/curtain.up",
+          "bytes": 3186
+        }
+      },
+      "source": "915ed7730396d766"
+    },
+    "c2/plate": {
+      "preset": "button",
+      "box": {
+        "x": -31,
+        "y": -9,
+        "w": 68,
+        "h": 25
+      },
+      "states": {
+        "up": {
+          "file": "parts/c2/plate.up",
+          "bytes": 2066
+        },
+        "down": {
+          "file": "parts/c2/plate.down",
+          "bytes": 1926
+        }
+      },
+      "source": "3b1b532b61df1539"
+    },
+    "c2/lily-pad": {
+      "preset": "wheel",
+      "box": {
+        "x": -106,
+        "y": -105,
+        "w": 212,
+        "h": 211
+      },
+      "pivot": [0, 0],
+      "states": {
+        "west": {
+          "file": "parts/c2/lily-pad.west",
+          "bytes": 15694
+        },
+        "north": {
+          "file": "parts/c2/lily-pad.north",
+          "bytes": 15694
+        },
+        "east": {
+          "file": "parts/c2/lily-pad.east",
+          "bytes": 15694
+        },
+        "south": {
+          "file": "parts/c2/lily-pad.south",
+          "bytes": 15694
+        }
+      },
+      "lifted": {
+        "west": {
+          "file": "parts/c2/lily-pad.west.lifted",
+          "bytes": 20502
+        },
+        "north": {
+          "file": "parts/c2/lily-pad.north.lifted",
+          "bytes": 20502
+        },
+        "east": {
+          "file": "parts/c2/lily-pad.east.lifted",
+          "bytes": 20502
+        },
+        "south": {
+          "file": "parts/c2/lily-pad.south.lifted",
+          "bytes": 20502
+        }
+      },
+      "source": "525bf7675f30c44b"
     }
   },
   "cutouts": {},

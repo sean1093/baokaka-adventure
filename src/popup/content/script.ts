@@ -105,11 +105,24 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c1p6.end.2': { who: 'grandma', text: '雞腿，一世人呷好料。' },
   'c1p6.end.3': { who: 'baby', text: '好吃！' },
   'c1p6.end.4': { who: 'mocha', text: '那是阿嬤的，不能吃。' },
+  // § 5.2 Ch2 「會揮手的公園」 00:50 (the chapter card)
+  'c2.intro.1': { who: 'pa', text: '大安森林公園站，到了。' },
+  'c2.intro.2': { who: 'nar', text: '半夜的公園，還有人在跑步。' },
+  'c2.intro.3': { who: 'mocha', text: '松鼠晚上不是該睡覺嗎？' },
+  // § 5.3 店員小哥's chapter 2 cameo (2-2: Mocha climbs into his drinks stall's crate)
+  'c2p2.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c2p2.clerk.2': { who: 'mocha', text: '……又是你？' },
+  'c2p2.clerk.3': { who: 'clerk', text: '我們是連鎖的。' },
+  // § 5.2 2-6 end
+  'c2p6.end.1': { who: 'nar', text: '找到了！抓周寶物——畫筆。' },
+  'c2p6.end.2': { who: 'mocha', text: '他說：『我要畫摩卡。』……好吧。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },
   'rec.pa.ride.2': { who: 'pa', text: '請讓座給需要的人。' },
   'rec.pa.ride.3': { who: 'pa', text: '車門即將關閉。' },
+  // § 5.3: when Mocha sits on a 博愛座 (2-1's 淘氣)
+  'rec.pa.priority': { who: 'pa', text: '請讓座。……貓也算嗎？' },
   'rec.uncle.tap': { who: 'uncle', text: '呵呵，囡仔，慢慢仔來。' },
   'rec.mocha.squint': { who: 'mocha', text: '……我是不是在哪裡看過你？' },
   // Under the next chapter's card while that chapter is still being made (#107, D-70)

@@ -4,6 +4,7 @@ import { chapterSky, placeholderBackdrop, stageDefs } from '../view/art/placehol
 import { BLOCK_DEPTH, FLOOR_BOTTOM, GUTTER_Y, PAGE_VIEW_BOX, PAGE_W, floorOutline, floorWiden } from '../view/geometry';
 import { C0_BACKDROPS, C0_PARTS } from './art/c0';
 import { C1_BACKDROPS, C1_PARTS } from './art/c1';
+import { C2_PARTS } from './art/c2';
 import { SCREEN_ART, type ScreenSource } from './art/screens';
 import type { EnvBox } from './manifest';
 
@@ -55,6 +56,7 @@ export const BACKDROP_ART: Readonly<Record<string, BackdropDraw>> = { ...C0_BACK
 export const PART_SOURCES: Readonly<Record<string, PartSource>> = {
   ...C0_PARTS,
   ...C1_PARTS,
+  ...C2_PARTS,
 };
 
 /** Standing cut-outs by key (e.g. 'c1/lamp-post'). */

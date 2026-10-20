@@ -230,6 +230,8 @@ function buildStage(def: PageDef): Stage {
     const riders = def.nodes.filter((n) => n.attach?.part === part.id && !perchNodes.has(n.id));
     if (riders.length === 0 || part.preset === 'lift' || part.preset === 'carrier' || part.preset === 'gate') continue;
     const all = riders.flatMap((n) => Object.values(n.attach!.pos));
+    // Nodes that never move (a pressure plate's, #114) ride nothing: the part's own art is the plate
+    if (riders.every((n) => new Set(Object.values(n.attach!.pos).map(([x, y]) => `${x},${y}`)).size === 1)) continue;
     const ys = new Set(all.map(([, y]) => y));
     if (ys.size !== 1) continue; // only level carriages (trains, carts) for now
     const xs = all.map(([x]) => x);

@@ -159,7 +159,7 @@ describe('the HUD and the bar read the save', () => {
     expect(chapterStickers(fresh, 0)).toHaveLength(4);
     // A registered page with that index is read by its own id
     const spread = { ...registry.pageById('c1p6')!, id: 'other-spread' } as PageDef;
-    const reg = buildRegistry([...registry.pages.filter((p) => p.id !== 'c1p6'), spread]);
+    const reg = buildRegistry(registry.pages.map((p) => (p.id === 'c1p6' ? spread : p)));
     expect(chapterStickers({ ...fresh, pages: { 'other-spread': { solved: true } } }, 1, reg)[5]).toEqual([true, false, false]);
   });
 
