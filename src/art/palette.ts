@@ -1414,6 +1414,86 @@ export const POPUP_NEON = {
   pompadour: '#1E1A2A',
 } as const;
 
+/**
+ * Chapter 5's palette kit (士林夜市, 02:20; popup art bible § 6 row 5, #122): **hot vermilion** and
+ * **bulb amber** dominant, **steam white** the accent — the hottest, warmest pages of the book. The
+ * bulbs themselves are lights (`POPUP.lamp` / `lampHot` / `lampAmber`, never graded); the steam is
+ * vellum. The signature materials are corrugated stalls and vellum steam. The play path runs on a
+ * calm dark band (the lane's `lane` card) under the busy stalls. Every warm decoration here (the
+ * awnings, the fried chicken, the pancake, the dog, the 阿姨's bag) is held ≥ ΔE 12 from marigold by
+ * `affordance.test.ts`.
+ */
+export const POPUP_MARKET = {
+  // Hot vermilion: awnings, sign boards, lanterns, the 淡水信義線's band
+  vermilion: '#C8402E',
+  vermilionLight: '#DE5E44',
+  vermilionDeep: '#8E2A22',
+  // The awnings' cream stripe and the stalls' printed cream (signs' lettering ground)
+  awningCream: '#EADCC4',
+  awningCreamShade: '#C8B49A',
+  // The lane at night: a warm dark maroon-indigo card, calm under the busy stalls
+  lane: '#2E2038',
+  laneDeep: '#1C1426',
+  laneLight: '#4A3550',
+  laneWet: '#5A4060',
+  // The stalls' tin and steel: corrugated roofs, counters, the fryer, trays
+  tin: '#7A7488',
+  tinLight: '#A8A2B6',
+  tinDeep: '#4E4A5E',
+  steelWarm: '#B8B0B4',
+  // Warm wood and the stalls' back walls (smoke-browned)
+  wood: '#7A4A34',
+  woodLight: '#9A6446',
+  woodDeep: '#4E2E24',
+  smoke: '#3E2C36',
+  // Food: fried chicken cutlets, the pancake's layers, scallion greens, egg
+  chicken: '#A8622E',
+  chickenDeep: '#7A3E1E',
+  chickenCrumb: '#C88A52',
+  pancake: '#D2A66A',
+  pancakeDeep: '#A8763E',
+  scallion: '#5E9A3E',
+  scallionLight: '#8CC266',
+  scallionDeep: '#3A6A2A',
+  scallionWhite: '#EEF0DC',
+  // Balloons on the dart board (pastel paper; never marigold)
+  balloonRed: '#E0505A',
+  balloonPink: '#F09AB8',
+  balloonBlue: '#6A9AE0',
+  balloonMint: '#7ACCB4',
+  balloonLilac: '#B49AE6',
+  // The pachinko board's cabinet and print, the massage chairs' leather
+  cabinetTeal: '#1E5A5E',
+  cabinetTealDeep: '#123A40',
+  boardPrint: '#E8DCF0',
+  leather: '#7A2E3E',
+  leatherLight: '#9E4656',
+  leatherDeep: '#4E1A28',
+  // The cast: the 阿姨's floral blouse and perm, the 茄芷袋 (red, white and blue stripes),
+  // the 老闆's apron, the 阿伯's 汗衫, 藍白拖, the dog's tan and black
+  blouse: '#B8487A',
+  blouseDeep: '#7E2A54',
+  blouseFlower: '#F2C6D6',
+  perm: '#3A2830',
+  bagBlue: '#2E4E9A',
+  bagRed: '#C23A3A',
+  apron: '#3E5A7A',
+  apronDeep: '#26405A',
+  undershirt: '#EEEAE0',
+  shorts: '#4A5A6E',
+  slipperBlue: '#3A62B8',
+  denim: '#3E5486',
+  denimDeep: '#28385E',
+  khaki: '#8A7A62',
+  dogTan: '#A8784E',
+  dogTanLight: '#C8986A',
+  dogBlack: '#2E2630',
+  // 5-1's dark car: the 淡水信義線's cream wall in the tunnel's dark, the tunnel's lamps
+  carDark: '#4A4660',
+  carDarkDeep: '#2E2C42',
+  tunnel: '#14121E',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 

@@ -332,6 +332,25 @@ describe('sources', () => {
     for (const state of ['0', '4', '7']) expect(partImage('c4/red-house', state)?.url, state).toBe(partImage('c4/red-house', '0')?.url);
   });
 
+  test('chapter 5 (#122): every art key resolves to its own art — no live placeholder, no placeholder stage', () => {
+    const c5 = PAGES.filter((p) => p.chapter === 5);
+    expect(c5.map((p) => p.id)).toEqual(['c5p1', 'c5p2', 'c5p3', 'c5p4', 'c5p5', 'c5p6']);
+    for (const b of backdropSources(c5)) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+    for (const p of c5) {
+      expect(pageArt(p, M).placeholders, p.id).toEqual([]);
+      for (const part of p.parts) expect(isPlaceholder(part.art), `${p.id} ${part.art}`).toBe(false);
+      for (const c of p.creatures) expect(hasCreatureArt(c.art), `${p.id} ${c.art}`).toBe(true);
+    }
+    // A carrier is baked per look (D-85), not per route index: every carrier has its carrying look
+    for (const p of c5) for (const part of p.parts.filter((x) => x.preset === 'carrier')) {
+      expect(Object.keys(M.parts[part.art]?.states ?? {}), part.art).toEqual(expect.arrayContaining(['idle', 'carrying', 'back', 'done']));
+    }
+    expect(M.parts['c5/chicken-boss']?.states.away).toBeDefined();
+  });
+
   test('4-3\'s shadow (the 淘氣\'s art) shows only while Mocha hides behind the lit second sign (#119)', () => {
     const src = CUTOUT_SOURCES['c4/mocha-shadow'];
     expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c4p3', touchable: () => false, expected: [], where: 'shadow' })).toEqual([]);

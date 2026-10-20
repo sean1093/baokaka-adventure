@@ -7,7 +7,7 @@ import { C1_BACKDROPS, C1_PARTS } from './art/c1';
 import { C2_BACKDROPS, C2_CUTOUTS, C2_PARTS } from './art/c2';
 import { C3_BACKDROPS, C3_CUTOUTS, C3_PARTS } from './art/c3';
 import { C4_BACKDROPS, C4_CUTOUTS, C4_PARTS } from './art/c4';
-import { C5_PARTS } from './art/c5';
+import { C5_BACKDROPS, C5_PARTS } from './art/c5';
 import { SCREEN_ART, type ScreenSource } from './art/screens';
 import type { EnvBox } from './manifest';
 
@@ -53,7 +53,7 @@ export interface CutoutSource {
 export type BackdropDraw = (ctx: KitCtx, def: Pick<PageDef, 'chapter'>) => string;
 
 /** Backdrops with their own drawing (chapter art issues add theirs; until then the placeholder stage). */
-export const BACKDROP_ART: Readonly<Record<string, BackdropDraw>> = { ...C0_BACKDROPS, ...C1_BACKDROPS, ...C2_BACKDROPS, ...C3_BACKDROPS, ...C4_BACKDROPS };
+export const BACKDROP_ART: Readonly<Record<string, BackdropDraw>> = { ...C0_BACKDROPS, ...C1_BACKDROPS, ...C2_BACKDROPS, ...C3_BACKDROPS, ...C4_BACKDROPS, ...C5_BACKDROPS };
 
 /** Part art keys with their own drawing. */
 export const PART_SOURCES: Readonly<Record<string, PartSource>> = {

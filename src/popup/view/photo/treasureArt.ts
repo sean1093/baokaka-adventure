@@ -1,11 +1,11 @@
-import { POPUP as C, POPUP_CAMPUS as K } from '../../../art/palette';
+import { POPUP as C, POPUP_CAMPUS as K, POPUP_MARKET as M } from '../../../art/palette';
 import { ref, softEllipse, sparkle, type KitCtx } from '../../art';
 import { albumChapter } from '../../content/album';
 
 /**
  * The chapter treasures as the spread and the photo draw them (GDD § 2.9, § 4.2; #103), flat SVG
  * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1), 畫筆 (chapter 2,
- * #115), 書 (chapter 3, #117) and 麥克風 (chapter 4, #119) are drawn; the other chapters' treasures are a foil token with the treasure's first
+ * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119) and 蔥 (chapter 5, #122) are drawn; the other chapters' treasures are a foil token with the treasure's first
  * character until their chapters' art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
  * never marigold (reserved for touchables). The caller's defs must hold `foil`.
  */
@@ -87,6 +87,27 @@ function microphone(ctx: KitCtx): string {
     + `</g>` + sparkle(ctx, 16, -16, 4);
 }
 
+/**
+ * 蔥 (chapter 5, #122; 聰明): two fresh scallions laid at a slant and tied with a foil band — white
+ * bulbs with their little roots, the pale stalks greening up into hollow leaves (one leaf folded
+ * over), a gleam on the band.
+ */
+function scallion(ctx: KitCtx): string {
+  const stalk = (dy: number, bend: number) => `M-20 ${dy}Q0 ${dy - 2} 14 ${dy - 6}Q20 ${dy - 8 + bend} 24 ${dy - 14 + bend}`;
+  return `<g transform="rotate(-18)">`
+    + `<ellipse cx="0" cy="14" rx="22" ry="3" fill="${C.shadow}" opacity=".28"/>`
+    // Roots, then the white bulbs and stalks greening into leaves
+    + `<path d="M-22 1l-5 -2M-22 3l-6 1M-22 5l-5 3M-21 8l-6 1M-21 10l-4 4" stroke="${M.awningCreamShade}" stroke-width=".8" stroke-linecap="round"/>`
+    + `<path d="${stalk(4, 0)}" stroke="${M.scallionDeep}" stroke-width="5.6" fill="none" stroke-linecap="round"/><path d="${stalk(9, 4)}" stroke="${M.scallion}" stroke-width="5.6" fill="none" stroke-linecap="round"/>`
+    + `<path d="M-21 4H-6M-21 9H-6" stroke="${M.scallionWhite}" stroke-width="5.8" stroke-linecap="round"/>`
+    + `<path d="M-6 4h8M-6 9h8" stroke="${M.scallionLight}" stroke-width="5" stroke-linecap="round" opacity=".8"/>`
+    // A leaf folded over the top, and the leaves' fine light lines
+    + `<path d="M14 -2Q24 -16 30 -10Q24 -8 18 0" fill="${M.scallion}"/><path d="M0 2.6h12M0 7.6h12" stroke="${M.scallionLight}" stroke-width="1" stroke-linecap="round"/>`
+    // The foil band
+    + `<rect x="-10" y="0" width="6" height="13" rx="1.4" fill="${ref(ctx, 'foil')}"/><path d="M-8.6 1.4v10" stroke="${C.foilShine}" stroke-width=".9"/>`
+    + `</g>` + sparkle(ctx, 18, -16, 4);
+}
+
 /** A treasure not drawn yet: a foil token with its first character. */
 function token(ctx: KitCtx, name: string): string {
   return `<ellipse cx="1" cy="17" rx="15" ry="3" fill="${C.shadow}" opacity=".28"/>`
@@ -100,6 +121,7 @@ export function treasureArt(ctx: KitCtx, chapter: number): string {
   if (chapter === 2) return paintbrush(ctx);
   if (chapter === 3) return book(ctx);
   if (chapter === 4) return microphone(ctx);
+  if (chapter === 5) return scallion(ctx);
   return token(ctx, albumChapter(chapter).treasure);
 }
 

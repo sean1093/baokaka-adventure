@@ -21,7 +21,8 @@ import { themeOf } from './placeholders';
 /** What a page's ledges are made of. */
 export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'carBodyXinyi' | 'granite' | 'shopFloor' | 'balcony' | 'parkPath' | 'boardwalk' | 'stage'
   | 'carBodySongshan' | 'campusPath' | 'lakeside' | 'gallery' | 'libraryFloor' | 'desk' | 'bookPage'
-  | 'neonStreet' | 'arcadeShelf' | 'karaokeStage';
+  | 'neonStreet' | 'arcadeShelf' | 'karaokeStage'
+  | 'marketLane' | 'stallFloor' | 'stallShelf' | 'stallCounter';
 
 /** The near-corner foreground card. */
 export type ForegroundCard = 'plant' | 'blocks' | 'luggage' | 'shrub' | 'azalea';
@@ -91,6 +92,17 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c4/street-dance': { ledge: 'neonStreet', ownPosts: ['lamp', 'crate', 'archMid', 'sign'], foreground: null },
   // The arcade's pavement on the left page, the karaoke stage on the right (the shutter is the way on)
   'c4/karaoke-spread': { ledge: 'neonStreet', ledgeSplit: { x: 196, style: 'karaokeStage' }, ownPosts: ['sign', 'amp'], foreground: null, crossing: 'none' },
+  // 士林夜市 (#122): the 淡水信義線 car's body
+  'c5/red-car': { ledge: 'carBodyXinyi', ownPosts: ['strap', 'rack'], foreground: null },
+  // The prize shelf behind the dart counter over the lane (the basket is the way up: no rail)
+  'c5/balloon-stall': { ledge: [{ below: 400, style: 'stallShelf' }, { below: 999, style: 'marketLane' }], ownPosts: ['pole', 'awning'], foreground: null, crossing: 'none' },
+  // The lane, then the 雞排 stall's tiled floor past the counter (the counter is the backdrop's)
+  'c5/market-lane': { ledge: 'marketLane', ledgeSplit: { x: 297, style: 'stallFloor' }, ownPosts: ['lantern', 'bell'], foreground: null, crossing: 'none' },
+  'c5/pachinko': { ledge: 'stallFloor', ownPosts: ['stool', 'knob'], foreground: null },
+  // The chairs' top shelf over the corner's tiled floor (the reclined chairs are the steps: no rail)
+  'c5/massage-chairs': { ledge: [{ below: 400, style: 'stallShelf' }, { below: 999, style: 'stallFloor' }], ownPosts: ['sign', 'box1', 'box2', 'seat'], foreground: null, crossing: 'none' },
+  // Inside the stall behind its counter (the inner ledge's face is the counter), the lane in front
+  'c5/scallion-spread': { ledge: [{ below: 450, style: 'stallCounter' }, { below: 999, style: 'marketLane' }], ownPosts: ['lantern', 'sign', 'trays'], foreground: null, crossing: 'none' },
 };
 
 const NONE: StageDress = {};

@@ -5,6 +5,7 @@ import { campusPoster, goose, magpie } from './campus';
 import { backpacker, origamiPigeon } from './creatures';
 import { commuter, egret, jogger, painter, shiba, squirrel, sweeper, turtle } from './park';
 import { origamiBird, placeholderBackdrop } from './placeholders';
+import { crowdLegs, pachinkoUncle, passengers, strayDog } from './market';
 import { busker, dancers, karaokeKing } from './ximen';
 
 /**
@@ -51,6 +52,11 @@ const CREATURES: Readonly<Record<string, CreatureArt>> = {
   'c4/dancers': dancers,
   'c4/busker': busker,
   'c4/karaoke-king': karaokeKing,
+  // 士林夜市 (#122, `market.ts`): the dozing passengers, the crowd of legs, the 彈珠台阿伯, the stray dog
+  'c5/passengers': passengers,
+  'c5/crowd-legs': crowdLegs,
+  'c5/pachinko-uncle': pachinkoUncle,
+  'c5/stray-dog': strayDog,
 };
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';

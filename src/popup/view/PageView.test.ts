@@ -425,3 +425,22 @@ describe('carried (抱抱, #120): he rides in the carrier\'s arms', () => {
     expect(html).toContain('data-preset="carrier"');
   });
 });
+
+describe('a carrier\'s look (#122, D-85)', () => {
+  test('5-3\'s 老闆 is away at the fryer until called; a carry shows its look, a carry back its own', async () => {
+    const { carrierLook } = await import('./parts/MoverView');
+    const def = pageById('c5p3')!;
+    const boss = def.parts.find((p) => p.id === 'boss')!;
+    const auntie = def.parts.find((p) => p.id === 'auntie')!;
+    const s = initialState(def);
+    expect(carrierLook(def, boss, 'idle', s)).toBe('away');
+    expect(carrierLook(def, boss, 'idle', withPartState(s, 'bell', 'down'))).toBe('idle');
+    expect(carrierLook(def, auntie, 'idle', s)).toBe('idle');
+    const carried = (back: boolean): SimState => ({ ...s, baby: { ...s.baby, mode: 'carried', carriedBy: back ? { id: 'auntie', k: 1, back: true } : { id: 'auntie', k: 1 } } });
+    expect(carrierLook(def, auntie, 'carrying@1', carried(false))).toBe('carrying');
+    expect(carrierLook(def, auntie, 'carrying@1', carried(true))).toBe('back');
+    expect(carrierLook(def, auntie, 'done', s)).toBe('done');
+    // Not a carrier: its state
+    expect(carrierLook(def, def.parts.find((p) => p.id === 'bell')!, 'down', s)).toBe('down');
+  });
+});

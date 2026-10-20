@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { PRESET_ART } from '../../art';
+import { holds } from '../../core/cond';
 import { nodePos } from '../../core/graph';
 import type { PageDef, PartDef, SimState } from '../../core/types';
+import { partEntry } from '../../env/loader';
 import { partArt, partBitmap } from '../art/registry';
 import type { Pt } from '../geometry';
 import { ArtG, artOpts, bakedImage, hitBox, r2, squashFor, stateAt, tweened, type PartViewProps } from './common';
@@ -42,14 +44,33 @@ export function moverPoint(def: PageDef, part: PartDef, state: string, sim: SimS
   return [hb.cx, hb.y + hb.h - t * hb.h];
 }
 
+/**
+ * Which drawing a carrier shows (#122, D-85): her baked art has one bitmap per *look*, not per route
+ * index — `carrying` for every `carrying@k` (`back` while she carries him back along the route), and
+ * `away` while she can't be called (`lockedWhen` holds: 5-3's 老闆 in the back, frying). A look her
+ * art doesn't draw falls back to the state itself. Other parts show their state.
+ */
+export function carrierLook(def: PageDef, part: PartDef, state: string, sim: SimState): string {
+  if (part.preset !== 'carrier') return state;
+  const has = (look: string) => partEntry(part.art)?.states[look] !== undefined;
+  const by = sim.baby.carriedBy;
+  if (state.startsWith('carrying@')) {
+    if (by?.id === part.id && by.back && has('back')) return 'back';
+    return has('carrying') ? 'carrying' : state;
+  }
+  if (state === 'idle' && part.lockedWhen !== undefined && holds(def, sim, part.lockedWhen) && has('away')) return 'away';
+  return state;
+}
+
 export function MoverView(props: MoverProps) {
   const { def, part, ctx, from, to, ms, reduced, prev, state } = props;
   const art = partArt(part.art, part.preset);
-  // Its baked bitmap for the state (#96), else the live kit art
+  const look = carrierLook(def, part, to, state);
+  // Its baked bitmap for the state (#96; a carrier's look), else the live kit art
   const html = useMemo(() => {
-    const img = partBitmap(part.art, to);
+    const img = partBitmap(part.art, look);
     return img ? bakedImage(img) : art.draw(ctx, artOpts(part, to));
-  }, [art, ctx, part, to]);
+  }, [art, ctx, part, to, look]);
   const a = moverPoint(def, part, from, prev);
   const b = moverPoint(def, part, to, state);
   const x = tweened(a[0], b[0], ms, reduced);
