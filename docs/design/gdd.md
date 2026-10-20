@@ -364,7 +364,7 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 
 **Hint text:** at most one short line (≤ 12 chars), always optional, for example 「拉拉看這裡」「讓摩卡上去」「試試看『嗶！』」.
 
-**For engineers.** #100 built it: `core/hint.ts` (`nextHint`: the solver from the current state with `stopAtGoal`, else `solutionAction`, the stored solution step whose part states (and creature positions, first; #114, D-77) match, else 重來 + step 1; `applyHint` plays an answer), `workers/hint.worker.ts` over `workers/protocol.ts` (`{ id, pageId, state, def? } → { id, action, source }`), `workers/hintClient.ts` (every failure or a 2 s silence falls back on the main thread), and the ladder in `view/affordance/ladder.ts` + `useHintLadder.ts`, run by `PagePlayer` from the bottom bar's 提示 and the 自動提示 timer (`autoHintMs`). Mocha's cues (`affordance.mocha`: the stretch as the yawn, a look, the paw tap) and the lines (`content/hints.ts`, his bark) are in the view. `pages/hints.test.ts` presses "show me" to `done` on every registered page. Readings in D-63.
+**For engineers.** #100 built it: `core/hint.ts` (`nextHint`: the solver from the current state with `stopAtGoal`, else `solutionAction`, the stored solution step whose part states (and creature positions and Mocha's perch, first; #114, D-77; #121, D-84) match, else 重來 + step 1; `applyHint` plays an answer), `workers/hint.worker.ts` over `workers/protocol.ts` (`{ id, pageId, state, def? } → { id, action, source }`), `workers/hintClient.ts` (every failure or a 2 s silence falls back on the main thread), and the ladder in `view/affordance/ladder.ts` + `useHintLadder.ts`, run by `PagePlayer` from the bottom bar's 提示 and the 自動提示 timer (`autoHintMs`). Mocha's cues (`affordance.mocha`: the stretch as the yawn, a look, the paw tap) and the lines (`content/hints.ts`, his bark) are in the view. `pages/hints.test.ts` presses "show me" to `done` on every registered page. Readings in D-63.
 
 ### 2.8 Page completion, stickers, 淘氣
 
@@ -1239,14 +1239,16 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 
 #### Chapter 5 「夜市抱抱」 (士林夜市, 02:20) · treasure 蔥 · word 抱抱
 
+**Specified in full** (the § 4.3 format, node/edge sketches, the solver's numbers): [`docs/design/pages/c5.md`](pages/c5.md) (#121, D-84). The rows below are the outline, updated where the full spec changed it.
+
 | Page | Title | Key mechanic → aha | 淘氣 | Diff |
 |---|---|---|---|---|
-| 5-1 | 往劍潭 | A dark tunnel: 哇！ the car lights. 不要！ a decoy. Review. | Turn the lights off and on 5 times (the passengers blink) | 2 |
-| 5-2 | 射氣球攤 | A balloon-basket **lift** with a counterweight. Baokaka in the basket rises only when Mocha jumps *out*. → *Mocha is a weight.* | Let all the balloons go (tap the knot) | 3 |
-| 5-3 | 抱抱 | **Learn 抱抱**: in a crowded lane of legs, a 夜市阿姨 (a scripted carrier) picks him up and carries him across. He copies. Then 抱抱 the 雞排老闆 to cross his counter. | 抱抱 the 阿姨 a second time (she does a twirl) | 2 |
-| 5-4 | 彈珠台 | A pachinko board: Mocha pushes the start ball, and two flipper **tabs** route the bead through the pegs to his side. | Send the ball into the jackpot hole; 彈珠台阿伯 laughs | 3 |
-| 5-5 | 按摩椅 | Coin massage chairs as **lifts**: Mocha pushes coins into the slots, and the chairs recline into steps for a **carrier** (a sleepy 阿伯) to walk. → *抱抱 a carrier only once its route is clear.* | Mocha sits in a vibrating massage chair | 4 |
-| 5-6 | 蔥抓餅 (spread) | The 蔥 sits on a stack of trays (a **lift**) behind the griddle counter. 抱抱 the vendor, use Mocha as a counterweight, and say 不要！ to the shiny griddle. | Make the vendor flip the pancake 3 times | 4 |
+| 5-1 | 往劍潭 | A dark tunnel: a dozing passenger's glowing phone is a decoy. Mocha onto the luggage rack, 不要！ the phone (he crawls to the end of the car), then 哇！ the car lights. Review. | Turn the lights off and on 5 times (the passengers blink) | 2 |
+| 5-2 | 射氣球攤 | A balloon-basket **lift** with a counterweight. Mocha jumps in (it sinks; the 店員小哥 runs the stall), Baokaka follows, and the basket rises with him only when Mocha jumps *out*; 哇！ the bulbs over the prize shelf. → *Mocha is a weight.* | Let all the balloons go (tap the knot) | 3 |
+| 5-3 | 抱抱 | **Learn 抱抱**: in a crowded lane of legs, a 夜市阿姨 (a carrier) picks him up and carries him across. He copies. Then Mocha rings the counter's bell, and 抱抱 the 雞排老闆 to cross his counter. | 抱抱 the 阿姨 a second time (she carries him back, with a twirl) | 2 |
+| 5-4 | 彈珠台 | A pachinko board: two flipper **tabs** route the ball (the bead) through the pegs, and Mocha leans on the launch knob; it lands in the tray at his side. | Send the ball into the jackpot hole; 彈珠台阿伯 laughs | 3 |
+| 5-5 | 按摩椅 | Coin massage chairs as **lifts**: Mocha knocks coins into the slots, the chairs recline into steps, 掰掰 a stray dog off the second chair, and a **carrier** (a sleepy 阿伯) walks him up. → *抱抱 a carrier only once its route is clear.* | Mocha sits in a vibrating massage chair | 4 |
+| 5-6 | 蔥抓餅 (spread) | The 蔥 sits on a stack of trays (a **lift**) behind the griddle counter. Mocha onto the stall's sign and 不要！ to the shiny griddle (he comes to the vendor), 抱抱 the vendor over the counter, and Mocha as a counterweight sinks the trays. | Make the vendor flip the pancake 3 times | 4 |
 
 #### Chapter 6 「飛機睡著的時候」 (松山機場, 02:50) · treasure 印章 · word 飛機！
 
@@ -1349,7 +1351,7 @@ Unlocked by collecting all 65 土地公 stickers. It's a gentle sunrise page on 
 
 The chapter card shows: 第N章｜title｜HH:MM｜下一站 (≤ 8 chars). The lines below play over the card or the first page. They are all skippable with a tap.
 
-**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines. #118 adds chapter 4's (`c4.intro.N`, `c4p4.clerk.N`, `c4p4.claw.N`, `c4p6.king.N`, `c4p6.end.1`); its card plays all three intro lines.
+**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines. #118 adds chapter 4's (`c4.intro.N`, `c4p4.clerk.N`, `c4p4.claw.N`, `c4p6.king.N`, `c4p6.end.1`); its card plays all three intro lines. #121 adds chapter 5's (`c5.intro.N`, `c5p2.clerk.N`, `c5p3.boss.N`, `c5p4.uncle.1`, `c5p6.vendor.N`, `c5p6.end.N`); its card plays all three intro lines, and its two end lines are one beat.
 
 **P · 序章「度晬前一晚」 00:00** (card, then 0-1)
 
@@ -1448,7 +1450,11 @@ nar：士林夜市，半夜還是好香。
 mocha：「不准吃。我們是來工作的。」
 ```
 
-**5-6 end:** `nar：找到了！抓周寶物——蔥。`, `mocha：「蔥抓餅……加蛋。……我什麼都沒說。」`
+- **5-2 店員小哥** (Mocha jumps into his balloon stall's basket; #121): `clerk：「叮咚～歡迎光臨！」`, `mocha：「……射氣球也是你們的？」`, `clerk：「我們是連鎖的。」`
+- **5-3 雞排老闆** (Mocha rings the counter's bell; #121): `npc(雞排老闆)：「來了！要切嗎？要辣嗎？」`, `mocha：「……他只要抱抱。」`
+- **5-4 彈珠台阿伯** (the jackpot, the 淘氣; #121): `npc(彈珠台阿伯)：「哈哈哈！大獎！……沒有獎品啦。」`
+- **5-6 蔥抓餅阿姨** (she lifts him over the counter; #121): `npc(蔥抓餅阿姨)：「小帥哥，要不要加蛋？」`, `mocha：「……不要問我。」`
+- **5-6 end:** `nar：找到了！抓周寶物——蔥。`, `mocha：「蔥抓餅……加蛋。……我什麼都沒說。」`
 
 **Ch6 「飛機睡著的時候」 02:50 · 下一站 松山機場**
 
