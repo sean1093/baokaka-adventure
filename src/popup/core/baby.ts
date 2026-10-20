@@ -23,7 +23,9 @@ import type { AttractorDef, BabyMode, Growth, Id, Kind, PageDef, SimState } from
  *   sets `done`), snack → `eating` (consumed), Mocha → `cuddling`, light → `watching` (both last
  *   while the target stays). The first arrival clears `refused`.
  * - **Nothing to want** (§ 2.2.5): `looking` for 2 ticks, then `crying`, emitting `cry`
- *   (radius 220) each tick, until any candidate appears (silently: no bark on comfort).
+ *   (radius 220) each tick, until any candidate appears (silently: no bark on comfort). When he
+ *   cries because he refused things (不要！), he forgets the refusals after `FORGET_AFTER_CRIES`
+ *   cries (D-75), so a refusal never strands him.
  * - **reachHigh** (§ 2.5): from growth 2, a height-1 attractor can be grabbed from an adjacent
  *   node. Behind `REACH_HIGH_ENABLED` (off until M4) or `BabyOptions.reachHigh`.
  *
@@ -37,6 +39,12 @@ export const MOCHA: Id = 'mocha';
 export const CRY_RADIUS = 220;
 /** § 2.2.5: ticks of `looking` before `crying`. */
 export const LOOK_TICKS = 2;
+/**
+ * § 2.4 不要！ (D-75): crying because of his own refusals, he forgets them after this many cries and
+ * wants the refused things again, so 不要！ can never strand him (a page whose only want he refused).
+ * The cries still go out, so crying on demand works.
+ */
+export const FORGET_AFTER_CRIES = 2;
 /** § 2.2.3: 「要！要！」 every this many ticks of `reaching`. */
 export const REACH_BARK_EVERY = 4;
 /** § 2.5 feature switch: M4 (扶著站) turns it on; pages can't until then. */
@@ -262,8 +270,15 @@ export function babyTick(def: PageDef, state: SimState, opts: BabyOptions = {}):
     if (mode === 'crying') {
       const at = nodePos(def, s, before.node);
       events.push(at === undefined ? { type: 'cry', within: CRY_RADIUS } : { type: 'cry', at, within: CRY_RADIUS });
+      // D-75: crying over his own refusals, `lookCount` counts the cries; after FORGET_AFTER_CRIES he
+      // forgets them (and is comforted by what he refused, next tick). Without refusals it stays 0.
+      if (refused.length > 0) {
+        const cries = before.mode === 'crying' ? before.lookCount + 1 : 1;
+        if (cries >= FORGET_AFTER_CRIES) refused = [];
+        else lookCount = cries;
+      }
     }
-    return { state: { ...s, baby: { ...s.baby, mode, lookCount, target: null, reachTicks: 0 } }, events };
+    return { state: { ...s, baby: { ...s.baby, mode, lookCount, refused, target: null, reachTicks: 0 } }, events };
   }
 
   // A new target: the kind's bark — except when it ends crying (comfort is silent, § 2.2.5).
