@@ -638,3 +638,24 @@ Format:
   - #108: the prologue art (living room with the sleeping Dad, the sofa, the family photo, the calendar; the balcony window, the curtain and the paper train; the basket rim at 0-4's `basket` node (34, 420)).
   - #107: 1-2 is now reached after 0-4.
   - #110: watch whether 4 s is right for grandparents.
+
+### 2026-10-19 · Staff engineer · #107 Chapter 1 pages 1-1, 1-3, 1-4, 1-5, 1-6 and the chapter's end (PR #TBD)
+- **Pages (`pages/c1/p1.ts`, `p3.ts`–`p6.ts`)**, registered in play order: the slice is now 0-1 → 0-4 → 1-1 → 1-6.
+  - 1-1 「月亮線，出發！」: the map pushed onto the sleeping backpacker wakes him (his line, Mocha's translation) and he tucks his backpack in. Two straps (bible § 4.2's three touchables), the `sway` tab, 廣播姊姊's ride lines as the intro.
+  - 1-3 「嗶！閘門」: the engine fixture's layout plus the robot's perch; the 淘氣 is 嗶！ while Mocha rides the robot.
+  - 1-4 「大廳的棋盤」: the turntable as a wheel with two riding aisle seats round a fixed centre.
+  - 1-5 「便當店的電梯」: the lift toggled by the panel Mocha sits on, re-pressed by `pet`; the shop counter's 叮咚 bell (the 店員小哥 cameo, three rings the 淘氣).
+  - 1-6 「台鐵便當」: the spread — lid, pigeon, exit gate, cart slider, awning perch; `photoRect` round the platform.
+- **Solver** (`npm run solve`): all 10 pages green, no dead ends, 淘氣 and 土地公 reachable; total ≈ 0.25 s of the 60 s budget. Par: 1-1 1 (d1), 1-2 2 (d2), 1-3 2 (d2), 1-4 3 (d3), 1-5 2 (d3: a warning, written back to the GDD), 1-6 4 (d3); 0-3 keeps its par-1 warning.
+- **Engine-adjacent.** `PartDef.ridesOn` (view only): a part drawn and touched where a node has gone — 1-6's lid on its cart, 1-5's panel in its car (`gestures.ts` `rideOffset` / `rideHome`, `PageView`, the flap hints). The stage draws no post for a riding perch and carries only Baokaka's nodes on a carriage.
+- **The chapter's end (`GameShell`).** Album → `endLines` as a modal over the dimmed spread → the HUD's held-back coin drops into the tray (`TopHud` `fill`, coin + sparkle sounds) → the sticker card → the chapter turn to chapter 2's card with 「未完待續」 and `rec.soon.1` → the 目錄. The thought bubble shows the treasure on a spread.
+- **QA.**
+  - The lab stages `lab-gates`, `lab-spread` and `SPREAD_REGISTRY` are gone: the `word-*` fixtures run on `c1p3`, `spread-c1` / `photo-moment` / `spread-shell` on `c1p6`. New fixtures: `c1p1-start`, `c1p1-awake`, `c1p3-robot`, `c1p4-turntable`, `c1p4-riding`, `c1p5-start`, `c1p5-car-down`, `c1p5-clerk`, `c1p6-spread`, `chapter-end-c1`, `chapter-soon-c2`.
+  - `check:play`: `c1p1`, `c1p3` (the old `lab-gates` steps on the real page), `c1p4` (arc drags on the turntable's rim), `c1p5`, `c1p6`, and `photo-spread` now plays 1-6 in the shell through the end lines, the tray, the 未完待續 card and the 目錄. `stickers-c1p2` ends on 1-3 now.
+  - Saves that put a player "at 1-2" (fixtures, nav / sticker / screen tests) solve 1-1 first.
+  - New tests: riding hits and drawing, the treasure bubble, the tray fill, the 未完待續 board, end/soon lines, stage posts and carriages, the `ridesOn` lint.
+- **Decision.** D-70 (deviations written back to GDD § 4.3's chapter 1 note and § 3.2).
+- **Follow-ups.**
+  - #108: chapter 1's art for the new keys (D-70 lists them), including the cart's awning and the car's panel on their parts.
+  - #110: playtest whether 1-4's "turn it while he's on it" reads without the hint ladder, and the 1-5 bell's discoverability.
+  - § 5.3's "every ride page" 廣播姊姊 lines are only on 1-1's intro for now (no cycling picker yet).

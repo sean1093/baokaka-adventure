@@ -593,6 +593,7 @@ export interface PartDef {
   route?: Id[];                     // carrier
   attractor?: Id;                   // light owns a light attractor
   art: string;                      // art registry key, e.g. 'c1/train-blue'
+  ridesOn?: Id;                     // view only: hit and art move with this node (a lid on a cart; #107, D-70)
 }
 
 export interface AttractorDef {
@@ -1148,7 +1149,7 @@ Chapter card and lines: §5.2 ch1.
 | 土地公 | Among the seated travellers printed on the disk; his face shows only in state `2` |
 | Notes | First page where waiting at the right moment matters. There's still no timer: he waits at `C` forever. |
 
-**1-5 「便當店的電梯」 (The bento-shop elevator)** · difficulty 3 · par 3
+**1-5 「便當店的電梯」 (The bento-shop elevator)** · difficulty 3 · par 2 *(par 3 before #107: the crawl in is his own move)*
 
 | | |
 |---|---|
@@ -1175,6 +1176,14 @@ Chapter card and lines: §5.2 ch1.
 | 淘氣 | 「讓鴿子白跑三趟」: open the lid 3 times |
 | 土地公 | Visible through the window of the train behind the cart, but only when the cart is at `kitchen` |
 | Notes | Photo: §2.9, comments §5.6 ch1. After the album, the chapter-end lines play, the 抓周 tray's first slot fills, and the next chapter card appears. |
+
+**For engineers (#107, D-70).** Chapter 1's pages are `src/popup/pages/c1/p1.ts`–`p6.ts`; with the prologue they are the 10-page slice, and `npm run solve` proves each (no dead ends; 淘氣 and 土地公 reachable; the slice solves in ≈ 0.25 s). Par per page: 1-1 1, 1-2 2, 1-3 2, 1-4 3, 1-5 **2**, 1-6 4. Where the data differs from the tables above:
+- **1-1.** Two hand straps, not three: a chapter's first three pages show at most three touchables plus perches (bible § 4.2), and the sway tab is one of them. `sway` is a `tab` (a pull-tab; a `prop` can only be tapped). The page opens on 廣播姊姊's ride lines (`rec.pa.ride.1`, `.2`); the map's landing plays the backpacker's question and Mocha's translation.
+- **1-3.** His 嗶！ at gate B always reaches the robot, so the plain 淘氣 would come free with the solution. The 淘氣 is 「對載著摩卡的掃地機器人說『嗶！』」: 嗶！ heard while Mocha rides the spinning robot (a new perch, `robotLid`). The card stays on the reader, and the solver's dead-end check covers it.
+- **1-4.** The 淘氣 counts four turns with him anywhere on the disk (its centre or riding an aisle seat), not only at `C`. The bead sits just past gate N, so the centre is his nearest spot while the aisle runs east–west.
+- **1-5.** Par is 2 (tap `carPanel`, tap Mocha): the crawl in is his own. The 淘氣 「讓摩卡自己搭電梯上下三次」 can never happen, because he boards the car the tick it reaches B1 and the next ride up ends the page. Instead Mocha sits on the shop counter's 叮咚 bell: tapping him rings it, the first ring plays the 店員小哥 cameo (`c1p5.clerk.*`), and three rings are the 淘氣 「讓摩卡按三次叮咚鈴」. The car's panel rides the car (`ridesOn`).
+- **1-6.** The cart starts at `middle`, so the 土地公 (only at `kitchen`) is a find. It carries a step and the bento; the pigeon lands on the step, two edges from the 雞腿, so the photo moment catches his approach once it flees. While Mocha sits on the awning the pigeon stays on the roof when the lid opens. The lid rides the cart (`PartDef.ridesOn`, a view-only field: hit and art move with a node).
+- **The chapter's end** (`GameShell`): the album → the end lines (`endLines(1)`, over the dimmed spread, a tap a beat) → the tray's first coin drops into its slot → the sticker card → the chapter turn to chapter 2's card with 「未完待續」 on its split-flap row and `rec.soon.1` 「下一站還在畫……未完待續。」 under it → the 目錄. The thought bubble shows the treasure itself on a spread.
 
 ### 4.4 Chapters 2–10 and the ending: outline
 
