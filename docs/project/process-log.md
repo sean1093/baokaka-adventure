@@ -695,3 +695,16 @@ Format:
   - #110 playtest: whether 1-4's printed travellers read as a turnable floor without the hint ladder.
   - Whether the 1-1 backpacker's paper style sits well beside the anime standees, or whether he wants a v2 frame.
 
+
+### 2026-10-20 · Staff engineer · #109 The routing switch: `#/` boots into 翻翻台北
+- **Routes (`shared/route.ts`, `App.tsx`).** `#/`, `#/popup`, `#/quest` and unknown hashes show 翻翻台北; `#/find` / `#/sudoku` still rewrite to `#/`; `#/artlab` and `#/pagelab` stay dev-only. `App` imports `PopupGame` statically and no longer imports `QuestGame`; `<ArtDefs/>` mounts only around the art lab. The RPG still compiles and its tests run (`tsc -b` covers `src/`), but it is in no production chunk.
+- **Bundle.** One main chunk, 584 KB (191 KB gzip), plus the hint worker (52 KB) and CSS (73 KB). A module listing of the production build finds 0 `src/quest/` modules among 513. Before: `index` 630 KB (the RPG) + `PopupGame` 420 KB.
+- **Boot housekeeping (`main.tsx`).** `cleanupLegacyStorage` then `retireRpgSave()`. The result goes `App` → `PopupGame` → `GameShell` → `Cover`: a cream index card taped with pink washi above 「開始」 / 「繼續」 says 「寶咖咖的新冒險開始了！」 until the player first opens a page. New fixture `cover-farewell`; a unit test on the note.
+- **Metadata.** Title, description, OG and manifest now say 《翻翻台北》 Pop-Up Taipei; theme and background colours are the quilt's plum. New share card `public/icons/og.jpg` (1200 × 630, rendered with Playwright from the cover scene and standees); the old `og.png` is deleted. Icons unchanged.
+- **Deployment checks (`npm run check:prod`, new).** Builds, previews `dist/`, checks every route, 「開始」 → 0-1, 「繼續」 → 0-2 for a returning save, the RPG farewell once, no console errors; prints a throttled-4G load report. This run: CI-equivalent timings here: `npm test` 21 s, `npm run build` 18 s (`npm ci` not timed, node_modules were present); first load to the cover 684 KB of 2.5 MB; cover interactive 1.5 s of 3 s; 「開始」 → 0-1 interactive 2.0 s more, with 1.7 MB more transferred. Most of that is the Google web-font slices (D-17) for the page's CJK glyphs, about 1.2 MB of Chiron GoRound TC and 0.5 MB of Noto Serif TC; 0-1's backdrops and the character frames are about 0.5 MB.
+- **QA.** `npm test`, `npm run build`, `npm run visual` (the `title` target is the new cover; baselines updated for `title` and `cover-farewell`), `check:ui --popup` on the cover fixtures (also with 大字, which first caught the note's text overflowing its card, now as wide as the buttons), `check:play` (all scenarios, `prologue-card` now from `#/`), `check:prod`.
+- **Decision.** D-72 (D-13 marked superseded in part).
+- **Follow-ups.**
+  - #110: the playtest runs on the live site; watch whether the farewell note is noticed by old players.
+  - #111: delete `src/quest/`, the art lab and its baselines, and the RPG utilities Tailwind still generates.
+  - A pop-up-style "turn the phone upright" notice, if the playtest shows landscape use (the RPG's guard was not carried over).

@@ -107,7 +107,7 @@ An issue is done when **all** of these are true:
 - [ ] The PR is merged to `main` with the "merge" method, the deploy workflow is green, the branch is fast-forwarded to `main`, and `process-log.md` has an entry.
 
 ### `main` is always playable
-Every merge deploys to the public site. Until the routing switch (#109) `#/` still serves the RPG and the new game lives at `#/popup`; after it, `#/` serves 翻翻台北, playable to the end of the latest finished chapter, which ends on a 「未完待續」 card (D-11 still applies). Never merge a PR that leaves the start screen broken.
+Every merge deploys to the public site. Since the routing switch (#109, D-72) `#/` serves 翻翻台北 (`#/popup`, `#/quest` and unknown hashes too), playable to the end of the latest finished chapter, which ends on a 「未完待續」 card (D-11 still applies). The RPG under `src/quest/` is in no route and no production chunk until #111 deletes it. Never merge a PR that leaves the cover broken: `npm run check:prod` (below) builds the site and smoke-tests it.
 
 ---
 
@@ -142,6 +142,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
   - **Known gaps** are listed in `WAIVERS`, each with the issue that removes it. Waivers are printed on every run. None today: #97 removed the HUD and bottom-bar waiver, #98 the bubble's (bubbles grow by `talkScale` against the book scale, so their text is ≥ 20 px at 375×667).
 - **大字 (#104, D-67).** `npm run check:ui:big` (`UI_TEXT=big`) runs the 翻翻台北 rules on every fixture with 大字 on, so the 24 px rule covers every screen; `#/pagelab?fixture=<name>&text=big` shows any fixture that way. New screens must pass it: size text in code with `useTextScale()`, or with Tailwind `text-[Npx]` classes (`view/textSize.css` grows them). Text clipped away by a scroller is not measured.
 - **`npm run check:play`** also fails when a registered page has no scenario in `SCENARIOS`.
+- **`npm run check:prod`** (`scripts/prod-check.mjs`, #109) builds the site and checks it under `vite preview` the way a visitor gets it: every route (`#/`, `#/popup`, `#/quest`, unknown, the dev routes) opens the cover and `#/find` / `#/sudoku` are rewritten to `#/`; a fresh visitor's 「開始」 opens 0-1 with its characters; a returning player's 「繼續」 opens their page; an old RPG save is deleted and the farewell shows exactly once; no console errors. It prints a load report on throttled 4G (WebPageTest "4G": 9 Mbps, 170 ms RTT): bytes to the cover against the 2.5 MB first-load budget and the time to an interactive cover against 3 s (report only). `node scripts/prod-check.mjs --url https://sean1093.github.io/baokaka-adventure/` checks the live site after a deploy. Run it before merging anything that touches boot, routing, the build or `index.html`.
 
 ### Character sprites: `npm run sync:sprites` (#94, D-56)
 
@@ -190,9 +191,9 @@ The word ring (a volvelle of 72 px discs round Baokaka, 「好了」 under him, 
 
 提示 climbs GDD § 2.7's ladder on every page: where (the halo, Mocha looks, his § 5.3 line), how (the ghost hand), show me (the hand, then the step played for real — again on every press). The next action is the solver's from the state now, in `workers/hint.worker.ts`; any failure or timeout falls back to the stored solution step, then to 重來 + step 1 (重來 glows). The auto nudge (Mocha yawns toward it, it shimmers once) comes after the 自動提示 delay without a change. Logic: `core/hint.ts` (pure), `view/affordance/ladder.ts` (pure), `useHintLadder.ts` (timers, the worker client). `pages/hints.test.ts` presses "show me" until `done` on every registered page — new pages get it for free. Fixtures: `hint-nudge`, `hint-level1`, `hint-ghost-hand`, `hint-wait`; `check:play` plays 1-2 with 提示 alone.
 
-### The game shell: `#/popup` (#97, D-60)
+### The game shell: `#/` (#97, D-60; `#/` since #109)
 
-`#/popup` (no `page=`) is the whole game: `GameShell` (`src/popup/view/screens/`) on one `ProgressStore` and the navigation state machine (`src/popup/game/nav.ts`). The cover (「開始」 on first launch, else 「繼續」 + 目錄 / 相簿 / 設定), a page in the book frame with the live HUD (`view/hud/TopHud.tsx`) and bottom bar (`view/hud/BottomBar.tsx`, mirrored in 左手模式), the pause menu (the kit `Sheet` in `tone="paper"`), the 目錄 (`Contents.tsx`), and the page fold / chapter turn (`view/transitions/pageTurn.ts`, WAAPI). The screens' art (quilt, cover scene, 目錄 map) is baked by `npm run bake:popup` (`src/popup/env/art/screens.ts`). To start over in a browser, clear `popup.save.v1` from localStorage.
+`#/` (no `page=`; `#/popup` is an alias) is the whole game: `GameShell` (`src/popup/view/screens/`) on one `ProgressStore` and the navigation state machine (`src/popup/game/nav.ts`). The cover (「開始」 on first launch, else 「繼續」 + 目錄 / 相簿 / 設定), a page in the book frame with the live HUD (`view/hud/TopHud.tsx`) and bottom bar (`view/hud/BottomBar.tsx`, mirrored in 左手模式), the pause menu (the kit `Sheet` in `tone="paper"`), the 目錄 (`Contents.tsx`), and the page fold / chapter turn (`view/transitions/pageTurn.ts`, WAAPI). The screens' art (quilt, cover scene, 目錄 map) is baked by `npm run bake:popup` (`src/popup/env/art/screens.ts`). To start over in a browser, clear `popup.save.v1` from localStorage. At boot `main.tsx` calls `retireRpgSave()`: when it deleted an old RPG save, the cover shows `RPG_FAREWELL` on a taped note above the buttons until the player first opens a page (fixture `cover-farewell`, #109).
 
 **The chapter card (#102, D-65).** `view/hud/ChapterBoard.tsx` draws the departure board (the shell renders it in the layer above the camera; the turn drops it, swings it and flips its `[data-flap]` tiles) and `CardTalk` its lines. Which lines a card plays is `cardLines(chapter)` in `content/chapters.ts`; its 下一站 is `ChapterInfo.next`. A chapter turn holds at the card's `settle` while the lines play (`TurnHooks.card`); a chapter's first page opened from the cover or the 目錄 plays an `'open'` turn first (`opensChapter`). While the lines are up the card is a modal (`aria-modal`), and a page held at its start keeps its own intro until the turn ends. `check:play` runs `prologue-card` from a fresh save.
 
@@ -218,9 +219,9 @@ Everything is synthesised (no audio files). `src/shared/audio.ts` is the synth: 
 
 ### PageLab sections (dev builds only)
 
-### Pages in the book: `#/popup?page=<id>` (every build)
+### Pages in the book: `#/?page=<id>` (every build)
 
-Since #89, `#/popup?page=c0p1` (any registered page id) plays one page in the book frame on the session clock. Dev parameters:
+Since #89, `#/popup?page=c0p1` (or `#/?page=c0p1` since #109) (any registered page id) plays one page in the book frame on the session clock. Dev parameters:
 - `tick=N` starts N idle ticks in;
 - `paused=1` holds the clock (screenshots);
 - `speed=slow|normal|fast` sets the tick length;

@@ -58,7 +58,7 @@ Append-only. Each entry: id, date, decision, why, consequences. To change a deci
 **Consequences.** Issue #3.
 
 ### D-13 · 2026-10-18 · Routes
-**Decision.** The app has one game. `#/` (and any unknown hash) shows the RPG title screen. `#/quest` keeps working as an alias (old shared links). `#/find` and `#/sudoku` redirect to `#/`. A dev-only `#/artlab` route hosts the art lab (issue #4). No router library.
+**Decision.** (Superseded in part by D-72: `#/` now shows 翻翻台北.) The app has one game. `#/` (and any unknown hash) shows the RPG title screen. `#/quest` keeps working as an alias (old shared links). `#/find` and `#/sudoku` redirect to `#/`. A dev-only `#/artlab` route hosts the art lab (issue #4). No router library.
 
 ### D-14 · 2026-10-18 · Placeholder sprites during content work
 **Decision.** Chapter content issues come before chapter art issues. Content may register new `SpriteName`s backed by a shared, clearly labelled placeholder drawing (from issue #11). `validate.ts` reports placeholders as warnings (not errors) and the final QA issue (#58) requires zero placeholders.
@@ -863,4 +863,23 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - Chapter 1's dress entries land with chapter 1's backdrops (the second #108 PR), so no page loses its furniture before its art exists.
 - The carriage and creature art count toward the animated-node budget (150): 1-6 sits at the limit, so new moving art there must stay lean.
 - **Chapter 1 (PR B).** The six station backdrops and eleven parts follow the same rules. The turntable is a baked **wheel**: its knurled rim is the marigold grip (`data-grip="rim"`, linted like a flap's ear), and its seal and turn cue stay live. Each state's bitmap is drawn unturned, because the view rotates it. The 土地公 is printed into state 2 upside down, since a live 土地公 at a node on the disk would sit under it. The 1-2 train's `hit` now starts at its card's left end (x 28; the engine fixture and GDD § 3.4 follow), and chapter 1's pages all give him the 站務帽.
+
+### D-72 · 2026-10-20 · The routing switch (#109)
+
+**Context.** #109 makes 翻翻台北 the site's game. GDD § 3.5 and § 7 item 24 say the RPG stays in the repo, unrouted, until the owner signs off after the M1 playtest (#111 deletes it). The issue left how to load the game, how the farewell looks and what the deployment checks measure open.
+
+**Decision.**
+1. **Routes.** `#/`, `#/popup`, `#/quest` and any unknown hash show 翻翻台北; `#/find` and `#/sudoku` still rewrite to `#/`. `popup` is no longer a route of its own (`Route` is `game | legacy | artlab | pagelab`); the game reads its dev parameters from any game hash, so `#/?page=c1p2` and `#/popup?page=c1p2` both work.
+2. **One main chunk.** `App` imports `PopupGame` statically: the cover is what everyone opens, so a lazy chunk would only add a round trip. Nothing in a production chunk imports `src/quest/` (0 of 513 modules; the art lab, the only importer left, is dev-only). Main chunk: 584 KB (191 KB gzip), against 630 KB RPG + 420 KB game before.
+3. **No RPG chrome.** `<ArtDefs/>` (the RPG sprites' gradients) mounts only around the art lab, and the RPG's `OrientationGuard` is gone from the game (its navy kit panel belongs to the RPG; a pop-up-style landscape notice is a follow-up if the playtest asks for it).
+4. **The farewell.** `main.tsx` calls `retireRpgSave()` at boot (after `cleanupLegacyStorage`); `App` → `PopupGame` → `GameShell` pass the result on, and the cover shows `RPG_FAREWELL` 「寶咖咖的新冒險開始了！」 on a cream index card taped with pink washi, as wide as the buttons, above 「開始」 / 「繼續」. It stays on the cover until the player first opens a page. The next boot finds no RPG keys, so it is said once. It is a `role="status"` note, not a button.
+5. **Site metadata.** `<title>` and `og:title` 《翻翻台北》Pop-Up Taipei; the description, `og:description` and the manifest describe the pop-up book; manifest `name` 「翻翻台北 Pop-Up Taipei」, `short_name` 「翻翻台北」; `theme-color` / `background_color` are 阿嬤's quilt `#3A1838` (the cover's ground) instead of the RPG's navy. The icons stay (they have no text). The share card is a new `icons/og.jpg` (1200 × 630, 99 KB): the cover scene with both standees on the quilt, and a taped card with the title, the hook 「寶寶不聽指揮——你只能改變台北。」 and 「拉紙片、轉轉盤、掀紙蓋的立體書解謎」. The old `og.png` (the mini-game era's 「找出摩卡貓藏起來的東西」) is deleted.
+6. **Deployment checks.** `npm run check:prod` (`scripts/prod-check.mjs`) is the production smoke test; its load numbers are a report, not a gate, as the issue asks. Throttled 4G means WebPageTest's "4G" profile (9 Mbps both ways, 170 ms RTT) through CDP with the cache off.
+
+**Why.** The game is the only thing the site serves now, so it should load as one piece; the farewell is the moment an old player loses their save, so it is paper and warm, in the book's own style, and never technical.
+
+**Consequences.**
+- #111 deletes `src/quest/`, the art lab, `ArtDefs`' RPG use and the RPG baselines; the route table needs no change then (`artlab` goes with the lab).
+- The `title` visual target is now the cover on first launch (`#/`, waiting for `[data-screen-ready]`).
+- Tailwind still scans `src/quest/` (the art lab needs its classes in dev), so the CSS keeps the RPG's utilities until #111.
 
