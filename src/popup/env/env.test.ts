@@ -264,4 +264,30 @@ describe('sources', () => {
       expect(lintMarkup(markup, { page: 'c1p2', touchable: () => false, expected: [], where: `board ${state}` })).toEqual([]);
     }
   });
+
+  test('every baked part is printed paper, except a flap\'s marigold grip ear (#108)', () => {
+    for (const [key, src] of Object.entries(PART_SOURCES)) {
+      for (const state of src.states) {
+        const markup = src.draw(kitCtx('t', { filters: true }), state);
+        if (src.preset === 'flap') {
+          // The ear is the flap's one marigold (FlapView adds the live seal and curl cue)
+          expect(markup, `${key} ${state}`).toContain('data-grip="ear"');
+          expect(markup).toMatch(/url\(#t-tabG\)/);
+          const rest = markup.replace(/<path data-grip="ear"[^>]*\/>/g, '');
+          expect(lintMarkup(rest, { page: key, touchable: () => false, expected: [], where: `${key} ${state}` }), `${key} ${state}`).toEqual([]);
+        } else {
+          expect(lintMarkup(markup, { page: key, touchable: () => false, expected: [], where: `${key} ${state}` }), `${key} ${state}`).toEqual([]);
+        }
+      }
+    }
+  });
+
+  test('the prologue\'s backdrops are drawn, not the placeholder stage (#108)', () => {
+    const own = backdropSources(PAGES).filter((b) => b.chapter === 0);
+    expect(own.map((b) => b.key).sort()).toEqual(['c0/home-window', 'c0/living-room', 'c0/nursery-night', 'c0/zhuazhou-corner']);
+    for (const b of own) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+  });
 });

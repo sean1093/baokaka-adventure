@@ -10,7 +10,7 @@ import { definePage } from '../../core/define';
  * The scripted ghost hand on `table` is a view feature (#106).
  */
 export default definePage({
-  id: 'c0p3', chapter: 0, index: 3, title: '摩卡起床', difficulty: 2, backdrop: 'c0/living-room',
+  id: 'c0p3', chapter: 0, index: 3, title: '摩卡起床', difficulty: 2, backdrop: 'c0/zhuazhou-corner',
   nodes: [
     { id: 'rug1', x: 90, y: 480, height: 0 }, { id: 'rug2', x: 160, y: 480, height: 0 },
     { id: 'underTable', x: 235, y: 480, height: 0 },   // under the 抓周 table's front edge: where he reaches

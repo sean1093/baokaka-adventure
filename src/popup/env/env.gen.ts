@@ -7,7 +7,7 @@ export const ENV_MANIFEST: EnvManifest = {
   "backdrops": {
     "c0/nursery-night": {
       "file": "backdrops/c0/nursery-night",
-      "bytes": 164276,
+      "bytes": 154184,
       "chapter": 0,
       "grade": [1, 1, 1],
       "box": {
@@ -16,11 +16,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "44ac6c8a6041c2be"
+      "source": "b43da26f6b6c7c56"
     },
     "c0/living-room": {
       "file": "backdrops/c0/living-room",
-      "bytes": 164276,
+      "bytes": 145852,
       "chapter": 0,
       "grade": [1, 1, 1],
       "box": {
@@ -29,11 +29,24 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "44ac6c8a6041c2be"
+      "source": "8bbf18390591caf4"
+    },
+    "c0/zhuazhou-corner": {
+      "file": "backdrops/c0/zhuazhou-corner",
+      "bytes": 149224,
+      "chapter": 0,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "444efc4717723a41"
     },
     "c0/home-window": {
       "file": "backdrops/c0/home-window",
-      "bytes": 164276,
+      "bytes": 161584,
       "chapter": 0,
       "grade": [1, 1, 1],
       "box": {
@@ -42,7 +55,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "44ac6c8a6041c2be"
+      "source": "d6092a15e4594b0d"
     },
     "c1/car": {
       "file": "backdrops/c1/car",
@@ -124,6 +137,211 @@ export const ENV_MANIFEST: EnvManifest = {
     }
   },
   "parts": {
+    "c0/crib-mobile": {
+      "preset": "prop",
+      "box": {
+        "x": -51,
+        "y": -52,
+        "w": 106,
+        "h": 90
+      },
+      "states": {
+        "still": {
+          "file": "parts/c0/crib-mobile.still",
+          "bytes": 4670
+        },
+        "spin": {
+          "file": "parts/c0/crib-mobile.spin",
+          "bytes": 7560
+        }
+      },
+      "source": "bb59d09481323dc9"
+    },
+    "c0/tv": {
+      "preset": "light",
+      "box": {
+        "x": -66,
+        "y": -60,
+        "w": 132,
+        "h": 112
+      },
+      "states": {
+        "off": {
+          "file": "parts/c0/tv.off",
+          "bytes": 2774
+        },
+        "on": {
+          "file": "parts/c0/tv.on",
+          "bytes": 15772
+        }
+      },
+      "source": "8ed3931db3c1211e"
+    },
+    "c0/newspaper": {
+      "preset": "flap",
+      "box": {
+        "x": -16,
+        "y": -8,
+        "w": 102,
+        "h": 74
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c0/newspaper.closed",
+          "bytes": 4300
+        },
+        "open": {
+          "file": "parts/c0/newspaper.open",
+          "bytes": 3240
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c0/newspaper.closed.lifted",
+          "bytes": 5284
+        },
+        "open": {
+          "file": "parts/c0/newspaper.open.lifted",
+          "bytes": 4294
+        }
+      },
+      "source": "38867b4ce596086e"
+    },
+    "c0/sofa-cushion": {
+      "preset": "flap",
+      "box": {
+        "x": -16,
+        "y": -8,
+        "w": 96,
+        "h": 84
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c0/sofa-cushion.closed",
+          "bytes": 4040
+        },
+        "open": {
+          "file": "parts/c0/sofa-cushion.open",
+          "bytes": 3404
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c0/sofa-cushion.closed.lifted",
+          "bytes": 5218
+        },
+        "open": {
+          "file": "parts/c0/sofa-cushion.open.lifted",
+          "bytes": 4480
+        }
+      },
+      "source": "40b0fd28d748e1a7"
+    },
+    "c0/curtain": {
+      "preset": "flap",
+      "box": {
+        "x": -20,
+        "y": -17,
+        "w": 170,
+        "h": 189
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c0/curtain.closed",
+          "bytes": 8904
+        },
+        "open": {
+          "file": "parts/c0/curtain.open",
+          "bytes": 5120
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c0/curtain.closed.lifted",
+          "bytes": 11882
+        },
+        "open": {
+          "file": "parts/c0/curtain.open.lifted",
+          "bytes": 8754
+        }
+      },
+      "source": "ae967538060f0d6f"
+    },
+    "c0/red-envelope": {
+      "preset": "pushable",
+      "box": {
+        "x": -14,
+        "y": -16,
+        "w": 33,
+        "h": 44
+      },
+      "states": {
+        "onPerch": {
+          "file": "parts/c0/red-envelope.onPerch",
+          "bytes": 2144
+        }
+      },
+      "source": "a4204852d714edc0"
+    },
+    "c0/bead-ball": {
+      "preset": "pushable",
+      "box": {
+        "x": -27,
+        "y": -27,
+        "w": 54,
+        "h": 54
+      },
+      "states": {
+        "onPerch": {
+          "file": "parts/c0/bead-ball.onPerch",
+          "bytes": 5148
+        }
+      },
+      "source": "cec17631a78d43b1"
+    },
+    "c0/balcony-door": {
+      "preset": "gate",
+      "box": {
+        "x": -37,
+        "y": -55,
+        "w": 83,
+        "h": 121
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c0/balcony-door.closed",
+          "bytes": 2350
+        },
+        "open": {
+          "file": "parts/c0/balcony-door.open",
+          "bytes": 2356
+        }
+      },
+      "source": "6eb029dd8edbef1c"
+    },
+    "c0/moon-train": {
+      "preset": "light",
+      "box": {
+        "x": -68,
+        "y": -103,
+        "w": 136,
+        "h": 188
+      },
+      "states": {
+        "off": {
+          "file": "parts/c0/moon-train.off",
+          "bytes": 5014
+        },
+        "on": {
+          "file": "parts/c0/moon-train.on",
+          "bytes": 15664
+        }
+      },
+      "source": "4af355cfb999a1d0"
+    },
     "c1/departure-board": {
       "preset": "prop",
       "box": {
