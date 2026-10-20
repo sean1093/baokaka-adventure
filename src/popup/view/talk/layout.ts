@@ -205,7 +205,8 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
     const size = subtitleSize(line.text, line.label, k, from === null ? VOICE_MAX_W : SUB_MAX_W);
     const own = rides === 'baby' ? [] : rides === 'mocha' && mocha ? [mocha.box] : [];
     let candidates: Box[];
-    if (from === null) candidates = voiceCandidates(voiceTop, size);
+    // An off-page voice may step further down the page, so a beat's lines keep their reading order
+    if (from === null) candidates = voiceCandidates(voiceTop, size, 10);
     // 廣播姊姊 under her loudspeaker; then anywhere down the page's open middle, so her lines never
     // have to sit on a strap or a perch paw (#183: 1-1's intro covered them)
     else if (anchor === 'speaker') candidates = [...belowLeft(from, size), ...voiceCandidates(voiceTop, size)];
