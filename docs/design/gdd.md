@@ -364,7 +364,7 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 
 **Hint text:** at most one short line (≤ 12 chars), always optional, for example 「拉拉看這裡」「讓摩卡上去」「試試看『嗶！』」.
 
-**For engineers.** #100 built it: `core/hint.ts` (`nextHint`: the solver from the current state with `stopAtGoal`, else `solutionAction`, the stored solution step whose part states match, else 重來 + step 1; `applyHint` plays an answer), `workers/hint.worker.ts` over `workers/protocol.ts` (`{ id, pageId, state, def? } → { id, action, source }`), `workers/hintClient.ts` (every failure or a 2 s silence falls back on the main thread), and the ladder in `view/affordance/ladder.ts` + `useHintLadder.ts`, run by `PagePlayer` from the bottom bar's 提示 and the 自動提示 timer (`autoHintMs`). Mocha's cues (`affordance.mocha`: the stretch as the yawn, a look, the paw tap) and the lines (`content/hints.ts`, his bark) are in the view. `pages/hints.test.ts` presses "show me" to `done` on every registered page. Readings in D-63.
+**For engineers.** #100 built it: `core/hint.ts` (`nextHint`: the solver from the current state with `stopAtGoal`, else `solutionAction`, the stored solution step whose part states (and creature positions, first; #114, D-77) match, else 重來 + step 1; `applyHint` plays an answer), `workers/hint.worker.ts` over `workers/protocol.ts` (`{ id, pageId, state, def? } → { id, action, source }`), `workers/hintClient.ts` (every failure or a 2 s silence falls back on the main thread), and the ladder in `view/affordance/ladder.ts` + `useHintLadder.ts`, run by `PagePlayer` from the bottom bar's 提示 and the 自動提示 timer (`autoHintMs`). Mocha's cues (`affordance.mocha`: the stretch as the yawn, a look, the paw tap) and the lines (`content/hints.ts`, his bark) are in the view. `pages/hints.test.ts` presses "show me" to `done` on every registered page. Readings in D-63.
 
 ### 2.8 Page completion, stickers, 淘氣
 
@@ -1197,14 +1197,16 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 
 #### Chapter 2 「會揮手的公園」 (大安森林公園, 00:50) · treasure 畫筆 · word 掰掰
 
+**Specified in full** (the § 4.3 format, node/edge sketches, the solver's numbers): [`docs/design/pages/c2.md`](pages/c2.md) (#114, D-77). The rows below are the outline, updated where the full spec changed it.
+
 | Page | Title | Key mechanic → aha | 淘氣 | Diff |
 |---|---|---|---|---|
 | 2-1 | 信義線 | 嗶！ opens the car doors. Mocha pushes a sleeping commuter's umbrella, which lands across the platform gap (a pushable that enables an edge). | Mocha sits on the 博愛座, and 廣播姊姊 says 「請讓座」 | 2 |
-| 2-2 | 露天音樂台 | A spotlight **wheel** moves a light attractor (`nodeBy`). Steer him across the stage with light while the bead is hidden behind the curtain. His weight on the trap-door plate raises the curtain. → *Light is a leash.* | Shine the spotlight on the sleeping 掃地阿伯 | 2 |
-| 2-3 | 跑步的阿姨 | **Learn 掰掰**: a stretching jogger blocks the bridge; she sees Mocha on the railing, laughs and waves 「掰掰～」, and jogs off. He copies. Then 掰掰 a sleeping dog off the path. | 掰掰 to the pond turtle (it waves back… slowly) | 2 |
-| 2-4 | 松鼠的樹 | A squirrel holds the bead (`heldBy`) and flees to the branch farthest from Mocha. Herd it to the low branch with Mocha, then 掰掰 so it waves and drops the bead. → *Herd, then wave.* | Make the squirrel run three laps around the trunk | 3 |
-| 2-5 | 生態池 | A lily-pad **wheel** forms a path. 掰掰 an egret off the needed pad. Mocha **won't** go near the water (C7), so he's no help. → *Not every problem needs the cat.* | Tap Mocha's wet perch three times; he puffs up thrice | 3 |
-| 2-6 | 畫畫的阿伯 (spread) | The painter's canvas has three painted **flaps** that pop up into real paper bridges (pop-up inside a pop-up). The sleeping painter holds the 畫筆 and drops it on 掰掰, but only once a squirrel is shooed off his hat by Mocha. | Open all three canvas flaps: the painting becomes a portrait of Mocha | 3 |
+| 2-2 | 露天音樂台 | A spotlight **wheel** moves a light attractor (`nodeBy`). Mocha on the lamp beats any light, so first he hides in the 店員小哥's crate (C9, the chapter's cameo); then steer Baokaka with the light while the bead is hidden behind the curtain. His weight on the trap-door plate raises the curtain. → *Light is a leash.* | Shine the spotlight on the sleeping 掃地阿伯 | 2 |
+| 2-3 | 跑步的阿姨 | **Learn 掰掰**: a stretching jogger blocks the bridge; she sees Mocha on the railing, laughs and waves 「掰掰～」, and jogs off. He copies. Then 掰掰 a dog sleeping on the path, curled round the bead. | 掰掰 to the pond turtle (it waves back… slowly) | 2 |
+| 2-4 | 松鼠的樹 | A squirrel holds the bead (`heldBy`) and flees to the branch farthest from Mocha when he lands next to it. Herd it to the low branch with Mocha, then 掰掰 so it waves and drops the bead. → *Herd, then wave.* | Make the squirrel run three laps around the trunk | 3 |
+| 2-5 | 生態池 | A lily-pad **wheel** ferries him across. 掰掰 an egret off the pad. Mocha **won't** go near the water (C7), so he's no help. → *Not every problem needs the cat.* | Give the egret four rides on the turning pad (D-77: a puff is not a page event) | 3 |
+| 2-6 | 畫畫的阿伯 (spread) | The painter's canvas has three painted **flaps** that pop up into real paper: a bridge for him, a branch for Mocha, a portrait corner (pop-up inside a pop-up). The sleeping painter holds the 畫筆 and drops it on 掰掰, but only once a squirrel is shooed off his hat by Mocha. | Open all three canvas flaps: the painting becomes a portrait of Mocha | 3 |
 
 #### Chapter 3 「醉月湖的鵝」 (台灣大學, 01:20) · treasure 書 · word 不要！
 
@@ -1340,7 +1342,7 @@ Unlocked by collecting all 65 土地公 stickers. It's a gentle sunrise page on 
 
 The chapter card shows: 第N章｜title｜HH:MM｜下一站 (≤ 8 chars). The lines below play over the card or the first page. They are all skippable with a tap.
 
-**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`.
+**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines.
 
 **P · 序章「度晬前一晚」 00:00** (card, then 0-1)
 
@@ -1403,7 +1405,8 @@ nar：半夜的公園，還有人在跑步。
 mocha：「松鼠晚上不是該睡覺嗎？」
 ```
 
-**2-6 end:** `nar：找到了！抓周寶物——畫筆。`, `mocha：「他說：『我要畫摩卡。』……好吧。」`
+- **2-2 店員小哥** (Mocha climbs into his drinks stall's crate; #114): `clerk：「叮咚～歡迎光臨！」`, `mocha：「……又是你？」`, `clerk：「我們是連鎖的。」`
+- **2-6 end:** `nar：找到了！抓周寶物——畫筆。`, `mocha：「他說：『我要畫摩卡。』……好吧。」`
 
 **Ch3 「醉月湖的鵝」 01:20 · 下一站 公館**
 
