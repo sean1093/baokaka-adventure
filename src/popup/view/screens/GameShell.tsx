@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { REDUCE_MOTION_CLASS, ReducedMotionContext, usePrefersReducedMotion } from '../../../components/motion';
-import { cardLines, chapterName, loadLines, UI } from '../../content';
+import { SOON_LINES, cardLines, chapterName, endLines, hasNextChapter, loadLines, UI } from '../../content';
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
 import { COVER, chapterStickers, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
@@ -59,6 +59,11 @@ import './screens.css';
  *   print flying in and the four notes popping on. 「再拍一次」 replays the 3-second moment;
  *   「放進相簿」 goes on to the sticker card and the chapter turn. The cover's 相簿 opens the
  *   album at the latest chapter with a photo (#113 adds the other chapters).
+ * - **The chapter's end** (GDD § 4.3 1-6 notes; #107): after 「放進相簿」 the chapter-end lines
+ *   (`endLines`) play over the finished spread, a tap a beat, as a modal; then the 抓周 tray's new
+ *   slot fills (the HUD holds the coin back until then: `trayHold`), the sticker card shows, and
+ *   the chapter turn brings the next chapter's card. While that chapter isn't built yet, the card is
+ *   the next chapter's with 「未完待續」 on its split-flap row and `SOON_LINES` under it; then the 目錄.
  * - **Settings** (GDD § 2.11; #104, D-67): the 設定 screen (`Settings.tsx`) writes them through the
  *   store and they apply live, read through `effectiveSettings` (長輩模式 over the player's own
  *   values): tick speed, 大字 (`TextScaleContext` and `[data-text-size="big"]` on the root and on
@@ -91,6 +96,10 @@ export interface GameShellProps {
   readonly chapterCard?: number;
   /** Visual QA fixtures (#103): the album as it opens after the spread, the print landed and every note on; `retaken` adds a second shot to choose from */
   readonly albumAfter?: { readonly chapter: number; readonly retaken?: Photo };
+  /** Visual QA fixtures (#107): this chapter's end lines over its finished spread, their first beat */
+  readonly endLinesOf?: number;
+  /** Visual QA fixtures (#107): the card of this chapter, not built yet — 「未完待續」 on its row, its line under it */
+  readonly soonCard?: number;
 }
 
 const SPEEDS: readonly TickSpeed[] = ['slow', 'normal', 'fast'];
@@ -114,6 +123,18 @@ interface CardShow {
   readonly end: () => void;
 }
 
+/** The chapter card on screen: its chapter, and whether that chapter isn't built yet (「未完待續」, #107). */
+interface BoardShow {
+  readonly chapter: number;
+  readonly soon?: boolean;
+}
+
+/** The lines under a card: its chapter's (§ 5.2), or the 未完待續 line (#107). */
+const boardLines = (b: BoardShow) => (b.soon ? SOON_LINES : cardLines(b.chapter));
+
+/** After the chapter-end lines, the new coin fills the tray and holds this long before the sticker card (#107). */
+export const TRAY_FILL_MS = 1300;
+
 /** The album over the book after a spread (#103): the chapter, and how to go on. */
 interface AlbumAfter {
   readonly chapter: number;
@@ -124,7 +145,7 @@ interface AlbumAfter {
   readonly go: () => void;
 }
 
-export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter }: GameShellProps) {
+export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter, endLinesOf, soonCard }: GameShellProps) {
   const [store] = useState(() => given ?? new ProgressStore({ registry: reg }));
   useEffect(() => (given ? undefined : () => store.dispose()), [given, store]);
   const save = useSyncExternalStore(store.subscribe, store.get);
@@ -246,12 +267,13 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   );
 
   // ——— The chapter card (#102): the board hanging in a chapter turn, and its lines ———
-  const [board, setBoard] = useState<number | null>(chapterCard ?? null);
+  const fixtureBoard: BoardShow | null = chapterCard !== undefined ? { chapter: chapterCard } : soonCard !== undefined ? { chapter: soonCard, soon: true } : null;
+  const [board, setBoard] = useState<BoardShow | null>(fixtureBoard);
   // 大字 (#104): the card's lines are bigger, so a beat holds 2 of them under the card
   const cardPerBeat = settings.textScale > 1 ? 2 : MAX_PER_BEAT;
   const cardPerBeatRef = useRef(cardPerBeat);
   cardPerBeatRef.current = cardPerBeat;
-  const [cardTalk, setCardTalk] = useState<TalkQueue>(() => (chapterCard === undefined ? EMPTY_TALK : enqueue(EMPTY_TALK, loadLines(cardLines(chapterCard)), cardPerBeat)));
+  const [cardTalk, setCardTalk] = useState<TalkQueue>(() => (fixtureBoard === null ? EMPTY_TALK : enqueue(EMPTY_TALK, loadLines(boardLines(fixtureBoard)), cardPerBeat)));
   const cardTalkRef = useRef(cardTalk);
   cardTalkRef.current = cardTalk;
   /** Resolves the turn's hold once the last beat is tapped away */
@@ -263,10 +285,10 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
     done();
   }, [cardTalk]);
   const cardHold = useCallback(
-    (chapter: number): TurnInterlude => ({
+    (shown: BoardShow): TurnInterlude => ({
       run: () =>
         new Promise<void>((resolve) => {
-          const lines = loadLines(cardLines(chapter));
+          const lines = loadLines(boardLines(shown));
           if (lines.length === 0) return resolve();
           linesDone.current = resolve;
           setCardTalk(enqueue(EMPTY_TALK, lines, cardPerBeatRef.current));
@@ -277,17 +299,19 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
 
   /**
    * Plays a turn to `next`: a page fold, a chapter turn (with the card) or a chapter open (`from`
-   * null: the card over the book on the quilt). `swap` puts the new page in. False when there is no
+   * null: the card over the book on the quilt). `swap` puts the new page in. `shown` overrides the
+   * card (the 未完待續 card, #107); `finished` runs once the turn is over. False when there is no
    * book to turn.
    */
   const startTurn = useCallback(
-    (kind: TurnKind, next: PageDef, from: PageDef | null, swap: () => void, interlude?: TurnInterlude): boolean => {
+    (kind: TurnKind, next: PageDef, from: PageDef | null, swap: () => void, interlude?: TurnInterlude, shown?: BoardShow, finished?: () => void): boolean => {
       const book = bookRef.current, overlay = overlayRef.current;
       if (!book || !overlay) return false;
       const [vw, vh] = readSize().split('x').map(Number);
       const layout = bookLayout(vw, vh);
       const withCard = kind !== 'fold';
-      if (withCard) setBoard(next.chapter);
+      const boardShow = shown ?? { chapter: next.chapter };
+      if (withCard) setBoard(boardShow);
       const run = playTurn(
         turnPlan(kind, reduced),
         { book, overlay, pageBox: () => pageBoxRef.current, scale: layout.scale, at: { x: layout.x + PAGE_VIEW_BOX.x * layout.scale, y: layout.y + PAGE_VIEW_BOX.y * layout.scale } },
@@ -297,7 +321,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
           card: withCard ? () => boardLayerRef.current?.querySelector<HTMLElement>('[data-chapter-board]') ?? null : undefined,
         },
         swap,
-        { interlude, card: withCard ? cardHold(next.chapter) : undefined, confetti: !settings.lowPower, sound: (cue, delayMs = 0) => sinkRef.current([{ cue, delay: delayMs / 1000 }]) },
+        { interlude, card: withCard ? cardHold(boardShow) : undefined, confetti: !settings.lowPower, sound: (cue, delayMs = 0) => sinkRef.current([{ cue, delay: delayMs / 1000 }]) },
       );
       turnRef.current = run;
       setTurning(true);
@@ -310,6 +334,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
         linesDone.current = null;
         setCardTalk(EMPTY_TALK);
         setTurning(false);
+        finished?.();
       });
       return true;
     },
@@ -327,6 +352,56 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
     if (opening && opened) startTurn('open', opened, null, () => undefined);
   }, [base, reg, opening, startTurn]);
 
+  // ——— The chapter's end (#107): its lines over the finished spread, then the tray's new coin ———
+  const [endTalk, setEndTalk] = useState<TalkQueue>(() => (endLinesOf === undefined ? EMPTY_TALK : enqueue(EMPTY_TALK, loadLines(endLines(endLinesOf)), cardPerBeat)));
+  const endTalkRef = useRef(endTalk);
+  endTalkRef.current = endTalk;
+  // A fixture's end lines (#107) fill the tray when tapped through, as the game's do
+  const endDone = useRef<(() => void) | null>(
+    endLinesOf === undefined
+      ? null
+      : () => {
+          setTrayHold(null);
+          setTrayFill((n) => n + 1);
+        },
+  );
+  useEffect(() => {
+    if (currentBeat(endTalk) !== null || endDone.current === null) return;
+    const done = endDone.current;
+    endDone.current = null;
+    done();
+  }, [endTalk]);
+  /** The HUD's coins held back until the chapter-end lines are read (null: the save's) */
+  const [trayHold, setTrayHold] = useState<number | null>(() => (endLinesOf === undefined ? null : Math.max(0, treasuresFound(store.get()) - 1)));
+  /** Counts tray fills: the newest coin replays its fill when it changes (0: none yet) */
+  const [trayFill, setTrayFill] = useState(0);
+  const endTimer = useRef(0);
+  useEffect(() => () => window.clearTimeout(endTimer.current), []);
+  /**
+   * The chapter's end after its album (#107): the end lines a tap a beat, then (when the treasure is
+   * new) the tray's slot fills and holds a moment. Resolves when it's time for the sticker card.
+   */
+  const endChapter = useCallback(
+    (chapter: number, newCoin: boolean) =>
+      new Promise<void>((resolve) => {
+        const fill = () => {
+          if (!newCoin) return resolve();
+          setTrayHold(null);
+          setTrayFill((n) => n + 1);
+          pulse('sticker', vibrateRef.current);
+          sinkRef.current([{ cue: 'dropCoin', delay: 0.35 }, { cue: 'sparkle', delay: 0.45 }]);
+          endTimer.current = window.setTimeout(resolve, reduced ? TRAY_FILL_MS / 2 : TRAY_FILL_MS);
+        };
+        const lines = loadLines(endLines(chapter));
+        if (lines.length === 0) return fill();
+        endDone.current = fill;
+        setEndTalk(enqueue(EMPTY_TALK, lines, cardPerBeatRef.current));
+      }),
+    [reduced],
+  );
+  /** The chapter-end lines are up: a modal, a tap is the next beat */
+  const ending = currentBeat(endTalk) !== null;
+
   // ——— The spread's photo and the album after it (#103) ———
   const shotRef = useRef<{ readonly id: string; readonly shot: Shot } | null>(null);
   const [after, setAfter] = useState<AlbumAfter | null>(() =>
@@ -342,11 +417,20 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
 
   const onDone = useCallback(
     (from: PageDef, result: PageResult) => {
+      const coinsBefore = treasuresFound(store.get());
       store.completePage(from.id, result);
+      const newCoin = treasuresFound(store.get()) > coinsBefore;
+      // The tray's new coin waits for the chapter's end (#107)
+      if (newCoin) setTrayHold(coinsBefore);
       const next = reg.nextPage(from.id);
       setTurning(true);
       window.clearTimeout(holdTimer.current);
       const turnOn = () => {
+        // The book's last chapter so far (#107): the next chapter's card reads 「未完待續」, then the 目錄
+        if (next === null && from.spread && hasNextChapter(from.chapter)) {
+          const soon = { chapter: from.chapter + 1, soon: true };
+          if (startTurn('chapter', from, from, () => undefined, { run: () => showCard(from.id) }, soon, () => go({ t: 'next', id: null }))) return;
+        }
         const kind = next !== null && next.chapter !== from.chapter ? 'chapter' : 'fold';
         if (next === null || !startTurn(kind, next, from, () => go({ t: 'next', id: next.id }), { run: () => showCard(from.id) })) {
           // The last page (or no book to turn): the card, then the 目錄
@@ -368,13 +452,17 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
             fresh: true,
             go: () => {
               setAfter(null);
-              turnOn();
+              void endChapter(from.chapter, newCoin).then(turnOn);
             },
           });
-        } else turnOn();
+        } else {
+          // No album (no shot, a still): the tray's coin as the page completes
+          if (newCoin) setTrayHold(null);
+          turnOn();
+        }
       }, GRAB_HOLD_MS);
     },
-    [store, reg, go, showCard, startTurn],
+    [store, reg, go, showCard, startTurn, endChapter],
   );
   const onSticker = useCallback((id: string, sticker: 'mischief' | 'tudigong') => store.earnSticker(id, sticker), [store]);
   // A tap while the sticker card is up turns the page on; while the chapter card's lines play it is
@@ -383,6 +471,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
     const c = cardRef.current;
     if (c !== null && !c.leaving) c.end();
     else if (c !== null) return;
+    else if (currentBeat(endTalkRef.current) !== null) setEndTalk(advance);
     else if (currentBeat(cardTalkRef.current) !== null) setCardTalk(advance);
     else turnRef.current?.skip();
   }, []);
@@ -390,7 +479,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   const chrome = useMemo(
     () =>
       def && {
-        coins: treasuresFound(save),
+        coins: trayHold ?? treasuresFound(save),
+        trayFill,
         stickers: pageStickers(save, def.id),
         leftHand: save.settings.leftHand,
         onRetry: () => go({ t: 'retry' }),
@@ -398,7 +488,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
         // The hint ladder runs in the page (#100); the nudge comes after the 自動提示 setting's delay
         autoHintMs: autoHintMs(save.settings),
       },
-    [def, save, go],
+    [def, save, go, trayHold, trayFill],
   );
 
   // 大字 (#104): the chapter card as large as the screen allows
@@ -438,9 +528,9 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                   data-book=""
                   data-size={size}
                   data-folded={stickerCard ? '' : undefined}
-                  aria-hidden={reading ? true : undefined}
+                  aria-hidden={reading || ending ? true : undefined}
                   // The chapter card's still: the camera pulled back to the book on the quilt
-                  style={{ ...(covered ? { visibility: 'hidden' } : {}), ...(chapterCard !== undefined ? { transform: cameraTransform(true), transformOrigin: CAMERA_ORIGIN } : {}) }}
+                  style={{ ...(covered ? { visibility: 'hidden' } : {}), ...(fixtureBoard !== null ? { transform: cameraTransform(true), transformOrigin: CAMERA_ORIGIN } : {}) }}
                 >
                   <PagePlayer
                     key={`${def.id}-${base.run}`}
@@ -449,7 +539,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                     still={still}
                     reduced={reduced}
                     // A page that opens with its chapter card is held from its first frame (its intro waits for the card)
-                    hold={holdsPage(nav) || turning || opening || chapterCard !== undefined}
+                    hold={holdsPage(nav) || turning || opening || fixtureBoard !== null || endLinesOf !== undefined}
                     onDone={(_, result) => onDone(def, result)}
                     onPhoto={(shot) => onPhoto(def, shot)}
                     onSticker={(sticker) => onSticker(def.id, sticker)}
@@ -473,14 +563,26 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                   data-still={still ? '' : undefined}
                   role={reading ? 'dialog' : undefined}
                   aria-modal={reading ? true : undefined}
-                  aria-label={reading && board !== null ? chapterName(board) : undefined}
+                  aria-label={reading && board !== null ? chapterName(board.chapter) : undefined}
                 >
-                  {board !== null && <ChapterBoard key={board} chapter={board} hidden={chapterCard === undefined} top={BOARD_TOP} scale={boardK} />}
+                  {board !== null && (
+                    <ChapterBoard key={`${board.chapter}${board.soon ? '-soon' : ''}`} chapter={board.chapter} next={board.soon ? UI.chapterCard.soon : undefined} hidden={fixtureBoard === null} top={BOARD_TOP} scale={boardK} />
+                  )}
                   <div className="absolute inset-x-0 flex justify-center" style={{ top: `calc(${BOARD_TOP + BOARD_H * boardK + 4}px + env(safe-area-inset-top))` }}>
                     <CardTalk beat={currentBeat(cardTalk)} serial={cardTalk.serial} width={Math.min(Number(size.split('x')[0]) - 24, 366)} reduced={reduced} />
                   </div>
                   {reading && <button type="button" className="pointer-events-auto absolute inset-0 cursor-default opacity-0" aria-label={UI.chapterCard.more} onClick={onSkip} data-card-next="" />}
                 </div>
+                {/* The chapter-end lines (#107): over the finished spread, a modal; a tap is the next beat */}
+                {ending && def && (
+                  <div className="fixed inset-0 z-[45] flex items-center justify-center" role="dialog" aria-modal={true} aria-label={chapterName(def.chapter)} data-end-layer="">
+                    <div className="absolute inset-0" style={{ backgroundColor: C.nightInk, opacity: 0.34 }} data-end-scrim="" />
+                    <div className="relative flex justify-center" style={{ width: '100%' }}>
+                      <CardTalk beat={currentBeat(endTalk)} serial={endTalk.serial} width={Math.min(Number(size.split('x')[0]) - 24, 366)} reduced={reduced} />
+                    </div>
+                    <button type="button" className="absolute inset-0 cursor-default opacity-0" aria-label={UI.chapterCard.more} onClick={onSkip} data-end-next="" />
+                  </div>
+                )}
                 {(card !== null || stickerCard) && (
                   <CardLayer title={reg.pageById(card?.id ?? def.id)?.title ?? def.title} stickers={pageStickers(save, card?.id ?? def.id)} leaving={card?.leaving ?? false} reduced={reduced} still={still} />
                 )}

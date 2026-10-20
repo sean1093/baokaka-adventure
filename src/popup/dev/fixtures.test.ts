@@ -124,6 +124,6 @@ describe('the photo and album fixtures (#103)', () => {
     const retake = popupFixture('album-c1-retake')!;
     expect(retake.screen!.save.photos[1]).toMatchObject({ frame: 'B', mocha: true });
     expect(retake.screen!.albumAfter?.retaken).toMatchObject({ frame: 'C', mocha: false });
-    expect(popupFixture('spread-shell')!.screen!.spread).toBe(true);
+    expect(popupFixture('spread-shell')!.screen!.nav.base).toEqual({ kind: 'page', id: 'c1p6', run: 0 });
   });
 });

@@ -70,7 +70,8 @@ export interface Crossing {
  * Perch furniture (bible § 4 perches): a pillar for a high perch, a bench for a seat; indoors (the
  * prologue, page E) a perch up on the standing page is a wall shelf instead of a pillar or a bench,
  * and a box perch (C9, `hidesMocha`) is a laundry basket whose rim is the perch node (#106: Mocha's
- * in-box frame is his head and paws, cut flat at the rim).
+ * in-box frame is his head and paws, cut flat at the rim). A perch on a node a moving part carries
+ * (1-5's car panel, 1-6's cart awning; #107) gets no furniture: the part's art holds it.
  */
 export interface PerchPost {
   readonly perch: Id;
@@ -214,7 +215,8 @@ function buildStage(def: PageDef): Stage {
   const posts: PerchPost[] = def.perches
     .map((p: PerchDef) => {
       const n = byId.get(p.node);
-      if (n === undefined) return null;
+      // A perch riding a moving part (1-5's car panel, 1-6's cart awning, #107) is carried by the part's own art
+      if (n === undefined || (n.attach !== undefined && !gates.has(n.attach.part))) return null;
       const below = runs.filter((r) => r.y > n.y && n.x >= r.x0 && n.x <= r.x1).sort((a, b) => a.y - b.y)[0];
       const foot = below ? below.y - 6 : Math.max(n.y + 30, GUTTER_Y + 40);
       const kind: PerchPost['kind'] = p.hidesMocha ? 'basket' : indoors && n.y < GUTTER_Y ? 'shelf' : n.height >= 2 ? 'pillar' : 'bench';
@@ -224,7 +226,8 @@ function buildStage(def: PageDef): Stage {
 
   const carriages: Carriage[] = [];
   for (const part of def.parts) {
-    const riders = def.nodes.filter((n) => n.attach?.part === part.id);
+    // Mocha's perches riding it (a cart's awning) are not what the card carries Baokaka on
+    const riders = def.nodes.filter((n) => n.attach?.part === part.id && !perchNodes.has(n.id));
     if (riders.length === 0 || part.preset === 'lift' || part.preset === 'carrier' || part.preset === 'gate') continue;
     const all = riders.flatMap((n) => Object.values(n.attach!.pos));
     const ys = new Set(all.map(([, y]) => y));

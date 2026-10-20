@@ -55,6 +55,27 @@ const CARD_LINES: Readonly<Record<number, readonly LineKey[]>> = {
 /** The chapter card's lines (none for a chapter not written yet). */
 export const cardLines = (chapter: number): readonly LineKey[] => CARD_LINES[chapter] ?? [];
 
+/**
+ * The chapter-end lines (GDD § 4.3 1-6 notes, § 5.2 「N-6 end」; #107): they play after the album,
+ * over the finished spread, a tap a beat; then the 抓周 tray's slot fills and the next chapter's card
+ * comes. Chapters 2–10 add theirs with their content issues.
+ */
+const END_LINES: Readonly<Record<number, readonly LineKey[]>> = {
+  1: ['c1p6.end.1', 'c1p6.end.2', 'c1p6.end.3', 'c1p6.end.4'],
+};
+
+/** A chapter's end lines (none for a chapter not written yet). */
+export const endLines = (chapter: number): readonly LineKey[] => END_LINES[chapter] ?? [];
+
+/**
+ * The lines under the next chapter's card while that chapter isn't built yet (#107, D-70): the card
+ * shows the next chapter with 「未完待續」 on its split-flap row, and this line plays under it.
+ */
+export const SOON_LINES: readonly LineKey[] = ['rec.soon.1'];
+
+/** Whether chapter `chapter + 1` exists in the book (the 未完待續 card can name it). */
+export const hasNextChapter = (chapter: number): boolean => CHAPTERS.some((c) => c.chapter === chapter + 1);
+
 /** A chapter's info (the prologue's for an unknown chapter). */
 export function chapterInfo(chapter: number): ChapterInfo {
   return CHAPTERS.find((c) => c.chapter === chapter) ?? CHAPTERS[0];

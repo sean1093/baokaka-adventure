@@ -2,6 +2,7 @@ import { POPUP as C, POPUP_CHAPTER_CLOCK, POPUP_STAGE as S, mixHex, type PopupCh
 import type { Kind, PageDef } from '../../core/types';
 import { PRESET_DEFS, brad, depth, f1, kitDefs, pageBlock, paw, pinholes, ref, scallopBand, seeded, skyline, softEllipse, sparkle, translate, type DefName, type KitCtx } from '../../art';
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorOutline, floorWiden, towardVp } from '../geometry';
+import { treasureArt } from '../photo/treasureArt';
 import { LEDGE_DEPTH, type Carriage, type LedgeRun, type PerchPost, type Slope } from '../stage';
 
 /**
@@ -518,7 +519,8 @@ const musicNote = (x: number, y: number) =>
 
 /** What the thought bubble shows (GDD § 2.2.6). */
 export type BubbleShow =
-  | { kind: 'want'; target: Kind | 'mocha'; reach: boolean }
+  /** `treasure`: the target is a spread's chapter treasure (#107): its own picture, not the bead */
+  | { kind: 'want'; target: Kind | 'mocha'; reach: boolean; treasure?: number }
   | { kind: 'text'; text: string }
   | { kind: 'cry' }
   | { kind: 'heart' }
@@ -536,10 +538,13 @@ export const bubbleText = (t: string, x: number, y: number, size: number, fill: 
  */
 export function thoughtContent(ctx: KitCtx, show: BubbleShow): string {
   switch (show.kind) {
-    case 'want':
+    case 'want': {
+      // A chapter treasure is drawn as itself (about 40 units across: halved to the icons' 22)
+      const icon = show.treasure !== undefined ? `<g transform="scale(.56)" data-bubble-treasure="${show.treasure}">${treasureArt(ctx, show.treasure)}</g>` : bubbleIcon(ctx, show.target);
       return show.reach
-        ? `<g transform="${translate(-22, 0)}">${bubbleIcon(ctx, show.target)}</g><g data-reach="">${bubbleText('要！', 13, 0, 22, C.sealInk)}</g>`
-        : `<g transform="scale(1.25)">${bubbleIcon(ctx, show.target)}</g>`;
+        ? `<g transform="${translate(-22, 0)}">${icon}</g><g data-reach="">${bubbleText('要！', 13, 0, 22, C.sealInk)}</g>`
+        : `<g transform="scale(1.25)">${icon}</g>`;
+    }
     case 'text':
       return bubbleText(show.text, 0, 0, 26, C.ink);
     case 'cry':

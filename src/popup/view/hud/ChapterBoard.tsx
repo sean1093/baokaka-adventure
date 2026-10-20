@@ -111,24 +111,31 @@ export interface ChapterBoardProps {
   readonly hidden?: boolean;
   /** How far below the screen's top the box hangs (the safe area, a little air) */
   readonly top?: number;
+  /**
+   * The split-flap row's words instead of the chapter's 「下一站」 stop: 「未完待續」 on the card of a
+   * chapter not built yet, after the last one that is (#107)
+   */
+  readonly next?: string;
 }
 
-export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1 }: ChapterBoardProps) {
+export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1, next }: ChapterBoardProps) {
   const info = chapterInfo(chapter);
   const big = s > 1;
   const u = (n: number) => n * s;
   const vars = { '--s': s, '--min-text': big ? `${BIG_MIN_PX}px` : '0px' } as CSSProperties;
   const name = chapterName(chapter);
   const art = useMemo(() => cardArt(), []);
-  const tiles = flapTiles(info.next);
+  const nextText = next ?? info.next;
+  const tiles = flapTiles(nextText);
   const lm = landmarkSize(info.landmark);
   return (
     <div
       className="cb-card"
       style={{ ...vars, top: `calc(${top}px + env(safe-area-inset-top))`, width: u(BOARD_W), height: u(BOARD_H), marginLeft: -u(BOARD_W) / 2, visibility: hidden ? 'hidden' : undefined }}
       role="status"
-      aria-label={`${name} ${info.title}，${info.time}，${info.landmark}，${UI.chapterCard.next} ${info.next}`}
+      aria-label={`${name} ${info.title}，${info.time}，${info.landmark}，${UI.chapterCard.next} ${nextText}`}
       data-chapter-board={chapter}
+      data-card-soon={next !== undefined ? '' : undefined}
     >
       <div className="cb-tilt" aria-hidden="true">
         <svg width={u(BOARD_W)} height={u(BOARD_H + STRING_TOP)} viewBox={`0 ${-STRING_TOP} ${BOARD_W} ${BOARD_H + STRING_TOP}`} style={{ top: -u(STRING_TOP) }} className="absolute left-0 top-0 block overflow-visible" dangerouslySetInnerHTML={{ __html: art }} />
@@ -152,7 +159,7 @@ export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1 }:
           </span>
         </span>
         {/* The departure board's row: 「下一站」 and one split-flap tile per character */}
-        <span className="cb-row" style={{ left: u(IN_X), top: u(BOARD_Y), width: u(IN_W), height: u(BOARD_ROW_H) }} data-card-next={info.next}>
+        <span className="cb-row" style={{ left: u(IN_X), top: u(BOARD_Y), width: u(IN_W), height: u(BOARD_ROW_H) }} data-card-next={nextText}>
           <span className="cb-label" style={{ width: u(FLAP_LABEL_W), fontFamily: ROUND, color: C.sealGlyph }}>
             {UI.chapterCard.next}
           </span>

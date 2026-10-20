@@ -45,6 +45,14 @@ describe('stage from the walk graph', () => {
     expect(stageOf(c1p2).posts.find((p) => p.perch === 'pillar')?.kind).toBe('pillar');
   });
 
+  test('a perch riding a moving part gets no furniture, and the cart carries only his nodes (#107)', () => {
+    const lift = stageOf(pageById('c1p5')!);
+    expect(lift.posts.map((p) => p.perch).sort()).toEqual(['b1Shelf', 'counter']);
+    const spread = stageOf(pageById('c1p6')!);
+    expect(spread.posts.map((p) => p.perch)).toEqual(['clock']);
+    expect(spread.carriages.map((c) => [c.part, c.nodes])).toEqual([['cart', ['cartStep', 'K']]]);
+  });
+
   test('unconnected nodes and cat-only edges draw no ledge', () => {
     const s = stageOf(page({ nodes: [n('A', 0), n('B', 100), n('C', 200, 0, 2), n('lone', 300)], edges: [e('A', 'B'), e('B', 'C', { kind: 'jump' })] }));
     expect(s.runs.flatMap((r) => r.nodes)).toEqual(['A', 'B']);

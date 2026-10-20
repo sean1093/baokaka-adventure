@@ -30,15 +30,23 @@ describe('the registry (PAGES)', () => {
     for (const p of PAGES) expect(p.id).toBe(`c${p.chapter}p${p.index}`);
   });
 
-  test('starts with the prologue, 0-1 to 0-4, then 1-2', () => {
-    expect(PAGES.map((p) => p.id).slice(0, 5)).toEqual(['c0p1', 'c0p2', 'c0p3', 'c0p4', 'c1p2']);
+  test('holds the vertical slice: the prologue, 0-1 to 0-4, then chapter 1, 1-1 to 1-6 (#107)', () => {
+    expect(PAGES.map((p) => p.id).slice(0, 10)).toEqual(['c0p1', 'c0p2', 'c0p3', 'c0p4', 'c1p1', 'c1p2', 'c1p3', 'c1p4', 'c1p5', 'c1p6']);
+  });
+
+  test('chapter 1 ends on its spread, the treasure its goal (GDD § 2.9)', () => {
+    const spread = pageById('c1p6')!;
+    expect(spread.spread).toBe(true);
+    expect(spread.photoRect).toBeDefined();
+    expect(spread.attractors.filter((a) => a.goal).map((a) => a.id)).toEqual(['drumstick']);
   });
 
   test('pageById, nextPage and chapterOf', () => {
     expect(pageById('c1p2')?.title).toBe('月台的縫');
     expect(pageById('nope')).toBeUndefined();
     expect(nextPage('c0p1')?.id).toBe('c0p2');
-    expect(nextPage('c0p4')?.id).toBe('c1p2');   // across chapters
+    expect(nextPage('c0p4')?.id).toBe('c1p1');   // across chapters
+    expect(nextPage('c1p1')?.id).toBe('c1p2');
     expect(nextPage(PAGES[PAGES.length - 1].id)).toBeNull();
     expect(nextPage('nope')).toBeNull();
     expect(chapterOf('c0p1')).toBe(0);
@@ -46,9 +54,11 @@ describe('the registry (PAGES)', () => {
     expect(chapterOf('nope')).toBeUndefined();
   });
 
-  test('fills in words and growth: nothing is learned before 1-2', () => {
+  test('fills in words and growth: 嗶！ is learned on 1-3, so the pages after it have it', () => {
     expect(pageById('c0p1')).toMatchObject({ words: [], baby: { growth: 0 } });
     expect(pageById('c1p2')).toMatchObject({ words: [], baby: { growth: 0 } });
+    expect(pageById('c1p3')).toMatchObject({ words: [], baby: { growth: 0 } });
+    for (const id of ['c1p4', 'c1p5', 'c1p6']) expect(pageById(id), id).toMatchObject({ words: ['beep'], baby: { growth: 0 } });
   });
 });
 

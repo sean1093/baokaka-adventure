@@ -7,7 +7,7 @@ import { completePage, freshSave, openPage, type SaveV1 } from './progress';
 /** The navigation state machine (#97; GDD § 2.13): cover → page → menu → contents, and the resume target. */
 
 const fresh = freshSave(registry);
-const played = ['c0p1', 'c0p2', 'c0p3', 'c0p4'].reduce((s, id) => completePage(s, id), fresh); // the prologue solved, 1-2 current
+const played = ['c0p1', 'c0p2', 'c0p3', 'c0p4', 'c1p1'].reduce((s, id) => completePage(s, id), fresh); // the prologue and 1-1 solved, 1-2 current
 
 const run = (save: SaveV1, ...actions: NavAction[]): NavState => actions.reduce((s, a) => navigate(s, a, save), COVER);
 
@@ -119,8 +119,9 @@ describe('navigate', () => {
 describe('opensChapter (#102: the chapter card comes first)', () => {
   test('a chapter\'s first registered page opens it; the others and unknown ids do not', () => {
     expect(opensChapter('c0p1', registry)).toBe(true);
-    // 1-1 is not built yet: 1-2 stands in as chapter 1's first page
-    expect(opensChapter('c1p2', registry)).toBe(true);
+    // 1-1 opens chapter 1 (#107); 1-2 no longer does
+    expect(opensChapter('c1p1', registry)).toBe(true);
+    expect(opensChapter('c1p2', registry)).toBe(false);
     const page = (id: string, chapter: number, index: number) => ({ ...registry.pageById('c0p1')!, id, chapter, index });
     const reg = buildRegistry([page('c0p1', 0, 1), page('c0p2', 0, 2), page('c1p1', 1, 1)]);
     expect(opensChapter('c0p2', reg)).toBe(false);
@@ -147,9 +148,9 @@ describe('the HUD and the bar read the save', () => {
     // The prologue has four pages
     expect(chapterStickers(fresh, 0)).toHaveLength(4);
     // A registered page with that index is read by its own id
-    const spread = { ...registry.pageById('c1p2')!, id: 'lab-spread', index: 6 } as PageDef;
-    const reg = buildRegistry([...registry.pages, spread]);
-    expect(chapterStickers({ ...fresh, pages: { 'lab-spread': { solved: true } } }, 1, reg)[5]).toEqual([true, false, false]);
+    const spread = { ...registry.pageById('c1p6')!, id: 'other-spread' } as PageDef;
+    const reg = buildRegistry([...registry.pages.filter((p) => p.id !== 'c1p6'), spread]);
+    expect(chapterStickers({ ...fresh, pages: { 'other-spread': { solved: true } } }, 1, reg)[5]).toEqual([true, false, false]);
   });
 
   test('a page’s stickers', () => {

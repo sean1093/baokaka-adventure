@@ -4,7 +4,6 @@ import { PAGES } from '../pages';
 import { PagePlayer } from '../view/PagePlayer';
 import { AffordanceSheet } from './AffordanceSheet';
 import { POPUP_FIXTURES, fixtureFrame, fixtureStore, popupFixture } from './fixtures';
-import { SPREAD_REGISTRY } from './labPages';
 import { GameShell } from '../view/screens/GameShell';
 import { SpritesAnchorsSheet } from './SpriteSheet';
 import { updateSettings } from '../game/progress';
@@ -27,13 +26,12 @@ import '../view/textSize.css';
 export function FixtureView({ name, still, big: bigParam = false }: { name: string; still: boolean; big?: boolean }) {
   const fixture = popupFixture(name);
   const frame = useMemo(() => (fixture ? fixtureFrame(fixture) : null), [fixture]);
-  const reg = fixture?.screen?.spread ? SPREAD_REGISTRY : undefined;
   // 大字 (#104): the fixture's own, or `text=big` for any fixture (a screen reads it from its save)
   const big = bigParam || fixture?.big === true;
   const store = useMemo(() => {
     if (!fixture?.screen) return null;
     const save = big ? updateSettings(fixture.screen.save, { bigText: true }) : fixture.screen.save;
-    return fixtureStore(save, fixture.screen.spread ? SPREAD_REGISTRY : undefined);
+    return fixtureStore(save);
   }, [fixture, big]);
   useEffect(() => () => store?.dispose(), [store]);
   if (!fixture || !frame) {
@@ -58,7 +56,7 @@ export function FixtureView({ name, still, big: bigParam = false }: { name: stri
         ) : fixture.sheet === 'sprites-anchors' ? (
           <SpritesAnchorsSheet still={still} />
         ) : fixture.screen && store ? (
-          <GameShell key={`${fixture.name}-${still}-${big}`} store={store} initial={fixture.screen.nav} still={still} reduced={reduced} stickerCard={fixture.screen.card} chapterCard={fixture.screen.chapterCard} albumAfter={fixture.screen.albumAfter} registry={reg} />
+          <GameShell key={`${fixture.name}-${still}-${big}`} store={store} initial={fixture.screen.nav} still={still} reduced={reduced} stickerCard={fixture.screen.card} chapterCard={fixture.screen.chapterCard} albumAfter={fixture.screen.albumAfter} endLinesOf={fixture.screen.endLinesOf} soonCard={fixture.screen.soonCard} />
         ) : (
           <PagePlayer
             key={`${fixture.name}-${still}`}

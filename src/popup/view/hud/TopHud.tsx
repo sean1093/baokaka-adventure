@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { useSvgIds } from '../../../art/useSvgIds';
-import { clockChip, hudPaper, hudTape, kitCtx, kitDefs, trayCoins, type KitCtx } from '../../art';
+import { clockChip, hudPaper, hudTape, kitCtx, kitDefs, trayCoin, trayCoins, traySlotX, type KitCtx } from '../../art';
 import { chapterLine } from '../../content';
 import { HUD_H } from '../geometry';
+import './stickers.css';
 
 /**
  * The top HUD (GDD § 2.1 page anatomy; popup art bible § 7; #97): the cream deckled paper label
@@ -19,6 +20,10 @@ import { HUD_H } from '../geometry';
  * Drawn in a 390 × 96 box, scaled to the screen's width on narrow phones (the caller's `scale`).
  * With 大字 (`textScale` 1.25, #104) every word is 25 % larger (the landmark 31 px, the rest 25 px);
  * the clock chip grows with its digits, and the chapter line is condensed to keep clear of the tray.
+ *
+ * At a chapter's end the newest coin **fills** its slot (#107, GDD § 4.3 1-6 notes): it drops in
+ * from above with a squash and a foil flare rings out once (`fill`, a serial that replays it; a
+ * fade under reduced motion, `stickers.css`).
  */
 
 export interface TopHudProps {
@@ -39,6 +44,8 @@ export interface TopHudProps {
   readonly scale?: number;
   /** 大字 (#104): 1, or 1.25 */
   readonly textScale?: number;
+  /** The newest coin fills its slot now (#107): a serial that replays it; 0 / absent: no fill */
+  readonly fill?: number;
 }
 
 /** Row 1's room: from the label's text inset to the clock chip. */
@@ -56,18 +63,21 @@ export function runWidth(text: string, px: number, spacing = 0): number {
   return ems * px + spacing * [...text].length;
 }
 
-export function TopHud({ landmark, title, chapter, index, time, coins, moon = true, scale = 1, textScale = 1 }: TopHudProps) {
+export function TopHud({ landmark, title, chapter, index, time, coins, moon = true, scale = 1, textScale = 1, fill = 0 }: TopHudProps) {
   const ids = useSvgIds('hud');
+  const filling = fill > 0 && coins >= 1 && coins <= 9;
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('hud'), id: ids }), [ids]);
   const art = useMemo(
     () => ({
       defs: kitDefs(ctx, ['foil', 'coin']),
       paper: hudPaper(ctx, { x: 14, y: 10, w: 362, h: 80 }),
       chip: clockChip(ctx, 96, moon),
-      tray: trayCoins(ctx, Math.max(0, Math.min(9, coins)), 13, 5.2),
+      // The filling coin is drawn over its dimple on its own (below)
+      tray: trayCoins(ctx, Math.max(0, Math.min(9, coins)) - (filling ? 1 : 0), 13, 5.2),
+      coin: trayCoin(ctx, 0, 5.2),
       tape: hudTape(ctx, 390, 86),
     }),
-    [ctx, moon, coins],
+    [ctx, moon, coins, filling],
   );
   const sub = chapterLine(chapter, index);
   const k = textScale;
@@ -112,7 +122,15 @@ export function TopHud({ landmark, title, chapter, index, time, coins, moon = tr
             {time}
           </text>
         </g>
-        <g transform="translate(250 70)" data-tray={coins} dangerouslySetInnerHTML={{ __html: art.tray }} />
+        <g transform="translate(250 70)" data-tray={coins}>
+          <g dangerouslySetInnerHTML={{ __html: art.tray }} />
+          {filling && (
+            <g key={fill} transform={`translate(${traySlotX(coins - 1, 13)} 0)`} data-tray-fill={coins}>
+              <circle className="tray-flare" r={8} fill="none" stroke={C.goldLight} strokeWidth={2} />
+              <g className="tray-drop" dangerouslySetInnerHTML={{ __html: art.coin }} />
+            </g>
+          )}
+        </g>
       </g>
       <g dangerouslySetInnerHTML={{ __html: art.tape }} />
     </svg>

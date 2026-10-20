@@ -141,6 +141,12 @@ export interface PartDef {
   attractor?: Id;
   /** art registry key, e.g. 'c1/train-blue' */
   art: string;
+  /**
+   * A node the part sits on (#107: 1-6's bento lid on its cart, 1-5's panel in the car): its `hit`
+   * and art are authored where the node is in the initial state, and the view moves both with the
+   * node. View only: the simulation reads the authored `hit` (event origins).
+   */
+  ridesOn?: Id;
 }
 
 export interface AttractorDef {

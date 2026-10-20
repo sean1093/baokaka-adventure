@@ -100,6 +100,27 @@ export function dragSpec(part: PartDef): DragSpec | undefined {
   return undefined;
 }
 
+/**
+ * How far a part that rides a node (`ridesOn`, #107: 1-6's bento lid on its cart) has moved from
+ * where its `hit` and art were authored — the node's place in the initial state. [0, 0] otherwise.
+ */
+export function rideOffset(def: PageDef, state: SimState, part: PartDef): Pt {
+  const home = rideHome(def, part);
+  const now = part.ridesOn === undefined ? undefined : nodePos(def, state, part.ridesOn);
+  return home === undefined || now === undefined ? [0, 0] : [now[0] - home[0], now[1] - home[1]];
+}
+
+/** Where a riding part's node is in the initial state (its `hit` is authored there), or undefined. */
+export function rideHome(def: PageDef, part: PartDef): Pt | undefined {
+  const node = part.ridesOn === undefined ? undefined : def.nodes.find((n) => n.id === part.ridesOn);
+  if (node === undefined) return undefined;
+  const host = node.attach === undefined ? undefined : def.parts.find((p) => p.id === node.attach!.part);
+  return (host === undefined ? undefined : node.attach!.pos[compilePart(host).initial]) ?? [node.x, node.y];
+}
+
+/** A hit shape moved by (dx, dy). */
+export const shiftHit = (hit: Hit, [dx, dy]: Pt): Hit => (dx === 0 && dy === 0 ? hit : 'r' in hit ? { ...hit, cx: hit.cx + dx, cy: hit.cy + dy } : { ...hit, x: hit.x + dx, y: hit.y + dy });
+
 /** True when Mocha is on the page (settled or travelling), as the view draws him. */
 const mochaOn = (state: SimState) => state.mocha.perch !== null || state.mocha.path.length > 0;
 
@@ -111,7 +132,7 @@ export function targetsOf(def: PageDef, state: SimState): Target[] {
   }
   for (const part of def.parts) {
     if (compilePart(part).input === 'none' || partState(state, part.id) === undefined) continue;
-    out.push({ key: part.id, kind: 'part', id: part.id, hit: part.hit, layer: PRESET_Z[part.preset], drag: dragSpec(part) });
+    out.push({ key: part.id, kind: 'part', id: part.id, hit: shiftHit(part.hit, rideOffset(def, state, part)), layer: PRESET_Z[part.preset], drag: dragSpec(part) });
   }
   if (mochaOn(state) && !state.baby.linked) {
     for (const perch of def.perches) {

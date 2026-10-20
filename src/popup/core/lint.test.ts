@@ -41,6 +41,7 @@ const NEGATIVE: [name: string, expected: string[], page: PageDef][] = [
   ['a condition on a missing part', ['L01-unknown-ref'], variant((d) => (d.tudigong.visibleWhen = { part: 'sign', in: ['on'] }))],
   ['a condition on a missing perch', ['L01-unknown-ref'], variant((d) => (d.tudigong.visibleWhen = { mochaAt: 'roof' }))],
   ['a condition on a missing node', ['L01-unknown-ref'], variant((d) => (d.tudigong.visibleWhen = { babyAt: 'roof' }))],
+  ['a part riding a missing node', ['L01-unknown-ref'], variant((d) => (d.parts[0].ridesOn = 'roof'))],
   ['a condition on a missing creature', ['L01-unknown-ref'], variant((d) => (d.tudigong.visibleWhen = { creature: 'goose', at: 'away' }))],
   ['a condition on a missing attractor', ['L01-unknown-ref'], variant((d) => (d.tudigong.visibleWhen = { consumed: 'snack' }))],
   ['a flag no reaction sets', ['L01-unknown-ref'], variant((d) => (d.tudigong.visibleWhen = { any: [{ flag: 'rang' }] }))],

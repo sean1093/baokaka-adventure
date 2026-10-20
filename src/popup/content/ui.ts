@@ -19,7 +19,7 @@ export const UI = {
    * The chapter card (§ 2.13, § 5.2; #102): the split-flap row's label. Not in § 5.7 (D-65): the
    * accessible names of the tap layer while a turn plays (跳過) and while the card's lines play (下一句)
    */
-  chapterCard: { next: '下一站', skip: '跳過', more: '下一句' },
+  chapterCard: { next: '下一站', skip: '跳過', more: '下一句', soon: '未完待續' },
   /** § 5.7 Photo (#103) */
   photo: { shutter: '咔嚓', retake: '再拍一次', keep: '放進相簿' },
   /**

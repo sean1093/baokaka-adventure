@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest';
 import { initialState, replay, step } from '../core';
 import type { PageDef, SimState, SolutionStep } from '../core/types';
 import { CHAPTER_NOTES, NOTE_POOL } from '../content/album';
-import { labPageById, SPREAD_REGISTRY } from '../dev/labPages';
 import { registry } from '../pages';
 import {
   AUTO_SNAP_MS,
@@ -22,7 +21,7 @@ import {
 
 /** The photo moment and the album notes (#103; GDD § 2.9, § 5.6). */
 
-const spread = labPageById('lab-spread')!;
+const spread = registry.pageById('c1p6')!;
 
 /** Every state a step list passes through, in order. */
 function states(def: PageDef, steps: readonly SolutionStep[]): SimState[] {
@@ -80,15 +79,16 @@ describe('the 「哇！」 meter and the slow approach', () => {
 });
 
 describe('photoReady: 2 edges from the treasure with a clear path (§ 2.9 step 1)', () => {
-  const to: SolutionStep[] = [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { wait: 'settle' }, { set: 'train', to: 'full' }, { wait: 'goal' }];
+  const to: SolutionStep[] = [{ tap: 'lid' }, { wait: 'settle' }, { say: 'beep' }, { wait: 'settle' }, { set: 'cart', to: 'platform' }, { wait: 'settle' }, { mocha: 'canopy' }, { wait: 'goal' }];
   const run = states(spread, to);
 
   test('only once the treasure is reachable, and before the grab', () => {
     const first = run.findIndex((s) => photoReady(spread, s));
     expect(first).toBeGreaterThan(0);
-    // Not while the train is jammed at half (the treasure is out of reach)
-    for (const s of run.slice(0, first)) expect(s.parts.train === 'full' && !s.done).toBe(false);
-    expect(run[first].parts.train).toBe('full');
+    // Not while the pigeon sits on the cart's step (the 雞腿 is out of reach)
+    for (const s of run.slice(0, first)) expect(s.creatures.pigeon === 'roof' && s.parts.cart === 'platform' && s.parts.exitGate === 'open').toBe(false);
+    expect(run[first].creatures.pigeon).toBe('roof');
+    expect(run[first].baby.node).toBe('cartStep');
     expect(run[first].done).toBe(false);
     expect(run.at(-1)!.done).toBe(true);
     expect(photoReady(spread, run.at(-1)!)).toBe(false);
@@ -96,24 +96,25 @@ describe('photoReady: 2 edges from the treasure with a clear path (§ 2.9 step 1
 
   test('never on a page that is not a spread', () => {
     const c1p2 = registry.pageById('c1p2')!;
-    for (const s of states(c1p2, to)) expect(photoReady(c1p2, s)).toBe(false);
+    const steps: SolutionStep[] = [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { wait: 'settle' }, { set: 'train', to: 'full' }, { wait: 'goal' }];
+    for (const s of states(c1p2, steps)) expect(photoReady(c1p2, s)).toBe(false);
   });
 });
 
 describe('mochaInFrame: +M (§ 2.9)', () => {
-  test('摩卡 on the bench is inside the photoRect; on the pillar he is not', () => {
+  test('摩卡 on the cart\'s awning is inside the photoRect; on the station clock he is not', () => {
     const start = initialState(spread);
-    expect(start.mocha.perch).toBe('bench');
-    expect(mochaInFrame(spread, start)).toBe(true);
-    const onPillar = states(spread, [{ mocha: 'pillar' }, { wait: 'settle' }]).at(-1)!;
-    expect(onPillar.mocha.perch).toBe('pillar');
-    expect(mochaInFrame(spread, onPillar)).toBe(false);
+    expect(start.mocha.perch).toBe('clock');
+    expect(mochaInFrame(spread, start)).toBe(false);
+    const onAwning = states(spread, [{ set: 'cart', to: 'platform' }, { mocha: 'canopy' }, { wait: 'settle' }]).at(-1)!;
+    expect(onAwning.mocha.perch).toBe('canopy');
+    expect(mochaInFrame(spread, onAwning)).toBe(true);
   });
 
   test('travelling or without a photoRect, he is not in it', () => {
-    const start = initialState(spread);
-    expect(mochaInFrame(spread, { ...start, mocha: { ...start.mocha, perch: null, path: ['bench', 'pillarTop'], to: 'pillar' } })).toBe(false);
-    expect(mochaInFrame({ ...spread, photoRect: undefined }, start)).toBe(false);
+    const onAwning = states(spread, [{ set: 'cart', to: 'platform' }, { mocha: 'canopy' }, { wait: 'settle' }]).at(-1)!;
+    expect(mochaInFrame(spread, { ...onAwning, mocha: { ...onAwning.mocha, perch: null, path: ['clockTop', 'canopyTop'], to: 'canopy' } })).toBe(false);
+    expect(mochaInFrame({ ...spread, photoRect: undefined }, onAwning)).toBe(false);
   });
 });
 
@@ -167,8 +168,8 @@ describe('the album\'s pages', () => {
   });
 
   test('spreadPage: the chapter\'s spread, else its last page', () => {
-    expect(spreadPage(1, SPREAD_REGISTRY)?.id).toBe('lab-spread');
-    expect(spreadPage(1, registry)?.id).toBe('c1p2');
+    expect(spreadPage(1, registry)?.id).toBe('c1p6');
+    expect(spreadPage(0, registry)?.id).toBe('c0p4');
     expect(spreadPage(5, registry)).toBeUndefined();
   });
 

@@ -44,8 +44,73 @@ export const ENV_MANIFEST: EnvManifest = {
       },
       "source": "44ac6c8a6041c2be"
     },
+    "c1/car": {
+      "file": "backdrops/c1/car",
+      "bytes": 157646,
+      "chapter": 1,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "e93e5233a95b9e88"
+    },
     "c1/hall-night": {
       "file": "backdrops/c1/hall-night",
+      "bytes": 157646,
+      "chapter": 1,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "e93e5233a95b9e88"
+    },
+    "c1/gates": {
+      "file": "backdrops/c1/gates",
+      "bytes": 157646,
+      "chapter": 1,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "e93e5233a95b9e88"
+    },
+    "c1/hall": {
+      "file": "backdrops/c1/hall",
+      "bytes": 157646,
+      "chapter": 1,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "e93e5233a95b9e88"
+    },
+    "c1/bento-shop": {
+      "file": "backdrops/c1/bento-shop",
+      "bytes": 157646,
+      "chapter": 1,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "e93e5233a95b9e88"
+    },
+    "c1/bento-spread": {
+      "file": "backdrops/c1/bento-spread",
       "bytes": 157646,
       "chapter": 1,
       "grade": [1, 1, 1],

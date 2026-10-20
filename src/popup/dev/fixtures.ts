@@ -84,15 +84,17 @@ export interface PopupFixture {
     readonly chapterCard?: number;
     /** The album as it opens after a spread (#103), every note on; `retaken`: a second shot to choose from */
     readonly albumAfter?: { readonly chapter: number; readonly retaken?: Photo };
-    /** Play on the registry with the lab spread as 1-6 (#103) */
-    readonly spread?: boolean;
+    /** The chapter-end lines of this chapter over its finished spread, their first beat (#107) */
+    readonly endLinesOf?: number;
+    /** The card of this chapter while it isn't built: 「未完待續」 on its row, its line under it (#107) */
+    readonly soonCard?: number;
   };
 }
 
 /** The saves the screen fixtures read (#97). */
 const FRESH = freshSave();
-/** 0-1 solved with both its stickers, the rest of the prologue solved, 1-2 current with its 淘氣 already earned. */
-const PROLOGUE = (['c0p2', 'c0p3', 'c0p4'] as const).reduce((s, id) => completePage(s, id, { moves: id === 'c0p4' ? 2 : 1 }), completePage(FRESH, 'c0p1', { mischief: true, tudigong: true, moves: 1 }));
+/** 0-1 solved with both its stickers, the rest of the prologue and 1-1 solved, 1-2 current with its 淘氣 already earned. */
+const PROLOGUE = (['c0p2', 'c0p3', 'c0p4', 'c1p1'] as const).reduce((s, id) => completePage(s, id, { moves: id === 'c0p4' ? 2 : 1 }), completePage(FRESH, 'c0p1', { mischief: true, tudigong: true, moves: 1 }));
 const PLAYED = earnSticker(PROLOGUE, 'c1p2', 'mischief');
 const LEFT_HANDED = updateSettings(PLAYED, { leftHand: true });
 /** 大字 on (#104). */
@@ -102,8 +104,13 @@ const ELDER_ON = updateSettings(updateSettings(PLAYED, { speed: 2, autoHint: 0 }
 const ON_PAGE: NavState = { base: { kind: 'page', id: 'c1p2', run: 0 }, layer: null };
 /** 1-2 just completed: solved, its 淘氣 earned on the way, the 土地公 not found (#101). */
 const C1P2_DONE = completePage(PLAYED, 'c1p2', { mischief: true, moves: 6 });
-/** 0-1 solved without its 淘氣, 0-2…0-4 solved, 1-2 solved with it: the 目錄 shows each page's mischief (#101). */
-const MISCHIEF_LIST = completePage((['c0p2', 'c0p3', 'c0p4'] as const).reduce((s, id) => completePage(s, id), completePage(FRESH, 'c0p1', { tudigong: true })), 'c1p2', { mischief: true });
+/** 0-1 solved without its 淘氣, 0-2…1-1 solved, 1-2 solved with it: the 目錄 shows each page's mischief (#101). */
+const MISCHIEF_LIST = completePage((['c0p2', 'c0p3', 'c0p4', 'c1p1'] as const).reduce((s, id) => completePage(s, id), completePage(FRESH, 'c0p1', { tudigong: true })), 'c1p2', { mischief: true });
+/** Chapter 1 up to its spread: 1-2 done (as `C1P2_DONE`), 1-3…1-5 solved, 1-6 current (#107). */
+const AT_SPREAD = (['c1p3', 'c1p4', 'c1p5'] as const).reduce((s, id) => completePage(s, id, { moves: 3 }), C1P2_DONE);
+/** …and 1-6 solved, its Frame A photo with 摩卡 kept: the chapter's treasure in the tray (#107). */
+const C1_DONE = keepPhoto(completePage(AT_SPREAD, 'c1p6', { moves: 4 }), 1, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 16, 20) });
+const ON_SPREAD: NavState = { base: { kind: 'page', id: 'c1p6', run: 0 }, layer: null };
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -111,23 +118,23 @@ const ALBUM_A = keepPhoto(C1P2_DONE, 1, { frame: 'A', mocha: true, at: SHOT_AT }
 /** A Frame B photo with 摩卡 in it, then retaken as a Frame C without him (the pool's notes). */
 const ALBUM_B = keepPhoto(C1P2_DONE, 1, { frame: 'B', mocha: true, at: SHOT_AT });
 const RETAKEN_C: Photo = { frame: 'C', mocha: false, at: SHOT_AT + 60_000 };
-/** The lab spread's steps to the photo moment: the train to half, Mocha to the pillar (the pigeon flies), back to the bench (+M), the train to full. */
-const TO_PHOTO: readonly SolutionStep[] = [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { wait: 'settle' }, { mocha: 'bench' }, { wait: 'settle' }, { set: 'train', to: 'full' }];
+/** 1-6 up to its photo moment: the lid open (the pigeon swoops onto the cart), 嗶！ at the gate, the cart to the platform, Mocha onto its awning (the pigeon flies; +M). */
+const TO_PHOTO: readonly SolutionStep[] = [{ tap: 'lid' }, { wait: 'settle' }, { say: 'beep' }, { wait: 'settle' }, { set: 'cart', to: 'platform' }, { wait: 1 }, { mocha: 'canopy' }];
 
 export const POPUP_FIXTURES: readonly PopupFixture[] = [
   {
     name: 'spread-c1',
-    page: 'lab-spread',
-    steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }],
-    note: 'A chapter spread (GDD § 2.9, #103): the same 390 × 560 page drawn as a centrefold, the spine\'s crease down the middle of the standing and the floor page; the goal is the chapter\'s treasure, 雞腿, on its foil light. Lab stage (1-2 as a spread) until #107 builds 1-6.',
+    page: 'c1p6',
+    steps: [{ tap: 'lid' }, { wait: 'settle' }],
+    note: '1-6 「台鐵便當」, chapter 1\'s spread (GDD § 2.9, § 4.3; #103, #107): the 390 × 560 page drawn as a centrefold, the spine\'s crease down its middle. The bento\'s lid is open: the 雞腿 (the chapter\'s treasure) shows on its foil light — and the pigeon has swooped onto the cart\'s step for it; Baokaka reaches at the closed exit gate.',
     expect: { mode: 'reaching' },
   },
   {
     name: 'photo-moment',
-    page: 'lab-spread',
+    page: 'c1p6',
     steps: TO_PHOTO,
     show: { photo: { at: 1800 } },
-    note: 'The photo moment (GDD § 2.9, bible § 7, #103): 2 edges from the 雞腿 the world pauses, the paper camera slides down over the spread and the marigold 咔嚓 rises under it. The viewfinder is at the peak: Frame A, arms up with the 雞腿 high, 摩卡 on the bench in the frame (+M, bottom left); the 「哇！」 meter full at its star. Live, the 3 s slow-motion loop runs (B → A → C), the viewfinder creeps in, and after 6 s it snaps B itself.',
+    note: 'The photo moment on 1-6 (GDD § 2.9, bible § 7, #103, #107): Mocha landed on the cart\'s awning, the pigeon fled, and 2 edges from the 雞腿 the world pauses; the paper camera slides down over the spread and the marigold 咔嚓 rises under it. The viewfinder is at the peak: Frame A, arms up with the 雞腿 high, 摩卡 on the awning in the frame (+M); the 「哇！」 meter full at its star. Live, the 3 s slow-motion loop runs (B → A → C), and after 6 s it snaps B itself.',
   },
   {
     name: 'album-c1',
@@ -138,10 +145,24 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
   },
   {
     name: 'spread-shell',
-    page: 'lab-spread',
+    page: 'c1p6',
     steps: [],
-    screen: { nav: { base: { kind: 'page', id: 'lab-spread', run: 0 }, layer: null }, save: C1P2_DONE, spread: true },
-    note: 'The lab spread as 1-6 in the game shell (#103): play it live — the photo moment, the album page, 再拍一次, 放進相簿, the sticker card, then the 目錄 (`check:play` scenario `photo-spread`).',
+    screen: { nav: ON_SPREAD, save: AT_SPREAD },
+    note: '1-6 in the game shell (#103, #107): play it live — the photo moment, the album page, 再拍一次, 放進相簿, the chapter-end lines, the tray\'s first coin, the sticker card, chapter 2\'s card with 「未完待續」, then the 目錄 (`check:play` scenario `photo-spread`).',
+  },
+  {
+    name: 'chapter-end-c1',
+    page: 'c1p6',
+    steps: [],
+    screen: { nav: ON_SPREAD, save: C1_DONE, endLinesOf: 1 },
+    note: 'Chapter 1\'s end (GDD § 4.3 1-6 notes, § 5.2; #107): after the album, over the finished spread (dimmed), the end lines a tap a beat — the narration strip 「找到了！抓周寶物——雞腿。」, 阿嬤\'s 「雞腿，一世人呷好料。」, 寶咖咖\'s 「好吃！」; then 摩卡\'s 「那是阿嬤的，不能吃。」. Live, the last tap fills the 抓周 tray\'s first slot (the coin drops in, a foil ring flares).',
+  },
+  {
+    name: 'chapter-soon-c2',
+    page: 'c1p6',
+    steps: [],
+    screen: { nav: ON_SPREAD, save: C1_DONE, soonCard: 2 },
+    note: 'The next chapter\'s card while it isn\'t built (#107, D-70): chapter 1 done, the chapter turn drops chapter 2\'s card over the book on the quilt — 第二章, 「會揮手的公園」, 00:50, 大安森林公園 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
   },
   {
     name: 'album-c1-retake',
@@ -211,6 +232,70 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     look: 'reduced',
     note: '1-2 under reduced motion: no idle wiggle, the touchable carries the static double outline instead.',
+  },
+  {
+    name: 'c1p1-start',
+    page: 'c1p1',
+    steps: [{ wait: 4 }],
+    note: '1-1 「月亮線，出發！」 (#107): inside the 板南線 car, the backpacker asleep across the aisle (his backpack blocks it), the bead under the 博愛座 beyond; Baokaka crawled up to him and reaches. Mocha on the first hand strap, the second strap and the luggage rack (the folded map on its edge) carry paw prints; the sway tab under the floor. Placeholder art until #108.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c1p1-awake',
+    page: 'c1p1',
+    steps: [{ mocha: 'rack' }, { wait: 2 }],
+    show: { talk: ['c1p1.pack.1', 'c1p1.pack.2'] },
+    note: '1-1: Mocha strap-hopped to the rack and pushed the map off; it landed on the backpacker\'s face, he woke and tucked his backpack in — 「Excuse me… where is 101?」, Mocha translates 「往前走，看到最高的就是。」 (§ 5.2 ch1).',
+    expect: { event: 'land' },
+  },
+  {
+    name: 'c1p3-robot',
+    page: 'c1p3',
+    steps: [{ mocha: 'counter' }, { wait: 'settle' }, { mocha: 'robotLid' }, { wait: 'settle' }, { say: 'beep' }],
+    note: '1-3\'s 淘氣 (#107, D-70): Mocha rides the cleaning robot\'s lid, and Baokaka\'s 嗶！ at gate B sets it spinning with him on board — gate B opens too.',
+    expect: { mode: 'saying', event: 'beep' },
+  },
+  {
+    name: 'c1p4-turntable',
+    page: 'c1p4',
+    steps: [{ set: 'floor', to: '0' }, { wait: 'settle' }],
+    note: '1-4 「大廳的棋盤」 (#107): the checkered turntable turned east–west; Baokaka crawled in to its fixed centre and reaches north for the bead past gate N. Turn it back while he sits on it.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c1p4-riding',
+    page: 'c1p4',
+    steps: [{ set: 'floor', to: '0' }, { wait: 1 }, { set: 'floor', to: '1' }],
+    note: '1-4: turned back while he crawled onto the aisle seat, the disk carries him round to face gate N (a ride; live, the last tick replays).',
+    expect: { event: 'ride' },
+  },
+  {
+    name: 'c1p5-start',
+    page: 'c1p5',
+    steps: [{ wait: 4 }],
+    note: '1-5 「便當店的電梯」 (#107): the cross-section, B1 below and the 便當店 on 1F above; the car up at 1F, so Baokaka reaches at the B1 door for the bead on the shop floor. Mocha on the shop counter (on its 叮咚 bell); paw prints in the car and on the B1 shelf.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c1p5-car-down',
+    page: 'c1p5',
+    steps: [{ mocha: 'carPanel' }, { wait: 'settle' }],
+    note: '1-5: Mocha jumped into the car and sat on its panel: down it came, and Baokaka crawled in (the car is now nearest the bead). Tap Mocha to press again.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c1p5-clerk',
+    page: 'c1p5',
+    steps: [{ pet: true }],
+    show: { talk: ['c1p5.clerk.1', 'c1p5.clerk.2', 'c1p5.clerk.3'] },
+    note: '1-5: Mocha tapped on the shop counter rings its 叮咚 bell, and the 店員小哥 cameo answers — 「叮咚～歡迎光臨！」「……你怎麼在這裡？」「我們是連鎖的。」 (§ 5.2 ch1). Three rings are the 淘氣.',
+  },
+  {
+    name: 'c1p6-spread',
+    page: 'c1p6',
+    steps: [{ wait: 3 }],
+    note: '1-6 「台鐵便當」 as it opens (#107): the centrefold — the concourse and its exit gate on the left, the platform and the bento cart (its lid shut) on the right. Nothing shiny in sight, so Baokaka crawled to Mocha on the station clock and cuddles; the cart\'s slider under the floor.',
+    expect: { mode: 'cuddling' },
   },
   {
     name: 'c0p2-start',
@@ -502,26 +587,26 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
   },
   {
     name: 'word-poke',
-    page: 'lab-gates',
+    page: 'c1p3',
     steps: [{ wait: 3 }],
     show: { words: { poke: true } },
-    note: 'Before any word is learned (GDD § 6 risk 1, #99): tapping Baokaka shows 「要！」 with a chalk pointer to what he wants (the bead past the gates). Lab stage until #107 adds 1-3.',
+    note: 'Before any word is learned (GDD § 6 risk 1, #99): tapping Baokaka shows 「要！」 with a chalk pointer to what he wants (the bead past the gates).',
     expect: { mode: 'reaching' },
   },
   {
     name: 'word-card-beep',
-    page: 'lab-gates',
+    page: 'c1p3',
     steps: [{ mocha: 'counter' }, { wait: 2 }],
     show: { words: { card: 'beep' } },
-    note: 'The learn beat\'s word card (GDD § 5.4, #99): the card hit the reader, gate A opened and he copied it: 「嗶！：閘門開開」 with its seal, taped over the dimmed page; a tap puts it away. Lab stage until #107 adds 1-3.',
+    note: 'The learn beat\'s word card (GDD § 5.4, #99): the card hit the reader, gate A opened and he copied it: 「嗶！：閘門開開」 with its seal, taped over the dimmed page; a tap puts it away.',
     expect: { event: 'learn' },
   },
   {
     name: 'word-ring-open',
-    page: 'lab-gates',
+    page: 'c1p3',
     steps: [{ mocha: 'counter' }, { wait: 'settle' }],
     show: { words: { ring: true } },
-    note: 'The word ring (GDD § 2.4, bible § 7, #99): stuck at gate B he was tapped; 嗶！ (glowing: new) and 「好了」 fan round him on the volvelle band, the page dims 30 %, and the tutorial\'s ghost hand taps 嗶！. Lab stage until #107 adds 1-3.',
+    note: 'The word ring (GDD § 2.4, bible § 7, #99): stuck at gate B he was tapped; 嗶！ (glowing: new) and 「好了」 fan round him on the volvelle band, the page dims 30 %, and the tutorial\'s ghost hand taps 嗶！.',
     expect: { mode: 'reaching' },
   },
   {
@@ -534,9 +619,9 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
   },
   {
     name: 'word-say-beep',
-    page: 'lab-gates',
+    page: 'c1p3',
     steps: [{ mocha: 'counter' }, { wait: 'settle' }, { say: 'beep' }],
-    note: 'Saying 嗶！ (#99): the big speech bubble, the word\'s 120-unit reach in its seal colour, gate B open and the robot spinning (the 淘氣); Mocha\'s 「……閘門真的開了。」 Lab stage until #107 adds 1-3.',
+    note: 'Saying 嗶！ (#99, #107): the big speech bubble, the word\'s 120-unit reach in its seal colour, gate B open and the cleaning robot spinning; Mocha\'s 「……閘門真的開了。」',
     expect: { mode: 'saying', event: 'beep' },
   },
 ];

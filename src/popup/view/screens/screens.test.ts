@@ -6,6 +6,7 @@ import { completePage, earnSticker, freshSave } from '../../game/progress';
 import { registry } from '../../pages';
 import { BottomBar } from '../hud/BottomBar';
 import { TopHud, runWidth } from '../hud/TopHud';
+import { ChapterBoard } from '../hud/ChapterBoard';
 import { Contents, ROUTE, STATIONS, chapterComplete, collected, pageIdOf, routeLength } from './Contents';
 import { Cover } from './Cover';
 import { Settings } from './Settings';
@@ -22,7 +23,7 @@ const noop = () => undefined;
 const html = (el: Parameters<typeof renderToStaticMarkup>[0]) => renderToStaticMarkup(el);
 const fresh = freshSave(registry);
 /** 0-1 solved with both stickers, 0-2…0-4 solved, 1-2 current with its 淘氣. */
-const played = earnSticker(['c0p2', 'c0p3', 'c0p4'].reduce((s, id) => completePage(s, id), completePage(fresh, 'c0p1', { mischief: true, tudigong: true })), 'c1p2', 'mischief');
+const played = earnSticker(['c0p2', 'c0p3', 'c0p4', 'c1p1'].reduce((s, id) => completePage(s, id), completePage(fresh, 'c0p1', { mischief: true, tudigong: true })), 'c1p2', 'mischief');
 
 /** Every font size the markup sets (SVG attributes, inline styles and Tailwind `text-[Npx]`). */
 function fontSizes(markup: string): number[] {
@@ -86,6 +87,29 @@ describe('TopHud', () => {
   });
 });
 
+describe('the chapter\'s end (#107)', () => {
+  test('the tray\'s new coin fills its slot: drawn on its own over the dimple, replayed by its serial', () => {
+    const still = html(createElement(TopHud, { landmark: '台北車站', title: '台鐵便當', chapter: 1, index: 6, time: '00:20', coins: 1 }));
+    expect(still).not.toContain('data-tray-fill');
+    const fill = html(createElement(TopHud, { landmark: '台北車站', title: '台鐵便當', chapter: 1, index: 6, time: '00:20', coins: 1, fill: 1 }));
+    expect(fill).toContain('data-tray-fill="1"');
+    expect(fill).toContain('class="tray-drop"');
+    expect(fill).toContain('class="tray-flare"');
+    // No coin, nothing to fill
+    expect(html(createElement(TopHud, { landmark: '家', title: '嬰兒床', chapter: 0, index: 1, time: '00:00', coins: 0, fill: 1 }))).not.toContain('data-tray-fill');
+  });
+
+  test('the next chapter\'s card while it isn\'t built: 「未完待續」 on its split-flap row', () => {
+    const soon = html(createElement(ChapterBoard, { chapter: 2, next: UI.chapterCard.soon }));
+    expect(soon).toContain('data-card-soon=""');
+    expect(soon).toContain('data-card-next="未完待續"');
+    expect(soon).toContain('會揮手的公園');
+    const card = html(createElement(ChapterBoard, { chapter: 1 }));
+    expect(card).not.toContain('data-card-soon');
+    expect(card).toContain('data-card-next="台北車站"');
+  });
+});
+
 describe('BottomBar', () => {
   test('the portrait, 提示, 重來, 選單 as ≥ 48 px buttons with icon and a 20 px label, and the stickers', () => {
     const m = html(createElement(BottomBar, { stickers: [true, true, false] }));
@@ -115,7 +139,7 @@ describe('Contents (目錄)', () => {
 
   test('stickers collected per chapter and completeness', () => {
     expect(collected(played, 0)).toBe(6);
-    expect(collected(played, 1)).toBe(1);
+    expect(collected(played, 1)).toBe(2);
     expect(collected(fresh, 0)).toBe(0);
     expect(chapterComplete(played, 0)).toBe(true);
     expect(chapterComplete(completePage(fresh, 'c0p1'), 0)).toBe(false); // 0-2…0-4 not solved yet
@@ -127,13 +151,13 @@ describe('Contents (目錄)', () => {
     expect(m).toContain('data-screen="contents"');
     expect(m.match(/data-station="\d+" data-open=""/g)).toHaveLength(2);
     expect(m).toContain('6/12');
-    expect(m).toContain('1/18');
+    expect(m).toContain('2/18');
     expect(m).toContain('第一章');
-    expect(m).toContain('已收集 <span class="font-num font-semibold">1／18</span>');
-    // Six page cards; only 1-2 is playable (the rest are not built yet), and it carries the bookmark
+    expect(m).toContain('已收集 <span class="font-num font-semibold">2／18</span>');
+    // Six page cards: 1-1 solved, 1-2 current with the bookmark, 1-3…1-6 locked until it is solved
     expect(m.match(/data-page-card="c1p\d"/g)).toHaveLength(6);
     expect(m).toMatch(/data-page-card="c1p2"[^>]*data-current=""/);
-    expect(m.match(/<button[^>]*disabled=""[^>]*data-page-card/g)).toHaveLength(5);
+    expect(m.match(/<button[^>]*disabled=""[^>]*data-page-card/g)).toHaveLength(4);
     expect(m).not.toContain('data-locked-line');
     for (const px of uiSizes(m)) expect(px).toBeGreaterThanOrEqual(20);
   });

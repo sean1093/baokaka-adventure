@@ -39,7 +39,7 @@ import { treasureOnPage } from './photo/treasureArt';
 import { attractorArt, chapterSky, spine, ledge, perchMark, perchPost, pottedPlant, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
-import { NO_GESTURE, hitCenter, minHit, targetsOf, type GestureFlags } from './gestures';
+import { NO_GESTURE, hitCenter, minHit, rideHome, shiftHit, targetsOf, type GestureFlags } from './gestures';
 import { clamp01, drawnNodePos, easeInOut, lerpPt, offpagePoint, partProgress, stepPose } from './interp';
 import { PRESET_Z, type LayerId } from './layers';
 import { ArtG, r2 } from './parts/common';
@@ -206,6 +206,17 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
           const Plain = View as (p: PartViewProps) => JSX.Element;
           el = <Plain key={part.id} {...base} />;
         }
+        // A part riding a node (`ridesOn`, #107) moves with it, as its carriage does
+        const home = rideHome(def, part);
+        const at = home === undefined || part.ridesOn === undefined ? undefined : drawnNodePos(def, prev, state, part.ridesOn, ms, reduced, preview);
+        const shift: Pt = home !== undefined && at !== undefined ? [at[0] - home[0], at[1] - home[1]] : [0, 0];
+        if (shift[0] !== 0 || shift[1] !== 0) {
+          el = (
+            <g key={part.id} data-anim="" data-rides={part.ridesOn} transform={`translate(${r2(shift[0])} ${r2(shift[1])})`}>
+              {el}
+            </g>
+          );
+        }
         const dragging = gesture.dragging === part.id;
         const wobble = locked?.part === part.id;
         const badge = look?.locked ? 'locked' : affordance.done?.includes(part.id) ? 'done' : null;
@@ -220,7 +231,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
             className={wobble && !reduced ? 'gx-wobble' : undefined}
           >
             {el}
-            {badge && <PartBadge hit={part.hit} kind={badge} />}
+            {badge && <PartBadge hit={shiftHit(part.hit, shift)} kind={badge} />}
           </g>
         );
       });
