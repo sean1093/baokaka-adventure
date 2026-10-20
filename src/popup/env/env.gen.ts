@@ -212,6 +212,84 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "45074f4e5dbfbfc3"
+    },
+    "c3/green-car": {
+      "file": "backdrops/c3/green-car",
+      "bytes": 155870,
+      "chapter": 3,
+      "grade": [1.018, 1.005, 1.01],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "8eb20599d8189c60"
+    },
+    "c3/palm-avenue": {
+      "file": "backdrops/c3/palm-avenue",
+      "bytes": 155870,
+      "chapter": 3,
+      "grade": [1.018, 1.005, 1.01],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "8eb20599d8189c60"
+    },
+    "c3/lake": {
+      "file": "backdrops/c3/lake",
+      "bytes": 155870,
+      "chapter": 3,
+      "grade": [1.018, 1.005, 1.01],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "8eb20599d8189c60"
+    },
+    "c3/fu-bell": {
+      "file": "backdrops/c3/fu-bell",
+      "bytes": 155870,
+      "chapter": 3,
+      "grade": [1.018, 1.005, 1.01],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "8eb20599d8189c60"
+    },
+    "c3/stacks": {
+      "file": "backdrops/c3/stacks",
+      "bytes": 155870,
+      "chapter": 3,
+      "grade": [1.018, 1.005, 1.01],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "8eb20599d8189c60"
+    },
+    "c3/book-spread": {
+      "file": "backdrops/c3/book-spread",
+      "bytes": 155870,
+      "chapter": 3,
+      "grade": [1.018, 1.005, 1.01],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "8eb20599d8189c60"
     }
   },
   "parts": {
@@ -916,6 +994,126 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "3c6945cfd79f2f4a"
+    },
+    "c3/bike": {
+      "preset": "slider",
+      "box": {
+        "x": -60,
+        "y": -75,
+        "w": 122,
+        "h": 141
+      },
+      "states": {
+        "path": {
+          "file": "parts/c3/bike.path",
+          "bytes": 6996
+        },
+        "rack": {
+          "file": "parts/c3/bike.rack",
+          "bytes": 6500
+        }
+      },
+      "lifted": {
+        "path": {
+          "file": "parts/c3/bike.path.lifted",
+          "bytes": 10266
+        },
+        "rack": {
+          "file": "parts/c3/bike.rack.lifted",
+          "bytes": 10076
+        }
+      },
+      "source": "4215d4cd20091919"
+    },
+    "c3/delivery-bike": {
+      "preset": "slider",
+      "box": {
+        "x": -60,
+        "y": -88,
+        "w": 122,
+        "h": 154
+      },
+      "states": {
+        "path": {
+          "file": "parts/c3/delivery-bike.path",
+          "bytes": 7662
+        },
+        "rack": {
+          "file": "parts/c3/delivery-bike.rack",
+          "bytes": 7320
+        }
+      },
+      "lifted": {
+        "path": {
+          "file": "parts/c3/delivery-bike.path.lifted",
+          "bytes": 11060
+        },
+        "rack": {
+          "file": "parts/c3/delivery-bike.rack.lifted",
+          "bytes": 10678
+        }
+      },
+      "source": "2a615444a383093d"
+    },
+    "c3/shelf": {
+      "preset": "slider",
+      "box": {
+        "x": -46,
+        "y": -105,
+        "w": 96,
+        "h": 215
+      },
+      "states": {
+        "w": {
+          "file": "parts/c3/shelf.w",
+          "bytes": 4038
+        },
+        "e": {
+          "file": "parts/c3/shelf.e",
+          "bytes": 4034
+        }
+      },
+      "lifted": {
+        "w": {
+          "file": "parts/c3/shelf.w.lifted",
+          "bytes": 8750
+        },
+        "e": {
+          "file": "parts/c3/shelf.e.lifted",
+          "bytes": 8944
+        }
+      },
+      "source": "284d6e5a6d358965"
+    },
+    "c3/shelf-crank": {
+      "preset": "slider",
+      "box": {
+        "x": -53,
+        "y": -266,
+        "w": 109,
+        "h": 298
+      },
+      "states": {
+        "w": {
+          "file": "parts/c3/shelf-crank.w",
+          "bytes": 4652
+        },
+        "e": {
+          "file": "parts/c3/shelf-crank.e",
+          "bytes": 4654
+        }
+      },
+      "lifted": {
+        "w": {
+          "file": "parts/c3/shelf-crank.w.lifted",
+          "bytes": 12348
+        },
+        "e": {
+          "file": "parts/c3/shelf-crank.e.lifted",
+          "bytes": 12384
+        }
+      },
+      "source": "ab62a7449c1701aa"
     }
   },
   "cutouts": {

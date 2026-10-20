@@ -116,6 +116,23 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   // § 5.2 2-6 end
   'c2p6.end.1': { who: 'nar', text: '找到了！抓周寶物——畫筆。' },
   'c2p6.end.2': { who: 'mocha', text: '他說：『我要畫摩卡。』……好吧。' },
+  // § 5.2 Ch3 「醉月湖的鵝」 01:20 (the chapter card)
+  'c3.intro.1': { who: 'pa', text: '公館站，到了。' },
+  'c3.intro.2': { who: 'nar', text: '椰林大道上，椰子樹排排站。' },
+  'c3.intro.3': { who: 'mocha', text: '這裡的鵝，比警衛還兇。' },
+  // § 5.3 背包客 #2 (3-1: waved out of the aisle, he waves back and asks) and Mocha's translation
+  'c3p1.pack.1': { who: 'pack', text: 'Excuse me… where is 101?' },
+  'c3p1.pack.2': { who: 'mocha', text: '一直走，抬頭就看到了。' },
+  // § 5.3 店員小哥's chapter 3 cameo (3-2: Mocha sits on his delivery bike)
+  'c3p2.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c3p2.clerk.2': { who: 'mocha', text: '……連腳踏車也是你的？' },
+  'c3p2.clerk.3': { who: 'clerk', text: '我們是連鎖的。' },
+  // § 5.2 3-6 藍教授: 掰掰 doesn't budge her; Mocha landing beside her does
+  'c3p6.prof.1': { who: 'npc', label: '藍教授', text: '根據我的研究——' },
+  'c3p6.prof.2': { who: 'npc', label: '藍教授', text: '我學富五車……腳踏車。' },
+  'c3p6.prof.3': { who: 'mocha', text: '成語不是這樣用的。' },
+  // § 5.2 3-6 end
+  'c3p6.end.1': { who: 'nar', text: '找到了！抓周寶物——書。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

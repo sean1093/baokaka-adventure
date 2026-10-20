@@ -23,6 +23,10 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
     "775-785-860": {
       "by": [0.775, 0.785, 0.86],
       "chapters": [0, 1, 2]
+    },
+    "780-787-863": {
+      "by": [0.78, 0.787, 0.863],
+      "chapters": [3]
     }
   },
   "sprites": {
@@ -96,6 +100,19 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7522, 12886]
           ],
           "source": "67dba7841b374734"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7514, 13316],
+            [7732, 13008],
+            [7476, 12882],
+            [7676, 13238],
+            [7560, 13038],
+            [7564, 13118],
+            [7672, 13104],
+            [7500, 12842]
+          ],
+          "source": "36a0223ec4cfce7b"
         }
       }
     },
@@ -130,6 +147,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7516, 12906]
           ],
           "source": "a18dc8097938af85"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7382, 12950]
+          ],
+          "source": "303bf3c4d7b74a65"
         }
       }
     },
@@ -166,6 +189,13 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7148, 12638]
           ],
           "source": "98108ff49cda7440"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7346, 12864],
+            [7138, 12578]
+          ],
+          "source": "e489040784105213"
         }
       }
     },
@@ -202,6 +232,13 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7568, 12840]
           ],
           "source": "c985a7a9fe6a638b"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7398, 12634],
+            [7576, 12850]
+          ],
+          "source": "57f9dcf39be59167"
         }
       }
     },
@@ -236,6 +273,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7540, 12900]
           ],
           "source": "2eb7760af841c2df"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7534, 13014]
+          ],
+          "source": "e4346469e07be9aa"
         }
       }
     },
@@ -270,6 +313,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7312, 12760]
           ],
           "source": "8e0b7687694474c8"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7324, 12930]
+          ],
+          "source": "e7013b20dc978eb8"
         }
       }
     },
@@ -304,6 +353,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7650, 13006]
           ],
           "source": "0e25bc8e9c3e3f73"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7624, 12962]
+          ],
+          "source": "8cc3fdecb0e6b662"
         }
       }
     },
@@ -340,6 +395,13 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7342, 12776]
           ],
           "source": "6f2dfd7d718f1cdc"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7362, 12626],
+            [7354, 12710]
+          ],
+          "source": "8405a773a9499fa4"
         }
       }
     },
@@ -374,6 +436,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7532, 13058]
           ],
           "source": "3839959847282870"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7532, 13058]
+          ],
+          "source": "d026e1bd9eceb136"
         }
       }
     },
@@ -410,6 +478,13 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7344, 12258]
           ],
           "source": "4d7a7fab088b561d"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7238, 13008],
+            [7346, 12256]
+          ],
+          "source": "bdc77eac6b19a616"
         }
       }
     },
@@ -438,7 +513,16 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "000ba616fa98a409"
+      "source": "000ba616fa98a409",
+      "graded": {
+        "780-787-863": {
+          "bytes": [
+            [7444, 13060],
+            [7554, 12910]
+          ],
+          "source": "483e88caf888d63b"
+        }
+      }
     },
     "baokaka.wonder": {
       "kind": "pose",
@@ -672,6 +756,13 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7256, 12632]
           ],
           "source": "456192c7bbaa6301"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7254, 12612],
+            [7252, 12568]
+          ],
+          "source": "81ca51ce38c826e0"
         }
       }
     },
@@ -708,6 +799,13 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7336, 12960]
           ],
           "source": "d46fbc9bdfddb750"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7382, 12882],
+            [7360, 12916]
+          ],
+          "source": "fac698d4850894bd"
         }
       }
     },
@@ -742,6 +840,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7486, 12952]
           ],
           "source": "76b2565d64f41fa3"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7482, 12916]
+          ],
+          "source": "187ceb14824e4e31"
         }
       }
     },
@@ -776,6 +880,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [7510, 13112]
           ],
           "source": "4054d61701f5349f"
+        },
+        "780-787-863": {
+          "bytes": [
+            [7500, 13174]
+          ],
+          "source": "c74c7f2094ca7cc4"
         }
       }
     },
@@ -904,6 +1014,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [4856, 8204]
           ],
           "source": "223270e920646198"
+        },
+        "780-787-863": {
+          "bytes": [
+            [4824, 8196]
+          ],
+          "source": "efcd698534df2eda"
         }
       }
     },
@@ -938,6 +1054,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [4090, 7062]
           ],
           "source": "954c81542e373074"
+        },
+        "780-787-863": {
+          "bytes": [
+            [4080, 7070]
+          ],
+          "source": "c5bb572057ca021f"
         }
       }
     },
@@ -1007,6 +1129,14 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [5914, 10234]
           ],
           "source": "e5a6a526cf4f9f2a"
+        },
+        "780-787-863": {
+          "bytes": [
+            [5470, 9492],
+            [5364, 9396],
+            [5922, 10212]
+          ],
+          "source": "2ea9a48b68633135"
         }
       }
     },
@@ -1067,6 +1197,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [4360, 7414]
           ],
           "source": "d25da97327745f68"
+        },
+        "780-787-863": {
+          "bytes": [
+            [4362, 7442]
+          ],
+          "source": "194d08244d8f056c"
         }
       }
     },
@@ -1108,6 +1244,13 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [5164, 8764]
           ],
           "source": "e2ac6e838acbda5f"
+        },
+        "780-787-863": {
+          "bytes": [
+            [4862, 8328],
+            [5120, 8788]
+          ],
+          "source": "a573d40aa567eb3c"
         }
       }
     },
@@ -1144,6 +1287,13 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [5108, 8732]
           ],
           "source": "30221653052f4d7c"
+        },
+        "780-787-863": {
+          "bytes": [
+            [5172, 8628],
+            [5114, 8806]
+          ],
+          "source": "f0ccf9ec17358ee0"
         }
       }
     },
@@ -1178,6 +1328,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [5802, 9786]
           ],
           "source": "d8241e9c65d8fd5e"
+        },
+        "780-787-863": {
+          "bytes": [
+            [5768, 9682]
+          ],
+          "source": "ff3dd96ca4083dbe"
         }
       }
     },
@@ -1212,6 +1368,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [6322, 10754]
           ],
           "source": "dcabc1896b82e941"
+        },
+        "780-787-863": {
+          "bytes": [
+            [6326, 10756]
+          ],
+          "source": "b7751da753475bd3"
         }
       }
     },
@@ -1272,6 +1434,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [5058, 8416]
           ],
           "source": "85ef901ab9607ac5"
+        },
+        "780-787-863": {
+          "bytes": [
+            [5024, 8444]
+          ],
+          "source": "1fad1779765e4dd1"
         }
       }
     },
@@ -1306,6 +1474,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [4092, 6998]
           ],
           "source": "7f21e2329adbf180"
+        },
+        "780-787-863": {
+          "bytes": [
+            [4088, 7004]
+          ],
+          "source": "0338373a8956847d"
         }
       }
     },
@@ -1340,6 +1514,12 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
             [3100, 5266]
           ],
           "source": "d2a9b24ca536dda9"
+        },
+        "780-787-863": {
+          "bytes": [
+            [3128, 5278]
+          ],
+          "source": "5ae8afeeeaabb7ae"
         }
       }
     },
