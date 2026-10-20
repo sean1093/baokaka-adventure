@@ -49,6 +49,13 @@ describe('barksOf', () => {
     expect(texts(at(0, { mode: 'moving', target: 'mocha' }), at(1, { mode: 'cuddling', target: 'mocha' }), [])).toEqual(['mocha:呼嚕嚕……']);
     expect(texts(at(1, { mode: 'cuddling', target: 'mocha' }), at(2, { mode: 'cuddling', target: 'mocha' }), [])).toEqual([]);
   });
+
+  test('抱抱 with no carrier in reach: his word, and Mocha purrs (#120) — if Mocha is on the page', () => {
+    const saying = at(1, { mode: 'saying' });
+    expect(texts(at(0), saying, [{ type: 'hug' }, { type: 'hugNobody' }])).toEqual(['baby:抱抱', 'mocha:呼嚕嚕……']);
+    const away = { ...saying, mocha: { perch: null, path: [] } };
+    expect(texts(at(0), away, [{ type: 'hug' }, { type: 'hugNobody' }])).toEqual(['baby:抱抱']);
+  });
 });
 
 describe('barkLog', () => {

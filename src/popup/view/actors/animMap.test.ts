@@ -204,6 +204,10 @@ describe('reading the tick', () => {
     expect(sayingWord(s, { ...saying, baby: { ...saying.baby, refused: ['bead'] } }, [])).toBe('no');
     // 不要！ with nothing to refuse (he is crying), and in a still (no prev): still 不要！ (#112)
     expect(sayingWord(s, saying, [])).toBe('no');
+    // 抱抱 that a carrier answered: he says it as she lifts him (#120)
+    const carried = { ...s, baby: { ...s.baby, mode: 'carried' as const, carriedBy: { id: 'auntie', k: 0 } } };
+    expect(sayingWord(s, carried, [{ type: 'hug' }])).toBe('hug');
+    expect(sayingWord(s, carried, [])).toBeNull();
     expect(sayingWord(saying, saying, [{ type: 'bark' }])).toBe('no');
   });
 

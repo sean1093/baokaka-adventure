@@ -17,8 +17,10 @@ import type { Id, Input, NodeDef, PageDef, PerchDef, SimState } from './types';
  *   (`falling`, `push`); the tick after, it lands (`landed`, `land`, then `landSets`). One-way:
  *   nothing here ever moves a pushable back to `onPerch` (only a page reaction can, #84).
  * - **C4 sits on things.** `onPart` on a `button` presses it (`down`) and holds it while he sits;
- *   leaving releases it (`up`) unless other weight holds it. A part with `lockedByCat` can't be
- *   moved while he sits on it (`catLocked`, read by the tick's input phase).
+ *   leaving releases it (`up`) unless other weight holds it. `onPart` on a `lift` with a
+ *   `counterweight` puts it in its `on` state, and leaving puts it in `off` (#120, D-83: 5-2's
+ *   balloon basket rises when he jumps out). A part with `lockedByCat` can't be moved while he
+ *   sits on it (`catLocked`, read by the tick's input phase).
  * - **C5 irresistible.** Settled and not hidden, he is a priority-2 attractor at the perch's
  *   `reachNode` (`mochaAttractorNode`, read by `baby.ts`).
  * - **C6 scares small creatures.** Arriving at one of a creature's `fleesFromCat.nearPerches`
@@ -106,7 +108,8 @@ export function catLocked(def: PageDef, state: SimState, partId: Id): boolean {
  * landed pushable whose `landSets` pressed it.
  */
 export function buttonWeighed(def: PageDef, state: SimState, partId: Id): boolean {
-  if (findNode(def, state.baby.node)?.attach?.part === partId) return true;
+  // Carried (抱抱, #120), he weighs nothing on the ground
+  if (state.baby.mode !== 'carried' && findNode(def, state.baby.node)?.attach?.part === partId) return true;
   return def.parts.some(
     (p) => p.fall?.landSets?.part === partId && p.fall.landSets.to === 'down' && state.pushables[p.id] === 'landed',
   );
@@ -199,6 +202,8 @@ export function mochaTick(def: PageDef, state: SimState, input?: Input): MochaRe
     if (held !== undefined && isButton(def, held) && s.parts[held] === 'down' && !buttonWeighed(def, s, held)) {
       s = setPart(def, s, held, 'up', events);
     }
+    const weight = counterweightOf(def, held);
+    if (weight !== undefined) s = setPart(def, s, held!, weight.off, events);
   }
 
   const path = s.mocha.path.slice(Math.min(MOCHA_EDGES_PER_TICK, s.mocha.path.length - 1));
@@ -219,10 +224,18 @@ function isButton(def: PageDef, partId: Id): boolean {
   return def.parts.find((p) => p.id === partId)?.preset === 'button';
 }
 
-/** A perch's actions, in § 3.3 order: press (onPart button), set, scare (arrival only), push. */
+/** C4: the counterweight of lift `partId` (#120), or undefined when it isn't a counterweighted lift. */
+export function counterweightOf(def: PageDef, partId: Id | undefined): { on: string; off: string } | undefined {
+  const part = partId === undefined ? undefined : def.parts.find((p) => p.id === partId);
+  return part?.preset === 'lift' ? part.counterweight : undefined;
+}
+
+/** A perch's actions, in § 3.3 order: press (onPart button) or weigh (onPart counterweight), set, scare (arrival only), push. */
 function perchActions(def: PageDef, state: SimState, perch: PerchDef, events: SimEvent[], arriving = false): SimState {
   let s = state;
   if (perch.onPart !== undefined && isButton(def, perch.onPart)) s = setPart(def, s, perch.onPart, 'down', events);
+  const weight = counterweightOf(def, perch.onPart);
+  if (weight !== undefined) s = setPart(def, s, perch.onPart!, weight.on, events);
   if (perch.set !== undefined) s = setPart(def, s, perch.set.part, perch.set.to, events);
   if (arriving) {
     for (const c of def.creatures) {

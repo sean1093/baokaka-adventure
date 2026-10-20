@@ -258,7 +258,7 @@ export function solverKey(def: PageDef, state: SimState): string {
   k += G;
   for (const id of order.creatures) k += state.creatures[id] + F;
   const b = state.baby;
-  const carried = b.carriedBy === undefined ? '-' : b.carriedBy.id + '@' + b.carriedBy.k;
+  const carried = b.carriedBy === undefined ? '-' : b.carriedBy.id + '@' + b.carriedBy.k + (b.carriedBy.back === true ? '<' : '');
   k += G + b.node + F + b.mode + F + b.facing + F + list(b.refused) + F + b.lookCount + F + (b.target ?? '-') + F + carried + F + (b.linked ? 1 : 0);
   const m = state.mocha;
   k += G + (m.perch ?? '-') + F + m.path.join(L) + F + (m.to ?? '-') + F + (m.stare ?? '-') + F + (m.floorNode ?? '-');

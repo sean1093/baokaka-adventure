@@ -1,4 +1,5 @@
 import { M2_TOYS, toyMoon } from '../core/fixtures/m2';
+import { M3_TOYS, toyPlane } from '../core/fixtures/m3';
 import type { Id, PageDef } from '../core/types';
 import { PAGES, pageById } from '../pages';
 
@@ -43,8 +44,16 @@ const words: PageDef[] = c1p3 === undefined ? [] : [{ ...c1p3, id: 'lab-words', 
  */
 const ring4: PageDef = { ...toyMoon, id: 'lab-ring4', title: '四個字', words: ['beep', 'bye', 'no', 'wow'], learns: undefined };
 
+/**
+ * The M3 engine's toy pages (#120, `core/fixtures/m3.ts`): the balloon counterweight, 抱抱 and the
+ * auntie, the cranked carousel, 飛機！ and the pigeons, 爬樓梯; and the deck with M3's six words at
+ * once (嗶！ 掰掰 不要！ 哇！ 抱抱 飛機！, no learn beat), the ring as chapter 7 on will show it
+ * (`word-ring-6`).
+ */
+const ring6: PageDef = { ...toyPlane, id: 'lab-ring6', title: '六個字', words: ['beep', 'bye', 'no', 'wow', 'hug', 'plane'], learns: undefined };
+
 /** Lab-only fixture pages (not in the registry). */
-export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...words, ...M2_TOYS, ring4];
+export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...words, ...M2_TOYS, ring4, ...M3_TOYS, ring6];
 
 /** Every page the lab lists, registered pages first. */
 export const LAB_PAGES: readonly PageDef[] = [...PAGES, ...LAB_FIXTURES];

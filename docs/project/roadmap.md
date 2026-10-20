@@ -70,7 +70,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [118](https://github.com/sean1093/baokaka-adventure/issues/118) | Chapter 4 pages: 「霓虹燈睡著了」 西門町 — full specs, then data for 4-1…4-6, solver-green | content, m2 | #112, #116 | done (#191) |
 | [119](https://github.com/sean1093/baokaka-adventure/issues/119) | Chapter 4 art: 西門町 pop-up pages, parts, creatures, 土地公 (算命墨鏡) and the 麥克風 photo | art, content, m2 | #118, #117 | done (#192) |
 | **M3 · Chapters 5–7** | | | | |
-| [120](https://github.com/sean1093/baokaka-adventure/issues/120) | M3 engine: carrier, loop with crank, counterweight lift, words 抱抱 / 飛機！ and growth 爬樓梯 (climb) | engine, art, m3 | #112, #141 | todo |
+| [120](https://github.com/sean1093/baokaka-adventure/issues/120) | M3 engine: carrier, loop with crank, counterweight lift, words 抱抱 / 飛機！ and growth 爬樓梯 (climb) | engine, art, m3 | #112, #141 | done (#194) |
 | [121](https://github.com/sean1093/baokaka-adventure/issues/121) | Chapter 5 pages: 「夜市抱抱」 士林夜市 — full specs, then data for 5-1…5-6, solver-green | content, m3 | #120, #118 | todo |
 | [122](https://github.com/sean1093/baokaka-adventure/issues/122) | Chapter 5 art: 士林夜市 pop-up pages, parts, creatures, 土地公 (鴨舌帽) and the 蔥 photo | art, content, m3 | #121, #119 | todo |
 | [123](https://github.com/sean1093/baokaka-adventure/issues/123) | Chapter 6 pages: 「飛機睡著的時候」 松山機場 — full specs, then data for 6-1…6-6, solver-green | content, m3 | #120, #121 | todo |
@@ -89,6 +89,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [135](https://github.com/sean1093/baokaka-adventure/issues/135) | Ending: page E 「抓周」, 05:30 home scene, credits over album photos, post-credits 土地公, bonus page 「象山的日出」 | content, art, ui, m4 | #133, #134, #113 | todo |
 | **M5 · Polish and release** | | | | |
 | [68](https://github.com/sean1093/baokaka-adventure/issues/68) | Font payload: cut the CJK web-font download (self-hosted subset or text= subsetting) | qa, ui, chore, m5 | #135 | todo |
+| [193](https://github.com/sean1093/baokaka-adventure/issues/193) | Cross-chapter art follow-ups: per-chapter photo frames, 哇！ pose, chapter-card landmark vignette, scrolling 月亮線 window strip | art, m5 | #119 (ideally #134), #135 | todo |
 | [136](https://github.com/sean1093/baokaka-adventure/issues/136) | Performance, reduced-motion and accessibility audit for 翻翻台北 (supersedes #57) | chore, ui, m5 | #135, #68 | todo |
 | [137](https://github.com/sean1093/baokaka-adventure/issues/137) | Full-game solver run, difficulty-curve review and par tuning | engine, content, m5 | #135 | todo |
 | [138](https://github.com/sean1093/baokaka-adventure/issues/138) | Family beta, final QA checklist, docs and launch (supersedes #58) | docs, qa, m5 | #136, #137, #111 | todo |
@@ -170,6 +171,7 @@ graph TD
   end
   subgraph M5["M5 · Polish and release"]
     I68["#68 font payload"]
+    I193["#193 art follow-ups"]
     I136["#136 perf/a11y"]
     I137["#137 solver tuning"]
     I138["#138 beta + launch"]
@@ -279,6 +281,8 @@ graph TD
   I113 --> I135
   I135 --> I68
   I135 --> I136
+  I135 --> I193
+  I193 --> I136
   I68 --> I136
   I135 --> I137
   I136 --> I138

@@ -210,6 +210,11 @@ export interface PagePlayerProps {
    * included. Implies `paused`.
    */
   readonly still?: boolean;
+  /**
+   * A still drawn this many ms into its last tick instead of at its end (#120: a step in flight,
+   * the climb's knee-over): `prev` is kept and the sprites show the step's frame at that point.
+   */
+  readonly stillAt?: number;
   /** Inputs to feed one per tick (dev `demo=1` plays the authored solution) */
   readonly script?: readonly Input[];
   /** Hears gesture events: taps, nope, snaps, the word ring, the 土地公 (#97, #99, #101 listen) */
@@ -255,10 +260,11 @@ export interface PagePlayerProps {
   readonly tutorials?: boolean;
 }
 
-export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay, onSticker, showSticker, onPhoto, showPhoto, vibrate = false, tilt = false, lowPower = false, tutorials = false }: PagePlayerProps) {
+export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: openLines, paused: pausedProp = false, still = false, stillAt, script, onGesture, affordance, showGesture, reduced: reducedProp, hold = false, onDone, chrome: pageChrome, pageRef, showWords, showHint, onSay, onSticker, showSticker, onPhoto, showPhoto, vibrate = false, tilt = false, lowPower = false, tutorials = false }: PagePlayerProps) {
   const layout = useBookLayout();
   const paused = pausedProp || still;
-  const session = useMemo(() => new PageSession(def, { speed, from, prev: still ? undefined : prev, events }), [def, speed, from, prev, still, events]);
+  const midStep = still && stillAt !== undefined;
+  const session = useMemo(() => new PageSession(def, { speed, from, prev: still && !midStep ? undefined : prev, events }), [def, speed, from, prev, still, midStep, events]);
   const [frame, setFrame] = useState<SessionFrame>(() => session.frame());
   const [ms, setMs] = useState(0);
   const raf = useRef(0);
@@ -544,7 +550,8 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       if (event.type === 'wordRing') {
         // The ring, or before any word is learned, 「要！」 pointing at what he wants (GDD § 6 risk 1)
         const now = session.frame().state;
-        if (!now.done && learnRef.current?.stage !== 'card') {
+        // Carried (抱抱, #120) he is busy being carried: words wait until she sets him down
+        if (!now.done && now.baby.mode !== 'carried' && learnRef.current?.stage !== 'card') {
           if (ringWords(def, now).length > 0) setRingOpen(true);
           else setBarks((log) => barkLog(log, [wantPoke(def, now)], now.tick));
         }
@@ -714,7 +721,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
       <div style={block} aria-hidden="true" />
       <div style={page} ref={setBox} data-page-box="">
-        <PageView def={def} prev={frame.prev} state={frame.state} ms={ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still} events={frame.events} barks={barks} talk={talkView} textScale={textScale} lowPower={lowPower} />
+        <PageView def={def} prev={frame.prev} state={frame.state} ms={midStep ? stillAt : ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still && !midStep} events={frame.events} barks={barks} talk={talkView} textScale={textScale} lowPower={lowPower} />
       </div>
       <TopHud
         landmark={chapterInfo(def.chapter).landmark}

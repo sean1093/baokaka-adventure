@@ -1,4 +1,5 @@
 import { babyTick, keepRefusals } from './baby';
+import { carrierIndex, carryMove, facingFor, hugCarrier } from './carrier';
 import { evalCond, holds, partState } from './cond';
 import { creaturePoint, moveCreature, skyPosition } from './creatures';
 import { EVENT_RADIUS, isSimEvent, type SimEvent } from './events';
@@ -27,7 +28,9 @@ import { inReach, sayNo, wordAvailable, wordEvent } from './words';
  * 3. **Mocha** (`mochaTick`), then a cascade of what he did (arrival presses, `set`, landings).
  * 4. **Creatures.** Their moves and drops already happened in the cascades (`creatures.ts`).
  * 5. **Baby.** On a say tick: 不要！ refuses the target, any other word's event cascades from
- *    him (`words.ts`), and he stays `saying`. Otherwise the decision loop (`babyTick`, ≤ 1 edge,
+ *    him (`words.ts`), and he stays `saying` — except 抱抱 next to a carrier, which picks him up
+ *    (`carried`, `carrier.ts`; else `hugNobody`). While carried, the carrier walks one edge of her
+ *    route, or sets him down at its end. Otherwise the decision loop (`babyTick`, ≤ 1 edge,
  *    `babyEnter`) with his weight on buttons attached to the nodes he leaves and enters; then a
  *    cascade of his events (a `cry` opens the balcony door now, and he sees it next tick).
  *    Finally `ride` if he ends the tick on a node attached to a part that carried him this tick.
@@ -267,7 +270,10 @@ function inputTap(def: PageDef, state: SimState, id: Id, events: SimEvent[]): Si
   return enter(state, part, to, events);
 }
 
-/** Whether Baokaka can take a `say` now: not done, not carried or linked (#120, #128), word available. */
+/**
+ * Whether Baokaka can take a `say` now: not done, word available, and not `carried` (he is busy
+ * being carried: words wait until she sets him down, #120, D-83) or `linked` (#128).
+ */
 function canSay(def: PageDef, state: SimState, input: Input): boolean {
   if (input.t !== 'say' || state.done) return false;
   const mode = state.baby.mode;
@@ -296,16 +302,17 @@ function phaseInput(def: PageDef, state: SimState, input: Input, events: SimEven
 
 // ——— Phase 5: the baby's weight and rides ———
 
-function attachedPart(def: PageDef, nodeId: Id): Id | undefined {
-  return def.nodes.find((n) => n.id === nodeId)?.attach?.part;
+function attachedPart(def: PageDef, nodeId: Id | null): Id | undefined {
+  return nodeId === null ? undefined : def.nodes.find((n) => n.id === nodeId)?.attach?.part;
 }
 
 /**
  * § 2.1 `button`: Baokaka's weight. Leaving a node attached to a pressed button releases it unless
  * Mocha sits on it or a landed pushable holds it; entering one presses it (a press always emits
- * `partEnter`, as Mocha's does, D-44). `lockedWhen` and `stateWhen` still apply.
+ * `partEnter`, as Mocha's does, D-44). `lockedWhen` and `stateWhen` still apply. A carry has no
+ * weight on the ground: picked up he only leaves `from` (`to` null), set down he only enters `to`.
  */
-function babyWeight(def: PageDef, state: SimState, from: Id, to: Id, events: SimEvent[]): SimState {
+function babyWeight(def: PageDef, state: SimState, from: Id | null, to: Id | null, events: SimEvent[]): SimState {
   const off = attachedPart(def, from);
   const on = attachedPart(def, to);
   if (off === on) return state;
@@ -342,6 +349,45 @@ function rideEvent(def: PageDef, start: SimState, atMove: SimState, end: SimStat
   const before = attachedPart(def, startNode) === p && moved(start, atMove, startNode);
   const after = moved(atMove, end, end.baby.node);
   return before || after ? { type: 'ride', id: p } : null;
+}
+
+// ——— Phase 5: 抱抱 and carriers (`carrier.ts`) ———
+
+/**
+ * 抱抱's effect, after its `hug` event cascaded: the carrier in reach picks him up — she enters
+ * `carrying@k` (k = her end of the route), he moves onto her node (`babyEnter` when that is a
+ * move), `carried`, wanting nothing for now. No carrier: `hugNobody` (arms up, Mocha purrs).
+ */
+function hugUp(def: PageDef, state: SimState, events: SimEvent[]): SimState {
+  const hug = hugCarrier(def, state);
+  if (hug === null) {
+    events.push({ type: 'hugNobody' });
+    return state;
+  }
+  const from = state.baby.node;
+  const k = carrierIndex(hug.part, hug.back ? 'done' : 'idle');
+  let s = enter(state, hug.part, `carrying@${k}`, events);
+  if (hug.node !== from) events.push({ type: 'babyEnter', id: hug.node });
+  const carriedBy: SimState['baby']['carriedBy'] = hug.back ? { id: hug.part.id, k, back: true } : { id: hug.part.id, k };
+  const facing = facingFor(def, s, from, hug.node, s.baby.facing);
+  s = { ...s, baby: { ...s.baby, node: hug.node, facing, mode: 'carried', carriedBy, target: null, reachTicks: 0, lookCount: 0 } };
+  return babyWeight(def, s, from, null, events);
+}
+
+/** Phase 5 while `carried`: one edge along the route, a wait, or set down at its end. */
+function carry(def: PageDef, state: SimState, events: SimEvent[]): SimState {
+  const move = carryMove(def, state);
+  if (move.kind === 'wait') return state;
+  if (move.kind === 'step') {
+    const s = enter(state, move.part, move.state, events);
+    events.push({ type: 'babyEnter', id: move.node });
+    const facing = facingFor(def, s, s.baby.node, move.node, s.baby.facing);
+    return { ...s, baby: { ...s.baby, node: move.node, facing, carriedBy: { ...s.baby.carriedBy!, k: move.k } } };
+  }
+  let s = move.part === undefined ? state : enter(state, move.part, move.state!, events);
+  const { carriedBy: _down, ...baby } = s.baby;
+  s = { ...s, baby: { ...baby, mode: 'idle', target: null, reachTicks: 0, lookCount: 0 } };
+  return babyWeight(def, s, null, s.baby.node, events);
 }
 
 // ——— Phase 7: learning and counters ———
@@ -443,6 +489,13 @@ export function step(def: PageDef, state: SimState, input: Input): StepResult {
     const refused = keepRefusals(def, state, s);
     if (refused.length !== s.baby.refused.length) s = { ...s, baby: { ...s.baby, refused } };
     if (ev === null) s = sayNo(s);
+    else if (input.word === 'hug') {
+      const events: SimEvent[] = [];
+      s = run(hugUp(def, s, events), events);
+    }
+  } else if (s.baby.mode === 'carried') {
+    const events: SimEvent[] = [];
+    s = run(carry(def, s, events), events);
   } else {
     const from = s.baby.node;
     const baby = babyTick(def, s, { prev: state, growth: stepGrowth(def, s) });

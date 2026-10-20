@@ -15,7 +15,7 @@ import type { Pt } from '../geometry';
  * `bark` (on choosing a target, and 「要！要！」 while reaching), 好吃！ on
  * `eat`, 哇—— when he starts crying. Mocha: 「……」 at the stare before a push, 「喵？」 at an
  * unreachable perch, 「不要。」 at water or steam, 「喵。」 on arrival, 「呼嚕嚕……」 when Baokaka
- * starts cuddling him.
+ * starts cuddling him, or says 抱抱 with no carrier in reach (#120).
  */
 
 export interface BarkShow {
@@ -55,6 +55,8 @@ export function barksOf(prev: SimState, state: SimState, events: readonly SimEve
   else if (has('mochaNope')) out.push(mocha('nope'));
   else if (has('mochaPuff')) out.push(mocha('puff'));
   else if (has('catArrive')) out.push(mocha('arrive'));
+  // 抱抱 with nobody to carry him (#120): his arms go up, and Mocha purrs instead
+  else if (has('hugNobody') && (state.mocha.perch !== null || state.mocha.path.length > 0)) out.push(mocha('purr'));
   else if (state.baby.mode === 'cuddling' && state.baby.target === 'mocha' && prev.baby.mode !== 'cuddling') out.push(mocha('purr'));
   return out;
 }

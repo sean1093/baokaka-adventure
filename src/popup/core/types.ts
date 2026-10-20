@@ -135,8 +135,16 @@ export interface PartDef {
   // preset-specific:
   /** pushable */
   fall?: { path: [number, number][]; fallTo: Id; landSets?: { part: Id; to: string } };
-  /** carrier */
+  /**
+   * carrier: the nodes it walks, one edge per tick (GDD § 2.4 抱抱, #120). Idle it stands on the
+   * first; `done`, on the last. Consecutive nodes must be joined by a baby edge (lint).
+   */
   route?: Id[];
+  /**
+   * lift: a counterweight (C4, #120). While Mocha sits on a perch whose `onPart` is this lift, it
+   * is in state `on`; when he leaves, `off` (5-2's balloon basket rises when he jumps out).
+   */
+  counterweight?: { on: string; off: string };
   /** light owns a light attractor */
   attractor?: Id;
   /** art registry key, e.g. 'c1/train-blue' */
@@ -310,7 +318,11 @@ export interface SimState {
     target: Id | null;
     /** Ticks spent reaching for `target`, mod 4: he barks 「要！要！」 when it is 0 (D-43). */
     reachTicks: number;
-    carriedBy?: { id: Id; k: number };
+    /**
+     * While `carried` (§ 2.4 抱抱, #120): the carrier and his index on its route. `back` = it walks
+     * the route in reverse (hugged again at its `done` end, it carries him back to the start).
+     */
+    carriedBy?: { id: Id; k: number; back?: true };
     linked: boolean;
   };
   /**

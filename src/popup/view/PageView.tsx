@@ -45,7 +45,8 @@ import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
 import { NO_GESTURE, hitCenter, minHit, rideHome, shiftHit, targetsOf, type GestureFlags } from './gestures';
 import { clamp01, drawnNodePos, easeInOut, lerpPt, offpagePoint, partProgress, stepPose } from './interp';
 import { PRESET_Z, type LayerId } from './layers';
-import { ArtG, r2 } from './parts/common';
+import { ArtG, r2, tweened } from './parts/common';
+import { moverPoint } from './parts/MoverView';
 import { CarriageView, MOVERS, partView, type MoverProps, type PartViewProps } from './parts';
 import { foregroundSlot, stageOf } from './stage';
 import { SayRing } from './words/SayFx';
@@ -134,6 +135,39 @@ function creaturePoint(def: PageDef, creature: CreatureDef, state: SimState, oth
   const any = Object.values(creature.positions).find((p): p is Id => p !== 'offpage');
   const anchor = near ?? (any === undefined ? undefined : nodePos(def, state, any));
   return anchor === undefined ? null : offpagePoint(anchor);
+}
+
+/** How far above the carrier's feet he rides in her arms (page units; GDD § 2.4 抱抱, #120). */
+export const CARRY_LIFT = 34;
+/** How far in front of her (toward where she walks) he is held, so both read (page units, #120). */
+export const CARRY_AHEAD = 16;
+
+/** The carrier holding him in `s`, if he is carried. */
+function carrierOf(def: PageDef, s: SimState): PageDef['parts'][number] | undefined {
+  const by = s.baby.mode === 'carried' ? s.baby.carriedBy : undefined;
+  return by === undefined ? undefined : def.parts.find((p) => p.id === by.id);
+}
+
+/**
+ * Where he is drawn while carried (抱抱, #120): carried on both sides of the tick, he follows the
+ * carrier's drawn feet (the same tween as her art, so the two never drift), `CARRY_LIFT` up and
+ * `CARRY_AHEAD` in front of her; on the
+ * pick-up tick he is lifted by `k` (the step's eased progress) and on the set-down tick lowered.
+ * Otherwise `pose` unchanged.
+ */
+export function carriedPose(def: PageDef, prev: SimState, state: SimState, pose: { x: number; y: number; moving: boolean }, ms: number, reduced: boolean, k: number): { x: number; y: number; moving: boolean } {
+  const now = carrierOf(def, state);
+  const before = carrierOf(def, prev);
+  if (now === undefined && before === undefined) return pose;
+  if (now !== undefined && before !== undefined) {
+    const a = moverPoint(def, now, prev.parts[now.id] ?? 'idle', prev);
+    const b = moverPoint(def, now, state.parts[now.id] ?? 'idle', state);
+    const ahead = state.baby.facing === 'l' ? -CARRY_AHEAD : CARRY_AHEAD;
+    return { x: tweened(a[0], b[0], ms, reduced) + ahead, y: tweened(a[1], b[1], ms, reduced) - CARRY_LIFT, moving: a[0] !== b[0] || a[1] !== b[1] };
+  }
+  const lift = now !== undefined ? k : 1 - k;
+  const ahead = (state.baby.facing === 'l' ? -CARRY_AHEAD : CARRY_AHEAD) * lift;
+  return { ...pose, x: pose.x + ahead, y: pose.y - CARRY_LIFT * lift };
 }
 
 export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false, events = NO_EVENTS, barks: barksProp, talk, textScale = 1, lowPower = false }: PageViewProps) {
@@ -338,6 +372,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     babyPose = { x: f.x, y: f.y, moving: f.opacity < 1 };
     babyOpacity = f.opacity;
   }
+  // Carried (抱抱, #120): he rides in the carrier's arms, CARRY_LIFT above her feet, moving with her
+  // art (both tween the same way); lifted on the pick-up tick, lowered on the set-down tick
+  if (babyPose !== null) babyPose = carriedPose(def, prev, state, babyPose, ms, reduced, reduced || still ? 1 : kStep);
   const babyDir = babyEdge !== null && babyStart && babyEnd ? travelDir(babyStart, babyEnd) : 0;
   const babyTilt = still ? 0 : standeeTilt(ms, tickMs, babyDir, reduced);
   const watch = finger === null || babyPose === null ? undefined : finger[0] < babyPose.x ? -1 : 1;

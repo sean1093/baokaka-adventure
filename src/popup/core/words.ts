@@ -14,7 +14,7 @@ import type { EventType, PageDef, SimState, Word } from './types';
  * | 掰掰 `bye` | `wave` | 160 | creatures with a `wave` reaction move (to `away`, or back) and `drop` what they hold |
  * | 不要！ `no` | — | — | his current target joins `baby.refused` (no event) |
  * | 哇！ `wow` | `wow` | 160 | lights with a `wow` reaction switch (`toggle`: on, and off again) |
- * | 抱抱 `hug` | `hug` | 1 edge | **stub**: the event only; the carrier rule is #120 |
+ * | 抱抱 `hug` | `hug` | 1 edge | built in: an idle (or `done`) carrier within one edge picks him up and walks its route (`carrier.ts`, #120); else `hugNobody`. The bare event also reaches `hug` reactions anywhere |
  * | 飛機！ `plane` | `sky` | whole page | built in: `winged` creatures toggle ground ↔ sky (`creatures.ts`); parts with a `sky` reaction |
  * | 咻—— `whoosh` | `whoosh` | 140, 90° cone in his facing | built in: `blowable` parts in the cone advance one state; any `whoosh` reaction |
  * | 一起 `together` | `together` | — | **stub**: the event only; linked mode is #128 |
@@ -71,7 +71,7 @@ export function wordAvailable(def: PageDef, word: Word, learned: boolean): boole
 /**
  * The event `word` emits from where Baokaka is (§ 3.3 phase 5), or null for 不要！. Radii come
  * from `EVENT_RADIUS`; 咻—— carries his facing for its cone. 抱抱 and 一起 emit their bare event
- * for now (no radius).
+ * (no radius): 抱抱's one-edge reach is the carrier's rule (`carrier.ts`, applied by `step.ts`).
  */
 export function wordEvent(def: PageDef, state: SimState, word: Word): SimEvent | null {
   const type = WORD_EVENT[word];
@@ -79,7 +79,7 @@ export function wordEvent(def: PageDef, state: SimState, word: Word): SimEvent |
   const at = nodePos(def, state, state.baby.node);
   const event: SimEvent = { type, id: state.baby.node };
   if (at !== undefined) event.at = at;
-  // TODO(#120): 抱抱 reaches one edge (an adjacent idle carrier picks him up); TODO(#128): 一起 enters linked mode.
+  // 抱抱's carrier is picked by `hugCarrier` (one edge, not a radius); TODO(#128): 一起 enters linked mode.
   if (type === 'hug' || type === 'together') return event;
   event.within = EVENT_RADIUS[type];
   if (type === 'whoosh') event.facing = state.baby.facing;
