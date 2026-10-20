@@ -9,8 +9,8 @@ import { CI_BUDGET_MS, formatDetails, formatTable, judge, PAR_BAND } from './rep
 
 /**
  * Every registered page must pass this (GDD § 3.7, issue #87): the lint has no errors; replaying
- * its `solution` reaches `done`; the solver finds it solvable with no dead ends, no cascade
- * overflow, not trivial (unless `allowTrivial`), and the 淘氣 and 土地公 reachable. Par outside
+ * its `solution` reaches `done`; the solver finds it solvable with no dead ends, no soft traps
+ * (#183), no cascade overflow, not trivial (unless `allowTrivial`), and the 淘氣 and 土地公 reachable. Par outside
  * the difficulty band is a warning. Content issues add pages to the registry, never to this file.
  * On a failure the assertion message carries the `npm run solve` report table (`./report.ts`).
  */
@@ -67,6 +67,11 @@ describe.each(rows.map((row) => [row.def.id, row] as const))('page %s', (_id, { 
       deadEndCount: 0,
       deadEnds: [],
     });
+  });
+
+  test('no soft traps: no first move has to be undone (#183)', () => {
+    const traps = r.softTraps().slice(0, 3).map((t) => ({ after: toSolutionSteps(t.path), move: toSolutionSteps([t.move]), regret: t.regret }));
+    expect(traps, table()).toEqual([]);
   });
 
   test(def.allowTrivial ? 'trivial is allowed' : 'not trivial', () => {

@@ -36,6 +36,8 @@ export interface PageReport {
   readonly ms: number;
   /** Dead-end count, or null when the search was incomplete. */
   readonly deadEnds: number | null;
+  /** Soft traps (moves that must be undone, `SolveResult.softTraps`, #183), or null when the search was incomplete. */
+  readonly softTraps: number | null;
   readonly trivial: boolean;
   readonly allowTrivial: boolean;
   readonly mischief: boolean;
@@ -96,6 +98,12 @@ export function judge(
     const path = first ? ` (first: ${JSON.stringify(toSolutionSteps(first.path))})` : '';
     failures.push(`${r.deadEndCount} dead-end state${r.deadEndCount === 1 ? '' : 's'}${path}`);
   }
+  // A move that must be undone leaves the page in play that never progresses (#183, the AI playtest)
+  const traps = r.complete ? r.softTraps() : null;
+  if (traps !== null && traps.length > 0) {
+    const t = traps[0];
+    failures.push(`${traps.length} soft trap${traps.length === 1 ? '' : 's'}: a move that must be undone (first: ${JSON.stringify(toSolutionSteps([t.move]))} after ${JSON.stringify(toSolutionSteps(t.path))}, +${t.regret} moves)`);
+  }
   if (r.trivial && !allowTrivial) failures.push('trivial (solvable by waiting) without allowTrivial');
   // On an incomplete search `false` only means "not found"; the stop reason already fails the page.
   if (r.complete && !r.mischiefReachable) failures.push('the 淘氣 is not reachable');
@@ -113,6 +121,7 @@ export function judge(
     states: r.statesExplored,
     ms: Math.round((r.ms ?? 0) * 10) / 10,
     deadEnds: r.deadEndCount,
+    softTraps: traps === null ? null : traps.length,
     trivial: r.trivial,
     allowTrivial,
     mischief: r.mischiefReachable,
@@ -204,7 +213,7 @@ const padTo = (s: string, n: number) => s + ' '.repeat(Math.max(0, n - displayWi
 /** ✓ reachable, ✗ not, `?` not found by an incomplete search. */
 const found = (r: PageReport, ok: boolean) => (ok ? '✓' : r.stop === null ? '✗' : '?');
 
-const COLUMNS = ['page', 'title', 'diff', 'par', 'states', 'ms', 'dead', 'trivial', '淘氣', '土地公', 'lint', 'result'] as const;
+const COLUMNS = ['page', 'title', 'diff', 'par', 'states', 'ms', 'dead', 'traps', 'trivial', '淘氣', '土地公', 'lint', 'result'] as const;
 
 /** One row's cells, in `COLUMNS` order. */
 function cells(r: PageReport): string[] {
@@ -216,6 +225,7 @@ function cells(r: PageReport): string[] {
     r.states.toLocaleString('en-US'),
     String(Math.round(r.ms)),
     r.deadEnds === null ? '?' : String(r.deadEnds),
+    r.softTraps === null ? '?' : String(r.softTraps),
     r.trivial ? (r.allowTrivial ? 'yes (ok)' : 'YES') : 'no',
     found(r, r.mischief),
     found(r, r.tudigong),
@@ -227,7 +237,7 @@ function cells(r: PageReport): string[] {
 /**
  * The report table: a header, a rule and one aligned row per page (columns: id, title, difficulty,
  * par with its band check — `✓` in band, `! lo–hi` outside, `-` unsolved —, states, solver ms,
- * dead ends, trivial, 淘氣 and 土地公 ✓/✗ (`?` = not found by an incomplete search), lint errors/warnings, result).
+ * dead ends, soft traps, trivial, 淘氣 and 土地公 ✓/✗ (`?` = not found by an incomplete search), lint errors/warnings, result).
  */
 export function formatTable(rows: readonly PageReport[]): string {
   const body = rows.map(cells);

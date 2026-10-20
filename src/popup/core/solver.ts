@@ -103,9 +103,46 @@ export interface SolveResult {
    * goal — gets a fresh `solve` from it (same options, stopping at the goal).
    */
   nextAction(state: SimState): Input | null;
+  /**
+   * The page's soft traps (#183): a first move of a part or of Mocha, made from an on-track state
+   * (one on a shortest way from the start), after which the goal is still reachable but costs at
+   * least two moves more than before — the move has to be undone, and until then the page sits in
+   * a state that looks like play but never progresses (0-4's curtain-first order trap, found by
+   * the AI playtest). Moving again something the way there already moved (undoing progress) is a
+   * wasted move, not a trap. Fewest moves to the trap first, one entry per distinct move. Empty
+   * unless the search is complete. Computed on the first call.
+   */
+  softTraps(): SoftTrap[];
+}
+
+/** A move that has to be undone (`SolveResult.softTraps`). */
+export interface SoftTrap {
+  /** Inputs from the search's start to the on-track state (waits as `none`) */
+  readonly path: Input[];
+  /** The move that springs it */
+  readonly move: Input;
+  /** The moves it costs on top of itself: (moves to the goal after it) + 1 − (moves to the goal before it), ≥ 2 */
+  readonly regret: number;
 }
 
 const NONE: Input = { t: 'none' };
+
+/** What an input moves: a part, Mocha (a perch or a pet), a word; waits touch nothing (`softTraps`). */
+function touchOf(input: Input): string {
+  switch (input.t) {
+    case 'set':
+      return 'p\x1f' + input.part;
+    case 'tap':
+      return 'p\x1f' + input.id;
+    case 'mocha':
+    case 'pet':
+      return 'mocha';
+    case 'say':
+      return 'w\x1f' + input.word;
+    default:
+      return input.t;
+  }
+}
 
 /** A distinct string per distinct input (ids never contain control characters). */
 function inputKey(input: Input): string {
@@ -606,7 +643,40 @@ export function solve(def: PageDef, from: SimState = initialState(def), opts: So
     return inputs[graph.edgeInput[e]];
   };
 
+  let traps: SoftTrap[] | null = null;
+  const softTraps = (): SoftTrap[] => {
+    if (traps !== null) return traps;
+    traps = [];
+    if (!complete || par === null) return traps;
+    cost ??= goalCost(graph, rev);
+    const c = cost;
+    const movesTo = (v: number) => Math.floor(c[v] / TICK_SPAN);
+    const found: { u: number; input: number; regret: number }[] = [];
+    for (let u = 0; u < n; u++) {
+      if (!(flags[u] & FLAG_EXPANDED) || flags[u] & FLAG_DONE || c[u] === Infinity) continue;
+      if (moves.data[u] + movesTo(u) !== par) continue;
+      // What the way here already touched: moving it again is undoing (or redoing) a move, not a trap
+      const touched = new Set(pathTo(u).map(touchOf));
+      for (let e = graph.edgeStart[u], end = e + graph.edgeCount[u]; e < end; e++) {
+        const input = graph.edgeInput[e];
+        const v = graph.edgeTo[e];
+        if (inputs[input].t === 'none' || c[v] === Infinity || touched.has(touchOf(inputs[input]))) continue;
+        const regret = movesTo(v) + 1 - movesTo(u);
+        if (regret >= 2) found.push({ u, input, regret });
+      }
+    }
+    found.sort((a, b) => moves.data[a.u] - moves.data[b.u] || a.u - b.u || a.input - b.input);
+    const seen = new Set<number>();
+    for (const f of found) {
+      if (seen.has(f.input)) continue;
+      seen.add(f.input);
+      traps.push({ path: pathTo(f.u), move: inputs[f.input], regret: f.regret });
+    }
+    return traps;
+  };
+
   return {
+    softTraps,
     solvable: goal !== -1,
     complete,
     stop,

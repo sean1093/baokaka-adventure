@@ -5,11 +5,12 @@ import { definePage } from '../../core/define';
  * curtain is closed and Mocha sits on the windowsill, so Baokaka crawls to him and cuddles. Hide
  * Mocha in the laundry basket and nothing is left to want: Baokaka looks 「？」, then cries 「哇——」
  * (§ 2.2.5, crying is a tool). The cry opens the balcony door (it stays open) and wakes the paper
- * 月亮線 train outside (its lights come on, 廣播姊姊 speaks). Open the curtain: the bead shows on the
- * train's step and he crawls out to it. Opened first, the curtain only shows him the bead behind the
- * shut door, and he reaches at it: hide everything to make him cry. Every action is reversible, and
- * an open door is harmless (dead-end check, § 3.7). The 淘氣: close the curtain while Mocha sits on
- * the curtain rod — he is rolled into a 春捲.
+ * 月亮線 train outside (its lights come on, 廣播姊姊 speaks), and in their light the bead glints on
+ * the train's step: with the curtain open he crawls out to it. The two moves go in either order
+ * (#183, the AI playtest's order trap): opened first, the curtain shows a dark train and no bead,
+ * so there is still nothing to want once Mocha hides. Every action is reversible, and an open door
+ * is harmless (dead-end check, § 3.7). The 淘氣: close the curtain while Mocha sits on the curtain
+ * rod — he is rolled into a 春捲.
  */
 export default definePage({
   id: 'c0p4', chapter: 0, index: 4, title: '窗外的月亮線', difficulty: 2, backdrop: 'c0/home-window',
@@ -45,7 +46,9 @@ export default definePage({
     { id: 'trainRoof', node: 'roofTop', reachNode: 'trainStep' },
   ],
   creatures: [],
-  attractors: [{ id: 'bead', kind: 'shiny', node: 'trainStep', goal: true, visibleWhen: { part: 'curtain', in: ['open'] } }],
+  // The bead glints on the train's step only once the train's lights are on (#183): opening the
+  // curtain first shows a dark train and nothing to want, never a bead he reaches at forever
+  attractors: [{ id: 'bead', kind: 'shiny', node: 'trainStep', goal: true, visibleWhen: { all: [{ part: 'curtain', in: ['open'] }, { part: 'train', in: ['on'] }] } }],
   baby: { start: 'rug1', facing: 'r' },
   mocha: { start: 'sill' },
   mischief: {

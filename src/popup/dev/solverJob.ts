@@ -17,7 +17,7 @@ export interface LabDeadEnd {
   readonly state: SimState;
 }
 
-export type LabSolve = Omit<SolveResult, 'nextAction' | 'deadEnds'> & { readonly deadEnds: readonly LabDeadEnd[] };
+export type LabSolve = Omit<SolveResult, 'nextAction' | 'softTraps' | 'deadEnds'> & { readonly deadEnds: readonly LabDeadEnd[] };
 
 export type SolverRequest =
   /** Solve `def` (an edited copy) or the lab page `page`, from `from` or its start. */
@@ -32,8 +32,9 @@ export type SolverReply =
 
 /** A solve result as plain data. */
 export function summarise(r: SolveResult): LabSolve {
-  const { nextAction: _next, deadEnds, ...rest } = r;
+  const { nextAction: _next, softTraps: _traps, deadEnds, ...rest } = r;
   void _next;
+  void _traps;
   return { ...rest, deadEnds: deadEnds.map((d) => ({ path: d.path, state: d.state })) };
 }
 

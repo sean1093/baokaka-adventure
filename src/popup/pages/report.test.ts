@@ -39,6 +39,7 @@ function solved(over: Partial<SolveResult> = {}): SolveResult {
     ms: 25.04,
     error: null,
     nextAction: () => null,
+    softTraps: () => [],
     ...over,
   };
 }
@@ -69,6 +70,7 @@ describe('judge', () => {
     ['time', { complete: false, stop: 'time', deadEndCount: null }, true, /stopped early \(time\)/],
     ['cascade', { complete: false, stop: 'error', error: { kind: 'cascadeOverflow', message: 'loop', path: [] } }, true, /^cascadeOverflow: loop$/],
     ['replay', {}, false, /authored solution does not reach done/],
+    ['a soft trap', { softTraps: () => [{ path: [], move: { t: 'tap', id: 'curtain' }, regret: 2 }] }, true, /^1 soft trap: a move that must be undone \(first: \[\{"tap":"curtain"\}\] after \[\], \+2 moves\)$/],
   ])('fails on %s', (_name, over, replayOk, re) => {
     const r = judge(c1p2, CLEAN, solved(over), { replayOk });
     expect(r.failures.some((f) => re.test(f)), r.failures.join('\n')).toBe(true);
@@ -110,11 +112,11 @@ describe('formatTable', () => {
 
   test('renders the header, a rule and one aligned row per page', () => {
     expect(formatTable([green, bad, capped])).toMatchInlineSnapshot(`
-      "page  title     diff  par      states  ms  dead  trivial  淘氣  土地公  lint   result
-      ────  ────────  ────  ───────  ──────  ──  ────  ───────  ────  ──────  ─────  ────────
-      c1p2  月台的縫  2     2 ✓      182     25  0     no       ✓     ✓       0E 0W  ok
-      c9p9  壞        1     4 ! 1–2  12,345  25  2     no       ✗     ✓       1E 0W  FAIL
-      c9p8  月台的縫  2     -        182     25  ?     no       ?     ?       0E 0W  FAIL cap"
+      "page  title     diff  par      states  ms  dead  traps  trivial  淘氣  土地公  lint   result
+      ────  ────────  ────  ───────  ──────  ──  ────  ─────  ───────  ────  ──────  ─────  ────────
+      c1p2  月台的縫  2     2 ✓      182     25  0     0      no       ✓     ✓       0E 0W  ok
+      c9p9  壞        1     4 ! 1–2  12,345  25  2     0      no       ✗     ✓       1E 0W  FAIL
+      c9p8  月台的縫  2     -        182     25  ?     ?      no       ?     ?       0E 0W  FAIL cap"
     `);
   });
 

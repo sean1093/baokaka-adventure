@@ -4,7 +4,7 @@ import c0p4 from './fixtures/c0p4';
 import c1p2 from './fixtures/c1p2';
 import c1p3 from './fixtures/c1p3';
 import { deadEnd, jam, loop, threeNode, trivial, unsolvable } from './fixtures/solver';
-import { line, page, part } from './fixtures/toy';
+import { e, line, page, part } from './fixtures/toy';
 import { replay } from './replay';
 import {
   candidateInputs,
@@ -255,6 +255,41 @@ describe('the other fixtures', () => {
     expect(r).toMatchObject({ solvable: true, deadEndCount: 0, trivial: false, mischiefReachable: true, tudigongReachable: true });
     expect(r.par).toBe(2);
     expect(run(def, r.solution!).done).toBe(true);
+  });
+});
+
+describe('soft traps (#183)', () => {
+  test("the engine fixture's 0-4 (the GDD's first layout) has the curtain-first order trap", () => {
+    // Opened first, the curtain shows the bead behind the shut door: he reaches at it and never cries
+    // (The engine fixture knows every word, so 不要！ adds traps of its own after it; the page doesn't.)
+    const traps = solve(c0p4).softTraps();
+    expect(traps[0]).toEqual({ path: [], move: { t: 'tap', id: 'curtain' }, regret: 2 });
+  });
+
+  test('a wasted move is not a trap: the toy pages have none', () => {
+    // On the jam page a drag before the latch stops at mid: one wasted move, not one to undo
+    expect(solve(threeNode).softTraps()).toEqual([]);
+    expect(solve(jam).softTraps()).toEqual([]);
+  });
+
+  test('a part moved first that must be put back is a trap, reported once', () => {
+    // A–B needs the latch open (the move), B–C the vent shut as it starts: opening the vent first must be undone
+    const def = page({
+      id: 'toyTrap',
+      ...line('ABC'),
+      words: [],
+      edges: [e('A', 'B', { when: { part: 'latch', in: ['open'] } }), e('B', 'C', { when: { part: 'vent', in: ['closed'] } })],
+      parts: [part('latch', 'flap', 50, -80), part('vent', 'flap', 150, -80)],
+      attractors: [{ id: 'bead', kind: 'shiny', node: 'C', goal: true }],
+    });
+    const r = solve(def);
+    expect(r.par).toBe(1);
+    expect(r.softTraps()).toEqual([{ path: [], move: { t: 'tap', id: 'vent' }, regret: 2 }]);
+    expect(r.softTraps()).toBe(r.softTraps());
+  });
+
+  test('an incomplete search reports none', () => {
+    expect(solve(c0p4, undefined, { stopAtGoal: true }).softTraps()).toEqual([]);
   });
 });
 
