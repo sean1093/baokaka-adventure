@@ -1,13 +1,13 @@
 {
-  "name": "寶咖咖抓周大冒險",
-  "short_name": "寶咖咖",
-  "description": "寶咖咖一歲生日的前一晚，和摩卡貓搭上半夜的月亮線捷運，跑遍台北找回抓周寶物。手機打開就能玩的冒險 RPG。",
+  "name": "翻翻台北 Pop-Up Taipei",
+  "short_name": "翻翻台北",
+  "description": "寶咖咖一歲生日的前一晚，翻開阿嬤的立體書《台北》：拉紙片、轉轉盤、掀紙蓋，幫爬來爬去的寶寶找回抓周寶物。手機打開就能玩、全家一起玩的立體書解謎遊戲。",
   "start_url": "/baokaka-adventure/",
   "scope": "/baokaka-adventure/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0A0B22",
-  "theme_color": "#0A0B22",
+  "background_color": "#3A1838",
+  "theme_color": "#3A1838",
   "icons": [
     {
       "src": "icons/icon.svg",
