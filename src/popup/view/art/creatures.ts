@@ -89,3 +89,21 @@ export function backpacker(ctx: KitCtx, pos = 'sleep'): string {
     + `<text data-art-text="" x="47" y="-92" font-family="Fredoka" font-weight="700" font-size="17" fill="${C.chalk}">Z</text>`;
   return softEllipse(ctx, 22, 1, 52, 4, 'shadow', 0.45) + depth(ctx, 4, dieCut(outline, print), outline);
 }
+
+/**
+ * 3-1's ad poster on the platform wall (a `creature` that waves back to 掰掰; #116 placeholder until
+ * #117): a framed print of a smiling figure holding up a 悠遊卡-style card. `waving`: the free arm up
+ * in a wave, with two motion ticks. The poster's foot (its frame's bottom) is at the origin.
+ */
+export function adPoster(ctx: KitCtx, pos = 'still'): string {
+  const frame = `<rect x="-26" y="-64" width="52" height="64" rx="2"/>`;
+  const arm = pos === 'waving'
+    ? `<path d="M8 -30l9 -16" stroke="${S.skin}" stroke-width="4" stroke-linecap="round"/><path d="M19 -54l3 -4M23 -48l4 -2" stroke="${C.ink}" stroke-width="1.2" stroke-linecap="round"/>`
+    : `<path d="M8 -30l7 10" stroke="${S.skin}" stroke-width="4" stroke-linecap="round"/>`;
+  return depth(ctx, 2, `<rect x="-26" y="-64" width="52" height="64" rx="2" fill="${C.printLilacDeep}"/><rect x="-22" y="-60" width="44" height="56" fill="${C.washiCeladon}"/>`
+    + `<path d="M-22 -18h44v14h-44z" fill="${C.washi}"/><path d="M-16 -12h22M-16 -8h14" stroke="${C.inkSoft}" stroke-width="1.4"/>`
+    + `<path d="M-10 -18q0 -16 10 -16q10 0 10 16z" fill="${C.wordBye}"/><circle cy="-40" r="7" fill="${S.skin}"/>`
+    + `<path d="M-7 -42q1 -7 7 -7q6 0 7 7q-3 -3 -7 -3q-4 0 -7 3z" fill="${C.printDark}"/>`
+    + `<circle cx="-2.4" cy="-40" r=".9" fill="${C.ink}"/><circle cx="2.4" cy="-40" r=".9" fill="${C.ink}"/><path d="M-2 -37q2 1.6 4 0" stroke="${C.ink}" stroke-width=".9" fill="none"/>`
+    + `<path d="M-8 -30l-7 8" stroke="${S.skin}" stroke-width="4" stroke-linecap="round"/><rect x="-20" y="-26" width="9" height="6" rx="1" fill="${C.peony}"/>` + arm, frame);
+}

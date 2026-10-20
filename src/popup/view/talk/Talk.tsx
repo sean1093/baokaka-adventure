@@ -23,8 +23,8 @@ export function bubbleShow(def: PageDef, state: SimState): BubbleShow | null {
   const { mode, target } = state.baby;
   const attractor = target === null || target === 'mocha' ? undefined : def.attractors.find((a) => a.id === target);
   const kind = target === null ? null : target === 'mocha' ? 'mocha' : attractor?.kind ?? null;
-  // A spread's goal is the chapter treasure (#107): the bubble shows it, not the bead
-  const treasure = def.spread && attractor?.goal ? { treasure: def.chapter } : {};
+  // A spread's goal is the chapter treasure (#107), a decoy itself (#116): the bubble shows it, not the bead
+  const treasure = def.spread && attractor?.goal ? { treasure: def.chapter } : attractor?.decoy ? { decoy: attractor.art ?? '' } : {};
   switch (mode) {
     case 'moving':
       return kind === null ? null : { kind: 'want', target: kind, reach: false, ...treasure };

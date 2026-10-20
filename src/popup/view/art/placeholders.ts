@@ -480,7 +480,8 @@ export function origamiBird(ctx: KitCtx): string {
  * The 土地公 peeking (the per-page secret sticker): a round face with a long white beard and kind
  * eyes under the chapter's hat (GDD § 5.1: each chapter dresses him). `''` is his own red 員外帽
  * with an ochre band (the prologue); `站務帽` is chapter 1's navy station cap with a peak and a
- * foil badge (#108); `斗笠` is chapter 2's wide straw hat (#114) with his 掃把 on his shoulder (#115).
+ * foil badge (#108); `斗笠` is chapter 2's wide straw hat (#114) with his 掃把 on his shoulder (#115);
+ * `藍色校工帽` is chapter 3's blue campus janitor's cap with a short peak (#116).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -488,7 +489,10 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
     + `<path d="M-4.6 -1.2q1.6 -1.2 3 0M1.6 -1.2q1.6 -1.2 3 0" stroke="${C.standeeCard}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`
     + `<path d="M-3.6 .9q.9 .8 1.8 0M1.8 .9q.9 .8 1.8 0" stroke="${C.ink}" stroke-width=".9" stroke-linecap="round" fill="none"/>`
     + `<circle cx="-4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/><circle cx="4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/>`;
-  const cap = hat === '斗笠'
+  const cap = hat === '藍色校工帽'
+    ? `<path d="M-7.6 -2.6q0 -7 7.6 -7q7.6 0 7.6 7z" fill="${C.wordBeep}"/><path d="M-8 -3.4h16v2h-16z" fill="${C.nightCardDeep}"/>`
+      + `<path d="M4 -2.4q6 -.4 9.4 1.6l-9.4 .8z" fill="${C.nightCardDeep}"/><circle cx="0" cy="-9.4" r="1.2" fill="${C.nightCardDeep}"/>`
+    : hat === '斗笠'
     ? `<path d="M-14 -2.2L0 -12.4L14 -2.2Q0 .6 -14 -2.2Z" fill="${C.corrugatedLight}"/><path d="M-7 -7.2L7 -7.2M-10.4 -4.6L10.4 -4.6" stroke="${C.corrugatedDark}" stroke-width=".8" opacity=".7"/>`
       + `<path d="M-14 -2.2Q0 .6 14 -2.2" stroke="${C.corrugatedDark}" stroke-width="1.2" fill="none"/><circle cx="0" cy="-12.2" r="1.3" fill="${C.corrugatedDark}"/>`
     : hat === '站務帽'
@@ -530,6 +534,41 @@ export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string 
     + `<ellipse cx="0" cy="6" rx="24" ry="6" fill="${C.lamp}" opacity=".62"/>`;
 }
 
+/**
+ * A **decoy** where it lies (GDD § 2.2.1: a shiny he can never grab; #116): drawn as itself, never
+ * as a bead and never in the bead's cup of light, so the player can tell it from the goal. By its
+ * art key: `c3/moon` the moon's reflection on the water (a foil ellipse under glassine ripples, its
+ * origin on the water), `c3/bell` the brass 傅鐘 (origin at its crown), `c3/glasses` reading glasses
+ * (origin at the bridge); any other key a cold silver glint. Placeholders until #117's art.
+ */
+export function decoyArt(ctx: KitCtx, key?: string): string {
+  const glint = (x: number, y: number, r: number) => sparkle(ctx, x, y, r);
+  switch (key) {
+    case 'c3/moon':
+      return softEllipse(ctx, 0, 0, 30, 9, 'lamp', 0.22, 'blur8')
+        + `<ellipse rx="17" ry="5.4" fill="${C.moon}"/><ellipse rx="17" ry="5.4" fill="none" stroke="${C.moonRim}" stroke-width="1.2"/>`
+        + `<path d="M-14 -1.2h9M-2 1.4h12M-9 3h6" stroke="${C.glassineDeep}" stroke-width="1.2" stroke-linecap="round" opacity=".9"/>`
+        + `<path d="M-30 6q8 -3 16 0M14 7q8 -3 16 0M-22 -7q6 -2 12 0M10 -8q6 -2 12 0" stroke="${C.vellum}" stroke-width="1" fill="none" opacity=".6"/>`
+        + glint(20, -12, 3.6);
+    case 'c3/bell': {
+      const bell = 'M-12 22Q-12 2 -7 -2Q-4 -5 0 -5Q4 -5 7 -2Q12 2 12 22Q14 24 14 26H-14Q-14 24 -12 22Z';
+      return depth(ctx, 4, `<path d="${bell}" fill="${C.gold}"/><path d="M4 -3Q10 2 10 22L13 26H6Q7 8 4 -3Z" fill="${C.goldDeep}" opacity=".7"/>`
+        + `<path d="M-6 0Q-9 8 -9 20" stroke="${C.goldLight}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".9"/>`
+        + `<path d="M-11 15H11" stroke="${C.goldDeep}" stroke-width="1.4"/><circle cy="-8" r="3.4" fill="none" stroke="${C.goldDeep}" stroke-width="2"/>`
+        + `<circle cy="28" r="3" fill="${C.goldDeep}"/>`, `<path d="${bell}"/>`)
+        + glint(-18, 2, 4.4) + glint(17, 14, 3.4);
+    }
+    case 'c3/glasses':
+      return `<path d="M-3 0q3 -3 6 0" stroke="${C.goldDeep}" stroke-width="1.4" fill="none"/>`
+        + `<circle cx="-8" r="5.6" fill="${C.glassine}" fill-opacity=".55" stroke="${C.goldDeep}" stroke-width="1.6"/><circle cx="8" r="5.6" fill="${C.glassine}" fill-opacity=".55" stroke="${C.goldDeep}" stroke-width="1.6"/>`
+        + `<path d="M-10.4 -2.6l2.6 -1.2M5.6 -2.6l2.6 -1.2" stroke="${C.foilShine}" stroke-width="1.4" stroke-linecap="round"/>`
+        + glint(16, -9, 3.6);
+    default:
+      return softEllipse(ctx, 0, 0, 16, 16, 'lamp', 0.16, 'blur8') + `<circle r="7" fill="${C.glassine}" stroke="${C.moonRim}" stroke-width="1.2"/>`
+        + `<circle cx="-2.4" cy="-2.4" r="2" fill="${C.foilShine}"/>` + glint(12, -10, 3.6);
+  }
+}
+
 /** The goal and other attractors where they lie (bead for shinies; simple paper icons otherwise). */
 export function attractorArt(ctx: KitCtx, kind: Kind): string {
   if (kind === 'shiny') {
@@ -567,8 +606,11 @@ const musicNote = (x: number, y: number) =>
 
 /** What the thought bubble shows (GDD § 2.2.6). */
 export type BubbleShow =
-  /** `treasure`: the target is a spread's chapter treasure (#107): its own picture, not the bead */
-  | { kind: 'want'; target: Kind | 'mocha'; reach: boolean; treasure?: number }
+  /**
+   * `treasure`: the target is a spread's chapter treasure (#107): its own picture, not the bead;
+   * `decoy`: the target is a decoy (#116), drawn as itself by its art key (`decoyArt`)
+   */
+  | { kind: 'want'; target: Kind | 'mocha'; reach: boolean; treasure?: number; decoy?: string }
   | { kind: 'text'; text: string }
   | { kind: 'cry' }
   | { kind: 'heart' }
@@ -588,7 +630,9 @@ export function thoughtContent(ctx: KitCtx, show: BubbleShow): string {
   switch (show.kind) {
     case 'want': {
       // A chapter treasure is drawn as itself (about 40 units across: halved to the icons' 22)
-      const icon = show.treasure !== undefined ? `<g transform="scale(.56)" data-bubble-treasure="${show.treasure}">${treasureArt(ctx, show.treasure)}</g>` : bubbleIcon(ctx, show.target);
+      const icon = show.treasure !== undefined ? `<g transform="scale(.56)" data-bubble-treasure="${show.treasure}">${treasureArt(ctx, show.treasure)}</g>`
+        : show.decoy !== undefined ? `<g transform="scale(.7)" data-bubble-decoy="${show.decoy}">${decoyArt(ctx, show.decoy || undefined)}</g>`
+        : bubbleIcon(ctx, show.target);
       return show.reach
         ? `<g transform="${translate(-22, 0)}">${icon}</g><g data-reach="">${bubbleText('要！', 13, 0, 22, C.sealInk)}</g>`
         : `<g transform="scale(1.25)">${icon}</g>`;

@@ -166,6 +166,11 @@ export interface AttractorDef {
   nodeBy?: { part: Id; map: Record<string, Id> };
   /** at `node` while onPerch, at the pushable's fallTo once landed */
   followsPushable?: Id;
+  /**
+   * Art registry key for how it looks, when not the kind's default (#116: a decoy's moon
+   * reflection, brass bell or reading glasses). View only: the simulation never reads it.
+   */
+  art?: string;
 }
 
 export interface CreatureDef {
