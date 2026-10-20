@@ -1,0 +1,29 @@
+/*
+ * The park's drifting fireflies (#115, `Fireflies.tsx`): a slow wander and a soft blink, transform
+ * and opacity only. `[data-still]` (gestures.css) stops them for screenshots.
+ */
+.ff {
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.ff-a { animation-name: ff-a; }
+.ff-b { animation-name: ff-b; }
+
+@keyframes ff-a {
+  0%, 100% { transform: translate(0, 0); opacity: .9; }
+  25% { transform: translate(9px, -6px); opacity: .35; }
+  50% { transform: translate(14px, 4px); opacity: 1; }
+  75% { transform: translate(4px, 10px); opacity: .5; }
+}
+
+@keyframes ff-b {
+  0%, 100% { transform: translate(0, 0); opacity: .6; }
+  30% { transform: translate(-10px, 6px); opacity: 1; }
+  60% { transform: translate(-4px, -9px); opacity: .3; }
+  80% { transform: translate(6px, -4px); opacity: .85; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ff { animation: none; }
+}

@@ -4,7 +4,7 @@ import { chapterSky, placeholderBackdrop, stageDefs } from '../view/art/placehol
 import { BLOCK_DEPTH, FLOOR_BOTTOM, GUTTER_Y, PAGE_VIEW_BOX, PAGE_W, floorOutline, floorWiden } from '../view/geometry';
 import { C0_BACKDROPS, C0_PARTS } from './art/c0';
 import { C1_BACKDROPS, C1_PARTS } from './art/c1';
-import { C2_PARTS } from './art/c2';
+import { C2_BACKDROPS, C2_CUTOUTS, C2_PARTS } from './art/c2';
 import { SCREEN_ART, type ScreenSource } from './art/screens';
 import type { EnvBox } from './manifest';
 
@@ -50,7 +50,7 @@ export interface CutoutSource {
 export type BackdropDraw = (ctx: KitCtx, def: Pick<PageDef, 'chapter'>) => string;
 
 /** Backdrops with their own drawing (chapter art issues add theirs; until then the placeholder stage). */
-export const BACKDROP_ART: Readonly<Record<string, BackdropDraw>> = { ...C0_BACKDROPS, ...C1_BACKDROPS };
+export const BACKDROP_ART: Readonly<Record<string, BackdropDraw>> = { ...C0_BACKDROPS, ...C1_BACKDROPS, ...C2_BACKDROPS };
 
 /** Part art keys with their own drawing. */
 export const PART_SOURCES: Readonly<Record<string, PartSource>> = {
@@ -60,7 +60,7 @@ export const PART_SOURCES: Readonly<Record<string, PartSource>> = {
 };
 
 /** Standing cut-outs by key (e.g. 'c1/lamp-post'). */
-export const CUTOUT_SOURCES: Readonly<Record<string, CutoutSource>> = {};
+export const CUTOUT_SOURCES: Readonly<Record<string, CutoutSource>> = { ...C2_CUTOUTS };
 
 /** One backdrop to bake. */
 export interface BackdropSource {

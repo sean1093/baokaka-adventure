@@ -11,7 +11,7 @@ import type { PartPreset } from '../core/types';
  * | `parts-mid`  | 4 parts (z3)               | z3      | carriages (the train), sections, lifts, loops: behind the ledges they run past |
  * | `floor`      | 3 floor plane              | z4      | the gameplay ledges, ramps, crossing rails, perch furniture |
  * | `parts-near` | 4 parts (z4)               | z4      | touchables and the rest, attractors                       |
- * | `creatures`  | 5 creatures                | as ledge| origami pigeons, geese…                                   |
+ * | `creatures`  | 5 creatures                | as ledge| origami pigeons, geese…, a park page's drifting fireflies |
  * | `actors`     | 6 Baokaka and Mocha        | as ledge| the standees                                              |
  * | `fx`         | 7 bubbles and effects      | as owner| the thought bubble, barks, then perch paws (and a perch's hint halo), subtitles, the ghost hand |
  * | `foreground` | (bible § 2.2)              | z5      | one card in a near corner, never over a touchable or the walk graph |

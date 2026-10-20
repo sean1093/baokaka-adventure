@@ -2,6 +2,7 @@ import { PRESET_ART, PRESET_DEFS, kitDefs, type KitCtx, type PartArtOptions, typ
 import type { PageDef } from '../../core/types';
 import { backdropImage, cutoutImage, partImage, type EnvImage, type PartImage } from '../../env/loader';
 import { backpacker, origamiPigeon } from './creatures';
+import { commuter, egret, jogger, painter, shiba, squirrel, sweeper, turtle } from './park';
 import { origamiBird, placeholderBackdrop } from './placeholders';
 
 /**
@@ -31,6 +32,15 @@ const BACKDROPS: Readonly<Record<string, BackdropArt>> = {};
 const CREATURES: Readonly<Record<string, CreatureArt>> = {
   'common/pigeon': origamiPigeon,
   'c1/backpacker': backpacker,
+  // 大安森林公園 (#115, `park.ts`): the paper-style cast and the origami animals
+  'c2/commuter': commuter,
+  'c2/sweeper': sweeper,
+  'c2/jogger': jogger,
+  'c2/painter': painter,
+  'c2/dog': shiba,
+  'c2/turtle': turtle,
+  'c2/squirrel': squirrel,
+  'c2/egret': egret,
 };
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';

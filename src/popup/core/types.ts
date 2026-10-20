@@ -183,7 +183,13 @@ export interface CreatureDef {
 }
 
 /** A standing cut-out on a page (GDD § 3.9 layer 2): an art key and where its origin goes, in page units. */
-export interface CutoutDef { art: string; x: number; y: number }
+export interface CutoutDef {
+  art: string;
+  x: number;
+  y: number;
+  /** Shown only while this holds (a drawing that appears with a state, #115: 2-6's portrait of Mocha); always, if absent */
+  visibleWhen?: Cond;
+}
 
 export interface PageDef {
   /** 'c1p2' */

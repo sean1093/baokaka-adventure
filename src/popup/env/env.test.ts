@@ -6,7 +6,7 @@ import { initialState, withPartState } from '../core';
 import type { PageDef } from '../core/types';
 import { PAGES, pageById } from '../pages';
 import { lintMarkup } from '../view/affordance/lint';
-import { backdropArt, backdropBitmap, cutoutBitmap, isPlaceholder, partArt, partBitmap } from '../view/art/registry';
+import { backdropArt, backdropBitmap, cutoutBitmap, hasCreatureArt, isPlaceholder, partArt, partBitmap } from '../view/art/registry';
 import { placeholderBackdrop } from '../view/art/placeholders';
 import { PageView } from '../view/PageView';
 import { PAGE_VIEW_BOX } from '../view/geometry';
@@ -16,7 +16,8 @@ import { envGrade, gradeKey, gradeSvg, isIdentity, keepColours, standeeGrade } f
 import { backdropImage, bundledEnvFiles, cutoutImage, envUrl, pageArtUrls, partImage, screenImage } from './loader';
 import { ENV_SCALE, envFile, manifestFiles, validateEnvManifest, type EnvManifest } from './manifest';
 import { FIRST_LOAD_BUDGET, PAGE_ART_BUDGET, firstLoad, formatReport, pageArt } from './report';
-import { PART_SOURCES, SCREEN_SOURCES, backdropSources, cutoutSources, partSources } from './sources';
+import { CUTOUT_SOURCES, PART_SOURCES, SCREEN_SOURCES, backdropSources, cutoutSources, partSources } from './sources';
+import { SPOT_BEARING } from './art/c2';
 
 /**
  * #96: the baked environment. The committed bitmaps, `env.gen.ts` and the sources must agree
@@ -279,6 +280,45 @@ describe('sources', () => {
           expect(lintMarkup(markup, { page: key, touchable: () => false, expected: [], where: `${key} ${state}` }), `${key} ${state}`).toEqual([]);
         }
       }
+    }
+  });
+
+  test('chapter 2 (#115): every art key resolves to its own art — no live placeholder, no placeholder stage', () => {
+    const c2 = PAGES.filter((p) => p.chapter === 2);
+    expect(c2.map((p) => p.id)).toEqual(['c2p1', 'c2p2', 'c2p3', 'c2p4', 'c2p5', 'c2p6']);
+    for (const b of backdropSources(c2)) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+    for (const p of c2) {
+      expect(pageArt(p, M).placeholders, p.id).toEqual([]);
+      for (const part of p.parts) expect(isPlaceholder(part.art), `${p.id} ${part.art}`).toBe(false);
+      for (const c of p.creatures) expect(hasCreatureArt(c.art), `${p.id} ${c.art}`).toBe(true);
+      for (const c of p.cutouts ?? []) expect(cutoutBitmap(c.art), `${p.id} ${c.art}`).not.toBeNull();
+    }
+  });
+
+  test('2-6\'s portrait of Mocha is printed paper, and shows only once all three flaps are open (#115)', () => {
+    const src = CUTOUT_SOURCES['c2/mocha-portrait'];
+    expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c2p6', touchable: () => false, expected: [], where: 'portrait' })).toEqual([]);
+    const def = pageById('c2p6')!;
+    const html = (state: ReturnType<typeof initialState>) => renderToStaticMarkup(createElement(PageView, { def, prev: state, state, ms: 0, tickMs: 500 }));
+    let s = initialState(def);
+    expect(html(s)).not.toContain('data-cutout="c2/mocha-portrait"');
+    s = withPartState(withPartState(s, 'flapA', 'open'), 'flapB', 'open');
+    expect(html(s)).not.toContain('data-cutout="c2/mocha-portrait"');
+    expect(html(withPartState(s, 'flapC', 'open'))).toContain('data-cutout="c2/mocha-portrait"');
+  });
+
+  test('2-2\'s spotlight aims each state at its pool of light (#115)', () => {
+    const def = pageById('c2p2')!;
+    const spot = def.parts.find((p) => p.id === 'spot')!;
+    const glow = def.attractors.find((a) => a.id === 'glow')!;
+    for (const [state, node] of Object.entries(glow.nodeBy!.map)) {
+      const n = def.nodes.find((x) => x.id === node)!;
+      const bearing = (Math.atan2(n.x - spot.center![0], spot.center![1] - n.y) * 180) / Math.PI;
+      // Within a few degrees of the lamp's printed aim (the stage's pool sits a little past S3)
+      expect(Math.abs(bearing - SPOT_BEARING[state]), state).toBeLessThan(10);
     }
   });
 

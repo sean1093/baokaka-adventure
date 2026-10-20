@@ -68,6 +68,11 @@ export default definePage({
     text: '把三片畫都翻開，畫出摩卡',
     when: { type: 'partEnter', when: { all: [{ part: 'flapA', in: ['open'] }, { part: 'flapB', in: ['open'] }, { part: 'flapC', in: ['open'] }] } },
   },
+  // With all three flaps open, the painting on the easel becomes a portrait of Mocha (the 淘氣, #115)
+  cutouts: [{
+    art: 'c2/mocha-portrait', x: 98, y: 270,
+    visibleWhen: { all: [{ part: 'flapA', in: ['open'] }, { part: 'flapB', in: ['open'] }, { part: 'flapC', in: ['open'] }] },
+  }],
   // Painted into the portrait corner, sweeping the painted path
   tudigong: { x: 194, y: 372, visibleWhen: { part: 'flapC', in: ['open'] }, hat: '斗笠' },
   solution: [{ tap: 'flapA' }, { tap: 'flapB' }, { mocha: 'parasol' }, { wait: 'settle' }, { say: 'bye' }, { wait: 'goal' }],
