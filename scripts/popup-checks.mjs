@@ -14,6 +14,12 @@
  *                  switch, tab or slider is ≥ 48×48 CSS px. At 390×844 (the reference book scale,
  *                  ≈ 0.91) no page hit shape may need growing (`[data-hit-grown]`): each touchable's
  *                  own hit area is ≥ 48 px after the book scale (popup art bible § 4.2, #140).
+ *   Marks seen   Mocha's perch paws (`[data-affordance="perch"]`) and the hint halo (`[data-hint-halo]`)
+ *                  are never under anything (#183, the AI playtest: 0-3's table, 1-1's rack and 1-3's
+ *                  counter and its L1 glow were hidden): the topmost thing drawn at a paw's centre is
+ *                  the paw (or the L2 ghost hand tapping it; a subtitle, which any tap clears, is
+ *                  allowed and counted), and most points of a halo show the halo, its own target, a
+ *                  paw, the ghost hand or a subtitle.
  *   Reduced motion under `prefers-reduced-motion: reduce`, with the fixture live, no running CSS or
  *                  Web Animations animation changes anything but opacity (fades are allowed).
  *   Flashing       with the fixture live and motion on, no animation flashes above 3 Hz (opacity or
@@ -237,6 +243,59 @@ function collect({ waivers, artText, minText, minTextBig }) {
   return { texts, hits, art, hitless };
 }
 
+/** What covers the perch paws and the hint halo (see "Marks seen" above), in the page. */
+function coveredMarks() {
+  if (document.querySelector('[aria-modal="true"]')) return { checked: 0, under: [], talk: 0 };
+  const name = (el) => {
+    const g = el.closest('[data-actor], [data-creature], [data-bubble], [data-bark], [data-part], [data-foreground], [data-attractor], [data-layer]');
+    if (!g) return el.tagName;
+    for (const a of ['data-actor', 'data-creature', 'data-bubble', 'data-bark', 'data-part', 'data-foreground', 'data-attractor', 'data-layer']) if (g.hasAttribute(a)) return `${a}=${g.getAttribute(a)}`;
+    return el.tagName;
+  };
+  const top = (x, y) => document.elementsFromPoint(x, y).find((el) => el instanceof SVGElement && !el.closest('[data-layer="hit"]')) ?? null;
+  // Hidden marks (a page folded flat under the sticker card hides its pop-ups) are not on screen
+  const shown = (el) => {
+    let o = 1;
+    for (let n = el; n instanceof Element; n = n.parentElement) {
+      const st = getComputedStyle(n);
+      if (st.display === 'none' || st.visibility === 'hidden') return false;
+      o *= Number(st.opacity);
+    }
+    return o > 0.05;
+  };
+  const under = [];
+  let talk = 0;
+  let checked = 0;
+  for (const paw of document.querySelectorAll('svg[data-page] [data-affordance="perch"]')) {
+    const r = paw.getBoundingClientRect();
+    if (r.width === 0 || !shown(paw)) continue;
+    checked += 1;
+    const el = top(r.left + r.width / 2, r.top + r.height / 2);
+    // The L2 ghost hand tapping it is meant to be over it
+    // Something else over the whole page (the sticker card, a folded copy) is not this page's art
+    if (el === null || paw.contains(el) || el.closest('[data-hint-hand]') || el.closest('svg[data-page]') !== paw.closest('svg[data-page]')) continue;
+    if (el.closest('[data-talk]')) talk += 1;
+    else under.push(`a perch paw under ${name(el)}`);
+  }
+  for (const halo of document.querySelectorAll('svg[data-page] [data-hint-halo][data-hint-target]')) {
+    const r = halo.getBoundingClientRect();
+    if (r.width === 0 || !shown(halo)) continue;
+    checked += 1;
+    const key = halo.getAttribute('data-hint-target') ?? '';
+    const [kind, id] = key.includes(':') ? key.split(':') : ['part', key];
+    const own = (el) => halo.contains(el) || el.closest('[data-marks], [data-talk], [data-hint-hand]') !== null
+      || (kind === 'part' && el.closest(`[data-part="${id}"]`) !== null) || ((kind === 'mocha' || kind === 'baby') && el.closest(`[data-actor="${kind}"]`) !== null);
+    const pts = [[0, 0], ...Array.from({ length: 8 }, (_, i) => [Math.cos((i * Math.PI) / 4) * 0.8, Math.sin((i * Math.PI) / 4) * 0.8])];
+    const blockers = [];
+    for (const [dx, dy] of pts) {
+      const el = top(r.left + r.width / 2 + (dx * r.width) / 2, r.top + r.height / 2 + (dy * r.height) / 2);
+      if (el !== null && !own(el) && el.closest('svg[data-page]') === halo.closest('svg[data-page]')) blockers.push(name(el));
+    }
+    if (blockers.length > pts.length / 2) under.push(`the hint halo on ${key} under ${[...new Set(blockers)].join(', ')}`);
+  }
+  return { checked, under, talk };
+}
+
 /** Hides every text run (fill, stroke, colour, shadow) so a screenshot shows only what is behind it. */
 function hideText() {
   const style = document.createElement('style');
@@ -378,6 +437,7 @@ export async function checkPopup(browser, base, viewports, report) {
     for await (const [page, name] of freshPages(open, fixtures)) {
       await openPopupFixture(page, base, name);
       await page.waitForTimeout(300);
+      const marks = await page.evaluate(coveredMarks);
       const { texts, hits, art, hitless } = await page.evaluate(collect, {
         waivers: WAIVERS.map(({ selector, rules, issue }) => ({ selector, rules, issue })),
         artText: ART_TEXT,
@@ -418,6 +478,9 @@ export async function checkPopup(browser, base, viewports, report) {
       if (pageHits === 0 && !hitless) report.fail(`${label}: no [data-hit] touchables found (the page's hit layer is missing)`);
       else if (tiny.length === 0) pass(report, `${label}: ${hits.length} hit areas ≥ ${MIN_HIT_PX}×${MIN_HIT_PX}`);
       else report.fail(`${label} hit areas: ${tiny.join('; ')}`);
+      if (marks.under.length === 0) {
+        if (marks.checked > 0) pass(report, `${label}: ${marks.checked} perch paws / hint halos in sight${marks.talk > 0 ? ` (${marks.talk} under a subtitle, which any tap clears)` : ''}`);
+      } else report.fail(`${label} hidden marks: ${marks.under.join('; ')}`);
       if (viewport.name === REFERENCE_VIEWPORT) {
         const grown = hits.filter((h) => h.grown && !h.waived && !h.covered).map((h) => `"${h.label}"`);
         if (grown.length === 0) pass(report, `${label}: every page hit shape is ≥ ${MIN_HIT_PX} px after the book scale (none grown)`);

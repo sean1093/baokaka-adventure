@@ -902,3 +902,21 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #110 stays open until the session: `m1-results.md` is filled, every failed gate gets an issue on the roadmap, and the owner's go/no-go is recorded here as a new decision. That unblocks #111, #112 and #113.
 - The chip is 22 px tall (below R6's 48 px): it is not part of the game's UI. It sits flush with the top so it never covers the HUD's title.
 - New shell layers that hold the page should also count as "not live" (`live` in `GameShell`).
+
+### D-74 · 2026-10-20 · Fixing the AI playtest's friction before the family session (#183)
+
+**Context.** The automated first-time run on #110 (`docs/playtest/ai-playtest.md`) listed twelve friction points. The owner's family playtest should test the design, not known problems, so the clear ones are fixed first. Each fix had a choice to make.
+
+**Decision.**
+1. **A tap anywhere reads the lines on.** While a subtitle beat is up, a pointer that lands on the page and lifts as a tap is cancelled (no input, nothing pressed, the world resumes) and the beat moves on. A pointer that turns into a drag plays on the page as usual and the line stays: event lines (Mocha's translations) arrive mid-play, and eating a drag there felt worse than a line staying up. A gesture already under way when a line arrives is never a reader. The bar, the ring, the word card and the photo moment keep their taps.
+2. **Paws are never hidden.** Mocha's perch paws, and the hint halo of a perch, draw in the `fx` layer above the standees, the thought bubble and the barks; only a subtitle may lie over one (any tap clears it). The paw gained an ink hairline and a stronger halo (it vanished on 1-1's cream map). Every bubble now keeps off the paws and the hinted target as a soft avoid, and 廣播姊姊's lines may drop down the page. Guards: affordance lint A08 (drawing order, unit tests over every page's solution with the L1 hint on) and `check:ui`'s hit test of every paw and halo on every fixture.
+3. **Soft traps fail a page.** The solver reports a *soft trap*: a first move of a part or of Mocha, from a state on a shortest way to the goal, after which the goal costs ≥ 2 more moves (it must be undone). Moving again something already moved on the way (undoing progress) is a wasted move, not a trap. On the slice this finds exactly 0-4's curtain-first trap and nothing else. `pages.test.ts` fails on any; `npm run solve` has a `traps` column.
+4. **0-4: the bead glints only once the train is lit.** Its `visibleWhen` is curtain open **and** train on. Opened first, the curtain shows a dark train and nothing to want, so hiding Mocha still makes him cry; the cry lights the train and its bead. Either order solves in 2; the aha (crying is a tool) is kept. The GDD's "most players open the curtain first, then learn to hide everything" is dropped: the AI run showed that state reads as a broken page, not a lesson.
+5. **1-1's third strap is looped up** (a dark belt with a triangular grip, no steel ring), so only the perch straps look like perches.
+6. **1-5 feedback.** A tap on a perch Mocha can't reach now does what GDD § 2.3 always said: the paw shakes and he turns to look at it, with his existing 「喵？」 (kept over 「不要。」, which § 5.3 reserves for water). After the car comes down with them in it, a **first-play nudge** (`game/tutorial.ts`, a new `nudge` kind): after 4 s Mocha taps his paw on the panel, shimmers once (the L0 look) and asks 「再按一次？」 (`content/hints.ts` `NUDGE_LINES`). It points at him without playing the answer.
+7. **No line under the photo moment**, and a bubble riding a character never leaves the page (it is cut at the page's edges): a long trip held mid-way left one under the HUD.
+8. **Cheap extras:** a bobbing ▼ on the chapter card's lines and the word card (they wait for a tap), and a creature at rest beside a shiny faces it (1-6's pigeon looked away from the 雞腿).
+
+**Left for the human playtest:** the reading load at the start (#2), the backpacker's punchline timing (#7) and the L2 turn hint (#9). `ai-playtest.md` records the status of each finding.
+
+**Consequences.** New pages must have no soft traps. Scenarios in `check:play` that tap on through a line now read it first. A scripted nudge may carry one short Mocha line.

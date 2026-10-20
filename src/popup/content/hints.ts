@@ -18,3 +18,11 @@ export const HINT_LINES: Readonly<Record<HintLineKey, string>> = {
 
 /** § 2.7: a hint line is at most this many characters. */
 export const HINT_LINE_MAX = 12;
+
+/**
+ * A scripted nudge's line (#183, `game/tutorial.ts`): said by Mocha once, in his bark bubble, when
+ * the page's first-play nudge shows (1-5: the car is down with them in it — tap him to press again).
+ */
+export const NUDGE_LINES = {
+  press: '再按一次？',
+} as const;

@@ -1,3 +1,4 @@
+import { NUDGE_LINES } from '../content/hints';
 import type { Id, PageDef, SimState } from '../core/types';
 
 /**
@@ -10,13 +11,23 @@ import type { Id, PageDef, SimState } from '../core/types';
  *   while it flips to the bead and he crawls back ("his bubble shows what he wants").
  * - **0-3** 「摩卡起床」: after 4 s of him reaching under the table, the ghost hand taps the table's
  *   paw print (after Mocha's join lines: the page's talk must be read first).
+ * - **1-5** 「便當店的電梯」 (#183, the AI playtest: stuck once the car was down): after 4 s of him
+ *   reaching from the car at B1 with Mocha on its panel, Mocha taps his paw on the panel, shimmers
+ *   once and says 「再按一次？」 — a nudge toward tapping him to press again, not the answer played out.
  *
  * Pure: `tutorialCue` says what the state calls for; `PagePlayer` keeps the clock (the cue must hold
  * for `afterMs` of unpaused time with nothing being said) and draws it through `affordance`.
  */
 
-/** What a tutorial shows: the ghost hand on a target (a hint key, `affordance.hint` level 2), or the bubble spotlight. */
-export type TutorialShow = { readonly kind: 'hand'; readonly key: string; readonly stop?: number } | { readonly kind: 'bubble' };
+/**
+ * What a tutorial shows: the ghost hand on a target (a hint key, `affordance.hint` level 2), the
+ * bubble spotlight, or a nudge — the auto nudge's single shimmer on a target (level 0) with Mocha
+ * cueing it (#183).
+ */
+export type TutorialShow =
+  | { readonly kind: 'hand'; readonly key: string; readonly stop?: number }
+  | { readonly kind: 'bubble' }
+  | { readonly kind: 'nudge'; readonly key: string; readonly mocha: 'yawn' | 'look' | 'wait'; readonly line?: string };
 
 export interface TutorialCue {
   readonly show: TutorialShow;
@@ -56,6 +67,11 @@ const SCRIPTS: Readonly<Record<Id, Script>> = {
     afterMs: TUTORIAL_DELAY_MS,
     // Reaching for the bead on the table while Mocha is neither on the table nor on his way there
     when: (s) => reaching(s, 'bead') && s.pushables.bead === 'onPerch' && s.mocha.perch !== 'table' && s.mocha.to !== 'table',
+  },
+  c1p5: {
+    show: { kind: 'nudge', key: 'mocha:mocha', mocha: 'wait', line: NUDGE_LINES.press },
+    afterMs: TUTORIAL_DELAY_MS,
+    when: (s) => reaching(s, 'bead') && s.baby.node === 'E' && s.parts.elevator === 'B1' && s.mocha.perch === 'carPanel' && s.mocha.path.length === 0,
   },
 };
 

@@ -177,7 +177,7 @@ function seatedTop(x: number, y: number, rot: number, coat: string, hair: string
 /**
  * Inside the 板南線 car (1-1), a side cut-away box fold (bible § 6): the cream ceiling with its
  * light strips, the neon route map lit at 台北車站, the strap rail with two hand straps (Mocha's
- * `strap1` at (84, 222), `strap2` at (184, 214)) and a third for show, the 「請讓座」 poster whose
+ * `strap1` at (84, 222), `strap2` at (184, 214)) and a third for show (looped up, no ring, #183), the 「請讓座」 poster whose
  * picture is the 土地公 (196, 136), windows with the night city sliding by, the long blue bench, the
  * teal 博愛座 at the far end and the luggage rack over it (`rack`, its edge at (286, 286)). Below
  * the car body (the live ledge) the track runs on the floor page.
@@ -217,9 +217,13 @@ const car: BackdropDraw = (ctx) => {
   // The strap rail and the straps: a steel bar, belts, round handles (Mocha sits on a handle's top)
   const strap = (x: number, top: number) => `<path d="M${x} 100V${top - 2}" stroke="${T.seatDeep}" stroke-width="4"/>`
     + `<circle cx="${x}" cy="${top + 9}" r="9" fill="none" stroke="${C.cutRim}" stroke-width="3.6"/><circle cx="${x}" cy="${top + 9}" r="9" fill="none" stroke="${T.steel}" stroke-width="2"/>`;
+  // The third strap is only for show (#183: it read as a perch): looped up short on the rail, a
+  // dark belt with a small triangular grip, nothing like the steel rings Mocha sits on
+  const tiedStrap = (x: number) => `<path d="M${x} 100V136" stroke="${T.seatDeep}" stroke-width="4"/>`
+    + `<path d="M${x - 7} 136H${x + 7}L${x} 148Z" fill="none" stroke="${T.seatDeep}" stroke-width="3" stroke-linejoin="round"/>`;
   const rail = depth(ctx, 3, `<rect x="30" y="96" width="350" height="5" rx="2.5" fill="${ref(ctx, 'steelG')}"/>`
     + `<path d="M40 70V96M210 70V96M370 70V96" stroke="${T.steelDeep}" stroke-width="2.4"/>`
-    + strap(84, 222) + strap(184, 214) + strap(330, 208), `<rect x="30" y="96" width="350" height="5"/>`);
+    + strap(84, 222) + strap(184, 214) + tiedStrap(330), `<rect x="30" y="96" width="350" height="5"/>`);
   // The luggage rack over the 博愛座: a steel shelf on brackets; the sign under it
   const rack = depth(ctx, 3, `<rect x="230" y="286" width="164" height="6" rx="2" fill="${ref(ctx, 'steelG')}"/><path d="M244 292l-10 18M384 292l8 18" stroke="${T.steelDeep}" stroke-width="2.4"/>`
     + `<path d="${Array.from({ length: 11 }, (_, i) => `M${236 + i * 15} 286v5`).join('')}" stroke="${T.steelDeep}" stroke-width="1"/>`, `<rect x="230" y="286" width="164" height="6"/>`);

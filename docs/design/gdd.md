@@ -143,7 +143,7 @@ Each preset compiles to the generic FSM in §3.2 and has a matching view compone
 - tabs show a 「拉」 label and an arrow;
 - wheels show a ridged rim and a curved arrow;
 - flaps show a lifted corner;
-- perches show a faint paw print while Mocha is available.
+- perches show a faint paw print while Mocha is available. It is never hidden: it draws over the standees, his thought bubble and barks (only a subtitle, which any tap clears, may cover it), and the bubbles keep off it (#183).
 
 Non-interactive parts show none of these.
 
@@ -499,7 +499,7 @@ Dialogue appears in **short subtitle bubbles over the page** (≤ 30 chars, max 
 
 **For engineers (#102, D-65).** The chapter card is `view/hud/ChapterBoard.tsx`: the chapter on the red spine (「第一章」, set vertically), the title, the time chip, the landmark, the 翻 seal and the split-flap 「下一站」 row (`ChapterInfo.next`). It hangs in every chapter turn, and before a chapter's first page when that page is opened from the cover or the 目錄 (「開始」 included). Once it settles, its lines (`cardLines`) play under it a tap a beat. A tap before then skips the whole turn. The page's own intro plays after the turn.
 
-**For engineers (#98, D-61).** A beat is ≤ 3 lines, narration included. A tap on a bubble or the strip advances it and never reaches the page. Nothing advances on a timer.
+**For engineers (#98, D-61).** A beat is ≤ 3 lines, narration included. A tap on a bubble or the strip advances it and never reaches the page. Since #183 (D-74) a tap **anywhere** on the page does the same: a pointer that lands while a beat is up and lifts as a tap is cancelled (no input) and reads the beat on; a drag still plays under the line. Nothing advances on a timer. The chapter card's lines and the word card show a small bobbing ▼ (tap to go on).
 
 ---
 
@@ -837,8 +837,9 @@ Each of the following is an error:
   - `mischiefReachable`: some reachable state, *from which the goal is still reachable*, fires the mischief predicate.
   - `tudigongReachable`: likewise for the 土地公's `visibleWhen`.
   - `nextAction(state)`: the first input on a shortest path to the goal (used by hints).
+  - `softTraps()` (#183): first moves of a part or of Mocha, made from a state on a shortest way to the goal, after which the goal costs at least two more moves (the move must be undone; undoing progress is not counted). The page looks alive but never progresses until the player thinks to reverse it. **Must be empty.**
 - **Tests** (`src/popup/pages/pages.test.ts`):
-  - for every page: lint passes; replaying `solution` reaches `done`; `solve()` reports solvable, no dead ends, not trivial, and mischief and 土地公 reachable;
+  - for every page: lint passes; replaying `solution` reaches `done`; `solve()` reports solvable, no dead ends, no soft traps, not trivial, and mischief and 土地公 reachable;
   - par is within the difficulty band (a warning, not a failure).
 - **CI cost target:** all 65 pages in under 60 s.
 - **Hints at runtime:** `hint.worker.ts` runs `solve(def, current, {cap: 200_000, timeMs: 300})` and returns `nextAction`.
@@ -1075,11 +1076,11 @@ The chapter opens with the intro card and lines (§5.2 P). There is no Mocha on 
 | | |
 |---|---|
 | Goal | 金珠珠 on the step of the paper 月亮線 train outside the balcony |
-| Parts | `curtain`: **flap** (`closed` hides the train and bead). `balconyDoor`: **gate** (`closed`; `react: cry → open`; it then stays open). `train`: **light** (`off`; `react: cry → on`), purely visual: its attractor is hidden behind the curtain anyway. |
+| Parts | `curtain`: **flap** (`closed` hides the train and bead). `balconyDoor`: **gate** (`closed`; `react: cry → open`; it then stays open). `train`: **light** (`off`; `react: cry → on`): the bead on its step glints only once its lights are on (`visibleWhen`: curtain open **and** train on; #183). |
 | Desire | At the start the curtain is closed, and Mocha sits visible on the windowsill. He crawls to Mocha and **cuddles**. |
 | Mocha | Perches: `sill` (visible), `basket` (laundry basket, **hidesMocha**), `rod` (curtain rod), `trainRoof` (reachable only when the door is open). |
-| Solution | Tap `basket`. Mocha hides in the laundry, and nothing is visible. Baokaka **looks** 「？」, then **cries** 「哇——」. The cry opens the balcony door and wakes the train (lights on, 廣播姊姊's line). Tap the curtain open: the bead is visible, and he crawls out onto the train step. (Mocha boards automatically during the page fold.) |
-| Aha | "Make him cry on purpose. Crying is a tool." Most players open the curtain first; the baby then reaches at the closed door, so they learn to *hide everything* (close the curtain, hide Mocha). |
+| Solution | Tap `basket`. Mocha hides in the laundry, and nothing is visible. Baokaka **looks** 「？」, then **cries** 「哇——」. The cry opens the balcony door and wakes the train (lights on, 廣播姊姊's line), and the bead glints on its step. Tap the curtain open: he crawls out onto the train step. The two moves work in either order: opened first, the curtain shows a dark train and no bead, so hiding Mocha still leaves nothing to want. (Mocha boards automatically during the page fold.) |
+| Aha | "Make him cry on purpose. Crying is a tool." *(Before #183, opening the curtain first showed the bead behind the shut door and he reached at it forever without crying: the AI playtest's order trap. The solver now fails any such "soft trap", § 3.7.)* |
 | 淘氣 | 「把摩卡捲進窗簾」: close the curtain while Mocha is on `rod` (event `partEnter curtain closed` with `mochaAt rod`). Mocha becomes a 春捲. |
 | 土地公 | Outside on the street, visible when the curtain is open |
 | Notes | The hint ladder's first real use (auto-nudge at 30 s). Dead-end check: every action is reversible. Leaving the door open is harmless. |
@@ -1161,7 +1162,7 @@ Chapter card and lines: §5.2 ch1.
 | Aha | "Mocha is the elevator operator. Tap him to press again." (Introduces `pet`.) |
 | 淘氣 | 「讓摩卡自己搭電梯上下三次」: three `elevator` round trips while Baokaka isn't in the car |
 | 土地公 | On the shop's menu board, among the dish pictures |
-| Notes | The 店員小哥 cameo works the 便當 counter: 「叮咚～歡迎光臨！」 |
+| Notes | The 店員小哥 cameo works the 便當 counter: 「叮咚～歡迎光臨！」 First play only (#183): 4 s after the car comes down with him in it, Mocha taps his paw on the panel, shimmers once and says 「再按一次？」. |
 
 **1-6 「台鐵便當」 (Spread: the railway bento)** · difficulty 3 · par 4 · **treasure 雞腿**
 

@@ -427,7 +427,10 @@ export function perchMark(ctx: KitCtx, x: number, y: number, bold = false): stri
     return `<g data-affordance="perch" data-bold="" transform="${translate(x, y - 7)}">${softEllipse(ctx, 0, 3, 27, 8, 'marigold', 0.6)}`
       + `<g stroke="${C.ink}" stroke-width="1.1">${paw(C.chalk, 1.4)}</g></g>`;
   }
-  return `<g data-affordance="perch" transform="${translate(x, y - 6)}" opacity=".92">${softEllipse(ctx, 0, 2, 20, 6, 'marigold', 0.32)}${paw()}</g>`;
+  // An ink hairline round the chalk paw keeps it readable on any art, cream paper included (#183:
+  // 1-1's rack paw vanished on the cream map)
+  return `<g data-affordance="perch" transform="${translate(x, y - 6)}">${softEllipse(ctx, 0, 2, 22, 7, 'marigold', 0.45)}`
+    + `<g stroke="${C.ink}" stroke-width=".9" stroke-opacity=".85">${paw(C.chalk, 1.15)}</g></g>`;
 }
 
 /** The track pit a carriage runs in, from its level down to the floor page's front edge. */

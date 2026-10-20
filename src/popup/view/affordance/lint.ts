@@ -22,6 +22,7 @@ import { wearsMarigold } from './look';
  * | `A05-not-marigold` | error | … no marigold anywhere in its art |
  * | `A06-hit-small` | error | a touch target's own hit shape is under 48 × 48 CSS px after the reference book scale (390 × 844, ≈ 0.91); the hit layer grows it for hit testing, but the bible wants it drawn that big (§ 4.2) |
  * | `A07-touchable-count` | warning | more than 3 touchables plus perches at once on pages 1–3 of a chapter (§ 4.2; checked at the page's start) |
+ * | `A08-mark-under` | error | a perch paw, or a perch's hint halo, drawn before (under) a standee, a creature, the thought bubble or a bark (#183: 0-3's table, 1-1's rack, 1-3's counter and its L1 glow were hidden); the DOM check in `check:ui` covers what lies over them on screen |
  *
  * The kit side (`lintPresetArt`) holds every preset to the same rule: the touchable presets show
  * all four cues; the printed ones carry no marigold.
@@ -126,6 +127,9 @@ export function lintMarkup(markup: string, { page, touchable, expected, where }:
   const cues = new Map<Id, PartCues>();
   const flagged = new Set<string>();
   const stack: Frame[] = [];
+  // A08: the paws (and a perch's halo) seen so far; anything that could cover them must come before
+  let marks = 0;
+  const OCCLUDERS = ['data-actor', 'data-creature', 'data-bubble', 'data-bark'] as const;
   for (const t of list) {
     if (t.close) {
       stack.pop();
@@ -139,6 +143,14 @@ export function lintMarkup(markup: string, { page, touchable, expected, where }:
       part: partId ?? up.part,
       layer: t.attrs['data-layer'] ?? up.layer,
     };
+    if (!frame.defs && !t.close) {
+      if (t.attrs['data-affordance'] === 'perch' || (t.attrs['data-hint-target'] ?? '').startsWith('perch:')) marks += 1;
+      const over = OCCLUDERS.find((a) => a in t.attrs);
+      if (over !== undefined && marks > 0 && !flagged.has(`A08:${over}`)) {
+        flagged.add(`A08:${over}`);
+        out.push(issue(page, 'A08-mark-under', 'error', [], `${page}: a perch paw or a perch's hint halo is drawn under a ${over.slice(5)} (${over}="${t.attrs[over]}"); draw them over the standees, creatures and bubbles (#183)`));
+      }
+    }
     if (!frame.defs) {
       const c = frame.part === null ? undefined : cues.get(frame.part) ?? { seal: false, grip: false, cue: false, marigold: false };
       if (c && frame.part !== null) {

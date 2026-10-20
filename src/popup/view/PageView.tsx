@@ -271,18 +271,37 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     if (p === undefined) return null;
     return <AttractorItem key={a.id} ctx={ctx} id={a.id} kind={a.kind} x={p[0]} y={p[1]} treasure={a.goal && def.spread ? def.chapter : undefined} />;
   });
+  // A tap on a perch he can't get to (GDD § 2.3): its paw shakes "not connected" while he looks at it and says 「喵？」 (#183)
+  const nope = events.find((e) => e.type === 'mochaNope')?.id;
   const marks = mochaOn
-    ? def.perches.filter((p) => p.id !== state.mocha.perch).map((p) => <PerchMarkItem key={p.id} ctx={ctx} perch={p} def={def} state={state} bold={affordance.elder === true} />)
+    ? def.perches
+        .filter((p) => p.id !== state.mocha.perch)
+        .map((p) => <PerchMarkItem key={p.id === nope ? `${p.id}:nope:${state.tick}` : p.id} ctx={ctx} perch={p} def={def} state={state} bold={affordance.elder === true} nope={p.id === nope && !reduced} />)
     : [];
+  const nopePerch = nope === undefined ? undefined : def.perches.find((p) => p.id === nope);
+  const nopeAt = nopePerch === undefined ? undefined : nodePos(def, state, nopePerch.node);
 
   // ——— Creatures ———
+  const shinyBeside = (p: Pt): Pt | undefined => {
+    for (const a of def.attractors) {
+      if (a.kind !== 'shiny' || state.consumed.includes(a.id) || !holds(def, state, a.visibleWhen)) continue;
+      const node = attractorNode(def, state, a);
+      const q = node === null ? undefined : nodePos(def, state, node);
+      if (q !== undefined && Math.abs(q[0] - p[0]) <= 90 && Math.abs(q[1] - p[1]) <= 60 && q[0] !== p[0]) return q;
+    }
+    return undefined;
+  };
   const creatures = def.creatures.map((c) => {
     const a = creaturePoint(def, c, prev, state);
     const b = creaturePoint(def, c, state, prev);
     if (a === null || b === null) return null;
     const k = reduced ? 1 : clamp01(t);
     const [x, y] = lerpPt(a, b, k);
-    return <Creature key={c.id} ctx={ctx} id={c.id} art={c.art} x={x} y={y} flip={b[0] < a[0]} pos={state.creatures[c.id] ?? c.initial} />;
+    // At rest beside a shiny it wants too, it faces it (#183: 1-6's pigeon by the 雞腿 looked away);
+    // the art faces left
+    const near = a[0] === b[0] && a[1] === b[1] ? shinyBeside(b) : undefined;
+    const flip = near === undefined ? b[0] < a[0] : near[0] > b[0];
+    return <Creature key={c.id} ctx={ctx} id={c.id} art={c.art} x={x} y={y} flip={flip} pos={state.creatures[c.id] ?? c.initial} />;
   });
 
   // ——— Mocha and Baokaka (#95): standees on the tick, each mode mapped to its frames (`actors/animMap.ts`) ———
@@ -365,7 +384,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const mochaTilt = still ? 0 : standeeTilt(ms, tickMs, mochaDir, reduced);
   // At rest he sits turned toward 寶咖咖 — or, with a hint's yawn or look, toward the hinted target;
   // travelling, toward where he is going (frames face right)
-  const lookAt: Pt | null = (cue === 'yawn' || cue === 'look') && hinted !== undefined ? hitCenter(hinted.hit) : babyPose ? [babyPose.x, babyPose.y] : null;
+  const lookAt: Pt | null = nopeAt ?? ((cue === 'yawn' || cue === 'look') && hinted !== undefined ? hitCenter(hinted.hit) : babyPose ? [babyPose.x, babyPose.y] : null);
   const mochaFacing = mochaDir !== 0 ? (mochaDir < 0 ? 'l' : 'r') : mochaPose && lookAt && lookAt[0] < mochaPose.x - 4 ? 'l' : 'r';
 
   // ——— What is said (#98): the thought bubble, barks, subtitles, placed off him and the goal ———
@@ -393,8 +412,10 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       barks,
       beat,
       touch: beat === null ? [] : targets.map((tg) => hitBox(tg.hit)),
+      // The paw prints and the hinted target: the thought bubble and the barks keep off them too (#183)
+      marks: targets.filter((tg) => tg.kind === 'perch' || tg.key === hinted?.key).map((tg) => hitBox(tg.hit)),
     });
-  }, [k, state, def, bAnim.sprite, mAnim.sprite, mochaFacing, mochaHidden, showKey(show), barks, beat]);
+  }, [k, state, def, bAnim.sprite, mAnim.sprite, mochaFacing, mochaHidden, showKey(show), barks, beat, hinted?.key]);
   const babyOff: Pt = babyPose && babyEnd ? [babyPose.x - babyEnd[0], babyPose.y - babyEnd[1]] : [0, 0];
   const mochaOff: Pt = mochaPose && mochaEnd ? [mochaPose.x - mochaEnd[0], mochaPose.y - mochaEnd[1]] : [0, 0];
   const was = still ? show : bubbleShow(def, prev);
@@ -414,9 +435,11 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
 
   // ——— Hints (bible § 4.1 L0–L2): a halo behind the target, the ghost hand over the page ———
   const halo = hinted && (
-    <HintHalo key={`halo:${hinted.key}:${hint?.level === 0 ? 'nudge' : 'where'}`} ctx={ctx} shape={haloShape(def, state, hinted)} reduced={reduced} strong={affordance.elder} once={hint?.level === 0} />
+    <HintHalo key={`halo:${hinted.key}:${hint?.level === 0 ? 'nudge' : 'where'}`} ctx={ctx} shape={haloShape(def, state, hinted)} target={hinted.key} reduced={reduced} strong={affordance.elder} once={hint?.level === 0} />
   );
-  const haloMid = hinted !== undefined && hinted.layer <= 3;
+  // A perch has no art of its own to glow behind: its halo goes up with the paw prints (fx, below)
+  const haloOnTop = hinted !== undefined && hinted.kind === 'perch';
+  const haloMid = hinted !== undefined && hinted.layer <= 3 && !haloOnTop;
   const thread = hinted === undefined ? null : linkThread(def, state, hinted);
   const hand = hinted !== undefined && hint?.level === 2 ? handGesture(def, state, hinted, hint) : null;
 
@@ -451,10 +474,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {crossings}
       </Layer>
       <Layer id="parts-near">
-        {!haloMid && halo}
+        {!haloMid && !haloOnTop && halo}
         {partEls('near')}
         {attractors}
-        {marks}
       </Layer>
       <Layer id="creatures">{creatures}</Layer>
       <Layer id="actors">
@@ -488,6 +510,15 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {said.barks.map((b) => (
           <BarkBubble key={b.bark.who} placed={b} offset={b.bark.who === 'baby' ? babyOff : mochaOff} k={k} reduced={reduced} />
         ))}
+        {/* Mocha's perch paws and a perch's hint halo over every standee, the thought bubble and the
+            barks (#183: 0-3's table, 1-3's counter and its L1 glow were hidden); only a subtitle,
+            which any tap clears, may sit over one */}
+        {(marks.length > 0 || haloOnTop) && (
+          <g data-marks="">
+            {haloOnTop && halo}
+            {marks}
+          </g>
+        )}
         {(said.strip || said.subs.length > 0) && (
           <Subtitles strip={said.strip} subs={said.subs} horn={said.horn} k={k} ride={{ baby: babyOff, mocha: mochaOff }} serial={talk?.serial ?? 0} reduced={reduced} onAdvance={talk?.onAdvance} />
         )}
@@ -543,10 +574,10 @@ function AttractorItem({ ctx, id, kind, x, y, treasure }: { ctx: KitCtx; id: str
   );
 }
 
-function PerchMarkItem({ ctx, perch, def, state, bold }: { ctx: KitCtx; perch: PerchDef; def: PageDef; state: SimState; bold: boolean }) {
+function PerchMarkItem({ ctx, perch, def, state, bold, nope = false }: { ctx: KitCtx; perch: PerchDef; def: PageDef; state: SimState; bold: boolean; nope?: boolean }) {
   const p = nodePos(def, state, perch.node);
   const html = useMemo(() => (p ? perchMark(ctx, p[0], p[1], bold) : ''), [ctx, p?.[0], p?.[1], bold]);
-  return <ArtG html={html} className="perch-mark" />;
+  return <ArtG html={html} className={nope ? 'perch-mark perch-nope' : 'perch-mark'} />;
 }
 
 function TudigongItem({ ctx, x, y, hat }: { ctx: KitCtx; x: number; y: number; hat?: string }) {

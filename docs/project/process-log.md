@@ -740,3 +740,17 @@ Format:
 - **Follow-ups.**
   - After the session: an issue per failed gate.
   - The AI run's friction list is input for those decisions.
+
+### 2026-10-20 · Staff engineer · #183 M1 polish: the AI playtest's friction fixed before the family session
+- **Why.** #110's automated first-time run (`docs/playtest/ai-playtest.md`) found twelve friction points. The clear ones are fixed before the owner's family playtest so the people test the design (D-74). The issue was filed under epic #78 and slotted before #111.
+- **Lines (finding 1).** A tap anywhere on the page reads the subtitle beat on (`PagePlayer`): a pointer that lands while a beat is up and lifts as a tap is cancelled through the gesture tracker (no input, the world resumes); a drag still plays under the line. `check:play` scenarios that tapped on through a line now read it first (1-6's 嗶！ translation, 1-2's 土地公 line).
+- **Paws and halos (4, 6, 8).** Perch paws, and a perch's hint halo, moved from `parts-near` to the `fx` layer, above the standees, the thought bubble and the barks. The paw has an ink hairline and a stronger halo. `layoutTalk` takes `marks` (the paws and the hinted target) as a soft avoid for every bubble, and 廣播姊姊 may drop down the page. Guards: affordance lint **A08** (drawing order; every page over its solution with the L1 hint) and a `check:ui` hit test of every paw and halo on every fixture (it skips specimens, hidden folded pages, and allows the ghost hand and subtitles).
+- **Soft traps (5).** `solve().softTraps()`: a first move of a part or of Mocha from an on-track state that costs ≥ 2 more moves (it must be undone); undoing progress doesn't count. It found exactly 0-4's curtain-first trap. `pages.test.ts` fails on any; `npm run solve` has a `traps` column; PageLab's worker strips the function.
+- **0-4.** The bead's `visibleWhen` is curtain open **and** train on: curtain-first shows a dark train, hiding Mocha still makes him cry. Par 2 either way; new fixtures `c0p4-curtain-first(-cry)` and a `check:play` scenario.
+- **1-1.** The third strap is looped up (no ring; `env/art/c1.ts`, re-baked `c1/car`).
+- **1-5 (10).** An unreachable perch tap shakes its paw (`perch-nope`) and Mocha turns to it, with his 「喵？」. A first-play `nudge` tutorial (new kind in `game/tutorial.ts`): 4 s after the car is down with them in it, Mocha taps his paw on the panel, shimmers once and asks 「再按一次？」 (`NUDGE_LINES`).
+- **1-6 (11, 12).** No subtitle under the photo moment; riding bubbles are cut at the page's edges (`rideWithin`). A creature at rest beside a shiny faces it (the pigeon).
+- **Cards (3).** A bobbing ▼ (`hud/TapMark.tsx`) on the chapter card's lines and the word card.
+- **QA.** `npm test` (2494) and `npm run build` pass; `npm run solve` green with 0 traps; visual baselines updated for the changed fixtures only, plus six new fixtures (`c0p4-curtain-first`, `c0p4-curtain-first-cry`, `c1p5-nope`, `c1p5-nudge`, `c1p3-hint-counter`, `c1p1-intro`); `check:ui --popup` (four chunks of ~20 fixtures, ≈ 3 min each against a running dev server) and `check:play` (all 21 scenarios, three chunks) pass.
+- **Left for the playtest:** the reading load at the start (#2), the backpacker's punchline (#7), the L2 turn hint (#9); the pigeon's motive and the sway tab are still watch-points.
+- **Follow-ups.** None filed. If the family session still shows 1-5 stuck, the nudge's line could repeat; if lines still get in the way, a beat could auto-clear when the player acts twice under it.
