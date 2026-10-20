@@ -60,3 +60,16 @@
 }
 .al-note-still { transform: rotate(var(--tilt, 0deg)); }
 .al-note-fade { animation: ph-fade 260ms ease-out both; }
+
+/* Turning the album's leaf (#113): the new leaf slides in from the side it was pulled from, its
+   edge lifting a little like paper; under reduced motion it fades (`ph-fade`) */
+.al-turn-next { animation: al-turn-next 320ms cubic-bezier(0.2, 0.85, 0.3, 1) both; transform-origin: 0 50%; }
+.al-turn-prev { animation: al-turn-prev 320ms cubic-bezier(0.2, 0.85, 0.3, 1) both; transform-origin: 100% 50%; }
+@keyframes al-turn-next {
+  from { transform: translateX(56px) rotate(1.4deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes al-turn-prev {
+  from { transform: translateX(-56px) rotate(-1.4deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}

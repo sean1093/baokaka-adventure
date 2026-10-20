@@ -134,9 +134,3 @@ export function spreadPage(chapter: number, reg: PageRegistry): PageDef | undefi
   const pages = reg.pages.filter((p) => p.chapter === chapter);
   return pages.find((p) => p.spread) ?? pages[pages.length - 1];
 }
-
-/** The chapter whose album page opens first: the latest chapter with a photo, else chapter 1 (#113 adds the others). */
-export function albumHome(photos: Readonly<Record<number, Photo>>): number {
-  const chapters = Object.keys(photos).map(Number).filter((c) => c >= 1);
-  return chapters.length === 0 ? 1 : Math.max(...chapters);
-}

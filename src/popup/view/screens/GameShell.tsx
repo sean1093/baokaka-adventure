@@ -25,9 +25,11 @@ import { effectiveSettings, pulse } from '../../game/settings';
 import { TextScaleContext, textSizeAttr } from '../textSize';
 import '../textSize.css';
 import { useLowPower } from '../useLowPower';
-import { Album } from '../photo/Album';
-import { albumHome, keptPhoto, spreadPage, type Shot } from '../../game/photo';
-import type { Photo, SaveV1 } from '../../game/progress';
+import { Album, AlbumBook } from '../photo/Album';
+import { albumHome } from '../../game/album';
+import { keptPhoto, spreadPage, type Shot } from '../../game/photo';
+import { GAME_PAGES, rewardFlags } from '../../game/stickers';
+import type { Photo } from '../../game/progress';
 import { audioUnlocked, chapterTrack, playMusic, setVolumes, stopMusic, suspendAudio, unlockAudio } from '../../../shared/audio';
 import { LIVE, SILENT, SoundContext, type SoundSink } from '../sound';
 import type { PlaytestLog } from '../../game/playtest';
@@ -61,7 +63,7 @@ import './screens.css';
  *   (`store.keepPhoto`); when the treasure is grabbed the album page opens over the book with the
  *   print flying in and the four notes popping on. 「再拍一次」 replays the 3-second moment;
  *   「放進相簿」 goes on to the sticker card and the chapter turn. The cover's 相簿 opens the
- *   album at the latest chapter with a photo (#113 adds the other chapters).
+ *   album (#113: its cover, then every chapter's page; it opens at the latest chapter with a photo).
  * - **The chapter's end** (GDD § 4.3 1-6 notes; #107): after 「放進相簿」 the chapter-end lines
  *   (`endLines`) play over the finished spread, a tap a beat, as a modal; then the 抓周 tray's new
  *   slot fills (the HUD holds the coin back until then: `trayHold`), the sticker card shows, and
@@ -105,6 +107,12 @@ export interface GameShellProps {
   readonly soonCard?: number;
   /** An old RPG save was deleted at this boot (#109): the cover shows `RPG_FAREWELL` until the player first leaves it */
   readonly farewell?: boolean;
+  /**
+   * Visual QA fixtures (#113): the pages the § 2.8 rewards need — the 「淘氣大王」 cover and the 目錄's
+   * 「象山的日出」 — as if the book were this long (the registered pages' count shows them today).
+   * The game's 65 by default.
+   */
+  readonly rewardTotal?: number;
   /** The playtest log (#110, `#/?debug=metrics`): the shell records pages, live time, hints, 重來 and stickers into it and shows its chip */
   readonly playtest?: PlaytestLog | null;
 }
@@ -157,7 +165,7 @@ interface AlbumAfter {
   readonly go: () => void;
 }
 
-export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter, endLinesOf, soonCard, farewell = false, playtest = null }: GameShellProps) {
+export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter, endLinesOf, soonCard, farewell = false, rewardTotal = GAME_PAGES, playtest = null }: GameShellProps) {
   const [store] = useState(() => given ?? new ProgressStore({ registry: reg }));
   useEffect(() => (given ? undefined : () => store.dispose()), [given, store]);
   const save = useSyncExternalStore(store.subscribe, store.get);
@@ -648,10 +656,13 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                   registry={reg}
                   chapter={layer.chapter}
                   locked={layer.locked}
+                  bonus={rewardFlags(save, reg, rewardTotal).bonusPage}
+                  bonusOpen={layer.bonus === true}
                   resumeId={resumeId}
                   backLabel={base.kind === 'page' ? UI.menu.resume : UI.contents.back}
                   onBack={() => go({ t: 'close' })}
                   onStation={(chapter) => go({ t: 'station', chapter })}
+                  onBonus={() => go({ t: 'bonus' })}
                   onPlay={(id) => go({ t: 'play', id })}
                 />
               </div>
@@ -667,6 +678,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                   fresh={after.fresh}
                   mocha={after.mocha}
                   retaken={after.retaken}
+                  leftHand={settings.leftHand}
                   reduced={reduced}
                   still={still}
                   onKeep={(photo) => store.keepPhoto(after.chapter, photo)}
@@ -676,7 +688,17 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
             )}
             {layer?.kind === 'album' && (
               <div className="fixed inset-0 z-50">
-                <AlbumLayer save={save} reg={reg} reduced={reduced} still={still} onKeep={(chapter, photo) => store.keepPhoto(chapter, photo)} onBack={() => go({ t: 'close' })} />
+                <AlbumBook
+                  save={save}
+                  reg={reg}
+                  leaf={layer.leaf ?? albumHome(save.photos)}
+                  rewardTotal={rewardTotal}
+                  reduced={reduced}
+                  still={still}
+                  leftHand={settings.leftHand}
+                  onKeep={(chapter, photo) => store.keepPhoto(chapter, photo)}
+                  onBack={() => go({ t: 'close' })}
+                />
               </div>
             )}
             {layer?.kind === 'settings' && (
@@ -705,24 +727,6 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
         </TextScaleContext.Provider>
       </SoundContext.Provider>
     </ReducedMotionContext.Provider>
-  );
-}
-
-/** The cover's 相簿 (#103): the latest chapter with a photo (or chapter 1's empty page), to look at or retake. */
-function AlbumLayer({ save, reg, reduced, still, onKeep, onBack }: { save: SaveV1; reg: PageRegistry; reduced: boolean; still: boolean; onKeep: (chapter: number, photo: Photo) => void; onBack: () => void }) {
-  const [chapter] = useState(() => albumHome(save.photos));
-  return (
-    <Album
-      chapter={chapter}
-      def={spreadPage(chapter, reg)}
-      photo={save.photos[chapter] ?? null}
-      stickers={chapterStickers(save, chapter, reg)}
-      mode="browse"
-      reduced={reduced}
-      still={still}
-      onKeep={(photo) => onKeep(chapter, photo)}
-      onDone={onBack}
-    />
   );
 }
 

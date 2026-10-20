@@ -22,8 +22,9 @@ export type Base = { readonly kind: 'cover' } | { readonly kind: 'page'; readonl
 export type Layer =
   | null
   | { readonly kind: 'menu' }
-  | { readonly kind: 'contents'; readonly chapter: number; readonly locked?: number }
-  | { readonly kind: 'album' }
+  | { readonly kind: 'contents'; readonly chapter: number; readonly locked?: number; readonly bonus?: true }
+  /** `leaf`: the album's leaf to open at (0 the cover, 1–10 the chapters; #113); absent: `albumHome` */
+  | { readonly kind: 'album'; readonly leaf?: number }
   | { readonly kind: 'settings' };
 
 export interface NavState {
@@ -40,7 +41,10 @@ export type NavAction =
   | { readonly t: 'station'; readonly chapter: number }
   /** A page in the 目錄's strip (a replay, or the page to resume); locked pages do nothing */
   | { readonly t: 'play'; readonly id: Id }
-  | { readonly t: 'album' }
+  /** The bonus station 「象山的日出」 on the 目錄's map, once every 土地公 is found (§ 2.8; #113) */
+  | { readonly t: 'bonus' }
+  /** The cover's 相簿 (at a leaf: fixtures) */
+  | { readonly t: 'album'; readonly leaf?: number }
   | { readonly t: 'settings' }
   /** The bottom bar's 「選單」 */
   | { readonly t: 'menu' }
@@ -112,8 +116,10 @@ export function navigate(state: NavState, action: NavAction, save: SaveV1, reg: 
       const run = base.kind === 'page' && base.id === action.id ? base.run + 1 : 0;
       return { base: page(action.id, run), layer: null };
     }
+    case 'bonus':
+      return layer?.kind === 'contents' ? { base, layer: { kind: 'contents', chapter: layer.chapter, bonus: true } } : state;
     case 'album':
-      return { base, layer: { kind: 'album' } };
+      return { base, layer: action.leaf === undefined ? { kind: 'album' } : { kind: 'album', leaf: action.leaf } };
     case 'settings':
       return { base, layer: { kind: 'settings' } };
     case 'menu':

@@ -105,6 +105,16 @@ describe('navigate', () => {
     expect(s.layer).toEqual({ kind: 'album' });
     expect(navigate(s, { t: 'close' }, played)).toEqual(COVER);
     expect(navigate(COVER, { t: 'close' }, played)).toBe(COVER);
+    // #113: the album can open at a leaf (0 the cover, 1–10 the chapters)
+    expect(run(played, { t: 'album', leaf: 0 }).layer).toEqual({ kind: 'album', leaf: 0 });
+  });
+
+  test('#113: the bonus station opens its panel in the 目錄 only; a station tap leaves it', () => {
+    const contents = run(played, { t: 'contents' });
+    const bonus = navigate(contents, { t: 'bonus' }, played);
+    expect(bonus.layer).toEqual({ kind: 'contents', chapter: 1, bonus: true });
+    expect(navigate(bonus, { t: 'station', chapter: 0 }, played).layer).toEqual({ kind: 'contents', chapter: 0 });
+    expect(navigate(COVER, { t: 'bonus' }, played)).toBe(COVER);
   });
 
   test('a custom registry: resume follows its order', () => {
