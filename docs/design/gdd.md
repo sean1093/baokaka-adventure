@@ -388,7 +388,7 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 - All 65 土地公 unlock the bonus page 「象山的日出」 (post-game).
 - All 淘氣 stickers unlock the album's 「淘氣大王」 cover.
 
-*Engineers' note (#101, D-64):* the card shows in the page turn's interlude, over the folded page (with reduced motion, over the page before the fade); the 1.5 s count from its last sticker landing, and a tap ends it. 淘氣 is `game/stickers.ts` `mischiefFired`, matched every tick of every attempt; 淘氣 and 土地公 pop 「嘿嘿，淘氣！」 / 「找到土地公！」 over the bar's tray and are saved at once. The rewards are read off the save (`rewardFlags`, over all 65 pages), not stored. Page select is the 目錄: each solved page's 淘氣 is listed under the page strip.
+*Engineers' note (#101, D-64):* the card shows in the page turn's interlude, over the folded page (with reduced motion, over the page before the fade); the 1.5 s count from its last sticker landing, and a tap ends it. 淘氣 is `game/stickers.ts` `mischiefFired`, matched every tick of every attempt; 淘氣 and 土地公 pop 「嘿嘿，淘氣！」 / 「找到土地公！」 over the bar's tray and are saved at once. The rewards are read off the save (`rewardFlags`, over all 65 pages), not stored. Page select is the 目錄: each solved page's 淘氣 is listed under the page strip. *(#113, D-76)* Once every 土地公 is found, a 「象山的日出」 postcard is taped onto the 目錄's map past 101; #135 makes it open the bonus page.
 
 ### 2.9 Chapter spread and the album photo (borrowed from concept B)
 
@@ -413,6 +413,8 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 - Swipe or tap arrows to flip pages.
 
 *Engineers' note (#103, D-66):* the moment starts on the first tick a spread's goal is its target and 1–2 edges away on an open path (`game/photo.ts` `photoReady`; after the grab if he skipped that point), and pauses the session. The slow motion is the camera's viewfinder: the photo it would take now, composed from the baked frames (B `reach` crawling in, A `bounce` with the treasure held up, C `eat`, +M `mocha.album` bottom left) over the spread's backdrop, creeping in over the 3 s loop. The grab is at 1.8 s, so A is 1.4–2.2 s. Frame A takes the chapter's § 5.6 row for all four notes; B and C the pools with A = 0, B = 1, C = 2. Every shot is saved when taken. After a retake both shots lie under the print and the tapped one is kept. The album page opens over the book after the grab, before the sticker card. The cover's 相簿 opens the latest chapter with a photo (#113 adds the rest).
+
+*Engineers' note (#113, D-76):* the album is a book of leaves (`game/album.ts`): its cover, then a page per chapter — the photo, an empty print (reached, not photographed) or a placeholder for a chapter the 月亮線 hasn't reached (name, title and time; a padlocked print, 「？」 for the word, 「月亮線還沒開到這裡。」). 相簿 opens at the latest chapter with a photo, else at the cover. The page arrows and dots sit in a fixed row above the buttons; a one-finger horizontal swipe across the leaf or ← / → turns it too (no wrap-around). The cover is the navy linen board with the latest photo in a round window; with every 淘氣 earned it is the 「淘氣大王」 cover (a crown, a ring of 嘿 stickers, 寶咖咖 and 摩卡 in the window, the ribbon).
 
 ### 2.10 Save and progress
 

@@ -938,3 +938,23 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - D-46 (11)'s workaround (`words: []` on toy pages) and its note that pages offering 不要！ "must give him another candidate or a way out of crying" no longer apply.
 - #114/#116/#118 build chapter pages on these mechanics; their pages must pass the new decoy check, and should clear any `visibleTies` warning.
 - View gaps left for those pages: a node attached to a button draws as a carriage on a track (a pressure plate needs its own look), a light attractor is a small star (a spotlight pool on the floor would read better), a held item sits on its creature's node, and the decoy draws as an ordinary bead.
+
+### D-76 · 2026-10-20 · The whole album, its 淘氣大王 cover and the 目錄's 象山 postcard (#113)
+
+**Context.** #103 built one chapter's album page and opened 相簿 on the latest chapter with a photo. #113 completes the album for every chapter (navigation, placeholders, the § 2.8 「淘氣大王」 cover) and the 目錄 for every chapter (the bonus 「象山的日出」 tile). The GDD says "swipe or tap arrows to flip pages" and that all 淘氣 unlock "the album's 「淘氣大王」 cover", but not where the cover lives, what a chapter not reached shows, or where the bonus tile goes.
+
+**Decision.**
+1. **The album is a book of leaves** (`game/album.ts`, pure): leaf 0 is the album's cover, leaves 1–10 the chapters. A chapter's page is `photo` (the kept photo, its notes, the word), `open` (reached, no photo yet: the empty print, as in #103) or `locked` (the 月亮線 hasn't reached it). A kept photo always shows, whatever is registered. The ending's 抓周 photo becomes leaf 11 with #135.
+2. **Opening.** The cover's 相簿 opens at the latest chapter with a photo (D-66), or at the album's cover when there is none (it was chapter 1's empty page). The album layer can name a leaf (`{ kind: 'album', leaf }`; fixtures).
+3. **A chapter not reached** is a placeholder that names the chapter (第N章, title, time: the 目錄 shows them too) but not its treasure or word: an empty print with a padlock and 「？」, a blind-embossed 「？」 for the word, the empty grid, and the 目錄's 「月亮線還沒開到這裡。」 where the notes go.
+4. **Paging.** One leaf a turn, no wrap-around. The page arrows (56 px cream discs, faded and disabled at the ends) sit either side of the page dots in a row of their own above the buttons, so they are always in reach and never scroll away; a one-finger horizontal swipe across the leaf (≥ 48 px, 1.5× more across than down, ≤ 0.9 s; a second finger cancels; `touch-action: pan-y` keeps vertical scrolling) and ← / → do the same. The new leaf slides in from the side it was pulled from (a fade under reduced motion). The arrows do not mirror in 左手模式 (the direction is the book's); the buttons under them do, so the main one sits under the left thumb. Straight after a spread (`after` mode) there is no paging: that moment is the chapter's photo.
+5. **The album's cover** is the navy linen board of bible § 7 with a gold-foil frame, a die-cut round window (the latest photo, else 寶咖咖's head under the moon) and 「寶咖咖 一歲的相簿」 in foil. **「淘氣大王」** crowns it: a foil crown on the window, a ring of foil 嘿 stickers, 寶咖咖 (laughing) and 摩卡 (smug) in the window and a seal-red ribbon reading 「淘氣大王」. It is read off the save (`rewardFlags`, D-64), never stored.
+6. **「象山的日出」 on the 目錄** (once every 土地公 is found): a postcard taped onto the map's free corner (the serpentine's empty slot past 101; 象山 is 101's neighbour), a dotted gold branch from 101 to it. Tapped, the panel names it and, until #135 builds the page, says the 未完待續 line (`rec.soon.1`). Nav action `bonus`.
+7. **Fixtures see the rewards** through `rewardTotal` (GameShell prop, fixture `screen.rewardTotal`): the number of pages the rewards need, set to the registered pages' count so `album-cover-unlocked` and `contents-all` show them today. The game uses 65 (`GAME_PAGES`).
+8. **Strings.** 「淘氣大王」 (§ 2.8's name) is on the ribbon. Not in § 5.7, accessible names only: 上一頁 / 下一頁 (the arrows) and 封面 (the cover leaf).
+
+**Why.** A cover leaf gives the 淘氣大王 a place without changing the game's cover or the album's one-tap path to the newest photo; placeholders make the album's size visible from the first photo (the long-term reward, § 2.9) without spoiling treasures; arrows in a fixed row keep R6/R7-style reach on a short phone while the leaf scrolls.
+
+**Consequences.**
+- #135 adds the ending's photo as the last leaf (`ALBUM_LEAVES`), credits over the album photos, and makes the 象山 postcard open the bonus page.
+- Chapter issues (#114 …) get their album pages for free: a chapter's leaf opens as its first page is registered; its treasure art replaces the foil token (`treasureArt.ts`).

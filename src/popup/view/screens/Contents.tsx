@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { POPUP as C, withAlpha } from '../../../art/palette';
 import { useSvgIds } from '../../../art/useSvgIds';
 import { kitCtx, kitDefs } from '../../art';
-import { CHAPTERS, chapterInfo, chapterName, stickersIn, UI } from '../../content';
+import { CHAPTERS, chapterInfo, chapterName, loadLine, SOON_LINES, stickersIn, UI } from '../../content';
 import type { Id, PageDef } from '../../core/types';
 import { MAP_SHEET } from '../../env/art/screens';
 import { backdropImage, screenImage } from '../../env/loader';
@@ -29,8 +29,11 @@ import { useTextScale } from '../textSize';
  *   completion, so the first play has no clutter.
  * - **A locked station** answers 「月亮線還沒開到這裡。」 (§ 5.7).
  *
- * Chapters 0–1 are what M1 plays; #113 completes the 目錄 for every chapter (the map already
- * draws all eleven stations).
+ * - **All eleven stations** (#113): each open one with its n/18 (n/12 in the prologue), each the
+ *   line hasn't reached with its padlock and line. A chapter opens as its pages are registered.
+ * - **「象山的日出」** (GDD § 2.8, § 5.7; #113): once every 土地公 is found, a postcard of the sunrise
+ *   over 象山 is taped onto the map's free corner, a dotted gold branch running to it from 101.
+ *   Tapped, it names itself; the bonus page itself comes with #135 (until then its 「未完待續」 line).
  */
 
 export interface ContentsProps {
@@ -40,6 +43,11 @@ export interface ContentsProps {
   readonly chapter: number;
   /** A locked station just tapped: its line shows instead of the strip */
   readonly locked?: number;
+  /** Every 土地公 found (§ 2.8): the 「象山的日出」 postcard is on the map (#113) */
+  readonly bonus?: boolean;
+  /** …and was tapped: its panel shows instead of a chapter's */
+  readonly bonusOpen?: boolean;
+  readonly onBonus?: () => void;
   /** The page 「繼續」 would open (the bookmark) */
   readonly resumeId: Id;
   /** The back button's word: 「封面」 from the cover, 「繼續」 over a page */
@@ -56,6 +64,9 @@ export const STATIONS: readonly (readonly [number, number])[] = [
   [62, 254], [181, 254], [300, 254],
   [300, 350], [181, 350],
 ];
+
+/** The bonus postcard's place on the map: the serpentine's free slot, past 101 (#113). */
+export const BONUS_AT: readonly [number, number] = [62, 350];
 
 /** The 月亮線 ribbon through the stations, with a U-turn at each row's end. */
 export const ROUTE = 'M62 62H300A48 48 0 0 1 300 158H62A48 48 0 0 0 62 254H300A48 48 0 0 1 300 350H181';
@@ -123,7 +134,7 @@ export function Endpaper() {
   );
 }
 
-export function Contents({ save, registry: reg, chapter, locked, resumeId, backLabel, onBack, onStation, onPlay }: ContentsProps) {
+export function Contents({ save, registry: reg, chapter, locked, bonus = false, bonusOpen = false, onBonus, resumeId, backLabel, onBack, onStation, onPlay }: ContentsProps) {
   const sheet = screenImage('map-sheet');
   const head = useMemo(() => {
     const def = spriteDef('baokaka-head-happy');
@@ -133,6 +144,7 @@ export function Contents({ save, registry: reg, chapter, locked, resumeId, backL
   const resumeChapter = reg.chapterOf(resumeId) ?? 0;
   // How far the line runs: to the furthest open station
   const reach = CHAPTERS.filter((c) => isChapterUnlocked(save, c.chapter, reg)).reduce((n, c) => Math.max(n, c.chapter), 0);
+  const showBonus = bonus && bonusOpen;
   const shown = locked ?? chapter;
   const info = chapterInfo(shown);
   const cards = useMemo(() => pageCards(save, reg, chapter), [save, reg, chapter]);
@@ -186,7 +198,7 @@ export function Contents({ save, registry: reg, chapter, locked, resumeId, backL
             {STATIONS.map(([x, y], ch) => {
               const open = isChapterUnlocked(save, ch, reg);
               const done = open && chapterComplete(save, ch);
-              const selected = ch === shown;
+              const selected = ch === shown && !showBonus;
               return (
                 <g key={ch} transform={`translate(${x} ${y})`} data-station={ch} data-open={open ? '' : undefined} data-complete={done ? '' : undefined}>
                   {selected && <circle r={24} fill="none" stroke={C.gold} strokeWidth={3} opacity={0.9} />}
@@ -218,6 +230,7 @@ export function Contents({ save, registry: reg, chapter, locked, resumeId, backL
                 </g>
               );
             })}
+            {bonus && <BonusPostcard selected={showBonus} />}
           </svg>
           {/* The stations as buttons: their names and sticker counts are live text on the map */}
           {STATIONS.map(([x, y], ch) => {
@@ -229,7 +242,7 @@ export function Contents({ save, registry: reg, chapter, locked, resumeId, backL
                 type="button"
                 onClick={() => onStation(ch)}
                 aria-label={`${chapterName(ch)} ${c.landmark}${open ? `，${UI.contents.collected} ${collected(save, ch)}／${stickersIn(ch)}` : ''}`}
-                aria-pressed={ch === shown}
+                aria-pressed={ch === shown && !showBonus}
                 data-button={`station-${ch}`}
                 className="absolute flex flex-col items-center"
                 style={{ left: x - 50, top: y - 22, width: 100, minHeight: 88, WebkitTapHighlightColor: 'transparent' }}
@@ -246,9 +259,37 @@ export function Contents({ save, registry: reg, chapter, locked, resumeId, backL
               </button>
             );
           })}
+          {bonus && (
+            <button
+              type="button"
+              onClick={onBonus}
+              aria-pressed={showBonus}
+              data-button="bonus"
+              className="absolute flex flex-col items-center"
+              style={{ left: BONUS_AT[0] - 54, top: BONUS_AT[1] - 30, width: 108, minHeight: 92, WebkitTapHighlightColor: 'transparent' }}
+            >
+              <span className="h-[50px]" aria-hidden="true" />
+              <span className="whitespace-nowrap rounded-[4px] px-[3px] text-[20px] font-black leading-[24px]" style={{ color: C.ink, backgroundColor: withAlpha(C.page, 0.88) }}>
+                {UI.bonus}
+              </span>
+            </button>
+          )}
         </div>
 
         {/* The chapter's card: its name, the stickers collected, the page strip (or the locked line) */}
+        {showBonus ? (
+          <section className="relative mt-3 w-full rounded-[10px] px-3 pb-3 pt-2" style={CREAM_CARD} data-panel="bonus" aria-live="polite">
+            <h2 className="font-serif text-[24px] font-black tracking-[0.06em]">{UI.bonus}</h2>
+            <p className="mt-2 flex items-center gap-2 rounded-[8px] px-3 py-3 text-[20px] font-bold" style={{ backgroundColor: C.pageDark }} data-bonus-line="">
+              <svg width={28} height={28} viewBox="-14 -14 28 28" aria-hidden="true" className="shrink-0">
+                <path d="M-11 5a11 11 0 0 1 22 0z" fill={C.gold} stroke={C.goldDeep} strokeWidth={1.2} />
+                <path d="M-13 6H13" stroke={C.ink} strokeWidth={2} strokeLinecap="round" />
+                <path d="M0 -12v3M-9 -8l2 2M9 -8l-2 2" stroke={C.goldDeep} strokeWidth={2} strokeLinecap="round" />
+              </svg>
+              {loadLine(SOON_LINES[0])?.text}
+            </p>
+          </section>
+        ) : (
         <section className="relative mt-3 w-full rounded-[10px] px-3 pb-3 pt-2" style={CREAM_CARD} data-panel={shown} aria-live="polite">
           <h2 className="flex items-baseline gap-2">
             <span className="text-[20px] font-black" style={{ color: C.sealInk }}>
@@ -277,8 +318,45 @@ export function Contents({ save, registry: reg, chapter, locked, resumeId, backL
             </>
           )}
         </section>
+        )}
       </div>
     </main>
+  );
+}
+
+/**
+ * The 「象山的日出」 postcard (#113): taped onto the map's free corner, tilted, the sun coming up
+ * behind 象山's hump with the city's lights below; a dotted gold branch runs to it from 101.
+ */
+function BonusPostcard({ selected }: { selected: boolean }) {
+  const [x, y] = BONUS_AT;
+  const [tx] = STATIONS[10];
+  const w = 62;
+  const h = 46;
+  return (
+    <g data-bonus="">
+      <path d={`M${tx - 18} ${y}H${x + w / 2 + 6}`} fill="none" stroke={C.goldDeep} strokeWidth={3} strokeDasharray="1 6" strokeLinecap="round" />
+      <g transform={`translate(${x} ${y - 6}) rotate(-5)`}>
+        {selected && <rect x={-w / 2 - 6} y={-h / 2 - 6} width={w + 12} height={h + 12} rx={6} fill="none" stroke={C.gold} strokeWidth={3} opacity={0.9} />}
+        <rect x={-w / 2 + 1.5} y={-h / 2 + 3} width={w} height={h} rx={2} fill={C.shadow} opacity={0.35} />
+        <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={2} fill={C.standeeCard} />
+        <clipPath id="bonus-pic">
+          <rect x={-w / 2 + 3} y={-h / 2 + 3} width={w - 6} height={h - 6} />
+        </clipPath>
+        <g clipPath="url(#bonus-pic)">
+          <rect x={-w / 2} y={-h / 2} width={w} height={h} fill={C.peonyLight} />
+          <rect x={-w / 2} y={-h / 2} width={w} height={h * 0.35} fill={C.nightCard} opacity={0.85} />
+          <circle cx={6} cy={2} r={9} fill={C.goldLight} stroke={C.gold} strokeWidth={1.5} />
+          <path d={`M${-w / 2} 8Q-12 -9 0 1Q8 6 14 3Q20 0 ${w / 2} 6V${h / 2}H${-w / 2}Z`} fill={C.sticker} />
+          <path d={`M${-w / 2} 13H${w / 2}V${h / 2}H${-w / 2}Z`} fill={C.stickerDeep} />
+          <path d="M16 13V-3h2V13M21 13V4h2V13" fill={C.stickerDeep} />
+          <g fill={C.lamp}>
+            <circle cx={-18} cy={15.5} r={0.9} /><circle cx={-11} cy={16} r={0.9} /><circle cx={-3} cy={15.5} r={0.9} /><circle cx={7} cy={16} r={0.9} /><circle cx={14} cy={15.5} r={0.9} />
+          </g>
+        </g>
+        <rect x={-10} y={-h / 2 - 5} width={22} height={9} fill={C.washiCeladon} opacity={0.85} transform="rotate(4)" />
+      </g>
+    </g>
   );
 }
 

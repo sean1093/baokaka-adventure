@@ -70,6 +70,15 @@ export const BackIcon = () => (
   </svg>
 );
 
+/** The album's page arrows (#113): a chevron with a page's turned-up corner behind it; `dir` 1 points to the next leaf. */
+export const PageArrowIcon = ({ dir }: { dir: 1 | -1 }) => (
+  <svg {...box} style={dir === 1 ? undefined : { transform: 'scaleX(-1)' }}>
+    <path d="M7 7h15l7 7v15H7z" fill={C.foldLitHigh} stroke={C.pageEdge} strokeWidth={1.4} strokeLinejoin="round" />
+    <path d="M22 7v7h7" fill={C.pageDark} stroke={C.pageEdge} strokeWidth={1.4} strokeLinejoin="round" />
+    <path d="M14 11l8 7.5l-8 7.5" fill="none" {...ink} strokeWidth={3.4} />
+  </svg>
+);
+
 /** A small padlock (locked stations and pages): a shape as well as a colour (§ 2.11). */
 export const LockIcon = ({ size = 20, color = C.inkSoft }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 20 20" aria-hidden="true">

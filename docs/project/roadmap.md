@@ -62,7 +62,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [111](https://github.com/sean1093/baokaka-adventure/issues/111) | Delete the old RPG after M1 sign-off: src/quest, RPG-only art, art lab sections, sim script and baselines | chore, m1 | #110 | todo |
 | **M2 · Chapters 2–4** | | | | |
 | [112](https://github.com/sean1093/baokaka-adventure/issues/112) | M2 engine: light attractors with nodeBy, creatures holding items (heldBy/drop), decoys, and words 掰掰 / 不要！ / 哇！ | engine, ui, m2 | #110 | done (#185) |
-| [113](https://github.com/sean1093/baokaka-adventure/issues/113) | Album complete (multi-chapter, retake, 淘氣大王 cover) and 目錄 for all chapters | ui, m2 | #103, #110 | todo |
+| [113](https://github.com/sean1093/baokaka-adventure/issues/113) | Album complete (multi-chapter, retake, 淘氣大王 cover) and 目錄 for all chapters | ui, m2 | #103, #110 | done (#186) |
 | [114](https://github.com/sean1093/baokaka-adventure/issues/114) | Chapter 2 pages: 「會揮手的公園」 大安森林公園 — full specs, then data for 2-1…2-6, solver-green | content, m2 | #112 | todo |
 | [115](https://github.com/sean1093/baokaka-adventure/issues/115) | Chapter 2 art: 大安森林公園 pop-up pages, parts, creatures, 土地公 (斗笠 + 掃把) and the 畫筆 photo | art, content, m2 | #114 | todo |
 | [116](https://github.com/sean1093/baokaka-adventure/issues/116) | Chapter 3 pages: 「醉月湖的鵝」 台灣大學 — full specs, then data for 3-1…3-6, solver-green | content, m2 | #112, #114 | todo |

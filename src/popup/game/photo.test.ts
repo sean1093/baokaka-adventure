@@ -7,7 +7,6 @@ import {
   AUTO_SNAP_MS,
   PHOTO_LOOP_MS,
   PHOTO_PEAK_MS,
-  albumHome,
   albumNotes,
   approachAt,
   keptPhoto,
@@ -173,8 +172,4 @@ describe('the album\'s pages', () => {
     expect(spreadPage(5, registry)).toBeUndefined();
   });
 
-  test('albumHome: the latest chapter with a photo, else chapter 1', () => {
-    expect(albumHome({})).toBe(1);
-    expect(albumHome({ 1: { frame: 'A', mocha: false, at: 0 }, 3: { frame: 'B', mocha: true, at: 0 } })).toBe(3);
-  });
 });
