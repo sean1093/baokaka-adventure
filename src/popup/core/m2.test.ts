@@ -68,7 +68,7 @@ describe('toy-spotlight: light is a leash (nodeBy)', () => {
     expect(attractorNode(toySpotlight, aimed, glow)).toBe('T');
     const onPlate = until(toySpotlight, aimed, (s) => s.baby.node === 'T');
     expect(onPlate.baby).toMatchObject({ node: 'T', mode: 'watching' });
-    expect(onPlate.parts).toMatchObject({ plate: 'down', curtain: 'open' });
+    expect(onPlate.parts).toMatchObject({ plate: 'down', curtain: 'up' });
     // The bead outranks the light: he leaves the plate (the curtain stays up) and grabs it
     expect(run(toySpotlight, waits(4), onPlate).done).toBe(true);
   });

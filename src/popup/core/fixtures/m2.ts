@@ -36,14 +36,15 @@ export const toySpotlight = definePage({
     { id: 'spot', preset: 'wheel', states: ['home', 'trap', 'stage', 'nap'], center: [345, 505], radius: 30,
       hit: { cx: 345, cy: 505, r: 30 }, art: 'toy/spotlight' },
     { id: 'plate', preset: 'button', hit: { x: 116, y: 486, w: 48, h: 28 }, art: 'toy/plate' },
-    { id: 'curtain', preset: 'flap', input: 'none', hit: { x: 260, y: 300, w: 90, h: 150 },
-      react: [{ on: { type: 'partEnter', id: 'plate', state: 'down' }, to: 'open' }], art: 'toy/curtain' },
+    // The stage curtain rises on the plate's press (event-driven: no affordance, nothing to tap)
+    { id: 'curtain', preset: 'lift', states: ['down', 'up'], hit: { x: 260, y: 300, w: 90, h: 150 },
+      react: [{ on: { type: 'partEnter', id: 'plate', state: 'down' }, to: 'up' }], art: 'toy/curtain' },
   ],
   perches: [],
   creatures: [{ id: 'sweeper', positions: { nap: 'wings' }, initial: 'nap', blocks: false, art: 'toy/sweeper' }],
   attractors: [
     { id: 'glow', kind: 'light', node: 'S1', nodeBy: { part: 'spot', map: { home: 'S1', trap: 'T', stage: 'S3', nap: 'wings' } } },
-    { id: 'bead', kind: 'shiny', node: 'S4', goal: true, visibleWhen: { part: 'curtain', in: ['open'] } },
+    { id: 'bead', kind: 'shiny', node: 'S4', goal: true, visibleWhen: { part: 'curtain', in: ['up'] } },
   ],
   baby: { start: 'S1', facing: 'r' },
   mocha: { start: null },
