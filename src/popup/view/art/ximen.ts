@@ -10,22 +10,22 @@ import { dieCut } from './creatures';
  * § 6 risk 11): these are generic, friendly types.
  */
 
-type Pt = readonly [number, number];
+export type Pt = readonly [number, number];
 
 /** A capsule (a limb) from `a` to `b`, `r` thick each side: a filled path, so it takes the die-cut border. */
-function limb(a: Pt, b: Pt, r: number): string {
+export function limb(a: Pt, b: Pt, r: number): string {
   const [dx, dy] = [b[0] - a[0], b[1] - a[1]];
   const l = Math.hypot(dx, dy) || 1;
   const [nx, ny] = [(-dy / l) * r, (dx / l) * r];
   const p = (x: number, y: number) => `${f1(x)} ${f1(y)}`;
-  return `M${p(a[0] + nx, a[1] + ny)}L${p(b[0] + nx, b[1] + ny)}A${f1(r)} ${f1(r)} 0 0 1 ${p(b[0] - nx, b[1] - ny)}L${p(a[0] - nx, a[1] - ny)}A${f1(r)} ${f1(r)} 0 0 1 ${p(a[0] + nx, a[1] + ny)}Z`;
+  return `M${p(a[0] + nx, a[1] + ny)}L${p(b[0] + nx, b[1] + ny)}A${f1(r)} ${f1(r)} 0 0 0 ${p(b[0] - nx, b[1] - ny)}L${p(a[0] - nx, a[1] - ny)}A${f1(r)} ${f1(r)} 0 0 0 ${p(a[0] + nx, a[1] + ny)}Z`;
 }
 
 /** The end of a limb from `a`, `len` long at bearing `deg` (clockwise from up). */
-const reach = (a: Pt, deg: number, len: number): Pt => [a[0] + Math.sin((deg * Math.PI) / 180) * len, a[1] - Math.cos((deg * Math.PI) / 180) * len];
+export const reach = (a: Pt, deg: number, len: number): Pt => [a[0] + Math.sin((deg * Math.PI) / 180) * len, a[1] - Math.cos((deg * Math.PI) / 180) * len];
 
 /** Open eyes (or shut, or singing arcs), a blush, a mouth: a paper-style face centred on (x, y). */
-function face(x: number, y: number, { eyes = 'open' as 'open' | 'shut' | 'happy', mouth = 'smile' as 'smile' | 'open' | 'o' | 'none', s = 1 } = {}): string {
+export function face(x: number, y: number, { eyes = 'open' as 'open' | 'shut' | 'happy', mouth = 'smile' as 'smile' | 'open' | 'o' | 'none', s = 1 } = {}): string {
   const k = (n: number) => f1(n * s);
   const dot = (cx: number, cy: number, r: number) => `M${f1(cx - r)} ${f1(cy)}a${f1(r)} ${f1(r)} 0 1 0 ${f1(2 * r)} 0a${f1(r)} ${f1(r)} 0 1 0 ${f1(-2 * r)} 0Z`;
   const eye = eyes === 'open'
@@ -38,14 +38,14 @@ function face(x: number, y: number, { eyes = 'open' as 'open' | 'shut' | 'happy'
 }
 
 /** A die-cut figure: a dropped shadow of its silhouette under the card (`dieCut`). */
-const figure = (outline: string, print: string) =>
+export const figure = (outline: string, print: string) =>
   `<g fill="${C.shadow}" opacity=".3" transform="translate(1.8 2.8)">${outline}</g>` + dieCut(outline, print);
 
 /** Chalk motion ticks round a mover. */
-const ticks = (d: string) => `<path d="${d}" stroke="${C.chalk}" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".85"/>`;
+export const ticks = (d: string) => `<path d="${d}" stroke="${C.chalk}" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".85"/>`;
 
 /** Chalk text. */
-const chalk = (x: number, y: number, text: string, size = 10, rotate = 0) =>
+export const chalk = (x: number, y: number, text: string, size = 10, rotate = 0) =>
   `<text data-art-text="" x="${x}" y="${y}" font-family="'Noto Serif TC'" font-weight="900" font-size="${size}" fill="${C.chalk}"${rotate ? ` transform="rotate(${rotate} ${x} ${y})"` : ''}>${text}</text>`;
 
 interface Pose {
