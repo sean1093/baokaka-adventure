@@ -243,7 +243,8 @@ Each touchable carries **four redundant cues**, so colour-blind players, low-vis
 | **4. Motion and direction** | A printed **direction cue**:<br>• **Tab:** arrow plus dotted track to the end stop.<br>• **Wheel:** curved arrow; for drums, a 3D ring arrow (back half dashed).<br>• **Flap:** curl arrow.<br>• **Slider:** dotted track.<br>And an **idle wiggle** (below). |
 
 **Mocha perches** (GDD: "a faint paw print while Mocha is available"):
-- a chalk-white paw print with a soft marigold halo;
+- a chalk-white paw print with a soft marigold halo, edged with an ink hairline so it reads on any art, cream paper included (#183);
+- drawn above the standees, the thought bubble and the barks, and never under the art (`check:ui` hit-tests every paw and hint halo; affordance lint A08);
 - no seal, because the action belongs to Mocha, not the player's finger.
 
 **Linked parts** (the train a tab moves, the shelf a wheel cranks):

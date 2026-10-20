@@ -48,4 +48,23 @@ Severity is a guess at how much it might cost a real first-timer.
 
 What worked well: the 拉 / 翻 / 推 / 轉 seals read at once; the thought bubble always says what he wants; the change-of-mind on 0-2 and the 淘氣 pops are clear; the cry on 0-4 looks soft (tears in the bubble, the train lights up); the 嗶！ learn beat and the 說話 tutorial hand are clear; L1 hints point at the right thing everywhere except 1-3 (#8).
 
-None of these is fixed in #110: the human playtest decides which matter. The sheet's part C has a line for each.
+None of these was fixed in #110. The sheet's part C has a line for each.
+
+## Status after #183 (before the family playtest)
+
+[#183](https://github.com/sean1093/baokaka-adventure/issues/183) fixed the clear ones before the family session, so the people test the design and not these bugs (D-74; screenshots in [`docs/screenshots/183/`](../screenshots/183/)). Still watch every point in the session: a fix is a guess until a person plays it.
+
+| # | Status | What changed |
+|---|---|---|
+| 1 | **Fixed** | A tap anywhere on the page reads the lines on. A tap made while a line is up never acts on the page; a drag still plays under the line. |
+| 2 | Left for the playtest | The reading load is unchanged (lines are quicker to clear now, #1). Watch it. |
+| 3 | **Fixed** | The chapter card's lines and the word card show a small bobbing ▼. |
+| 4 | **Fixed** | Perch paws draw over the bead, the barks, the thought bubble and the standees, with an ink edge; the bubbles keep off them. Tapping Mocha herself still does nothing (by design). |
+| 5 | **Fixed** | 0-4 solves in either order: the bead glints on the train's step only once the cry lights the train, so curtain-first shows a dark train and nothing to want. The solver now fails any page with such a "soft trap". The 翻 seal and the rod's paw are unchanged (the accidental 淘氣 is a happy accident). |
+| 6 | **Fixed** | 廣播姊姊's lines keep off the straps and the rack; the third strap is looped up with no ring; the rack's paw shows on the map. The sway tab is still the most prominent control (it is the 淘氣): watch it. |
+| 7 | Left for the playtest | The punchline still plays as the page completes. |
+| 8 | **Fixed** | The counter's paw and its L1 halo draw over the thought bubble, which now keeps off them. |
+| 9 | Left for the playtest | The L2 turn hint is unchanged. |
+| 10 | **Fixed** | A tap on a perch Mocha can't reach shakes the paw, and Mocha turns to it and says 「喵？」. On first play, 4 s after the car comes down, Mocha taps his paw on the panel, shimmers once and asks 「再按一次？」. |
+| 11 | **Fixed** (cheap) | The pigeon faces the 雞腿 once it lands beside it. Whether that reads as "wants it" is still a watch-point. |
+| 12 | **Fixed** | No line shows under the photo moment, and a bubble riding a character never leaves the page. |

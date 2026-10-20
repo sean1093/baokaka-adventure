@@ -83,7 +83,7 @@ Work is tracked as GitHub issues on `sean1093/baokaka-adventure`, ordered in [`r
 
 ### Code
 - `src/popup/core/` stays pure and deterministic (no React/DOM, no `Date.now()`, no `Math.random()`, sorted iteration; GDD §3.3). The old RPG engine rule is the same.
-- Pages are data built from presets; no per-page code (a custom reaction is a lint warning). The lint (`core/lint.ts`) must know about every new field; every page passes `pages.test.ts` (lint, solution replay, solver: solvable, 0 dead ends, not trivial, 淘氣 and 土地公 reachable).
+- Pages are data built from presets; no per-page code (a custom reaction is a lint warning). The lint (`core/lint.ts`) must know about every new field; every page passes `pages.test.ts` (lint, solution replay, solver: solvable, 0 dead ends, 0 soft traps, not trivial, 淘氣 and 土地公 reachable).
 - Art: the game shows **baked bitmaps** (WebP @2x/@3x) for characters, backdrops and parts, produced by the art pipelines (`docs/art/v2/tools/`, `scripts/bake-popup.mjs` from #96) and committed (CI cannot bake); live SVG only for cheap flat pieces (seals, bubbles, chalk lines). Colours from `src/art/palette.ts` only; marigold is reserved for touchables; no runtime SVG filters on anything that moves; page art ≤ 350 KB. Follow the latest popup art bible and art v2 README. (This supersedes the RPG-era "inline SVG only, no bitmaps" rule; D-36.)
 - Accessibility (GDD §1.3): hit areas ≥ 48×48 CSS px after the book scale, text ≥ 20 px (≥ 24 px with 大字), contrast ≥ 7:1, an icon with every instruction, playable muted, `prefers-reduced-motion` and the 減少動態 setting respected.
 - No new runtime dependencies without a decision entry. Dev dependencies for tooling (e.g. Playwright, pixelmatch) are fine.
@@ -134,6 +134,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
   - **R5 text size.** Every visible text run is ≥ 20 CSS px, or ≥ 24 px inside `[data-text-size="big"]` (大字, which #104 sets). SVG text is measured on screen: its font size × the CTM's scale.
   - **R5 contrast.** Every visible text run is ≥ 7:1. The text colour comes from computed styles. The background is read off a screenshot taken with all text hidden, and 90 % of the pixels behind the run must pass.
   - **R6 hit areas.** Every `[data-hit]` (the page's grown hit shapes) and every button, link, input, switch, tab or slider is ≥ 48×48 CSS px. A fixture without `[data-hit]` fails. At 390×844 no page hit shape may be grown (`[data-hit-grown]`): each touchable's own hit area must be ≥ 48 px after the ≈ 0.91 book scale (bible § 4.2, #140). Text and touchables under an open modal (`aria-modal`: the pause menu, the chapter card while its lines play) are out of reach and are not measured (#102).
+  - **Marks seen (#183).** Mocha's perch paws and the hint halo are never under anything: the topmost thing drawn at a paw's centre is the paw (or the L2 ghost hand tapping it; a subtitle is allowed and counted), and most points of a halo show the halo, its own target, a paw, the hand or a subtitle. The affordance lint's A08 holds the drawing order in unit tests.
   - **Reduced motion.** With the fixture live under `prefers-reduced-motion: reduce`, no running animation may change anything but opacity (fades are allowed).
   - **Flashing.** With motion on, nothing may flash above 3 Hz.
   - **Self-test.** Before the motion rules run, a self-test injects a 5 Hz blink, a slide and a slow fade, and checks that the detectors judge them correctly.
@@ -181,7 +182,7 @@ npm run art:report             # the per-page payload report from the committed 
 
 ### Bubbles and subtitles: `view/talk/` (#98, D-61)
 
-Everything said on the page: the thought bubble (change of mind: pop, inflate, wobble), bark bubbles (`barks.ts`), subtitle bubbles and the narration strip. Lines come from `content/script.ts` (`SCRIPT`, `SPEAKERS`, `loadLine`) and are queued by `game/talk.ts` (beats of ≤ 3, tap to advance). `layoutTalk` places them all so none covers Baokaka or the goal, and `talkScale` grows them so their text is ≥ 20 screen px at every viewport. Animations are CSS (`talk.css`), so stills stop them, and they are fades under reduced motion.
+Everything said on the page: the thought bubble (change of mind: pop, inflate, wobble), bark bubbles (`barks.ts`), subtitle bubbles and the narration strip. Lines come from `content/script.ts` (`SCRIPT`, `SPEAKERS`, `loadLine`) and are queued by `game/talk.ts` (beats of ≤ 3; a tap anywhere on the page advances, #183 — `PagePlayer` cancels a tap that lands while a beat is up, a drag still plays). `layoutTalk` places them all so none covers Baokaka or the goal, and `talkScale` grows them so their text is ≥ 20 screen px at every viewport. Animations are CSS (`talk.css`), so stills stop them, and they are fades under reduced motion.
 
 ### Words: `view/words/` and `game/words.ts` (#99, D-62)
 
@@ -298,15 +299,15 @@ npm run solve -- --cap 50000        # a lower state cap than the default 2,000,0
 ```
 
 ```
-page  title     diff  par  states  ms  dead  trivial  淘氣  土地公  lint   result
-────  ────────  ────  ───  ──────  ──  ────  ───────  ────  ──────  ─────  ──────
-c0p1  嬰兒床    1     1 ✓  22      4   0     no       ✓     ✓       0E 0W  ok
-c1p2  月台的縫  2     2 ✓  182     25  0     no       ✓     ✓       0E 0W  ok
+page  title     diff  par  states  ms  dead  traps  trivial  淘氣  土地公  lint   result
+────  ────────  ────  ───  ──────  ──  ────  ─────  ───────  ────  ──────  ─────  ──────
+c0p1  嬰兒床    1     1 ✓  22      4   0     0      no       ✓     ✓       0E 0W  ok
+c1p2  月台的縫  2     2 ✓  182     25  0     0      no       ✓     ✓       0E 0W  ok
 
 OK: 2 pages, 0 failing · total 0.04 s of the 60 s budget (0.1 %)
 ```
 
-- **Columns:** page id, title, difficulty, par with the band check (`✓` inside the § 3.7 band, `! lo–hi` outside: a warning; `-` unsolved), states explored, solver ms, dead-end count (`?` when the search stopped early), trivial (`YES` fails; `yes (ok)` with `allowTrivial`), 淘氣 and 土地公 reachable (✓/✗; `?` when a capped search didn't find them), lint errors/warnings, result.
-- **Below the table:** one `✗` line per failure (lint errors, a solution that doesn't reach `done`, the state cap, a cascade overflow, unsolvable, dead ends with the first one's input path, trivial, 淘氣/土地公 unreachable) and one `!` line per warning (lint warnings, par out of band).
+- **Columns:** page id, title, difficulty, par with the band check (`✓` inside the § 3.7 band, `! lo–hi` outside: a warning; `-` unsolved), states explored, solver ms, dead-end count (`?` when the search stopped early), soft traps (#183: first moves that must be undone, GDD § 3.7; `?` when incomplete), trivial (`YES` fails; `yes (ok)` with `allowTrivial`), 淘氣 and 土地公 reachable (✓/✗; `?` when a capped search didn't find them), lint errors/warnings, result.
+- **Below the table:** one `✗` line per failure (lint errors, a solution that doesn't reach `done`, the state cap, a cascade overflow, unsolvable, dead ends with the first one's input path, soft traps with the first one's move, trivial, 淘氣/土地公 unreachable) and one `!` line per warning (lint warnings, par out of band).
 - **Exit code:** 0 when every page is green and the total is under 60 s; 1 on any failure or over budget; 2 on bad arguments or a filter that matches no page. A page that exceeds its state cap **stops the run at once**, naming the page (simplify it, GDD § 3.7).
 - The logic is `src/popup/pages/report.ts` (unit-tested in `report.test.ts`; `pages.test.ts` prints the same table when a page fails); `scripts/solve-pages.ts` is the thin CLI, run with `vite-node` like `npm run sim`. Paste the table into PRs that add or change pages (§ 4).
