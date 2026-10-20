@@ -766,3 +766,22 @@ Format:
 - **QA.** `npm test` and `npm run build` pass; `npm run solve` green; `npm run visual` (only the new fixtures had no baseline); `check:ui --popup` on the new and word fixtures; `check:play`, all 23 scenarios in three chunks.
 - **Decision.** D-75. GDD § 2.2.5, § 2.4, § 3.2, § 3.6 rule 14 and § 3.7 updated; the handbook's page checks too.
 - **Follow-ups (for #114/#116/#118, noted in D-75).** A pressure plate needs its own look (a node attached to a button draws as a carriage); a light attractor would read better as a pool of light; a held item should sit in its creature's paws; a decoy draws as an ordinary bead.
+
+### 2026-10-20 · Staff engineer · #113 Album complete (multi-chapter, retake, 淘氣大王 cover) and 目錄 for all chapters
+- **Started before #110's sign-off** on the owner's instruction (keep building while the family playtest runs).
+- **Album model.** `game/album.ts` reads the album off the save as leaves: the cover (`coverLeaf`; 「淘氣大王」 from `rewardFlags`), then chapters 1–10 (`chapterLeaf`: `photo` / `open` / `locked`). `albumHome` moved there from `photo.ts`; with no photo it now opens the album's cover instead of chapter 1's empty page. `flipLeaf` turns one leaf a turn, with no wrap-around.
+- **View.**
+  - `AlbumBook` (in `Album.tsx`) is what 相簿 opens. `AlbumScreen` (in `AlbumPage.tsx`) is the frame every leaf shares: endpapers, the swipe, a fixed row of arrows and dots, and buttons mirrored in 左手模式. The swipe is `photo/swipe.ts`: one finger, `touch-action: pan-y`.
+  - `AlbumCover.tsx` draws the linen board with the latest photo in a round window, or the crowned 淘氣大王 version.
+  - A chapter the line hasn't reached is a placeholder: name, title and time, a padlocked print, 「？」 and the locked line.
+  - The album page's chapter title now wraps instead of truncating.
+- **目錄.** It already drew the eleven stations. New: the 「象山的日出」 postcard on the map's free corner past 101 once every 土地公 is found, and its panel with the 未完待續 line until #135. Nav action `bonus`.
+- **Rewards in fixtures.** GameShell takes `rewardTotal` (fixture `screen.rewardTotal`), so the 淘氣大王 cover and the postcard can be shown with today's 10-page registry. The game keeps 65.
+- **QA.**
+  - New fixtures: `album-multi`, `album-locked`, `album-cover`, `album-cover-unlocked`, `album-left-big`, `contents-all`, `contents-bonus`. Baselines added. `album-c1` changed on purpose (the arrows row), and `album-c1-retake` moved about 2 px (the title's line height).
+  - New `check:play` scenario `album-flip`, driven by a new play step `swipe`.
+  - `npm test` (2585) and `npm run build` pass. `npm run visual` passes.
+  - `check:ui --popup` passes on all fixtures, run in five chunks. `chapter-end-c1`'s known 18.7 px mid-animation capture showed once and passes alone, so it is still worth watching.
+  - `check:ui:big` passes on the album and 目錄 fixtures. `check:play` passes on all 24 scenarios, in three chunks.
+- **Decision.** D-76. GDD § 2.8 / § 2.9, bible § 7 and handbook § 5 have notes.
+- **Follow-ups for #135** (in D-76): the ending's photo as leaf 11, credits over the album photos, and the 象山 postcard opening the bonus page. Each chapter issue gets its album page for free; its treasure art replaces the foil token in `treasureArt.ts`.
