@@ -133,6 +133,22 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c3p6.prof.3': { who: 'mocha', text: '成語不是這樣用的。' },
   // § 5.2 3-6 end
   'c3p6.end.1': { who: 'nar', text: '找到了！抓周寶物——書。' },
+  // § 5.2 Ch4 「霓虹燈睡著了」 01:50 (the chapter card)
+  'c4.intro.1': { who: 'pa', text: '西門站，到了。' },
+  'c4.intro.2': { who: 'nar', text: '紅樓旁的招牌，一個一個暗了。' },
+  'c4.intro.3': { who: 'mocha', text: '連霓虹燈都想睡覺。' },
+  // § 5.3 店員小哥's chapter 4 cameo (4-4: Mocha sits on the claw machine's coin slot)
+  'c4p4.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c4p4.clerk.2': { who: 'mocha', text: '……夾娃娃機也是你們的？' },
+  'c4p4.clerk.3': { who: 'clerk', text: '我們是連鎖的。' },
+  // 4-4's running joke: the claw only ever works for 寶咖咖; and the 淘氣, the claw on Mocha
+  'c4p4.claw.1': { who: 'mocha', text: '這台機器，只夾得起寶咖咖。' },
+  'c4p4.claw.2': { who: 'mocha', text: '……' },
+  // § 5.2 4-6 走音天王: the lights come up and he sings
+  'c4p6.king.1': { who: 'npc', label: '走音天王', text: '這首歌，獻給一歲的你！' },
+  'c4p6.king.2': { who: 'mocha', text: '……耳朵。我的耳朵。' },
+  // § 5.2 4-6 end
+  'c4p6.end.1': { who: 'nar', text: '找到了！抓周寶物——麥克風。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

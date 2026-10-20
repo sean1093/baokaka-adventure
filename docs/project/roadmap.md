@@ -67,7 +67,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [115](https://github.com/sean1093/baokaka-adventure/issues/115) | Chapter 2 art: 大安森林公園 pop-up pages, parts, creatures, 土地公 (斗笠 + 掃把) and the 畫筆 photo | art, content, m2 | #114 | done (#188) |
 | [116](https://github.com/sean1093/baokaka-adventure/issues/116) | Chapter 3 pages: 「醉月湖的鵝」 台灣大學 — full specs, then data for 3-1…3-6, solver-green | content, m2 | #112, #114 | done (#189) |
 | [117](https://github.com/sean1093/baokaka-adventure/issues/117) | Chapter 3 art: 台灣大學 pop-up pages, parts, creatures, 土地公 (藍色校工帽) and the 書 photo | art, content, m2 | #116, #115 | done (#190) |
-| [118](https://github.com/sean1093/baokaka-adventure/issues/118) | Chapter 4 pages: 「霓虹燈睡著了」 西門町 — full specs, then data for 4-1…4-6, solver-green | content, m2 | #112, #116 | todo |
+| [118](https://github.com/sean1093/baokaka-adventure/issues/118) | Chapter 4 pages: 「霓虹燈睡著了」 西門町 — full specs, then data for 4-1…4-6, solver-green | content, m2 | #112, #116 | done (#191) |
 | [119](https://github.com/sean1093/baokaka-adventure/issues/119) | Chapter 4 art: 西門町 pop-up pages, parts, creatures, 土地公 (算命墨鏡) and the 麥克風 photo | art, content, m2 | #118, #117 | todo |
 | **M3 · Chapters 5–7** | | | | |
 | [120](https://github.com/sean1093/baokaka-adventure/issues/120) | M3 engine: carrier, loop with crank, counterweight lift, words 抱抱 / 飛機！ and growth 爬樓梯 (climb) | engine, art, m3 | #112, #141 | todo |

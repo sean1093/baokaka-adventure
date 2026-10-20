@@ -68,9 +68,25 @@ function bentoCart(ctx: KitCtx, w: number, linked: boolean): string {
   return wheels + cart + box + awning + (linked ? brad(ctx, w / 2, h - 10, 4.5, true) : '');
 }
 
+/**
+ * 4-4's claw (#118, a placeholder until #119): the cart's rope runs up to the gantry and the claw
+ * hangs round the deck — a foil hub over his head and three prongs curling down around him (the
+ * middle one behind), so the 'carriage' reads as the claw that carries him, not as a train car.
+ */
+function clawCart(ctx: KitCtx, w: number, linked: boolean): string {
+  const cx = w / 2;
+  const prongs = `M${f1(cx - 8)} -74q-26 22 -18 66l5 -3M${f1(cx + 8)} -74q26 22 18 66l-5 -3`;
+  return `<path d="M${f1(cx)} -272V-84" stroke="${C.printDark}" stroke-width="2"/>`
+    + `<path d="M${f1(cx)} -72V-16" stroke="${C.printDark}" stroke-width="3" stroke-linecap="round" opacity=".6"/>`
+    + `<path d="${prongs}" stroke="${C.printDark}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
+    + `<rect x="${f1(cx - 13)}" y="-88" width="26" height="16" rx="5" fill="${ref(ctx, 'foil')}" stroke="${C.printDark}" stroke-width="1.2"/>`
+    + (linked ? brad(ctx, cx, -80, 4.5, true) : '');
+}
+
 const CARRIAGES: Readonly<Record<string, CarriageArt>> = {
   'c1/train-blue': trainBlue,
   'c1/bento-cart': bentoCart,
+  'c4/claw-cart': clawCart,
 };
 
 /** The carriage drawing for a part art key (the placeholder carriage when it has none). */

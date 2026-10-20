@@ -21,6 +21,12 @@ import c3p3 from './c3/p3';
 import c3p4 from './c3/p4';
 import c3p5 from './c3/p5';
 import c3p6 from './c3/p6';
+import c4p1 from './c4/p1';
+import c4p2 from './c4/p2';
+import c4p3 from './c4/p3';
+import c4p4 from './c4/p4';
+import c4p5 from './c4/p5';
+import c4p6 from './c4/p6';
 
 /**
  * `src/popup/pages/`: the pages, as data (GDD § 2.1, § 3.4). One folder per chapter (`c0/` …
@@ -42,7 +48,8 @@ export { definePage } from '../core/define';
 
 /** The pages in play order, as authored. */
 const AUTHORED: readonly PageDef[] = [c0p1, c0p2, c0p3, c0p4, c1p1, c1p2, c1p3, c1p4, c1p5, c1p6,
-  c2p1, c2p2, c2p3, c2p4, c2p5, c2p6, c3p1, c3p2, c3p3, c3p4, c3p5, c3p6];
+  c2p1, c2p2, c2p3, c2p4, c2p5, c2p6, c3p1, c3p2, c3p3, c3p4, c3p5, c3p6,
+  c4p1, c4p2, c4p3, c4p4, c4p5, c4p6];
 
 export interface PageRegistry {
   /** Every page in play order, with the order-dependent defaults filled in. */
