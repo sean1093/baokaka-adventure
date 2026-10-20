@@ -118,6 +118,10 @@ const AT_SPREAD = (['c1p3', 'c1p4', 'c1p5'] as const).reduce((s, id) => complete
 /** …and 1-6 solved, its Frame A photo with 摩卡 kept: the chapter's treasure in the tray (#107). */
 const C1_DONE = keepPhoto(completePage(AT_SPREAD, 'c1p6', { moves: 4 }), 1, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 16, 20) });
 const ON_SPREAD: NavState = { base: { kind: 'page', id: 'c1p6', run: 0 }, layer: null };
+/** At 2-6 (#114): chapter 1 and 2-1 … 2-5 solved; then chapter 2 done, the 畫筆 photo kept. */
+const AT_SPREAD_C2 = (['c2p1', 'c2p2', 'c2p3', 'c2p4', 'c2p5'] as const).reduce((s, id) => completePage(s, id, { moves: 3 }), C1_DONE);
+const C2_DONE = keepPhoto(completePage(AT_SPREAD_C2, 'c2p6', { moves: 4 }), 2, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 16, 50) });
+const ON_SPREAD_C2: NavState = { base: { kind: 'page', id: 'c2p6', run: 0 }, layer: null };
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -180,11 +184,25 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'Chapter 1\'s end (GDD § 4.3 1-6 notes, § 5.2; #107): after the album, over the finished spread (dimmed), the end lines a tap a beat — the narration strip 「找到了！抓周寶物——雞腿。」, 阿嬤\'s 「雞腿，一世人呷好料。」, 寶咖咖\'s 「好吃！」; then 摩卡\'s 「那是阿嬤的，不能吃。」. Live, the last tap fills the 抓周 tray\'s first slot (the coin drops in, a foil ring flares).',
   },
   {
-    name: 'chapter-soon-c2',
-    page: 'c1p6',
+    name: 'spread-shell-c2',
+    page: 'c2p6',
     steps: [],
-    screen: { nav: ON_SPREAD, save: C1_DONE, soonCard: 2 },
-    note: 'The next chapter\'s card while it isn\'t built (#107, D-70): chapter 1 done, the chapter turn drops chapter 2\'s card over the book on the quilt — 第二章, 「會揮手的公園」, 00:50, 大安森林公園 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
+    screen: { nav: ON_SPREAD_C2, save: AT_SPREAD_C2 },
+    note: '2-6 in the game shell (#114): play it live — the flaps, Mocha on the parasol, 掰掰, the photo moment with the 畫筆, the album page, the chapter-end lines, the tray\'s second coin, the sticker card, chapter 3\'s card with 「未完待續」, then the 目錄 (`check:play` scenario `photo-spread-c2`).',
+  },
+  {
+    name: 'chapter-end-c2',
+    page: 'c2p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C2, save: C2_DONE, endLinesOf: 2 },
+    note: 'Chapter 2\'s end (GDD § 5.2 2-6 end; #114): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——畫筆。」 and 摩卡\'s 「他說：『我要畫摩卡。』……好吧。」 Live, the last tap fills the 抓周 tray\'s second slot.',
+  },
+  {
+    name: 'chapter-soon-c3',
+    page: 'c2p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C2, save: C2_DONE, soonCard: 3 },
+    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 3 since #114): chapter 2 done, the chapter turn drops chapter 3\'s card over the book on the quilt — 第三章, 「醉月湖的鵝」, 01:20, 公館 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
   },
   {
     name: 'album-c1-retake',
@@ -353,6 +371,111 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [{ wait: 3 }],
     note: '1-6 「台鐵便當」 as it opens (#107): the centrefold — the concourse and its exit gate on the left, the platform and the bento cart (its lid shut) on the right. Nothing shiny in sight, so Baokaka crawled to Mocha on the station clock and cuddles; the cart\'s slider under the floor.',
     expect: { mode: 'cuddling' },
+  },
+  // ——— Chapter 2 「會揮手的公園」 (#114): placeholder art until #115 ———
+  {
+    name: 'c2p1-start',
+    page: 'c2p1',
+    steps: [{ wait: 4 }],
+    note: '2-1 「信義線」 (#114): inside the 信義線 car at 大安森林公園, the doors shut; the bead at the platform\'s far end, past the gap. Baokaka crawled to the doors and reaches. Mocha on a hand strap; paw prints on the 博愛座 and on the platform bench, where a commuter sleeps beside his long umbrella.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c2p1-bridge',
+    page: 'c2p1',
+    steps: [{ wait: 'settle' }, { say: 'beep' }, { mocha: 'bench' }, { wait: 2 }],
+    note: '2-1: his 嗶！ opened the doors; Mocha squeezed out to the bench and knocked the umbrella over: it lies across the gap, a bridge, and Baokaka has crawled over it onto the platform. The 土地公 shows on the platform\'s poster now the doors are open.',
+    expect: { event: 'babyEnter' },
+  },
+  {
+    name: 'c2p2-start',
+    page: 'c2p2',
+    steps: [{ wait: 4 }],
+    note: '2-2 「露天音樂台」 (#114): the bandshell, its red curtain down (the bead is behind it, unseen). Mocha on the park lamp is the best thing on the page, so Baokaka crawled over and cuddles him; the spotlight\'s pool of light lies on the lawn, the spotlight\'s dial at the lawn\'s edge, the trap-door plate at the stage\'s front.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c2p2-clerk',
+    page: 'c2p2',
+    steps: [{ mocha: 'crate' }, { wait: 1 }],
+    show: { talk: ['c2p2.clerk.1', 'c2p2.clerk.2', 'c2p2.clerk.3'] },
+    note: '2-2: Mocha hid in the drinks stall\'s crate (C9) and the 店員小哥 cameo answers — 「叮咚～歡迎光臨！」「……又是你？」「我們是連鎖的。」 With Mocha out of sight, Baokaka turns to the spotlight\'s pool of light.',
+  },
+  {
+    name: 'c2p2-curtain',
+    page: 'c2p2',
+    steps: [{ mocha: 'crate' }, { set: 'spot', to: 'trap' }, { wait: 5 }],
+    note: '2-2: the spotlight aimed at the trap door led him onto the plate; his weight raised the curtain, the bead shone backstage and he crawled over and grabs it — 「這個！」 Light is a leash.',
+  },
+  {
+    name: 'c2p3-start',
+    page: 'c2p3',
+    steps: [{ wait: 3 }],
+    note: '2-3 「跑步的阿姨」 (#114): nothing shiny in sight, so Baokaka crawled to Mocha on the pond-side bench and cuddles; the jogger stretches on the little bridge, a dog sleeps on the path beyond it, a turtle on its rock in the pond.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c2p3-learn',
+    page: 'c2p3',
+    steps: [{ mocha: 'railing' }],
+    show: { words: { card: 'bye' } },
+    note: 'Learning 掰掰 (GDD § 5.4, #114): Mocha on the bridge\'s railing made the jogger laugh, wave 「掰掰～小寶貝！」 and jog off; Baokaka copied her. The word card 「掰掰：請讓一讓」 is taped over the dimmed page.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'c2p4-start',
+    page: 'c2p4',
+    steps: [{ wait: 6 }],
+    note: '2-4 「松鼠的樹」 (#114): the squirrel holds the bead in its paws up on the east branch; Baokaka crawled as near as he can under it and reaches. Mocha on the stump; paw prints on the trunk\'s two forks.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c2p4-herded',
+    page: 'c2p4',
+    steps: [{ mocha: 'eastFork' }, { wait: 'settle' }, { mocha: 'westFork' }, { wait: 'settle' }],
+    note: '2-4: herded — Mocha on the east fork sent the squirrel to the west branch, then on the west fork down to the low branch over the roots, right in front of Baokaka, who reaches. Now 掰掰.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c2p5-start',
+    page: 'c2p5',
+    steps: [{ wait: 3 }],
+    note: '2-5 「生態池」 (#114): the eco-pond, the great lily pad turned to the back with the egret standing on it; the bead on the far shore. Baokaka reaches from the near shore. Mocha on the pavilion rail; the stepping stone in the pond carries a paw print.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c2p5-puff',
+    page: 'c2p5',
+    steps: [{ wait: 3 }, { mocha: 'stone' }],
+    note: '2-5: the stepping stone is splashed while the egret stamps on the pad (C7): tapping it, Mocha puffs up — 「不要。」 Not every problem needs the cat.',
+    expect: { event: 'mochaPuff' },
+  },
+  {
+    name: 'c2p5-aboard',
+    page: 'c2p5',
+    steps: [{ wait: 'settle' }, { say: 'bye' }, { set: 'pads', to: 'west' }, { wait: 'settle' }],
+    note: '2-5: 掰掰 sent the egret off to the reeds and the pad was turned to the near shore: Baokaka crawled aboard and reaches for the far shore. Turn the pad east and it ferries him across.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c2p6-spread',
+    page: 'c2p6',
+    steps: [{ wait: 4 }],
+    note: '2-6 「畫畫的阿伯」 as it opens (#114): the centrefold — the painter\'s canvas on its easel by the stream on the left, the painter asleep under his parasol with the 畫筆 in his hand and a squirrel on his hat on the right. The stream stops Baokaka; he reaches. The canvas\'s three painted flaps wait to pop up.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c2p6-portrait',
+    page: 'c2p6',
+    steps: [{ wait: 4 }, { tap: 'flapC' }],
+    note: '2-6: the canvas\'s portrait corner popped up, and the 土地公 is painted into it in his 斗笠 (the page\'s secret sticker).',
+  },
+  {
+    name: 'c2p6-bridges',
+    page: 'c2p6',
+    steps: [{ tap: 'flapA' }, { tap: 'flapB' }, { tap: 'flapC' }, { wait: 5 }],
+    note: '2-6: all three canvas flaps popped up — the bridge over the stream (he crossed and reaches for the 畫筆), the branch to the parasol and the portrait corner, where the 土地公 is painted in. Three open is the 淘氣: the painting becomes Mocha\'s portrait.',
+    expect: { mode: 'reaching' },
   },
   {
     name: 'c0p2-start',

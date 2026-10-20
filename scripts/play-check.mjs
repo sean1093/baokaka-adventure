@@ -21,7 +21,8 @@
  * `stickers-c1p2` earns all three of 1-2's stickers in the game shell (#101: four rides for the 淘氣,
  * the board flipped and the 土地公 tapped, the solve, the sticker card, then 1-3);
  * `photo-spread` plays 1-6 in the shell (#103, #107: the photo moment, the album, a retake, the
- * chapter-end lines, the tray's first coin, the sticker card, chapter 2's 「未完待續」 card, the 目錄).
+ * chapter-end lines, the tray's first coin, the sticker card, chapter 2's card, into 2-1); since #114
+ * `photo-spread-c2` plays 2-6 the same way through chapter 3's 「未完待續」 card to the 目錄.
  * A `drag` through more than two points follows them in turn (1-4's turntable is turned on its rim).
  * `{ heard: [cues] }` checks the shell played those sounds (#105; the dev build lists them in
  * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
@@ -174,6 +175,78 @@ const SCENARIOS = {
     { tap: [270, 386] },
     // No line is left up under the camera (#183: one was stranded under the HUD)
     { expect: '[data-photo-moment][data-photo-mocha]', absent: '[data-subtitle], [data-narration]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+  ],
+  // Chapter 2 「會揮手的公園」 (#114). 2-1 「信義線」: 廣播姊姊's line, then 嗶！ at the doors and Mocha to the
+  // bench, where he knocks the umbrella across the gap
+  c2p1: [
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="beep"]', paused: true },
+    { settle: 1200 },
+    // The first 嗶！ on a page plays Mocha's translation: read it away (#183)
+    { readTalk: true },
+    { tap: [272, 366] },
+  ],
+  // 2-2 「露天音樂台」: Mocha into the 店員小哥's crate (the cameo), then the spotlight one step round
+  // (a tap: lawn → trap door); the plate raises the curtain
+  c2p2: [
+    { wait: 'cuddling' },
+    { tap: [186, 366] },
+    { expect: '[data-subtitle]', timeout: 6_000 },
+    { readTalk: true },
+    { tap: [176, 540] },
+  ],
+  // 2-3 「跑步的阿姨」: Mocha to the railing — the jogger waves 掰掰 and jogs off, he learns it (the beat
+  // and its card) — then 掰掰 to the dog curled round the bead
+  c2p3: [
+    { wait: 'cuddling' },
+    { tap: [206, 384] },
+    { tapEl: '[data-subtitle]' },
+    { tapEl: '[data-word-card]', paused: true },
+    { wait: 'cuddling' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="bye"]', paused: true },
+  ],
+  // 2-4 「松鼠的樹」: Mocha to the east fork, then the west fork (the squirrel is herded down), then 掰掰
+  c2p4: [
+    { wait: 'reaching' },
+    { tap: [248, 244] },
+    { settle: 1500 },
+    { tap: [162, 264] },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="bye"]', paused: true },
+  ],
+  // 2-5 「生態池」: 掰掰 to the egret on the lily pad, then turn the pad to the near shore (a quarter back
+  // round its rim), he crawls aboard, and half a turn on to the far shore (dragged round its bottom,
+  // under him, so the drag doesn't start on him)
+  c2p5: [
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="bye"]', paused: true },
+    { settle: 1200 },
+    { readTalk: true },
+    { drag: arc([206, 478], 68, -90, -180) },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { drag: arc([206, 478], 68, 140, -20, 12) },
+  ],
+  // 2-6 「畫畫的阿伯」: the canvas's bridge and branch flaps, Mocha to the parasol (the squirrel flees),
+  // 掰掰 — the painter drops the 畫筆 — the photo moment, 咔嚓, the grab
+  c2p6: [
+    { wait: 'reaching' },
+    { tap: [148, 472] },
+    { tap: [224, 290] },
+    { settle: 1200 },
+    { tap: [300, 314] },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="bye"]', paused: true },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
     { tapEl: '[data-shutter]', paused: true },
   ],
   // A tap anywhere reads the lines on (#183): 1-1's opening announcements, cleared by a tap on the
@@ -341,7 +414,34 @@ const SCENARIOS = {
     { expect: '[data-tray-fill="1"]', timeout: 3_000 },
     { heard: ['dropCoin'] },
     { expect: '[data-sticker-card]', timeout: 5_000 },
-    { expect: '[data-chapter-board="2"][data-card-soon]', timeout: 8_000 },
+    // Chapter 2 is built (#114): its card, 廣播姊姊 first, then 2-1 opens
+    { expect: '[data-chapter-board="2"]', absent: '[data-card-soon]', timeout: 8_000 },
+    { expect: '[data-card-talk] [data-card-line="pa"]', timeout: 6_000 },
+    { tapEl: '[data-card-next]' },
+  ],
+  // Chapter 2's spread (#114) in the game shell: 2-6 played up to 掰掰 with Mocha on the parasol (in
+  // the frame); 咔嚓, the album, 放進相簿, the end lines, the tray's second coin, the sticker card,
+  // chapter 3's card with 「未完待續」, the 目錄
+  'photo-spread-c2': [
+    { wait: 'reaching' },
+    { tap: [148, 472] },
+    { tap: [224, 290] },
+    { settle: 1200 },
+    { tap: [300, 314] },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="bye"]', paused: true },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+    { expect: '[data-screen="album"] [data-album-note="mocha"]', timeout: 10_000 },
+    { tapEl: '[data-button="keep"]' },
+    // Chapter 2's two end lines are one beat
+    { expect: '[data-end-layer] [data-card-line="nar"] ~ [data-card-line="mocha"]', timeout: 5_000 },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-tray-fill="2"]', timeout: 3_000 },
+    { expect: '[data-sticker-card]', timeout: 5_000 },
+    { expect: '[data-chapter-board="3"][data-card-soon]', timeout: 8_000 },
     { expect: '[data-card-talk] [data-card-line="nar"]', timeout: 6_000 },
     { tapEl: '[data-card-next]' },
   ],
@@ -373,7 +473,7 @@ const SCENARIOS = {
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
 const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
 
@@ -382,6 +482,7 @@ const SCENARIO_URLS = {
   'hints-c1p2': '#/popup?page=c1p2&speed=fast',
   'stickers-c1p2': '#/pagelab?fixture=page-hud',
   'photo-spread': '#/pagelab?fixture=spread-shell',
+  'photo-spread-c2': '#/pagelab?fixture=spread-shell-c2',
   'prologue-card': '#/',
   'album-flip': '#/pagelab?fixture=album-multi',
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',
