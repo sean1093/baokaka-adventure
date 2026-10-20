@@ -59,7 +59,7 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c1/car": {
       "file": "backdrops/c1/car",
-      "bytes": 157646,
+      "bytes": 149016,
       "chapter": 1,
       "grade": [1, 1, 1],
       "box": {
@@ -68,11 +68,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "e93e5233a95b9e88"
+      "source": "02c83d4fb2e0dc9e"
     },
     "c1/hall-night": {
       "file": "backdrops/c1/hall-night",
-      "bytes": 157646,
+      "bytes": 158834,
       "chapter": 1,
       "grade": [1, 1, 1],
       "box": {
@@ -81,11 +81,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "e93e5233a95b9e88"
+      "source": "3f0a2d8f5fb00d98"
     },
     "c1/gates": {
       "file": "backdrops/c1/gates",
-      "bytes": 157646,
+      "bytes": 104602,
       "chapter": 1,
       "grade": [1, 1, 1],
       "box": {
@@ -94,11 +94,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "e93e5233a95b9e88"
+      "source": "c3592f870da82b9e"
     },
     "c1/hall": {
       "file": "backdrops/c1/hall",
-      "bytes": 157646,
+      "bytes": 112348,
       "chapter": 1,
       "grade": [1, 1, 1],
       "box": {
@@ -107,11 +107,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "e93e5233a95b9e88"
+      "source": "0ce31fe7cc5dfe8f"
     },
     "c1/bento-shop": {
       "file": "backdrops/c1/bento-shop",
-      "bytes": 157646,
+      "bytes": 120118,
       "chapter": 1,
       "grade": [1, 1, 1],
       "box": {
@@ -120,11 +120,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "e93e5233a95b9e88"
+      "source": "dea262ae96aecddb"
     },
     "c1/bento-spread": {
       "file": "backdrops/c1/bento-spread",
-      "bytes": 157646,
+      "bytes": 120616,
       "chapter": 1,
       "grade": [1, 1, 1],
       "box": {
@@ -133,7 +133,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "e93e5233a95b9e88"
+      "source": "d948217d4c979917"
     }
   },
   "parts": {
@@ -361,6 +361,236 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "433f96f301c24ce8"
+    },
+    "c1/map": {
+      "preset": "pushable",
+      "box": {
+        "x": -16,
+        "y": -11,
+        "w": 36,
+        "h": 29
+      },
+      "states": {
+        "onPerch": {
+          "file": "parts/c1/map.onPerch",
+          "bytes": 1654
+        }
+      },
+      "source": "5aec2d33b4e1ddf9"
+    },
+    "c1/card": {
+      "preset": "pushable",
+      "box": {
+        "x": -20,
+        "y": -11,
+        "w": 48,
+        "h": 31
+      },
+      "states": {
+        "onPerch": {
+          "file": "parts/c1/card.onPerch",
+          "bytes": 1906
+        }
+      },
+      "source": "53d1cf39eda2c2f8"
+    },
+    "c1/reader": {
+      "preset": "button",
+      "box": {
+        "x": -20,
+        "y": -18,
+        "w": 44,
+        "h": 78
+      },
+      "states": {
+        "up": {
+          "file": "parts/c1/reader.up",
+          "bytes": 2530
+        },
+        "down": {
+          "file": "parts/c1/reader.down",
+          "bytes": 3108
+        }
+      },
+      "source": "3aaadbe5ecc8995f"
+    },
+    "c1/gate": {
+      "preset": "gate",
+      "box": {
+        "x": -35,
+        "y": -75,
+        "w": 79,
+        "h": 94
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c1/gate.closed",
+          "bytes": 4892
+        },
+        "open": {
+          "file": "parts/c1/gate.open",
+          "bytes": 4998
+        }
+      },
+      "source": "91a143c4d3044ef9"
+    },
+    "c1/robot": {
+      "preset": "prop",
+      "box": {
+        "x": -43,
+        "y": -45,
+        "w": 88,
+        "h": 53
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c1/robot.idle",
+          "bytes": 3328
+        },
+        "spin": {
+          "file": "parts/c1/robot.spin",
+          "bytes": 4556
+        }
+      },
+      "source": "5cd9f8a27776cbf1"
+    },
+    "c1/turntable": {
+      "preset": "wheel",
+      "box": {
+        "x": -106,
+        "y": -105,
+        "w": 212,
+        "h": 211
+      },
+      "pivot": [0, 0],
+      "states": {
+        "0": {
+          "file": "parts/c1/turntable.0",
+          "bytes": 17740
+        },
+        "1": {
+          "file": "parts/c1/turntable.1",
+          "bytes": 17740
+        },
+        "2": {
+          "file": "parts/c1/turntable.2",
+          "bytes": 17992
+        },
+        "3": {
+          "file": "parts/c1/turntable.3",
+          "bytes": 17740
+        }
+      },
+      "lifted": {
+        "0": {
+          "file": "parts/c1/turntable.0.lifted",
+          "bytes": 22744
+        },
+        "1": {
+          "file": "parts/c1/turntable.1.lifted",
+          "bytes": 22744
+        },
+        "2": {
+          "file": "parts/c1/turntable.2.lifted",
+          "bytes": 22990
+        },
+        "3": {
+          "file": "parts/c1/turntable.3.lifted",
+          "bytes": 22744
+        }
+      },
+      "source": "e1bd21ffa39f3520"
+    },
+    "c1/elevator": {
+      "preset": "lift",
+      "box": {
+        "x": -38,
+        "y": -101,
+        "w": 83,
+        "h": 129
+      },
+      "states": {
+        "B1": {
+          "file": "parts/c1/elevator.B1",
+          "bytes": 2202
+        },
+        "1F": {
+          "file": "parts/c1/elevator.1F",
+          "bytes": 2202
+        }
+      },
+      "source": "7cc0cf369922d224"
+    },
+    "c1/elevator-panel": {
+      "preset": "button",
+      "box": {
+        "x": -12,
+        "y": -2,
+        "w": 29,
+        "h": 52
+      },
+      "states": {
+        "up": {
+          "file": "parts/c1/elevator-panel.up",
+          "bytes": 1284
+        },
+        "down": {
+          "file": "parts/c1/elevator-panel.down",
+          "bytes": 1374
+        }
+      },
+      "source": "33bb2f31c786b98b"
+    },
+    "c1/counter-bell": {
+      "preset": "button",
+      "box": {
+        "x": -23,
+        "y": -8,
+        "w": 46,
+        "h": 30
+      },
+      "states": {
+        "up": {
+          "file": "parts/c1/counter-bell.up",
+          "bytes": 1426
+        },
+        "down": {
+          "file": "parts/c1/counter-bell.down",
+          "bytes": 1716
+        }
+      },
+      "source": "6abd3e9278f01fd6"
+    },
+    "c1/bento-lid": {
+      "preset": "flap",
+      "box": {
+        "x": -14,
+        "y": -8,
+        "w": 78,
+        "h": 70
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c1/bento-lid.closed",
+          "bytes": 3570
+        },
+        "open": {
+          "file": "parts/c1/bento-lid.open",
+          "bytes": 2790
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c1/bento-lid.closed.lifted",
+          "bytes": 4332
+        },
+        "open": {
+          "file": "parts/c1/bento-lid.open.lifted",
+          "bytes": 3442
+        }
+      },
+      "source": "204d08f4726bed12"
     }
   },
   "cutouts": {},

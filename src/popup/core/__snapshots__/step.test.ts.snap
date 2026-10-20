@@ -16,18 +16,18 @@ exports[`determinism: event-log snapshots of three scripted scenarios > c0p4 cry
 
 exports[`determinism: event-log snapshots of three scripted scenarios > c1p2 ride and solve 1`] = `
 [
-  "0 {"t":"set","part":"train","to":"half"} → {"type":"partEnter","id":"train","state":"half","at":[131,618]} {"type":"bark","id":"bead","bark":"want"} {"type":"babyEnter","id":"L2"}",
+  "0 {"t":"set","part":"train","to":"half"} → {"type":"partEnter","id":"train","state":"half","at":[117,618]} {"type":"bark","id":"bead","bark":"want"} {"type":"babyEnter","id":"L2"}",
   "1 {"t":"none"} → {"type":"babyEnter","id":"L3"}",
   "2 {"t":"none"} → {"type":"babyEnter","id":"T1"}",
   "3 {"t":"none"} → {"type":"babyEnter","id":"T2"}",
   "4 {"t":"none"} → {"type":"bark","id":"bead","bark":"wantWant"}",
   "5 {"t":"none"} → ",
-  "6 {"t":"set","part":"train","to":"out"} → {"type":"partEnter","id":"train","state":"out","at":[131,618]} {"type":"ride","id":"train"}",
-  "7 {"t":"set","part":"train","to":"half"} → {"type":"partEnter","id":"train","state":"half","at":[131,618]} {"type":"ride","id":"train"}",
-  "8 {"t":"set","part":"train","to":"out"} → {"type":"partEnter","id":"train","state":"out","at":[131,618]} {"type":"bark","id":"bead","bark":"wantWant"} {"type":"ride","id":"train"}",
-  "9 {"t":"set","part":"train","to":"half"} → {"type":"partEnter","id":"train","state":"half","at":[131,618]} {"type":"ride","id":"train"}",
+  "6 {"t":"set","part":"train","to":"out"} → {"type":"partEnter","id":"train","state":"out","at":[117,618]} {"type":"ride","id":"train"}",
+  "7 {"t":"set","part":"train","to":"half"} → {"type":"partEnter","id":"train","state":"half","at":[117,618]} {"type":"ride","id":"train"}",
+  "8 {"t":"set","part":"train","to":"out"} → {"type":"partEnter","id":"train","state":"out","at":[117,618]} {"type":"bark","id":"bead","bark":"wantWant"} {"type":"ride","id":"train"}",
+  "9 {"t":"set","part":"train","to":"half"} → {"type":"partEnter","id":"train","state":"half","at":[117,618]} {"type":"ride","id":"train"}",
   "10 {"t":"mocha","perch":"pillar"} → {"type":"catLeave","id":"bench"} {"type":"catArrive","id":"pillar"}",
-  "11 {"t":"set","part":"train","to":"full"} → {"type":"partEnter","id":"train","state":"full","at":[131,618]} {"type":"babyEnter","id":"R1"}",
+  "11 {"t":"set","part":"train","to":"full"} → {"type":"partEnter","id":"train","state":"full","at":[117,618]} {"type":"babyEnter","id":"R1"}",
   "12 {"t":"none"} → {"type":"babyEnter","id":"R2"} {"type":"grab","id":"bead"}",
 ]
 `;

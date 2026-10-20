@@ -256,7 +256,7 @@ describe('hint geometry', () => {
 
   test('a part that carries nodes gets the dotted thread to its rider', () => {
     const s = initialState(c1p2);
-    expect(linkThread(c1p2, s, target(c1p2, s, 'train'))).toEqual([[131, 618], [60, 430]]);
+    expect(linkThread(c1p2, s, target(c1p2, s, 'train'))).toEqual([[117, 618], [60, 430]]);
     expect(linkThread(c1p2, s, target(c1p2, s, 'board'))).toBeNull();
   });
 });

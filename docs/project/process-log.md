@@ -668,3 +668,30 @@ Format:
 - **QA.** `npm test` (new: `dress.test.ts`, source lints in `env.test.ts`, the creature registry), `npm run build`, visual baselines updated (prologue fixtures, plus 1-1, 1-2, 1-6 for the backpacker, pigeon, train, cart, cap and suitcase), `check:ui`. Payload (page art of 350 KB): c0p1 163, c0p2 194, c0p3 153, c0p4 216.
 - **Next (PR B):** chapter 1's backdrops (`c1/car`, `c1/hall-night`, `c1/gates`, `c1/hall`, `c1/bento-shop`, `c1/bento-spread`), its parts, its dress entries, the cover polish.
 
+### 2026-10-20 · Staff engineer · #108 Slice art, part 2: 台北車站 (PR B) and a deploy fix (#178)
+- **Deploy fix first (#178).** #177's merge failed CI: the suitcase card gained a wrapping group after the 1-2 layer-count snapshot was taken. #178 refreshed the snapshot (21 → 22 static foreground elements). Lesson: run the whole suite after the last visual tweak, right before committing.
+- **Backdrops (`env/art/c1.ts`):**
+  - 1-1 `c1/car`: the 板南線 car in cut-away. The ceiling strips, the route map lit at 台北車站, the strap rail with the two perch straps, and the 「請讓座」 poster whose picture is the 土地公. Windows show the night city with a tiny 101. There is a blue bench and a teal 博愛座 with the rack over it, and the track under the car.
+  - 1-2 `c1/hall-night`: proof A's station, hand-drawn. Its windows are dimmed, the moon is small and veiled, and the checker is about 15 % calmer.
+  - 1-3 `c1/gates`: a coffered concourse with hanging signs. The 詢問處 booth frames the capped 土地公. There is a 服務台 counter, a ticket machine, a station map and terrazzo underfoot.
+  - 1-4 `c1/hall`: moonlight through the skylight's lattice, the big departure board, the hall clock, the 北 lightbox and the checker.
+  - 1-5 `c1/bento-shop`: a cross-section. 1F is the shop: noren, a menu board with the 土地公, the 店員小哥 behind the counter, steaming rice. It sits beside the corridor. The slab is cut, the shaft has its cables, and B1 has its tiles, its rice rack, floor arrows and 便當 crates.
+  - 1-6 `c1/bento-spread`: the concourse with its hanging clock and 出口 sign on the left; the platform canopy, the 台鐵 train (the 土地公's window) and a 便當 lantern on the right.
+- **Parts:**
+  - the map, the card, the reader and the gate (shared by 1-3, 1-4 and 1-6);
+  - the robot (happy when spinning);
+  - **the turntable**: a checker disk with the aisle runner and travellers printed on it, inside a marigold knurled rim. The 土地公 is printed upside down in state 2, so he reads upright once the disk is turned. Before this he was hidden under the disk;
+  - the elevator car, its panel, the 叮咚 bell and the bento lid (a baked flap).
+- **Dress:** car body ledges and owned straps and rack on 1-1; granite walkways; the shop floor's cut slab on 1-5; 1-6 split from granite to brick at the spine; owned posts for the counter, the ticket machine, the robot lid, the clock, the lightbox and the B1 rack.
+- **Notes from the issue thread:**
+  - **The train's hit area on 1-2** now starts at the tab card's left end: x 28, w 178. The engine fixture and GDD § 3.4 are updated, along with the hint-thread test and the step snapshot's event origins.
+  - **The 土地公 wears the 站務帽** on every chapter 1 page (1-1 and 1-5 had none).
+  - The squint test darkened the station's sandstone and terrazzo toward night.
+  - `check:ui` caught two runs whose glyphs overhang their card onto the now-lighter page art: the speaker tab's name (「背包客」 on 1-1) and a bark (「好吃！」). The tab name now has a halo in the tab's ink, and bark text has one in the card's warm white (paint-order stroke), so both read at ≥ 7:1 over any art.
+- **QA.** `npm test` and `npm run build` pass. The solver passes all 10 pages. Visual baselines are updated; `check:ui` and `check:play` pass. The squint and grey sheet is `docs/screenshots/108/squint-grey-c1.png`.
+- **Payload** (page art, KB of 350): c1p1 148, c1p2 174, c1p3 100, c1p4 269 (the turntable's four 180-unit states), c1p5 107, c1p6 120.
+- **Cover.** The book on 阿嬤's low table (#97) already matches the bible; it is unchanged here.
+- **Follow-ups.**
+  - #110 playtest: whether 1-4's printed travellers read as a turnable floor without the hint ladder.
+  - Whether the 1-1 backpacker's paper style sits well beside the anime standees, or whether he wants a v2 frame.
+

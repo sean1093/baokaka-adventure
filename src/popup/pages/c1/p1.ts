@@ -56,7 +56,7 @@ export default definePage({
       when: { all: [{ part: 'sway', in: ['left', 'right'] }, { any: [{ mochaAt: 'strap1' }, { mochaAt: 'strap2' }] }] },
     },
   },
-  tudigong: { x: 196, y: 136, hat: '' },   // the 「請讓座」 poster character in the car's advertising frame; always visible
+  tudigong: { x: 196, y: 136, hat: '站務帽' },   // the 「請讓座」 poster character in the car's advertising frame; always visible
   solution: [{ mocha: 'rack' }, { wait: 'goal' }],
   lines: {
     // 廣播姊姊's ride announcements open the car (GDD § 4.3 notes, § 5.3); the card already said 「下一站，台北車站」

@@ -2,7 +2,7 @@ import { POPUP as C, POPUP_HOME as H, POPUP_STAGE as S, mixHex } from '../../../
 import { depth, f1, pageBlock, pinholes, ref, skyline, softEllipse, type KitCtx } from '../../art';
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorWiden } from '../../view/geometry';
 import type { BackdropDraw, PartSource } from '../sources';
-import { bookCues, bunting, calmMoon, floorPage, homeDefs, homeFloor, lin, paperFibres, shushuPeek, sleepingCat, standingPage, wainscot, wallpaper } from './common';
+import { bakedFlap, bookCues, bunting, calmMoon, flapSize, floorPage, homeDefs, homeFloor, kraftBack, lin, paperFibres, shushuPeek, sleepingCat, standingPage, wainscot, wallpaper } from './common';
 
 /**
  * 序章 home (#108; bible § 6 row 序): the prologue's four pages at 00:00, the night before the 度晬.
@@ -410,39 +410,6 @@ export const C0_BACKDROPS: Readonly<Record<string, BackdropDraw>> = {
 
 
 // ——— Parts (#108): one drawing per state, in the part's local space ———
-
-/** The flap preset's card size for a hit area (FlapView: the hit less 22, at least 40 × 32). */
-const flapSize = (hw: number, hh: number) => ({ w: Math.max(40, hw - 22), h: Math.max(32, hh - 22) });
-/** The flap's marigold dog-ear corner (FlapView and the kit's `flap`: 22 units). */
-const EAR = 22;
-
-/**
- * A baked flap (#96, FlapView): its face for `closed` (`face`, clipped to the card with its cut
- * corner) and its back for `open` (`back`), each with the marigold dog-ear at the bottom-right — the
- * grip, the one marigold the part wears (the 翻 seal and the curl cue stay live). Local space: the
- * card's top-left at the origin, the hinge along y 0.
- */
-function bakedFlap(w: number, h: number, face: (ctx: KitCtx) => string, back: (ctx: KitCtx) => string): PartSource {
-  const card = `M0 0H${w}V${h - EAR}L${w - EAR} ${h}H0Z`;
-  const ear = `M${w} ${h - EAR}L${w - EAR} ${h}L${f1(w - EAR * 0.35)} ${f1(h + EAR * 0.42)}Z`;
-  return {
-    preset: 'flap',
-    states: ['closed', 'open'],
-    hinge: 0,
-    box: { x: -4, y: -4, w: w + 12, h: h + 16 },
-    draw(ctx, state) {
-      const clip = ctx.id(`flapClip${state}`);
-      const body = state === 'open' ? back(ctx) : face(ctx);
-      return `<clipPath id="${clip}"><path d="${card}"/></clipPath>`
-        + depth(ctx, 3, `<g clip-path="url(#${clip})">${body}</g><path d="M2 1.2H${w - 2}" stroke="${C.cutRim}" stroke-width="1" opacity=".45"/>`, `<path d="${card}"/>`)
-        + depth(ctx, 4, `<path data-grip="ear" d="${ear}" fill="${ref(ctx, 'tabG')}"/><path d="M${w - EAR} ${h}L${f1(w - EAR * 0.35)} ${f1(h + EAR * 0.42)}" stroke="${C.marigoldEdge}" stroke-width="1" opacity=".6"/>`, `<path d="${ear}"/>`);
-    },
-  };
-}
-
-/** A kraft flap back (bible § 3.1: the back sides of flaps are kraft) with its fibres. */
-const kraftBack = (w: number, h: number, seed: number) => (ctx: KitCtx): string =>
-  `<rect width="${w}" height="${h}" fill="${ref(ctx, 'kraft')}"/>` + paperFibres(0, 0, w, h, Math.round((w * h) / 120), C.kraftFiber, seed, 0.35);
 
 /**
  * 0-1's crib mobile (a `prop`, tap to spin; the 淘氣): felt pieces — a moon, a star, a cloud and a

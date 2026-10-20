@@ -43,7 +43,13 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c0/zhuazhou-corner': { ledge: 'playmat', ownPosts: ['sofaArm', 'table', 'shelf'], foreground: null },
   'c0/home-window': { ledge: 'playmat', ledgeSplit: { x: 292, style: 'balcony' }, ownPosts: ['sill', 'rod', 'trainRoof'], foreground: null },
   // 台北車站
+  'c1/car': { ledge: 'carBody', ownPosts: ['strap1', 'strap2', 'rack'], foreground: null },
   'c1/hall-night': { ledge: 'brick', foreground: 'luggage' },
+  'c1/gates': { ledge: 'granite', ownPosts: ['counter', 'ticketMachine', 'robotLid'], foreground: null },
+  'c1/hall': { ledge: 'granite', ownPosts: ['clock', 'lightbox'], foreground: 'luggage' },
+  'c1/bento-shop': { ledge: [{ below: 360, style: 'shopFloor' }, { below: 999, style: 'granite' }], ownPosts: ['counter', 'b1Shelf'], foreground: null },
+  // The concourse's granite on the left page, the platform's brick on the right
+  'c1/bento-spread': { ledge: 'granite', ledgeSplit: { x: 195, style: 'brick' }, ownPosts: ['clock'], foreground: null },
 };
 
 const NONE: StageDress = {};

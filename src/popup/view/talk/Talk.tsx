@@ -175,6 +175,10 @@ export function BarkBubble({ placed, offset, k, reduced }: { placed: PlacedBark;
           fontWeight={900}
           fontSize={r2(f)}
           fill={baby ? C.sealInk : C.ink}
+          stroke={C.standeeCard}
+          strokeWidth={r2(3 * k)}
+          paintOrder="stroke"
+          strokeLinejoin="round"
         >
           {bark.text}
         </text>
@@ -289,7 +293,8 @@ function SubtitleArt({ sub, f, k }: { sub: PlacedSub; f: number; k: number }) {
     <>
       <ArtG html={art} />
       {label !== null && (
-        <text x={r2(card.x + 10 + 12 * k)} y={r2(box.y + (LABEL_H * k) / 2 + f * 0.36)} fontFamily={SERIF} fontWeight={900} fontSize={r2(f)} fill={C.sealGlyph}>
+        // A halo in the tab's own ink keeps the name ≥ 7:1 wherever its glyphs overhang the tab (#108: lighter page art)
+        <text x={r2(card.x + 10 + 12 * k)} y={r2(box.y + (LABEL_H * k) / 2 + f * 0.36)} fontFamily={SERIF} fontWeight={900} fontSize={r2(f)} fill={C.sealGlyph} stroke={SPEAKER_INK[sub.line.who]} strokeWidth={r2(3 * k)} paintOrder="stroke" strokeLinejoin="round">
           {label}
         </text>
       )}

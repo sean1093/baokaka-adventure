@@ -862,3 +862,5 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - A backdrop that draws a perch's furniture must list it in `ownPosts`; `dress.test.ts` checks every owned post names a real perch on a page using that backdrop.
 - Chapter 1's dress entries land with chapter 1's backdrops (the second #108 PR), so no page loses its furniture before its art exists.
 - The carriage and creature art count toward the animated-node budget (150): 1-6 sits at the limit, so new moving art there must stay lean.
+- **Chapter 1 (PR B).** The six station backdrops and eleven parts follow the same rules. The turntable is a baked **wheel**: its knurled rim is the marigold grip (`data-grip="rim"`, linted like a flap's ear), and its seal and turn cue stay live. Each state's bitmap is drawn unturned, because the view rotates it. The 土地公 is printed into state 2 upside down, since a live 土地公 at a node on the disk would sit under it. The 1-2 train's `hit` now starts at its card's left end (x 28; the engine fixture and GDD § 3.4 follow), and chapter 1's pages all give him the 站務帽.
+
