@@ -251,8 +251,9 @@ export function Contents({ save, registry: reg, chapter, locked, bonus = false, 
                 <span className="whitespace-nowrap rounded-[4px] px-[3px] text-[20px] font-black leading-[24px]" style={{ color: C.ink, backgroundColor: withAlpha(C.page, 0.88) }}>
                   {c.station}
                 </span>
+                {/* An opaque chip: seal ink on the page is 7.5:1; through an 88 % chip the map dropped it to 6.9:1 */}
                 {open && (
-                  <span className="rounded-[4px] px-[3px] font-num text-[20px] font-semibold leading-[22px]" style={{ color: C.sealInk, backgroundColor: withAlpha(C.page, 0.88) }}>
+                  <span className="rounded-[4px] px-[3px] font-num text-[20px] font-semibold leading-[22px]" style={{ color: C.sealInk, backgroundColor: C.page }}>
                     {collected(save, ch)}/{stickersIn(ch)}
                   </span>
                 )}
