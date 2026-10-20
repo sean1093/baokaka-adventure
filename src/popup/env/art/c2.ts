@@ -4,7 +4,7 @@ import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorWiden } from '../../view/geometry'
 import type { BackdropDraw, CutoutSource, PartSource } from '../sources';
 import { vFold } from '../../view/art/placeholders';
 import { clerk } from './c1';
-import { FLOOR_RECT, bookCues, calmMoon, flapSize, floorPage, kraftBack, lin, paperFibres, rad, shushuPeek, standingPage } from './common';
+import { FLOOR_RECT, bookCues, calmMoon, floorPage, lin, paperFibres, popFlap, rad, shushuPeek, standingPage } from './common';
 
 /**
  * Chapter 2 (大安森林公園, 00:50) environment art, drawn in the kit's paper language and baked by
@@ -837,40 +837,46 @@ const lilyPad: PartSource = {
 };
 
 /**
- * 2-1's car doors (a `gate`: 嗶！ opens them, and they stay open). Two steel leaves with tall windows
- * and the line's red band, meeting on a rubber seal under the door lamp, lit red while they are
+ * A 月亮線 car's doors (a `gate`: 嗶！ opens them, and they stay open; 2-1's, and 3-1's on the
+ * 松山新店線's green band, #117). Two steel leaves with tall windows
+ * and the line's band, meeting on a rubber seal under the door lamp, lit red while they are
  * shut (「車門即將關閉。」); open, the leaves are slid into their pockets (only their edges show) and
  * the platform's light spills onto the threshold. Local origin at the hit centre (160, 430); the
  * doorway's floor at local y 40, the lintel at −226.
  */
-const doors: PartSource = {
-  preset: 'gate',
-  states: ['closed', 'open'],
-  box: { x: -38, y: -240, w: 76, h: 292 },
-  draw(ctx, state) {
-    const open = state === 'open';
-    const top = -222;
-    const foot = 40;
-    const leaf = (x0: number, w: number, glass: number) => `<rect x="${x0}" y="${top}" width="${w}" height="${foot - top}" fill="${T.steel}"/>`
-      + `<rect x="${x0 + glass}" y="${top + 34}" width="${w - 10}" height="96" rx="5" fill="${mixHex(P.stationTile, T.navy, 0.35)}"/>`
-      + `<path d="M${x0 + glass} ${top + 90}L${x0 + glass + 12} ${top + 34}h6L${x0 + glass} ${top + 110}Z" fill="${C.cutRim}" opacity=".18"/>`
-      // The line's red band, level with the car wall's (y 236)
-      + `<rect x="${x0}" y="-194" width="${w}" height="10" fill="${P.xinyi}"/><rect x="${x0}" y="-183" width="${w}" height="2" fill="${P.xinyiDeep}"/>`
-      + `<path d="M${x0 + 3} ${top + 1}h${w - 6}" stroke="${C.cutRim}" stroke-width="1" opacity=".5"/>`;
-    const lamp = open
-      ? `<rect x="-8" y="-236" width="16" height="7" rx="3" fill="${C.printDark}"/><rect x="-5" y="-234.5" width="10" height="4" rx="2" fill="${T.steelDeep}"/>`
-      : softEllipse(ctx, 0, -232, 12, 8, 'lamp', 0.3) + `<rect x="-8" y="-236" width="16" height="7" rx="3" fill="${C.printDark}"/><rect x="-5" y="-234.5" width="10" height="4" rx="2" fill="${T.lampStop}"/>`;
-    const threshold = `<rect x="-30" y="${foot - 2}" width="60" height="5" fill="${T.steelDeep}"/><path d="M-28 ${foot - 1}h56" stroke="${C.cutRim}" stroke-width=".8" opacity=".5"/>`;
-    if (open) {
-      return softEllipse(ctx, 0, foot - 4, 30, 8, 'lamp', 0.3)
-        + depth(ctx, 3, `<rect x="-30" y="${top}" width="5" height="${foot - top}" fill="${T.steel}"/><rect x="25" y="${top}" width="5" height="${foot - top}" fill="${T.steel}"/>`
-          + `<path d="M-25 ${top}V${foot}M25 ${top}V${foot}" stroke="${C.printDark}" stroke-width="1.4"/>` + threshold, `<rect x="-30" y="${top}" width="60" height="${foot - top + 3}"/>`)
-        + lamp;
-    }
-    return depth(ctx, 3, leaf(-30, 30, 5) + leaf(0, 30, 5) + `<path d="M0 ${top}V${foot}" stroke="${C.printDark}" stroke-width="2.4"/><path d="M-1.6 ${top}V${foot}" stroke="${T.steelDeep}" stroke-width="1"/>` + threshold,
-      `<rect x="-30" y="${top}" width="60" height="${foot - top + 3}"/>`) + lamp;
-  },
-};
+export function carDoors(band: string, bandDeep: string): PartSource {
+  return {
+    preset: 'gate',
+    states: ['closed', 'open'],
+    box: { x: -38, y: -240, w: 76, h: 292 },
+    draw(ctx, state) {
+      const open = state === 'open';
+      const top = -222;
+      const foot = 40;
+      const leaf = (x0: number, w: number, glass: number) => `<rect x="${x0}" y="${top}" width="${w}" height="${foot - top}" fill="${T.steel}"/>`
+        + `<rect x="${x0 + glass}" y="${top + 34}" width="${w - 10}" height="96" rx="5" fill="${mixHex(P.stationTile, T.navy, 0.35)}"/>`
+        + `<path d="M${x0 + glass} ${top + 90}L${x0 + glass + 12} ${top + 34}h6L${x0 + glass} ${top + 110}Z" fill="${C.cutRim}" opacity=".18"/>`
+        // The line's band, level with the car wall's (y 236)
+        + `<rect x="${x0}" y="-194" width="${w}" height="10" fill="${band}"/><rect x="${x0}" y="-183" width="${w}" height="2" fill="${bandDeep}"/>`
+        + `<path d="M${x0 + 3} ${top + 1}h${w - 6}" stroke="${C.cutRim}" stroke-width="1" opacity=".5"/>`;
+      const lamp = open
+        ? `<rect x="-8" y="-236" width="16" height="7" rx="3" fill="${C.printDark}"/><rect x="-5" y="-234.5" width="10" height="4" rx="2" fill="${T.steelDeep}"/>`
+        : softEllipse(ctx, 0, -232, 12, 8, 'lamp', 0.3) + `<rect x="-8" y="-236" width="16" height="7" rx="3" fill="${C.printDark}"/><rect x="-5" y="-234.5" width="10" height="4" rx="2" fill="${T.lampStop}"/>`;
+      const threshold = `<rect x="-30" y="${foot - 2}" width="60" height="5" fill="${T.steelDeep}"/><path d="M-28 ${foot - 1}h56" stroke="${C.cutRim}" stroke-width=".8" opacity=".5"/>`;
+      if (open) {
+        return softEllipse(ctx, 0, foot - 4, 30, 8, 'lamp', 0.3)
+          + depth(ctx, 3, `<rect x="-30" y="${top}" width="5" height="${foot - top}" fill="${T.steel}"/><rect x="25" y="${top}" width="5" height="${foot - top}" fill="${T.steel}"/>`
+            + `<path d="M-25 ${top}V${foot}M25 ${top}V${foot}" stroke="${C.printDark}" stroke-width="1.4"/>` + threshold, `<rect x="-30" y="${top}" width="60" height="${foot - top + 3}"/>`)
+          + lamp;
+      }
+      return depth(ctx, 3, leaf(-30, 30, 5) + leaf(0, 30, 5) + `<path d="M0 ${top}V${foot}" stroke="${C.printDark}" stroke-width="2.4"/><path d="M-1.6 ${top}V${foot}" stroke="${T.steelDeep}" stroke-width="1"/>` + threshold,
+        `<rect x="-30" y="${top}" width="60" height="${foot - top + 3}"/>`) + lamp;
+    },
+  };
+}
+
+/** 2-1's doors, on the 信義線's red band. */
+const doors = carDoors(P.xinyi, P.xinyiDeep);
 
 /**
  * Where 2-2's spotlight aims in each state, as a bearing (degrees clockwise from up) from its pivot
@@ -908,50 +914,6 @@ const spotlight: PartSource = {
 };
 
 // ——— 2-6's painted flaps: a pop-up inside the pop-up ———
-
-/** The fold of an open flap (`FlapView`: closed 1, open −0.35 about the hinge). */
-const OPEN_FOLD = -0.35;
-/** The flap's marigold dog-ear corner (`FlapView`: 22 units). */
-const EAR = 22;
-
-/**
- * A painted flap on 2-6 (a `flap`, 翻): closed, a patch of the painter's canvas with what he painted
- * on it (`face`), taped down, its marigold dog-ear the grip; open, the card folds up over its hinge
- * (its kraft back shows) and the painted thing **pops up as real paper** (`pop`, drawn in page units).
- * The view draws the open state folded (`scaleY −0.35` about the hinge), so the pop-up is drawn
- * through the inverse of that fold: it stands where `pop` puts it, and grows out of the hinge line as
- * the flap lifts. `origin` is the card's top-left on the page (the hit's corner + 4).
- */
-function popFlap(hit: readonly [number, number, number, number], face: (w: number, h: number) => string, pop: (ctx: KitCtx) => string, popBox: { x: number; y: number; w: number; h: number }): PartSource {
-  const [hx, hy, hw, hh] = hit;
-  const { w, h } = flapSize(hw, hh);
-  const [ox, oy] = [hx + 4, hy + 4];
-  const card = `M0 0H${w}V${h - EAR}L${w - EAR} ${h}H0Z`;
-  const ear = `M${w} ${h - EAR}L${w - EAR} ${h}L${f1(w - EAR * 0.35)} ${f1(h + EAR * 0.42)}Z`;
-  // The page-unit box of the pop-up, in the flap's local space (through the inverse fold)
-  const ly = (y: number) => (y - oy) / OPEN_FOLD;
-  const yA = ly(popBox.y), yB = ly(popBox.y + popBox.h);
-  const top = Math.min(-4, yA, yB), bottom = Math.max(h + 16, yA, yB);
-  const left = Math.min(-4, popBox.x - ox), right = Math.max(w + 12, popBox.x + popBox.w - ox);
-  return {
-    preset: 'flap',
-    states: ['closed', 'open'],
-    hinge: 0,
-    box: { x: f1(left), y: f1(top), w: f1(right - left), h: f1(bottom - top) },
-    draw(ctx, state) {
-      const clip = ctx.id(`popClip${state}`);
-      const open = state === 'open';
-      const body = open ? kraftBack(w, h, Math.round(hx + hy))(ctx) : face(w, h);
-      const cardArt = `<clipPath id="${clip}"><path d="${card}"/></clipPath>`
-        + depth(ctx, 3, `<g clip-path="url(#${clip})">${body}</g><path d="M2 1.2H${w - 2}" stroke="${C.cutRim}" stroke-width="1" opacity=".45"/>`, `<path d="${card}"/>`)
-        + depth(ctx, 4, `<path data-grip="ear" d="${ear}" fill="${ref(ctx, 'tabG')}"/><path d="M${w - EAR} ${h}L${f1(w - EAR * 0.35)} ${f1(h + EAR * 0.42)}" stroke="${C.marigoldEdge}" stroke-width="1" opacity=".6"/>`, `<path d="${ear}"/>`);
-      if (!open) return cardArt;
-      // Page units → the flap's local space: x − ox, (y − oy) / −0.35
-      const k = (n: number) => Math.round(n * 10000) / 10000;
-      return `<g transform="matrix(1 0 0 ${k(1 / OPEN_FOLD)} ${-ox} ${k(oy / -OPEN_FOLD)})">${pop(ctx)}</g>` + cardArt;
-    },
-  };
-}
 
 /** A patch of the painter's canvas: primed cream, a gouache wash, a strip of washi tape on its top edge. */
 function canvasPatch(w: number, h: number, wash: string, paint: string): string {

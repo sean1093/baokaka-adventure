@@ -1,7 +1,8 @@
 import { PRESET_ART, PRESET_DEFS, kitDefs, type KitCtx, type PartArtOptions, type PartPreset, type PresetArt } from '../../art';
 import type { PageDef } from '../../core/types';
 import { backdropImage, cutoutImage, partImage, type EnvImage, type PartImage } from '../../env/loader';
-import { adPoster, backpacker, origamiPigeon } from './creatures';
+import { campusPoster, goose, magpie } from './campus';
+import { backpacker, origamiPigeon } from './creatures';
 import { commuter, egret, jogger, painter, shiba, squirrel, sweeper, turtle } from './park';
 import { origamiBird, placeholderBackdrop } from './placeholders';
 
@@ -41,8 +42,10 @@ const CREATURES: Readonly<Record<string, CreatureArt>> = {
   'c2/turtle': turtle,
   'c2/squirrel': squirrel,
   'c2/egret': egret,
-  // 台灣大學 (#116 placeholder until #117): 3-1's ad poster (a bird would mislead)
-  'c3/poster': adPoster,
+  // 台灣大學 (#117, `campus.ts`): the ad poster's student, the goose of 醉月湖, 藍教授
+  'c3/poster': campusPoster,
+  'c3/goose': goose,
+  'c3/magpie': magpie,
 };
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';

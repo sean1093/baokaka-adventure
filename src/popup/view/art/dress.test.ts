@@ -58,7 +58,7 @@ describe('stage dress', () => {
     expect(split).toContain(styledLedge(ctx, run, 'balcony', 'room'));
     expect(draw('c0p1')).toContain('data-foreground="blocks"');
     expect(draw('c0p3')).not.toContain('data-foreground');
-    for (const card of ['plant', 'blocks', 'luggage', 'shrub'] as const) expect(foregroundCard(ctx, card)).not.toMatch(/\bfilter=/);
+    for (const card of ['plant', 'blocks', 'luggage', 'shrub', 'azalea'] as const) expect(foregroundCard(ctx, card)).not.toMatch(/\bfilter=/);
   });
 
   test('chapter 2 (#115): a run wholly past the split takes the split\'s material; the park\'s paths, bridge, boardwalk and stage', () => {
@@ -83,5 +83,26 @@ describe('stage dress', () => {
     expect(draw('c0p1')).toMatch(/data-crossing="[^"]+"><g data-anim/);
     for (const id of ['c2p2', 'c2p3', 'c2p4', 'c2p5', 'c2p6']) expect(draw(id), id).toContain(`data-fireflies="${dressOf(page(id)).fireflies}"`);
     expect(draw('c2p1')).not.toContain('data-fireflies');
+  });
+
+  test('chapter 3 (#117): the campus\'s materials — car, walks, promenade and nest, gallery and floor, desk, book and stack', () => {
+    const ctx = kitCtx('t');
+    const c3p1 = page('c3p1');
+    const [run] = stageOf(c3p1).runs;
+    expect(ledgeStyleOf(c3p1, 470)).toBe('carBodySongshan');
+    expect(dressOf(c3p1).ledgeSplit).toEqual({ x: 284, style: 'granite' });
+    expect(dressedLedge(ctx, run, () => 'carBodySongshan', 'city', dressOf(c3p1).ledgeSplit)).toContain('clip-path');
+    expect(ledgeStyleOf(page('c3p2'), 484)).toBe('campusPath');
+    expect(ledgeStyleOf(page('c3p3'), 462)).toBe('lakeside');
+    expect(ledgeStyleOf(page('c3p5'), 300)).toBe('gallery');
+    expect(ledgeStyleOf(page('c3p5'), 500)).toBe('libraryFloor');
+    // Single-node runs: 3-3's nest is a hummock on the bank, 3-6's stack under 藍教授 a pile of books
+    const nest = stageOf(page('c3p3')).runs.find((r) => r.single)!;
+    const stack = stageOf(page('c3p6')).runs.find((r) => r.single)!;
+    expect(styledLedge(ctx, nest, 'lakeside', 'city')).not.toBe(styledLedge(ctx, nest, 'brick', 'city'));
+    expect(styledLedge(ctx, stack, 'bookPage', 'city')).not.toBe(styledLedge(ctx, stack, 'brick', 'city'));
+    // The bikes, the shelves and the bookmark gap are their own obstacles: no rail
+    for (const id of ['c3p2', 'c3p5', 'c3p6']) expect(dressOf(page(id)).crossing, id).toBe('none');
+    for (const id of ['c3p1', 'c3p2', 'c3p3', 'c3p4', 'c3p5', 'c3p6']) expect(draw(id), id).not.toMatch(/\bfilter=/);
   });
 });

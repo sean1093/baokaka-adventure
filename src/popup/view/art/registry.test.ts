@@ -50,6 +50,20 @@ describe('art registry fallback', () => {
     }
   });
 
+  test('chapter 3\'s cast and creatures (#117): own art, drawn per position, no filters, never marigold', () => {
+    const ctx = kitCtx('t');
+    const byPos: Record<string, string[]> = { 'c3/poster': ['still', 'waving'], 'c3/goose': ['nest', 'honk', 'chase'], 'c3/magpie': ['book', 'away'] };
+    for (const [key, positions] of Object.entries(byPos)) {
+      expect(creatureArt(key), key).not.toBe(origamiBird);
+      const drawn = positions.map((pos) => creatureArt(key)(ctx, pos));
+      for (const svg of drawn) {
+        expect(svg, key).not.toMatch(/\bfilter=/);
+        expect(lintMarkup(svg, { page: key, touchable: () => false, expected: [], where: key }), key).toEqual([]);
+      }
+      expect(new Set(drawn).size, key).toBe(positions.length);
+    }
+  });
+
   test('each missing key is logged once (per kind) in dev', () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     partArt('x/one', 'flap');

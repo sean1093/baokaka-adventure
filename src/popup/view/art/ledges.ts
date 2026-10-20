@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_HOME as H, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
+import { POPUP as C, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
 import { depth, f1, ref, seeded, softEllipse, type KitCtx } from '../../art';
 import { PAGE_W, towardVp } from '../geometry';
 import { LEDGE_DEPTH, type LedgeRun, type Slope } from '../stage';
@@ -288,14 +288,174 @@ function pillow(ctx: KitCtx, x: number, y: number): string {
       + `<path d="M${x - 22} ${y - 9}Q${x} ${y - 13} ${x + 22} ${y - 9}" stroke="${C.cutRim}" stroke-width="1.4" fill="none" opacity=".7"/>`, `<path d="${d}"/>`);
 }
 
+// ——— 台灣大學 (#117) ———
+
+/** Box parts shared by the campus styles: the side face, the front rectangle and the outline. */
+const boxOutline = (b: ReturnType<typeof box>) => `${b.side ? `<path d="${b.side}"/>` : ''}${b.front}<path d="${b.top}"/>`;
+
+/** Joints on a ledge top receding toward the vanishing point, every `every` units. */
+function topJoints(b: ReturnType<typeof box>, every: number): string {
+  let d = '';
+  for (let x = b.x0 + every / 2; x < b.x1; x += every) {
+    const p = towardVp([x, b.y]);
+    d += `M${f1(x)} ${b.y}L${f1(p[0])} ${f1(p[1])}`;
+  }
+  return d;
+}
+
+/**
+ * The campus walks (椰林大道, 傅鐘's plaza): rose-grey pavers on top, a granite curb in front over
+ * the lawn's cut edge, a row of clipped azaleas spilling over the front.
+ */
+function campusPath(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const r = seeded(Math.round(b.x0 * 5 + b.y));
+  let blooms = '';
+  for (let x = b.x0 + 4; x < b.x1 - 3; x += 5 + r() * 6) blooms += `<circle cx="${f1(x)}" cy="${f1(b.y + 30 + r() * 12)}" r="${f1(1.4 + r() * 1.4)}"/>`;
+  const hedge = `M${b.x0} ${b.y + b.t}V${b.y + 28}` + Array.from({ length: Math.ceil((b.x1 - b.x0) / 12) }, (_, i) => `q6 ${f1(-6 - r() * 4)} ${f1(Math.min(12, b.x1 - b.x0 - i * 12))} 0`).join('') + `V${b.y + b.t}Z`;
+  const body = (b.side ? `<path d="${b.side}" fill="${mixHex(K.lawnDeep, C.shadow, 0.3)}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(K.lawnDeep, C.shadow, 0.25)}"/>`
+    + `<path d="${hedge}" fill="${K.azaleaLeaf}"/><g fill="${K.azalea}" opacity=".7">${blooms}</g>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="12" fill="${K.curb}"/><path d="${Array.from({ length: Math.ceil((b.x1 - b.x0) / 30) }, (_, i) => `M${f1(b.x0 + 30 * (i + 1))} ${b.y}v12`).join('')}" stroke="${K.paverDeep}" stroke-width=".8" opacity=".6"/>`
+    + `<path d="M${b.x0} ${b.y + 12}H${b.x1}" stroke="${C.shadow}" stroke-width="1.6" opacity=".35"/>`
+    + `<path d="${b.top}" fill="${K.paverLight}"/><path d="${topJoints(b, 8)}" stroke="${K.paverDeep}" stroke-width=".7" opacity=".45"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 醉月湖's promenade: stone slabs on top, an ashlar embankment in front, its foot in the dark water. */
+function lakeside(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let joints = '';
+  for (let r = 0; r < 3; r++) {
+    const y = b.y + 10 + r * 12;
+    joints += `M${b.x0} ${y}H${b.x1}`;
+    for (let x = b.x0 + (r % 2 ? 14 : 0); x < b.x1; x += 28) joints += `M${f1(x)} ${y}v12`;
+  }
+  const body = (b.side ? `<path d="${b.side}" fill="${K.stoneDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(K.stoneShade, K.lakeDeep, 0.25)}"/>`
+    + `<path d="${joints}" stroke="${K.stoneDeep}" stroke-width="1" opacity=".6"/>`
+    + `<rect x="${b.x0}" y="${b.y + b.t - 9}" width="${b.x1 - b.x0}" height="9" fill="${K.lakeDeep}" opacity=".75"/><path d="M${b.x0} ${b.y + b.t - 9}H${b.x1}" stroke="${K.lakeSheen}" stroke-width="1" opacity=".4"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10" fill="${K.stone}"/><path d="M${b.x0} ${b.y + 10}H${b.x1}" stroke="${C.shadow}" stroke-width="1.4" opacity=".3"/>`
+    + `<path d="${b.top}" fill="${mixHex(K.stone, K.stoneShade, 0.3)}"/><path d="${topJoints(b, 26)}" stroke="${K.stoneDeep}" stroke-width=".8" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The goose's nest on the lake's bank (a single node by the water): a grassy hummock with a ring of straw. */
+function nestMound(ctx: KitCtx, x: number, y: number): string {
+  const mound = `M${x - 34} ${y + 16}Q${x - 30} ${y - 6} ${x} ${y - 6}Q${x + 30} ${y - 6} ${x + 34} ${y + 16}Z`;
+  const r = seeded(Math.round(x + y));
+  let straw = '';
+  for (let i = 0; i < 18; i++) {
+    const a = (i / 18) * Math.PI * 2;
+    const rx = 18 + r() * 3, ry = 5 + r() * 1.5;
+    straw += `M${f1(x + Math.cos(a) * rx)} ${f1(y + Math.sin(a) * ry)}l${f1((r() - 0.5) * 10)} ${f1((r() - 0.5) * 3)}`;
+  }
+  let grass = '';
+  for (let i = 0; i < 16; i++) grass += `M${f1(x - 30 + r() * 60)} ${f1(y + 8 + r() * 8)}l${f1((r() - 0.5) * 3)} -5`;
+  return depth(ctx, 4, `<path d="${mound}" fill="${K.lawn}"/><path d="${grass}" stroke="${K.lawnLight}" stroke-width="1.1" stroke-linecap="round"/>`
+    + `<ellipse cx="${x}" cy="${y}" rx="20" ry="6.5" fill="${C.kraftDark}"/><ellipse cx="${x}" cy="${y - 0.6}" rx="13" ry="3.6" fill="${mixHex(C.kraftFiber, C.shadow, 0.3)}"/>`
+    + `<path d="${straw}" stroke="${C.corrugatedLight}" stroke-width="1.2" stroke-linecap="round"/>`
+    + `<path d="M${x - 30} ${y + 6}Q${x - 24} ${y - 5} ${x} ${y - 5.4}" stroke="${C.cutRim}" stroke-width="1" fill="none" opacity=".35"/>`, `<path d="${mound}"/>`);
+}
+
+/** The library's gallery behind the stacks: oak planks on top, a carved fascia with a brass strip in front. */
+function gallery(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let panels = '';
+  for (let x = b.x0 + 6; x < b.x1 - 24; x += 34) panels += `M${f1(x)} ${b.y + 16}h28v${b.t - 26}h-28z`;
+  const body = (b.side ? `<path d="${b.side}" fill="${K.shelfWoodDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(K.shelfWood, C.shadow, 0.2)}"/>`
+    + `<path d="${panels}" fill="${K.shelfWoodDeep}" opacity=".45"/><path d="${panels}" fill="none" stroke="${K.shelfWoodLight}" stroke-width=".8" opacity=".4"/>`
+    + `<rect x="${b.x0}" y="${b.y + 8}" width="${b.x1 - b.x0}" height="3" fill="${C.goldDeep}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="8" fill="${K.shelfWoodLight}"/>`
+    + `<path d="${b.top}" fill="${K.shelfWoodLight}"/><path d="${topJoints(b, 9)}" stroke="${K.shelfWoodDeep}" stroke-width=".7" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The reading room's floor: parquet on top, a dark skirting and panelled oak plinth in front. */
+function libraryFloor(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let panels = '';
+  for (let x = b.x0 + 8; x < b.x1 - 30; x += 46) panels += `M${f1(x)} ${b.y + 16}h38v${b.t - 24}h-38z`;
+  const body = (b.side ? `<path d="${b.side}" fill="${K.shelfWoodDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(K.shelfWoodDeep, C.shadow, 0.15)}"/>`
+    + `<path d="${panels}" fill="none" stroke="${K.shelfWood}" stroke-width="1.4" opacity=".6"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10" fill="${K.shelfWood}"/><path d="M${b.x0} ${b.y + 10}H${b.x1}" stroke="${C.shadow}" stroke-width="1.4" opacity=".35"/>`
+    + `<path d="${b.top}" fill="${K.shelfWoodLight}"/><path d="${topJoints(b, 6)}" stroke="${K.shelfWoodDeep}" stroke-width=".6" opacity=".45"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 藍教授's desk: the top's edge, the apron in front with a drawer and its brass pull. */
+function desk(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let drawers = '';
+  for (let x = b.x0 + 12; x < b.x1 - 50; x += 70) drawers += `<rect x="${f1(x)}" y="${b.y + 14}" width="54" height="24" rx="2" fill="none" stroke="${K.shelfWoodDeep}" stroke-width="1.4"/><rect x="${f1(x + 21)}" y="${b.y + 24}" width="12" height="4" rx="2" fill="${C.goldDeep}"/>`;
+  const body = (b.side ? `<path d="${b.side}" fill="${K.shelfWoodDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${K.shelfWood}"/>` + drawers
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="8" fill="${K.shelfWoodLight}"/><path d="M${b.x0} ${b.y + 8}H${b.x1}" stroke="${C.shadow}" stroke-width="1.4" opacity=".35"/>`
+    + `<path d="${b.top}" fill="${K.shelfWoodLight}"/>` + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The giant book's page block: cream pages on top, their edges in fine lines in front, the cloth board under them. */
+function bookPage(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let edges = '';
+  for (let y = b.y + 3; y < b.y + b.t - 12; y += 2.6) edges += `M${b.x0} ${f1(y)}H${b.x1}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${K.pageEdgeShade}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t - 10}" fill="${K.pageEdge}"/><path d="${edges}" stroke="${K.pageEdgeShade}" stroke-width=".7" opacity=".7"/>`
+    + `<rect x="${b.x0 - 3}" y="${b.y + b.t - 10}" width="${b.x1 - b.x0 + 6}" height="10" rx="2" fill="${K.bookBlue}"/><path d="M${b.x0} ${b.y + b.t - 8}H${b.x1}" stroke="${C.goldDeep}" stroke-width="1" opacity=".8"/>`
+    + `<path d="${b.top}" fill="${C.washi}"/>` + rim(b.x0, b.x1, b.y, 0.7);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** A stack of three big books lying flat (a single node on the desk: where 藍教授 sits on the 書). */
+function bookPile(ctx: KitCtx, x: number, y: number): string {
+  const books: [number, number, string][] = [[18, 0, K.bookRed], [16, 4, K.bookGreen], [18, -2, K.bookPlum]];
+  let yy = y;
+  let body = '';
+  let outline = '';
+  for (const [h, inset, color] of books) {
+    const x0 = x - 30 + inset, w = 60;
+    const d = `M${x0} ${yy}h${w}v${h}h${-w}z`;
+    outline += `<path d="${d}"/>`;
+    body += `<path d="${d}" fill="${color}"/><rect x="${x0 + 4}" y="${f1(yy + h * 0.25)}" width="${w - 10}" height="${f1(h * 0.5)}" fill="${K.pageEdge}"/>`
+      + `<path d="M${x0 + 5} ${f1(yy + h * 0.5)}h${w - 12}" stroke="${K.pageEdgeShade}" stroke-width=".7"/><path d="M${x0 + 1} ${yy + 0.6}h${w - 2}" stroke="${C.cutRim}" stroke-width=".8" opacity=".45"/>`;
+    yy += h;
+  }
+  const top = `M${x - 30} ${y}L${f1(towardVp([x - 30, y])[0])} ${f1(towardVp([x - 30, y])[1])}H${f1(towardVp([x + 30, y])[0])}L${x + 30} ${y}Z`;
+  return depth(ctx, 4, `<path d="${top}" fill="${mixHex(K.bookRed, C.cutRim, 0.2)}"/>` + body, outline + `<path d="${top}"/>`);
+}
+
 /** A ledge in its page's material (`dress.ts`): the dressed styles here, brick and rug from the placeholder stage. */
 export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme: StageTheme): string {
   if (run.single) {
     if (style === 'playmat' || style === 'crib') return pillow(ctx, (run.x0 + run.x1) / 2, run.y);
     if (style === 'parkPath' || style === 'boardwalk') return archBridge(ctx, (run.x0 + run.x1) / 2, run.y);
+    if (style === 'lakeside') return nestMound(ctx, (run.x0 + run.x1) / 2, run.y);
+    if (style === 'bookPage' || style === 'desk') return bookPile(ctx, (run.x0 + run.x1) / 2, run.y);
+    if (style === 'campusPath') return campusPath(ctx, run);
     return plainLedge(ctx, run, theme);
   }
   switch (style) {
+    case 'carBodySongshan':
+      return carBody(ctx, run, K.songshan, K.songshanDeep);
+    case 'campusPath':
+      return campusPath(ctx, run);
+    case 'lakeside':
+      return lakeside(ctx, run);
+    case 'gallery':
+      return gallery(ctx, run);
+    case 'libraryFloor':
+      return libraryFloor(ctx, run);
+    case 'desk':
+      return desk(ctx, run);
+    case 'bookPage':
+      return bookPage(ctx, run);
     case 'carBodyXinyi':
       return carBody(ctx, run, P.xinyi, P.xinyiDeep);
     case 'parkPath':
@@ -339,6 +499,7 @@ export function dressedLedge(ctx: KitCtx, run: LedgeRun, styleOf: (y: number) =>
 
 /** A ramp in its page's material: plank ramps on the park's paths and boardwalks (#115), else the plain card. */
 export function styledRamp(ctx: KitCtx, slope: Pick<Slope, 'from' | 'to'>, style: LedgeStyle, theme: StageTheme): string {
+  if (style === 'lakeside') return stoneSteps(ctx, slope);
   if (style !== 'parkPath' && style !== 'boardwalk') return plainRamp(ctx, slope, theme);
   const [[ax, ay], [bx, by]] = [slope.from, slope.to];
   const t = 12;
@@ -352,6 +513,42 @@ export function styledRamp(ctx: KitCtx, slope: Pick<Slope, 'from' | 'to'>, style
   }
   return depth(ctx, 4, `<path d="${d}" fill="${P.plank}"/><path d="${planks}" stroke="${P.plankDeep}" stroke-width=".9" opacity=".6"/>`
     + `<path d="M${ax} ${ay + 0.5}L${bx} ${by + 0.5}" stroke="${C.cutRim}" stroke-width="1" opacity=".55"/>`, `<path d="${d}"/>`);
+}
+
+/** Stone steps down a slope (醉月湖's bank, #117): a flight of slabs, each a little box. */
+function stoneSteps(ctx: KitCtx, slope: Pick<Slope, 'from' | 'to'>): string {
+  const [[ax, ay], [bx, by]] = [slope.from, slope.to];
+  const n = Math.max(2, Math.round(Math.abs(by - ay) / 10));
+  let d = '';
+  let lit = '';
+  for (let i = 0; i < n; i++) {
+    const [x0, y0] = [ax + ((bx - ax) * i) / n, ay + ((by - ay) * i) / n];
+    const [x1] = [ax + ((bx - ax) * (i + 1)) / n];
+    const [lo, hi] = [Math.min(x0, x1) - 6, Math.max(x0, x1) + 6];
+    d += `M${f1(lo)} ${f1(y0)}H${f1(hi)}V${f1(y0 + 12)}H${f1(lo)}Z`;
+    lit += `M${f1(lo)} ${f1(y0 + 0.5)}H${f1(hi)}`;
+  }
+  return depth(ctx, 4, `<path d="${d}" fill="${K.stoneShade}"/><path d="${lit}" stroke="${K.stone}" stroke-width="2"/>`, `<path d="${d}"/>`);
+}
+
+/** An azalea bush in bloom (台大's foreground card, #117), its foot at the origin. */
+function azaleaBush(ctx: KitCtx): string {
+  const r = seeded(31);
+  const puffs: [number, number, number][] = [[-16, -22, 17], [8, -30, 19], [-2, -46, 14], [22, -16, 13], [-28, -10, 11]];
+  let d = '';
+  for (const [x, y, pr] of puffs) d += `M${x - pr} ${y}a${pr} ${pr} 0 1 0 ${2 * pr} 0a${pr} ${pr} 0 1 0 ${-2 * pr} 0Z`;
+  let blooms = '';
+  let deep = '';
+  for (let i = 0; i < 30; i++) {
+    const [x, y, pr] = puffs[i % puffs.length];
+    const a = r() * Math.PI * 2, k = r() * 0.85;
+    const c = `<circle cx="${f1(x + Math.cos(a) * pr * k)}" cy="${f1(y + Math.sin(a) * pr * k)}" r="${f1(2 + r() * 1.8)}"/>`;
+    if (i % 3) blooms += c;
+    else deep += c;
+  }
+  return softEllipse(ctx, 0, 0, 40, 6, 'shadow', 0.4)
+    + depth(ctx, 5, `<path d="${d}" fill="${K.azaleaLeaf}"/><g fill="${K.azaleaDeep}">${deep}</g><g fill="${K.azalea}">${blooms}</g>`
+      + `<path d="M-30 -16q4 -14 16 -18M-6 -56q8 -6 18 -2" stroke="${K.palmLit}" stroke-width="1.4" fill="none" opacity=".45" stroke-linecap="round"/>`, `<path d="${d}"/>`);
 }
 
 /** A park shrub with a few lime fireflies resting on it (the park's foreground card, #115), its foot at the origin. */
@@ -418,6 +615,8 @@ export function foregroundCard(ctx: KitCtx, kind: ForegroundCard): string {
       return pottedPlant(ctx);
     case 'shrub':
       return shrub(ctx);
+    case 'azalea':
+      return azaleaBush(ctx);
   }
 }
 

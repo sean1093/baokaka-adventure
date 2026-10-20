@@ -1253,6 +1253,93 @@ export const POPUP_PARK = {
   egretDeep: '#8E88B0',
 } as const;
 
+/**
+ * Chapter 3's palette kit (台灣大學, 01:20; popup art bible § 6 row 3, #117): **lake blue** and
+ * **palm green** dominant, the **warm library amber** of lit windows and reading lamps as the one
+ * accent (the lights themselves stay `POPUP.lamp*`). The signature materials are the glassine lake
+ * and kraft books. Every warm decoration here (the brick, the azaleas, the goose's bill, the
+ * magpie's beak) is held ≥ ΔE 12 from marigold by `affordance.test.ts`.
+ */
+export const POPUP_CAMPUS = {
+  // 醉月湖: the lake's card under glassine, its deep middle, its moonlit sheen
+  lake: '#2C3C7A',
+  lakeDeep: '#1A2656',
+  lakeLight: '#5A6EAE',
+  lakeSheen: '#9AA8D8',
+  // The royal palms of 椰林大道: fronds at three depths, the green crownshaft, the smooth grey trunk
+  palmFar: '#1E3A48',
+  palm: '#2A5A52',
+  palmNear: '#33705C',
+  palmLit: '#6AA684',
+  palmDeep: '#16303A',
+  crownshaft: '#4E7E5E',
+  palmTrunk: '#8C8496',
+  palmTrunkLit: '#B6AEBE',
+  palmTrunkDeep: '#5C5470',
+  // The campus lawns and the azalea hedges (杜鵑花城)
+  lawn: '#2C5048',
+  lawnDeep: '#1C3638',
+  lawnLight: '#3E6A58',
+  azalea: '#C8668A',
+  azaleaDeep: '#8E4466',
+  azaleaLeaf: '#24483E',
+  // The old campus buildings: cream tile and stone, the brick base, the dark tiled roofs
+  stone: '#CFC4B4',
+  stoneShade: '#9A90A0',
+  stoneDeep: '#6E6680',
+  brick: '#8E4A4C',
+  brickDeep: '#62343C',
+  brickLight: '#A8625E',
+  roof: '#34324E',
+  roofLight: '#4A4866',
+  // The paths: rose-grey pavers in herringbone and their granite curb
+  paver: '#A8949A',
+  paverLight: '#C2AEB0',
+  paverDeep: '#6E5E6C',
+  curb: '#8C8AA0',
+  // The campus's iron lamp posts
+  ironPost: '#262842',
+  ironPostLit: '#44466A',
+  // The accent: warm library amber (painted, not lit: lit windows use the lamp tokens)
+  amber: '#D88A4E',
+  amberDeep: '#A05E38',
+  // The library: its wood, the green reading-lamp shades, the books' cloth spines
+  shelfWood: '#7A5240',
+  shelfWoodLight: '#9E7052',
+  shelfWoodDeep: '#4E3430',
+  readingLamp: '#2E6E5A',
+  readingLampLit: '#5E9E86',
+  bookRed: '#8E3A44',
+  bookGreen: '#3A6A5A',
+  bookBlue: '#3A4C8A',
+  bookPlum: '#5E3E6E',
+  bookTan: '#B89A7A',
+  pageEdge: '#EAE0CA',
+  pageEdgeShade: '#C8BCA2',
+  // The 松山新店線 car (3-1): the line's green band
+  songshan: '#2A8A62',
+  songshanDeep: '#1A5E46',
+  // 傅鐘: its stone pavilion's bronze-green roof and the rope
+  bronze: '#4E6E66',
+  bronzeDeep: '#34504C',
+  rope: '#C2A27E',
+  ropeDeep: '#8A6C52',
+  // Origami creatures: the goose (white, a deep-orange bill), 藍教授 (a Taiwan blue magpie: blue
+  // back, black hood, a red bill, white tail tips)
+  goose: '#F4F0F6',
+  gooseShade: '#C4BED6',
+  gooseDeep: '#8E88AA',
+  gooseBill: '#D2603E',
+  magpie: '#2E56A8',
+  magpieLight: '#5A82CC',
+  magpieDeep: '#1E3A78',
+  magpieHood: '#1C1C2E',
+  magpieBill: '#C43A3E',
+  // The cast: the 3-1 ad poster's sunny print
+  posterSky: '#9CC2D8',
+  posterSun: '#E8B4A0',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 
