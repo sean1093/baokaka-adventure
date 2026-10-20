@@ -59,7 +59,7 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c1/car": {
       "file": "backdrops/c1/car",
-      "bytes": 149016,
+      "bytes": 149172,
       "chapter": 1,
       "grade": [1, 1, 1],
       "box": {
@@ -68,7 +68,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "02c83d4fb2e0dc9e"
+      "source": "6cf508bb2a1b3bdb"
     },
     "c1/hall-night": {
       "file": "backdrops/c1/hall-night",
