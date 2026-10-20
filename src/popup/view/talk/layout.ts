@@ -213,7 +213,8 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
       const s = from[0] > PAGE_W / 2 ? -1 : 1;
       candidates = [...subtitleCandidates(from, size, s), ...belowLeft(from, size), ...voiceCandidates(voiceTop, size)];
     }
-    const pick = pickBox(candidates, { hard, soft: [...soft, ...own, ...(scene.touch ?? [])] });
+    // A beat's earlier subtitles are as hard to cover as he is: one line never hides another (#122)
+    const pick = pickBox(candidates, { hard: [...hard, ...subs.map((x) => x.box)], soft: [...soft, ...own, ...(scene.touch ?? [])] });
     subs.push({ line, box: pick.box, rows: size.rows, label: line.label, from, rides });
     soft.push(pick.box);
   }
