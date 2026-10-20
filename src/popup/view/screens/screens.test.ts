@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, test } from 'vitest';
 import { CHAPTERS, chapterLine, chapterName, stickersIn } from '../../content';
-import { completePage, earnSticker, freshSave } from '../../game/progress';
+import { completePage, earnSticker, freshSave, RPG_FAREWELL } from '../../game/progress';
 import { registry } from '../../pages';
 import { BottomBar } from '../hud/BottomBar';
 import { TopHud, runWidth } from '../hud/TopHud';
@@ -60,6 +60,17 @@ describe('Cover', () => {
     for (const b of ['resume', 'contents', 'album', 'settings']) expect(m).toContain(`data-button="${b}"`);
     expect(m).toContain('第一章「月台的縫」');
     expect(m).not.toContain('data-button="start"');
+    for (const px of uiSizes(m)) expect(px).toBeGreaterThanOrEqual(20);
+  });
+
+  test('the RPG farewell (#109): a note above the buttons only when given, ≥ 20 px, a status not a button', () => {
+    const props = { first: true, resume: { chapter: 0, title: '嬰兒床' }, onResume: noop, onContents: noop, onAlbum: noop, onSettings: noop };
+    expect(html(createElement(Cover, props))).not.toContain('data-farewell');
+    const m = html(createElement(Cover, { ...props, farewell: RPG_FAREWELL }));
+    expect(m).toContain('data-farewell=""');
+    expect(m).toContain('role="status"');
+    expect(m).toContain(RPG_FAREWELL);
+    expect(m.indexOf('data-farewell')).toBeLessThan(m.indexOf('data-button="start"'));
     for (const px of uiSizes(m)) expect(px).toBeGreaterThanOrEqual(20);
   });
 });

@@ -5,7 +5,7 @@ import { SOON_LINES, cardLines, chapterName, endLines, hasNextChapter, loadLines
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
 import { COVER, chapterStickers, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
-import { ProgressStore, type PageResult } from '../../game/progress';
+import { ProgressStore, RPG_FAREWELL, type PageResult } from '../../game/progress';
 import type { TickSpeed } from '../../game/session';
 import { EMPTY_TALK, MAX_PER_BEAT, advance, currentBeat, enqueue, type TalkQueue } from '../../game/talk';
 import { registry as gameRegistry, type PageRegistry } from '../../pages';
@@ -100,6 +100,8 @@ export interface GameShellProps {
   readonly endLinesOf?: number;
   /** Visual QA fixtures (#107): the card of this chapter, not built yet — 「未完待續」 on its row, its line under it */
   readonly soonCard?: number;
+  /** An old RPG save was deleted at this boot (#109): the cover shows `RPG_FAREWELL` until the player first leaves it */
+  readonly farewell?: boolean;
 }
 
 const SPEEDS: readonly TickSpeed[] = ['slow', 'normal', 'fast'];
@@ -145,7 +147,7 @@ interface AlbumAfter {
   readonly go: () => void;
 }
 
-export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter, endLinesOf, soonCard }: GameShellProps) {
+export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter, endLinesOf, soonCard, farewell = false }: GameShellProps) {
   const [store] = useState(() => given ?? new ProgressStore({ registry: reg }));
   useEffect(() => (given ? undefined : () => store.dispose()), [given, store]);
   const save = useSyncExternalStore(store.subscribe, store.get);
@@ -196,6 +198,11 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   useEffect(() => setVolumes(settings.sfx, settings.music), [settings.sfx, settings.music]);
 
   const base = nav.base;
+  // The RPG farewell is said once: it stays on the cover until the player opens a page (§ 2.10)
+  const [farewellOn, setFarewellOn] = useState(farewell);
+  useEffect(() => {
+    if (base.kind !== 'cover') setFarewellOn(false);
+  }, [base.kind]);
   const def: PageDef | undefined = base.kind === 'page' ? reg.pageById(base.id) : undefined;
 
   // The music box: the page's chapter (the prologue's on the cover); it changes as the turn swaps the page
@@ -509,6 +516,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
             {base.kind === 'cover' && !covered && (
               <Cover
                 first={isFirstLaunch(save, reg)}
+                farewell={farewellOn ? RPG_FAREWELL : undefined}
                 resume={{ chapter: resumeDef?.chapter ?? 0, title: resumeDef?.title ?? '' }}
                 onResume={() => go({ t: 'resume' })}
                 onContents={() => go({ t: 'contents' })}

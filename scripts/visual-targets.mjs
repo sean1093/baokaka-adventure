@@ -15,7 +15,8 @@ export const VIEWPORTS = [
 ];
 
 export const TARGETS = [
-  { name: 'title', hash: '#/', waitFor: 'main' },
+  // What the site opens on (#109): 翻翻台北's cover, first launch (a fresh browser has no save)
+  { name: 'title', hash: '#/', waitFor: '[data-screen="cover"][data-screen-ready]' },
   {
     name: 'artlab-sprites-night',
     // One size keeps the full sheet a sane height; open the lab without `size` to see all four

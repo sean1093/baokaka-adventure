@@ -88,6 +88,8 @@ export interface PopupFixture {
     readonly endLinesOf?: number;
     /** The card of this chapter while it isn't built: 「未完待續」 on its row, its line under it (#107) */
     readonly soonCard?: number;
+    /** An old RPG save was found and deleted at this boot: the cover's one-time note (#109) */
+    readonly farewell?: boolean;
   };
 }
 
@@ -397,6 +399,13 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     screen: { nav: { base: { kind: 'cover' }, layer: null }, save: FRESH },
     note: 'The cover on first launch (#97): the closed book on 阿嬤\'s table and quilt, Baokaka and Mocha beside it, only 「開始」.',
+  },
+  {
+    name: 'cover-farewell',
+    page: 'c0p1',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: null }, save: FRESH, farewell: true },
+    note: 'The first boot after the routing switch with an old RPG save (#109; GDD § 2.10): the save is gone, and a small paper note above 「開始」 says 「寶咖咖的新冒險開始了！」, once.',
   },
   {
     name: 'cover-continue',
