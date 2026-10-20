@@ -61,7 +61,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [183](https://github.com/sean1093/baokaka-adventure/issues/183) | M1 polish: fix AI-playtest friction before the family playtest | m1, content, ui | #110's kit (#182) | done (#184) |
 | [111](https://github.com/sean1093/baokaka-adventure/issues/111) | Delete the old RPG after M1 sign-off: src/quest, RPG-only art, art lab sections, sim script and baselines | chore, m1 | #110 | todo |
 | **M2 · Chapters 2–4** | | | | |
-| [112](https://github.com/sean1093/baokaka-adventure/issues/112) | M2 engine: light attractors with nodeBy, creatures holding items (heldBy/drop), decoys, and words 掰掰 / 不要！ / 哇！ | engine, ui, m2 | #110 | todo |
+| [112](https://github.com/sean1093/baokaka-adventure/issues/112) | M2 engine: light attractors with nodeBy, creatures holding items (heldBy/drop), decoys, and words 掰掰 / 不要！ / 哇！ | engine, ui, m2 | #110 | in review |
 | [113](https://github.com/sean1093/baokaka-adventure/issues/113) | Album complete (multi-chapter, retake, 淘氣大王 cover) and 目錄 for all chapters | ui, m2 | #103, #110 | todo |
 | [114](https://github.com/sean1093/baokaka-adventure/issues/114) | Chapter 2 pages: 「會揮手的公園」 大安森林公園 — full specs, then data for 2-1…2-6, solver-green | content, m2 | #112 | todo |
 | [115](https://github.com/sean1093/baokaka-adventure/issues/115) | Chapter 2 art: 大安森林公園 pop-up pages, parts, creatures, 土地公 (斗笠 + 掃把) and the 畫筆 photo | art, content, m2 | #114 | todo |

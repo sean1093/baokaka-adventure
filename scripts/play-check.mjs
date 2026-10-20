@@ -27,7 +27,9 @@
  * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
  * `talk-anywhere-c1p1` reads lines away with taps off the bubbles (one on a touchable that must not
  * move), `c0p4-curtain-first` plays 0-4 in its other order, `nope-c1p5` taps a perch Mocha can't
- * reach and `tutorial-c1p5` waits for 1-5's nudge (#183).
+ * reach and `tutorial-c1p5` waits for 1-5's nudge (#183). The M2 toy pages (#112) play live from
+ * their fixtures: `m2-moon-no` learns 不要！ from the goose (beat and card) and refuses the moon
+ * decoy through the ring; `m2-squirrel-bye` says 掰掰 to the herded squirrel, which drops the bead.
  * Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
  * and UI checks.
  */
@@ -225,6 +227,23 @@ const SCENARIOS = {
   ],
   // The hint ladder (#100, GDD § 2.7) on 1-2: 提示 shows where (the halo), then how (the ghost hand),
   // then "show me" plays the solver's next step for real — pressed again and again, it finishes the page
+  // The M2 toy pages (#112), live from their PageLab fixtures: learn 不要！ from the goose and refuse the moon decoy
+  'm2-moon-no': [
+    { wait: 'reaching' },
+    // Mocha to the rock: the goose honks and he learns 不要！ (the learn beat, then its card)
+    { tap: [330, 350] },
+    { tapEl: '[data-subtitle]' },
+    { tapEl: '[data-word-card]', paused: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+  ],
+  // Herded down, the squirrel sits on the bead: 掰掰 makes it drop the bead
+  'm2-squirrel-bye': [
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="bye"]', paused: true },
+  ],
   'hints-c1p2': [
     { wait: 'reaching' },
     { tapEl: '[data-bar="hint"]' },
@@ -346,6 +365,8 @@ const SCENARIO_URLS = {
   'c0p4-curtain-first': '#/popup?page=c0p4&speed=fast',
   'nope-c1p5': '#/popup?page=c1p5&speed=fast',
   'tutorial-c1p5': '#/popup?page=c1p5&tutorial=1',
+  'm2-moon-no': '#/pagelab?fixture=m2-moon-decoy',
+  'm2-squirrel-bye': '#/pagelab?fixture=m2-squirrel-herded',
 };
 
 const VIEWPORTS = [
