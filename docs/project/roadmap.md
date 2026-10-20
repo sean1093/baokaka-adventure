@@ -55,7 +55,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [105](https://github.com/sean1093/baokaka-adventure/issues/105) | Audio: extend src/shared/audio.ts with the §2.12 cues and a music-box loop for chapters 0–1 | audio, m1 | #104 | done (#174) |
 | [106](https://github.com/sean1093/baokaka-adventure/issues/106) | Prologue pages 0-2, 0-3, 0-4 as data, with scripted tutorials — all green in the solver | content, m1 | #100, #102, #140 | done (#175) |
 | [107](https://github.com/sean1093/baokaka-adventure/issues/107) | Chapter 1 pages 1-1, 1-3, 1-4, 1-5, 1-6 (台北車站) as data — all green in the solver | content, m1 | #106, #99, #103 | done (#176) |
-| [108](https://github.com/sean1093/baokaka-adventure/issues/108) | Vertical-slice art: prologue + 台北車站 (all 10 pages), cover and ch0–1 creatures/cast in the pop-up style | art, content, m1 | #95, #96, #140 | done (#177, #178, PR B) |
+| [108](https://github.com/sean1093/baokaka-adventure/issues/108) | Vertical-slice art: prologue + 台北車站 (all 10 pages), cover and ch0–1 creatures/cast in the pop-up style | art, content, m1 | #95, #96, #140 | done (#177, #178, #179) |
 | [109](https://github.com/sean1093/baokaka-adventure/issues/109) | Routing switch: #/ boots into 翻翻台北; the RPG stays in the repo unrouted; deployment checks | chore, m1 | #107, #108, #105, #104, #92 | todo |
 | [110](https://github.com/sean1093/baokaka-adventure/issues/110) | Playtest kit and the M1 playtest: checklist, observation sheet, metrics, owner sign-off | docs, qa, m1 | #109 | todo |
 | [111](https://github.com/sean1093/baokaka-adventure/issues/111) | Delete the old RPG after M1 sign-off: src/quest, RPG-only art, art lab sections, sim script and baselines | chore, m1 | #110 | todo |
