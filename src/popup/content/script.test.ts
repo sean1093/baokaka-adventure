@@ -3,7 +3,7 @@ import { contrastRatio } from '../../art/contrast';
 import { POPUP } from '../../art/palette';
 import { MAX_LINE_CHARS, lintPage, textLength } from '../core/lint';
 import { PAGES, pageById } from '../pages';
-import { CHAPTERS, cardLines } from './chapters';
+import { CHAPTERS, SOON_LINES, cardLines, endLines, hasNextChapter } from './chapters';
 import { UI } from './ui';
 import { SPEAKER_INK } from '../view/talk/Talk';
 import { BABY_BARKS, MOCHA_BARKS } from './barks';
@@ -39,7 +39,8 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
   test('every line key a page, a chapter card or a learn beat uses resolves, and is ≤ 30 characters', () => {
     const keys = [
       ...PAGES.flatMap((p) => [...(p.lines?.intro ?? []), ...(p.lines?.onEvent ?? []).map((l) => l.line)]),
-      ...CHAPTERS.flatMap((c) => cardLines(c.chapter)),
+      ...CHAPTERS.flatMap((c) => [...cardLines(c.chapter), ...endLines(c.chapter)]),
+      ...SOON_LINES,
     ];
     expect(keys.length).toBeGreaterThan(10);
     for (const key of keys) {
@@ -57,6 +58,18 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
     // 阿嬤's Hokkien exactly as written
     expect(SCRIPT['p.intro.4'].text).toBe('摩卡，今暗顧好喔。');
     expect(SCRIPT['c1p6.end.2'].text).toBe('雞腿，一世人呷好料。');
+  });
+
+  test('chapter 1 ends on its four end lines after the album; chapter 2\'s card reads 未完待續 until it exists (#107)', () => {
+    expect(endLines(1)).toEqual(['c1p6.end.1', 'c1p6.end.2', 'c1p6.end.3', 'c1p6.end.4']);
+    expect(endLines(2)).toEqual([]);
+    expect(SOON_LINES.map((k) => SCRIPT[k].who)).toEqual(['nar']);
+    expect(hasNextChapter(1)).toBe(true);
+    expect(hasNextChapter(10)).toBe(false);
+    // 1-1, 1-5 wire their § 5.2 beats; 1-1 opens on 廣播姊姊's ride lines (§ 5.3)
+    expect(pageById('c1p1')?.lines?.intro).toEqual(['rec.pa.ride.1', 'rec.pa.ride.2']);
+    expect(pageById('c1p1')?.lines?.onEvent?.map((l) => l.line)).toEqual(['c1p1.pack.1', 'c1p1.pack.2']);
+    expect(pageById('c1p5')?.lines?.onEvent?.map((l) => l.line)).toEqual(['c1p5.clerk.1', 'c1p5.clerk.2', 'c1p5.clerk.3']);
   });
 
   test('chapter 1\'s card plays its four intro lines; every § 5.2 beat of chapters 0–1 is in the table', () => {

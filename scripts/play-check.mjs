@@ -15,12 +15,14 @@
  *
  * It also fails when a registered page (listed at `#/pagelab?section=fixtures`) has no scenario:
  * add one with every new page. A scenario can also play a PageLab stage through a live fixture
- * (`SCENARIO_URLS`): `lab-gates` plays 1-3's word flow end to end (#99) — the 「要！」 poke, Mocha's
- * push, the learn beat and its word card, the tutorial, the word ring and 嗶！ — until #107 brings
- * the real 1-3; `hints-c1p2` plays 1-2 with 提示 alone (#100: where, how, then show me until done);
+ * (`SCENARIO_URLS`): `c1p3` plays 1-3's word flow end to end (#99, #107) — the 「要！」 poke, Mocha's
+ * push, the learn beat and its word card, the tutorial, the word ring and 嗶！;
+ * `hints-c1p2` plays 1-2 with 提示 alone (#100: where, how, then show me until done);
  * `stickers-c1p2` earns all three of 1-2's stickers in the game shell (#101: four rides for the 淘氣,
- * the board flipped and the 土地公 tapped, the solve, the sticker card, then the 目錄's 淘氣 line);
- * `photo-spread` plays the lab spread in the shell (#103: the photo moment, the album, a retake).
+ * the board flipped and the 土地公 tapped, the solve, the sticker card, then 1-3);
+ * `photo-spread` plays 1-6 in the shell (#103, #107: the photo moment, the album, a retake, the
+ * chapter-end lines, the tray's first coin, the sticker card, chapter 2's 「未完待續」 card, the 目錄).
+ * A `drag` through more than two points follows them in turn (1-4's turntable is turned on its rim).
  * `{ heard: [cues] }` checks the shell played those sounds (#105; the dev build lists them in
  * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
  * Exits 1 on any failure. Part of `npm run qa` (#92) with the visual
@@ -36,6 +38,13 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: args } = parseArgs({
   options: { serve: { type: 'boolean' }, url: { type: 'string' }, shots: { type: 'string' }, only: { type: 'string' } },
 });
+
+/** Points on an arc round `c` of radius `r`, from `a0` to `a1` degrees (clockwise on screen is positive). */
+const arc = ([cx, cy], r, a0, a1, n = 8) =>
+  Array.from({ length: n + 1 }, (_, i) => {
+    const a = ((a0 + ((a1 - a0) * i) / n) * Math.PI) / 180;
+    return [Math.round(cx + r * Math.cos(a)), Math.round(cy + r * Math.sin(a))];
+  });
 
 /** Page-unit gesture scripts per page (data from src/popup/pages/). */
 const SCENARIOS = {
@@ -99,10 +108,19 @@ const SCENARIOS = {
     // half → full
     { drag: [[140, 610], [205, 610]] },
   ],
-  // 1-3's words (#99), on the lab stage: elements are tapped where they are drawn (`tapEl`)
-  'lab-gates': [
-    // The fixture opens on its own poke: let it fade, then poke him for real (no word yet: no ring)
-    { settle: 2000 },
+  // 1-1 「月亮線，出發！」 (#107): 廣播姊姊's lines, then the rack's paw print — Mocha strap-hops over and
+  // pushes the map onto the sleeping backpacker, who wakes (his line, Mocha's translation) and tucks in
+  c1p1: [
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [286, 280] },
+    { expect: '[data-subtitle]', timeout: 6_000 },
+    { readTalk: true },
+  ],
+  // 1-3's words (#99, #107): elements are tapped where they are drawn (`tapEl`)
+  c1p3: [
+    // Poke him: no word yet, so 「要！」 and no ring
+    { wait: 'reaching' },
     { tapEl: '[data-actor="baby"]' },
     { expect: '[data-bark-kind="want"]', absent: '[data-word-ring]' },
     { settle: 600 },
@@ -114,6 +132,41 @@ const SCENARIOS = {
     { expect: '[data-glow]' },
     { tapEl: '[data-actor="baby"]' },
     { tapEl: '[data-word="beep"]', paused: true },
+  ],
+  // 1-4 「大廳的棋盤」 (#107): turn the floor east–west (a quarter back round its rim), he crawls to the
+  // centre; 嗶！ opens gate N; turn it north–south again with him on it, and he crawls through
+  c1p4: [
+    { wait: 'reaching' },
+    { drag: arc([195, 495], 76, 0, -90) },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="beep"]', paused: true },
+    { settle: 1200 },
+    { drag: arc([195, 495], 76, 180, 270) },
+  ],
+  // 1-5 「便當店的電梯」 (#107): Mocha into the car (it goes down, he crawls in), then tap Mocha to press again
+  c1p5: [
+    { wait: 'reaching' },
+    { tap: [244, 242] },
+    { settle: 2500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="mocha"]' },
+  ],
+  // 1-6 「台鐵便當」 (#107): the lid open (the pigeon swoops onto the cart), 嗶！ at the gate, the cart to
+  // the platform, Mocha onto its awning (the pigeon flees) — the photo moment, 咔嚓, the grab
+  c1p6: [
+    { wait: 'cuddling' },
+    { tap: [322, 456] },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="beep"]', paused: true },
+    { settle: 1500 },
+    { drag: [[304, 604], [260, 604]] },
+    { settle: 1200 },
+    { tap: [270, 386] },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
   ],
   // The hint ladder (#100, GDD § 2.7) on 1-2: 提示 shows where (the halo), then how (the ghost hand),
   // then "show me" plays the solver's next step for real — pressed again and again, it finishes the page
@@ -154,8 +207,8 @@ const SCENARIOS = {
     { drag: [[140, 610], [205, 610]] },
     { expect: 'svg[data-page][data-done]', timeout: 20_000 },
     { expect: '[data-sticker-card="111"]', timeout: 5_000 },
-    // 1-2 is the last page so far: the card, then the 目錄 with the page's 淘氣 (earned)
-    { expect: '[data-mischief="c1p2"][data-earned]', timeout: 8_000 },
+    // The card, then the page turns on to 1-3 (#107)
+    { expect: '[data-popup-page="c1p3"]', timeout: 8_000 },
   ],
   // The prologue's chapter card (#102, GDD § 2.13 / § 5.2 P) in the game shell, from a fresh save:
   // 「開始」 drops the card over the book on the quilt, its lines play a tap a beat (the world held),
@@ -176,19 +229,21 @@ const SCENARIOS = {
     // … swishes away, and the pop-ups land with a fwump
     { heard: ['cardLift', 'fwump'] },
   ],
-  // The chapter spread (#103, GDD § 2.9) in the game shell, on the lab spread as 1-6: Mocha back
-  // to the bench (in the frame), the train across — 2 edges from the 雞腿 the world holds under the
-  // camera; 咔嚓, the grab, the album with its four notes; 再拍一次, 咔嚓 again, the first shot chosen
-  // back, 放進相簿, the sticker card, then the 目錄
+  // The chapter spread (#103, #107, GDD § 2.9) in the game shell: 1-6 played up to Mocha on the
+  // awning (in the frame) — 2 edges from the 雞腿 the world holds under the camera; 咔嚓, the grab, the
+  // album with its four notes; 再拍一次, 咔嚓 again, the first shot chosen back, 放進相簿; then the
+  // chapter's end — its lines a tap a beat, the tray's first coin, the sticker card, chapter 2's card
+  // with 「未完待續」 and its line — and the 目錄
   'photo-spread': [
+    { wait: 'cuddling' },
+    { tap: [322, 456] },
     { wait: 'reaching' },
-    { drag: [[80, 610], [142, 610]] },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="beep"]', paused: true },
     { settle: 1500 },
-    { tap: [280, 234] },
-    { settle: 2500 },
-    { tap: [340, 374] },
-    { settle: 2500 },
-    { drag: [[140, 610], [205, 610]] },
+    { drag: [[304, 604], [260, 604]] },
+    { settle: 1200 },
+    { tap: [270, 386] },
     { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
     { tapEl: '[data-shutter]', paused: true },
     { expect: '[data-screen="album"] [data-album-note="mocha"]', timeout: 10_000 },
@@ -200,18 +255,27 @@ const SCENARIOS = {
     { tapEl: '[data-album-choice="0"]' },
     { expect: '[data-album-choice="0"][data-chosen]' },
     { tapEl: '[data-button="keep"]' },
+    { expect: '[data-end-layer] [data-card-line="nar"]', timeout: 5_000 },
+    { expect: '[data-slot="hud"] [data-tray="0"]', absent: '[data-sticker-card]' },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-end-layer] [data-card-line="mocha"]' },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-tray-fill="1"]', timeout: 3_000 },
+    { heard: ['dropCoin'] },
     { expect: '[data-sticker-card]', timeout: 5_000 },
+    { expect: '[data-chapter-board="2"][data-card-soon]', timeout: 8_000 },
+    { expect: '[data-card-talk] [data-card-line="nar"]', timeout: 6_000 },
+    { tapEl: '[data-card-next]' },
   ],
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'photo-spread': '[data-screen="contents"]', 'stickers-c1p2': '[data-screen="contents"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'photo-spread': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
 const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]' };
 
 /** Scenarios that start somewhere other than `#/popup?page=<id>`: a PageLab stage, live. */
 const SCENARIO_URLS = {
-  'lab-gates': '#/pagelab?fixture=word-poke',
   'hints-c1p2': '#/popup?page=c1p2&speed=fast',
   'stickers-c1p2': '#/pagelab?fixture=page-hud',
   'photo-spread': '#/pagelab?fixture=spread-shell',
@@ -360,12 +424,17 @@ async function run(page, base, id, kind, viewport, shots) {
       await input.up();
       await shot('tap');
     } else if (stepDef.drag) {
-      const [a, b] = stepDef.drag;
-      await input.down(toClient(a));
-      for (let i = 1; i <= 12; i++) {
-        const t = i / 12;
-        await input.move(toClient([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]));
-        await page.waitForTimeout(16);
+      // Through every point in turn (a straight drag has two; a turn on a rim, an arc of them)
+      const points = stepDef.drag;
+      await input.down(toClient(points[0]));
+      const per = Math.max(2, Math.round(12 / (points.length - 1)));
+      for (let k = 1; k < points.length; k++) {
+        const [a, b] = [points[k - 1], points[k]];
+        for (let i = 1; i <= per; i++) {
+          const t = i / per;
+          await input.move(toClient([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]));
+          await page.waitForTimeout(16);
+        }
       }
       if (!pauseChecked) {
         // Touch pauses the world: no tick runs while the finger is down

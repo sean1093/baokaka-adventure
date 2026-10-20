@@ -59,12 +59,20 @@ export function clockChip(ctx: KitCtx, w = 110, moon = true): string {
   return `<rect width="${w}" height="34" rx="17" fill="${C.cover}"/><rect x="2" y="2" width="${w - 4}" height="30" rx="15" fill="none" stroke="${ref(ctx, 'foil')}" stroke-width="1.2"/>${icon}`;
 }
 
+/** One foil coin of the 抓周 tray, centred on (cx, 0). */
+export function trayCoin(ctx: KitCtx, cx: number, r = 6): string {
+  return `<circle cx="${f1(cx)}" r="${f1(r + 0.5)}" fill="${ref(ctx, 'coin')}"/><circle cx="${f1(cx)}" r="${f1(r - 1.4)}" fill="none" stroke="${C.coinRing}" stroke-width=".7" opacity=".6"/><circle cx="${f1(cx - 2)}" cy="-2" r="2" fill="${C.brassShine}" opacity=".8"/>`;
+}
+
+/** The x of the tray's slot `i` (0–8). */
+export const traySlotX = (i: number, step = 18): number => i * step + 7;
+
 /** The 9-slot 抓周 tray: foil coins (filled) and blind-embossed paper dimples (empty), 18 apart from x 7. */
 export function trayCoins(ctx: KitCtx, filled: number, step = 18, r = 6): string {
   return Array.from({ length: 9 }, (_, i) => {
-    const cx = f1(i * step + 7);
+    const cx = f1(traySlotX(i, step));
     return i < filled
-      ? `<circle cx="${cx}" r="${f1(r + 0.5)}" fill="${ref(ctx, 'coin')}"/><circle cx="${cx}" r="${f1(r - 1.4)}" fill="none" stroke="${C.coinRing}" stroke-width=".7" opacity=".6"/><circle cx="${f1(i * step + 5)}" cy="-2" r="2" fill="${C.brassShine}" opacity=".8"/>`
+      ? trayCoin(ctx, traySlotX(i, step), r)
       : `<circle cx="${cx}" r="${r}" fill="${C.pageDark}"/><circle cx="${cx}" cy=".8" r="${r}" fill="none" stroke="${C.dimpleLight}" stroke-width="1"/><circle cx="${cx}" cy="-.4" r="${r}" fill="none" stroke="${C.dimpleShade}" stroke-width=".8"/>`;
   }).join('');
 }

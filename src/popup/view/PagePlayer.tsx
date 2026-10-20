@@ -163,6 +163,8 @@ export function chapterLine(def: Pick<PageDef, 'chapter' | 'index'>): string {
 export interface PageChrome {
   /** Treasures found: the 抓周 tray's coins */
   readonly coins?: number;
+  /** The newest coin fills its slot (#107, the chapter's end): a serial that replays it */
+  readonly trayFill?: number;
   /** The page's stickers so far: 解開, 淘氣, 土地公 */
   readonly stickers?: readonly [boolean, boolean, boolean];
   /** 左手模式: the bottom bar mirrored */
@@ -662,6 +664,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         index={def.index}
         time={sky.time}
         coins={pageChrome?.coins ?? 0}
+        fill={pageChrome?.trayFill}
         scale={hudScale}
         textScale={textScale}
       />

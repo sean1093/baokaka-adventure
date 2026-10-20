@@ -112,6 +112,8 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'rec.pa.ride.3': { who: 'pa', text: '車門即將關閉。' },
   'rec.uncle.tap': { who: 'uncle', text: '呵呵，囡仔，慢慢仔來。' },
   'rec.mocha.squint': { who: 'mocha', text: '……我是不是在哪裡看過你？' },
+  // Under the next chapter's card while that chapter is still being made (#107, D-70)
+  'rec.soon.1': { who: 'nar', text: '下一站還在畫……未完待續。' },
   // § 5.4 word learning: the source line, Baokaka's word, Mocha's translation (and its follow-up);
   // `content/words.ts` strings them into learn beats (#99). Sources that make no sound have no line.
   'learn.beep.src': { who: 'npc', label: '讀卡機', text: '嗶！' },

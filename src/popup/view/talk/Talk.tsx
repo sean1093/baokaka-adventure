@@ -21,12 +21,15 @@ import './talk.css';
 /** What the thought bubble shows for his state, or null for none (GDD § 2.2.6). */
 export function bubbleShow(def: PageDef, state: SimState): BubbleShow | null {
   const { mode, target } = state.baby;
-  const kind = target === null ? null : target === 'mocha' ? 'mocha' : def.attractors.find((a) => a.id === target)?.kind ?? null;
+  const attractor = target === null || target === 'mocha' ? undefined : def.attractors.find((a) => a.id === target);
+  const kind = target === null ? null : target === 'mocha' ? 'mocha' : attractor?.kind ?? null;
+  // A spread's goal is the chapter treasure (#107): the bubble shows it, not the bead
+  const treasure = def.spread && attractor?.goal ? { treasure: def.chapter } : {};
   switch (mode) {
     case 'moving':
-      return kind === null ? null : { kind: 'want', target: kind, reach: false };
+      return kind === null ? null : { kind: 'want', target: kind, reach: false, ...treasure };
     case 'reaching':
-      return kind === null ? { kind: 'text', text: '要！' } : { kind: 'want', target: kind, reach: true };
+      return kind === null ? { kind: 'text', text: '要！' } : { kind: 'want', target: kind, reach: true, ...treasure };
     case 'looking':
       return { kind: 'text', text: '？' };
     case 'crying':

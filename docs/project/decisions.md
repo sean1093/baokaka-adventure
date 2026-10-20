@@ -814,3 +814,31 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - 1-3's word tutorial (#99) stays where it is (`game/words.ts`). A later page that needs a scripted beat adds a row to `SCRIPTS`.
 - The screen fixtures' "played" save now solves the whole prologue before 1-2, since 1-2 unlocks only after 0-4.
 - #108 replaces the placeholder backdrops and the shelf and basket furniture with the prologue's art. Place the basket's rim at the `basket` perch node (0-4: (34, 420)).
+
+### D-70 · 2026-10-19 · Chapter 1's pages, the chapter's end and riding parts (#107)
+
+**Context.** #107 builds 1-1 and 1-3…1-6 from GDD § 4.3 and the chapter-end flow (album → end lines → the tray's first slot → the next chapter's card, a 「未完待續」 card until chapter 2 exists). Building them showed:
+- 1-1 as written puts four touchables plus perches on a chapter's first page (bible § 4.2 allows three), and its sway is a "prop pull-tab", which no preset is;
+- 1-3's 淘氣 (say 嗶！ to the robot) comes free with the solution, because his 嗶！ at gate B always reaches it;
+- 1-5's par is 2, not 3, and its 淘氣 (Mocha rides the elevator three times without him) can't happen: he boards the car the tick it reaches B1, and the next ride up ends the page;
+- 1-6's lid sits on a sliding cart, but parts are drawn and touched at a fixed `hit`; the pigeon on the cart node left him one edge from the 雞腿, so the photo moment always came after the grab;
+- the docs don't say how the end lines show, how the tray "fills", or what the 「未完待續」 card looks like.
+
+**Decision.**
+1. **1-1** has two hand straps (Mocha on the first; the second and the rack carry paw prints) plus the `sway` tab: three. `sway` is a `tab` (`left` / `level` / `right`), a pure toy. The page opens on 廣播姊姊's ride lines `rec.pa.ride.1`, `.2` (the card said 「下一站，台北車站」).
+2. **1-3's 淘氣** is 「對載著摩卡的掃地機器人說『嗶！』」: a `beep` heard while Mocha rides the spinning robot (a new perch, `robotLid`, a jump from the counter). The robot still spins at every 嗶！ in reach, so everyone sees it in the solution; the sticker needs the cat on board.
+3. **1-5's 淘氣** is Mocha's: he sits on the shop counter's 叮咚 bell (`onPart`, the bell starts `down`). Tapping him (`pet`) rings it again; the first ring plays the 店員小哥 cameo (`c1p5.clerk.1`–`3`), and three rings are 「讓摩卡按三次叮咚鈴」. It also shows "tap Mocha to do it again" before the elevator needs it. Par 2 is written back to the GDD.
+4. **1-4's 淘氣** counts four turns with him anywhere on the disk (its centre or an aisle seat). The solution says 嗶！ before the turn back, so each gesture starts from its own part states (the hint fallback, #100, matches on them).
+5. **1-6.** The cart carries a step (`cartStep`, where the pigeon lands) and the bento (`K`, the 雞腿): he reaches two edges out, so the photo moment begins on his approach. With Mocha on the awning the pigeon ignores the lid. The cart starts at `middle`, so the 土地公 at `kitchen` is a find.
+6. **Riding parts.** `PartDef.ridesOn?: Id` names a node the part sits on. Its `hit` and art are authored where the node is in the initial state, and the view moves both with the node (`gestures.ts` `rideOffset` / `rideHome`; `PageView` translates the part; the flap's halo and ghost hand follow the moved hit). The simulation never reads it: event origins use the authored hit. 1-6's lid rides the cart; 1-5's panel rides the car.
+7. **The placeholder stage.** A perch on a node a moving part carries gets no post (the part's art holds it), and a carriage carries only the nodes Baokaka walks (the cart's awning perch no longer stops its card being drawn).
+8. **The chapter's end** (`GameShell`): after 「放進相簿」 the end lines (`content/chapters.ts` `endLines`) play as a modal over the dimmed spread, a tap a beat, on the chapter card's line cards. The HUD holds the new coin back (`trayHold`) until then; then it drops into its slot with one foil flare (`TopHud` `fill`; a fade under reduced motion), with the coin and sparkle sounds, and holds 1.3 s. Then the sticker card and the chapter turn. After the book's last built chapter the turn shows the next chapter's card with 「未完待續」 (`UI.chapterCard.soon`) on its split-flap row and `rec.soon.1` 「下一站還在畫……未完待續。」 under it, then the 目錄. A replayed spread plays the end lines again, with no fill.
+9. **The thought bubble** draws a spread's treasure itself (`treasureArt`, `data-bubble-treasure`), not the bead.
+10. **The lab stages are gone.** `lab-gates` and `lab-spread` (and `SPREAD_REGISTRY`) are replaced by the real pages: the `word-*` fixtures are on `c1p3`; `spread-c1`, `photo-moment` and `spread-shell` are on `c1p6`; `check:play` plays `c1p3` and `photo-spread` on the real pages. `lab-words` (every word at once) stays, now on `c1p3`.
+
+**Why.** Each change keeps the GDD's puzzle and aha, and makes the 淘氣 a deliberate act (it is a reward for playing around, not for solving). Riding is the smallest generic answer to "a thing on a moving thing": data, one view transform and a hit shift, with no change to the core. Holding the coin back until the lines are read makes the tray's slot fill in front of the player, as the GDD asks.
+
+**Consequences.**
+- Saves and fixtures that start a player "at 1-2" now solve 1-1 too, since 1-2 unlocks after it.
+- #108 draws chapter 1's art for these keys: backdrops `c1/car`, `c1/gates`, `c1/hall`, `c1/bento-shop`, `c1/bento-spread` (the placeholder stage until then); parts `c1/map`, `c1/sway`, `c1/card`, `c1/reader`, `c1/gate`, `c1/robot`, `c1/turntable`, `c1/elevator`, `c1/elevator-panel`, `c1/counter-bell`, `c1/bento-cart`, `c1/bento-lid`; creature `c1/backpacker`. The cart's awning and the car's panel need drawing on their parts (no perch post is drawn for them).
+- Chapters 2–10 add `endLines` rows; the 「未完待續」 card moves on as each chapter lands.

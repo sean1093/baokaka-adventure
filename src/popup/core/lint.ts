@@ -511,6 +511,7 @@ class Linter {
         }
       }
       for (const n of p.route ?? []) this.node(n, `${where} route`, p.id);
+      this.node(p.ridesOn, `${where} ridesOn`, p.id);
       if (p.attractor !== undefined && this.ref(this.attractors, 'attractor', p.attractor, `${where} attractor`, p.id)) {
         if (this.attractors.get(p.attractor)!.kind !== 'light') this.error('L01-wrong-kind', [p.id, p.attractor], `${where} owns attractor '${p.attractor}', which isn't a light`);
       }

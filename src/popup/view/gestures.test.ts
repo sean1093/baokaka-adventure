@@ -18,6 +18,8 @@ import {
   magnet,
   minHit,
   previewNodePos,
+  rideOffset,
+  shiftHit,
   projectTrack,
   rotaryDelta,
   rotaryStep,
@@ -118,6 +120,21 @@ describe('targets (what a finger can touch)', () => {
     expect(t.map((x) => x.key).sort()).toEqual(['baby:baby', 'crib-rail', 'mobile', 'tudigong:tudigong']);
     const done = replay(c0p1, c0p1.solution).state;
     expect(targetsOf(c0p1, done).some((x) => x.kind === 'baby')).toBe(false);
+  });
+
+  test('a part riding a node moves with it (#107): 1-6\'s bento lid travels with its cart', () => {
+    const c1p6 = pageById('c1p6')!;
+    const start = initialState(c1p6);
+    const lid = () => c1p6.parts.find((p) => p.id === 'lid')!;
+    expect(rideOffset(c1p6, start, lid())).toEqual([0, 0]);
+    expect(targetsOf(c1p6, start).find((x) => x.key === 'lid')?.hit).toEqual(lid().hit);
+    // The cart from the middle stop to the platform: 36 units left, and the lid's touch with it
+    const atPlatform = withPartState(start, 'cart', 'platform');
+    expect(rideOffset(c1p6, atPlatform, lid())).toEqual([-36, 0]);
+    expect(targetsOf(c1p6, atPlatform).find((x) => x.key === 'lid')?.hit).toEqual({ x: 258, y: 428, w: 56, h: 56 });
+    expect(shiftHit({ cx: 1, cy: 2, r: 30 }, [3, 4])).toEqual({ cx: 4, cy: 6, r: 30 });
+    // A part that rides nothing never moves
+    expect(rideOffset(c1p6, atPlatform, c1p6.parts.find((p) => p.id === 'cart')!)).toEqual([0, 0]);
   });
 
   /** Every frame of a page's solution (with the idle ticks before it). */

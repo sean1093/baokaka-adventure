@@ -173,6 +173,29 @@ describe('PageView motion', () => {
   });
 });
 
+describe('the spread\'s treasure (#107)', () => {
+  test('the thought bubble shows the chapter treasure, not the bead, when he wants it', () => {
+    const c1p6 = pageById('c1p6')!;
+    const s = replay(c1p6, [{ tap: 'lid' }, { wait: 'settle' }]).state;
+    expect(s.baby.mode).toBe('reaching');
+    expect(s.baby.target).toBe('drumstick');
+    const fx = layers(render(c1p6, s, s)).fx;
+    expect(fx).toContain('data-bubble-treasure="1"');
+    // On an ordinary page the bead's icon stays
+    const c1p2 = pageById('c1p2')!;
+    const reaching = replay(c1p2, [{ set: 'train', to: 'half' }, { wait: 'settle' }]).state;
+    expect(layers(render(c1p2, reaching, reaching)).fx).not.toContain('data-bubble-treasure');
+  });
+
+  test('the lid is drawn where the cart has taken it', () => {
+    const c1p6 = pageById('c1p6')!;
+    const start = initialState(c1p6);
+    expect(render(c1p6, start, start)).not.toContain('data-rides=');
+    const moved = withPartState(start, 'cart', 'platform');
+    expect(render(c1p6, moved, moved)).toContain('data-rides="K" transform="translate(-36 0)"');
+  });
+});
+
 describe('PageView thought bubble change of mind (#98, GDD § 2.2.6)', () => {
   const def = pageById('c0p2')!;
   let s = initialState(def);

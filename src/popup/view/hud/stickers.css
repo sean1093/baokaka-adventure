@@ -169,3 +169,71 @@
 .grab-burst-fade {
   animation: grab-burst-fade 650ms ease-out forwards;
 }
+
+/*
+ * The 抓周 tray's slot filling at a chapter's end (#107, TopHud `fill`): the coin drops in from above
+ * and squashes into its dimple, and one foil ring flares out and fades (a single swing, well under
+ * the 3 Hz flashing limit). Reduced motion: the coin fades in, no ring.
+ */
+@keyframes tray-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-26px) scale(1.6);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0) scale(1.18, 0.82);
+  }
+  78% {
+    transform: translateY(-2px) scale(0.94, 1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tray-flare {
+  0%,
+  45% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+.tray-drop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: tray-drop 700ms cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+.tray-flare {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: tray-flare 1100ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tray-drop {
+    animation: stk-fade 300ms ease-out both;
+  }
+  .tray-flare {
+    animation: none;
+  }
+}
+
+.reduce-motion .tray-drop {
+  animation: stk-fade 300ms ease-out both;
+}
+
+.reduce-motion .tray-flare {
+  animation: none;
+}

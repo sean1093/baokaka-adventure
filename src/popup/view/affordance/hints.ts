@@ -46,8 +46,10 @@ export function haloShape(def: PageDef, state: SimState, target: Target): HaloSh
     const [cx, cy] = part.center ?? hitCenter(part.hit);
     return { hit: { cx, cy, r: r * 1.12 } };
   }
-  if (part.preset === 'flap' && !('r' in part.hit)) {
-    return { hit: { x: part.hit.x + 4, y: part.hit.y + 4, w: Math.max(40, part.hit.w - 22), h: Math.max(32, part.hit.h - 22) } };
+  // The target's hit: a flap riding a node (`ridesOn`, #107) has moved with it
+  const fh = target.hit;
+  if (part.preset === 'flap' && !('r' in fh)) {
+    return { hit: { x: fh.x + 4, y: fh.y + 4, w: Math.max(40, fh.w - 22), h: Math.max(32, fh.h - 22) } };
   }
   return { hit: target.hit };
 }
@@ -71,11 +73,12 @@ export function handGesture(def: PageDef, state: SimState, target: Target, hint:
     const steps = hint.stop === undefined ? 1 : ((hint.stop - index + count) % count) || count;
     return { kind: 'turn', center: part.center ?? at, radius, degrees: (360 / Math.max(1, count)) * steps };
   }
-  if (part.preset === 'flap' && input !== 'none' && !('r' in part.hit)) {
-    // The dog-ear corner, as FlapView places the card inside its hit area
-    const w = Math.max(40, part.hit.w - 22);
-    const h = Math.max(32, part.hit.h - 22);
-    return { kind: 'lift', at: [part.hit.x + 4 + w - 6, part.hit.y + 4 + h - 4], rise: Math.max(18, h * 0.5) };
+  const fh = target.hit;
+  if (part.preset === 'flap' && input !== 'none' && !('r' in fh)) {
+    // The dog-ear corner, as FlapView places the card inside its hit area (moved with a riding flap)
+    const w = Math.max(40, fh.w - 22);
+    const h = Math.max(32, fh.h - 22);
+    return { kind: 'lift', at: [fh.x + 4 + w - 6, fh.y + 4 + h - 4], rise: Math.max(18, h * 0.5) };
   }
   return { kind: 'tap', at };
 }
