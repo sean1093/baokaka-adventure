@@ -11,7 +11,8 @@ import type { Id, Input, PageDef, SimState } from './types';
  *    caller's clock) and stopping at the first goal, so its `nextAction` is exact: fewest moves,
  *    then fewest ticks (`none` = "wait"). `workers/hint.worker.ts` runs this off the main thread.
  * 2. **The stored solution**, when the solver gives up (cap, time, an error, a throw): the
- *    `solution` step whose part states match the current ones (`solutionAction`).
+ *    `solution` step whose part states (and creature positions, first) match the current ones
+ *    (`solutionAction`).
  * 3. **重來 + step 1** when nothing matches (`source: 'restart'`): the hint offers 重來, and
  *    level 3 restarts the page and plays the solution's first gesture.
  *
@@ -98,6 +99,10 @@ export function restartAction(def: PageDef): Input {
 
 const sameParts = (a: SimState, b: SimState, ids: readonly Id[]) => ids.every((id) => a.parts[id] === b.parts[id]);
 
+/** The same part states and the same creature positions (a herded squirrel, a shooed egret: #114). */
+const sameWorld = (a: SimState, b: SimState, ids: readonly Id[]) =>
+  sameParts(a, b, ids) && Object.keys(b.creatures).every((id) => a.creatures[id] === b.creatures[id]);
+
 const inputKey = (i: Input) => JSON.stringify(i);
 
 /** Whether `input` does something from `state` a wait wouldn't (and is one the player could make now). */
@@ -114,9 +119,11 @@ function effective(def: PageDef, state: SimState, input: Input): boolean {
  * The stored-solution fallback (GDD § 2.7): the first solution gesture played from part states equal
  * to the current ones that still does something now (one already done — Mocha already on that
  * perch — is skipped), and only once the page has settled if the solution let it settle first
- * (until then: wait). Parts compare exactly first, then only the parts the solution drives (a spun
- * 床鈴 doesn't hide the way). A match with nothing left to do, or the part states the solution's
- * last gesture left, mean "wait" — while a wait still changes something. Null when nothing
+ * (until then: wait). The parts and the creatures' positions compare exactly first (a page whose
+ * puzzle is a creature, like 2-4's squirrel, has few parts or none: #114), then the parts alone,
+ * then only the parts the solution drives (a spun 床鈴 doesn't hide the way). A match with nothing
+ * left to do, or the part states the solution's last gesture left, mean "wait" — while a wait still
+ * changes something. Null when nothing
  * matches (or the page has settled with nothing to do).
  */
 export function solutionAction(def: PageDef, state: SimState): Input | null {
@@ -125,11 +132,11 @@ export function solutionAction(def: PageDef, state: SimState): Input | null {
   const all = Object.keys(state.parts);
   // Waiting only helps while something is still moving: a settled page that matches nothing to do is lost
   const moving = waitMoves(def, state);
-  for (const ids of [all, driven]) {
-    const matches = gestures.filter((g) => sameParts(g.before, state, ids));
+  for (const [ids, same] of [[all, sameWorld], [all, sameParts], [driven, sameParts]] as const) {
+    const matches = gestures.filter((g) => same(g.before, state, ids));
     const next = matches.find((g) => effective(def, state, g.input));
     if (next !== undefined) return next.settled && moving ? NONE : next.input;
-    if (moving && (matches.length > 0 || (after !== null && sameParts(after, state, ids)))) return NONE;
+    if (moving && (matches.length > 0 || (after !== null && same(after, state, ids)))) return NONE;
   }
   return null;
 }

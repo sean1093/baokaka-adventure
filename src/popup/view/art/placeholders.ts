@@ -480,7 +480,7 @@ export function origamiBird(ctx: KitCtx): string {
  * The 土地公 peeking (the per-page secret sticker): a round face with a long white beard and kind
  * eyes under the chapter's hat (GDD § 5.1: each chapter dresses him). `''` is his own red 員外帽
  * with an ochre band (the prologue); `站務帽` is chapter 1's navy station cap with a peak and a
- * foil badge (#108).
+ * foil badge (#108); `斗笠` is chapter 2's wide straw hat (#114; #115 adds his 掃把).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -488,7 +488,10 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
     + `<path d="M-4.6 -1.2q1.6 -1.2 3 0M1.6 -1.2q1.6 -1.2 3 0" stroke="${C.standeeCard}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`
     + `<path d="M-3.6 .9q.9 .8 1.8 0M1.8 .9q.9 .8 1.8 0" stroke="${C.ink}" stroke-width=".9" stroke-linecap="round" fill="none"/>`
     + `<circle cx="-4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/><circle cx="4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/>`;
-  const cap = hat === '站務帽'
+  const cap = hat === '斗笠'
+    ? `<path d="M-14 -2.2L0 -12.4L14 -2.2Q0 .6 -14 -2.2Z" fill="${C.corrugatedLight}"/><path d="M-7 -7.2L7 -7.2M-10.4 -4.6L10.4 -4.6" stroke="${C.corrugatedDark}" stroke-width=".8" opacity=".7"/>`
+      + `<path d="M-14 -2.2Q0 .6 14 -2.2" stroke="${C.corrugatedDark}" stroke-width="1.2" fill="none"/><circle cx="0" cy="-12.2" r="1.3" fill="${C.corrugatedDark}"/>`
+    : hat === '站務帽'
     ? `<path d="M-7.6 -2.4q0 -7.2 7.6 -7.2q7.6 0 7.6 7.2z" fill="${T.capNavy}"/><path d="M-8.6 -2.6h17.2l-1 2.2h-15.2z" fill="${C.printDark}"/>`
       + `<path d="M-9.4 -.8q4 2.6 9.4 2.6" stroke="${C.printDark}" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="0" cy="-5.6" r="1.7" fill="${ref(ctx, 'foil')}"/>`
     : `<path d="M-7 -2a7.5 7.5 0 0 1 14 0z" fill="${C.hatRed}"/><rect x="-8.5" y="-3.5" width="17" height="3" rx="1.5" fill="${C.ochre}"/>`
@@ -498,6 +501,17 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
 
 /** A light attractor where it lies: a little paper star lamp. */
 const lampIcon = `<path d="M0 -10l2.6 6.4l6.9 .5l-5.3 4.4l1.7 6.7l-5.9 -3.7l-5.9 3.7l1.7 -6.7l-5.3 -4.4l6.9 -.5z" fill="${C.lamp}" stroke="${C.lampAmber}" stroke-width="1"/>`;
+
+/**
+ * A light attractor that follows a part (`nodeBy`: 2-2's spotlight, #114): a pool of lamplight on
+ * the floor under a faint beam, so the light reads as a place he can sit in, not a thing to grab.
+ * The origin is the floor point the light is aimed at.
+ */
+export function spotPool(ctx: KitCtx): string {
+  return `<path d="M-6 -150L6 -150L30 6L-30 6Z" fill="${C.lamp}" opacity=".16"/>`
+    + softEllipse(ctx, 0, 6, 34, 10, 'lamp', 0.75, 'blur8')
+    + `<ellipse cx="0" cy="6" rx="24" ry="6" fill="${C.lamp}" opacity=".62"/>`;
+}
 
 /** The goal and other attractors where they lie (bead for shinies; simple paper icons otherwise). */
 export function attractorArt(ctx: KitCtx, kind: Kind): string {

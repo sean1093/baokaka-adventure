@@ -38,7 +38,7 @@ import { NO_AFFORDANCE, wearsMarigold, type AffordanceFlags, type PartLook } fro
 import { treasureOnPage } from './photo/treasureArt';
 import { dressOf, ledgeStyleOf, ownsPost } from './art/dress';
 import { dressedLedge, foregroundCard } from './art/ledges';
-import { attractorArt, chapterSky, spine, perchMark, perchPost, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
+import { attractorArt, chapterSky, spine, perchMark, perchPost, rail, ramp, spotPool, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
 import { NO_GESTURE, hitCenter, minHit, rideHome, shiftHit, targetsOf, type GestureFlags } from './gestures';
@@ -269,7 +269,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     const node = attractorNode(def, state, a);
     const p = node === null ? undefined : drawnNodePos(def, prev, state, node, ms, reduced, preview);
     if (p === undefined) return null;
-    return <AttractorItem key={a.id} ctx={ctx} id={a.id} kind={a.kind} x={p[0]} y={p[1]} treasure={a.goal && def.spread ? def.chapter : undefined} />;
+    // A spotlight's light is a pool on the floor; a held item sits in its creature's paws (#114)
+    const look = a.kind === 'light' && a.nodeBy !== undefined ? 'pool' : a.heldBy !== undefined && state.dropped?.[a.id] === undefined ? 'held' : undefined;
+    return <AttractorItem key={a.id} ctx={ctx} id={a.id} kind={a.kind} x={p[0]} y={p[1]} look={look} treasure={a.goal && def.spread ? def.chapter : undefined} />;
   });
   // A tap on a perch he can't get to (GDD § 2.3): its paw shakes "not connected" while he looks at it and says 「喵？」 (#183)
   const nope = events.find((e) => e.type === 'mochaNope')?.id;
@@ -563,12 +565,17 @@ function PartBadge({ hit, kind }: { hit: Hit; kind: 'locked' | 'done' }) {
   return <ArtG html={html} />;
 }
 
-function AttractorItem({ ctx, id, kind, x, y, treasure }: { ctx: KitCtx; id: string; kind: PageDef['attractors'][number]['kind']; x: number; y: number; treasure?: number }) {
+function AttractorItem({ ctx, id, kind, x, y, treasure, look }: { ctx: KitCtx; id: string; kind: PageDef['attractors'][number]['kind']; x: number; y: number; treasure?: number; look?: 'pool' | 'held' }) {
   // A spread's goal is the chapter treasure (GDD § 2.9, #103), drawn as itself in its cup of light
-  const html = useMemo(() => (treasure === undefined ? attractorArt(ctx, kind) : treasureOnPage(ctx, treasure)), [ctx, kind, treasure]);
-  // Shinies hover a little above the ledge, in their cup of light
+  const html = useMemo(
+    () => (look === 'pool' ? spotPool(ctx) : treasure === undefined ? attractorArt(ctx, kind) : treasureOnPage(ctx, treasure)),
+    [ctx, kind, treasure, look],
+  );
+  // Shinies hover a little above the ledge, in their cup of light; a pool of light lies on the floor;
+  // a held item is up in its creature's paws, a little smaller
+  const at = look === 'pool' ? `translate(${r2(x)} ${r2(y)})` : look === 'held' ? `translate(${r2(x + 9)} ${r2(y - 20)}) scale(0.72)` : `translate(${r2(x)} ${r2(y - 14)})`;
   return (
-    <g data-attractor={id} transform={`translate(${r2(x)} ${r2(y - 14)})`}>
+    <g data-attractor={id} transform={at}>
       <ArtG html={html} />
     </g>
   );

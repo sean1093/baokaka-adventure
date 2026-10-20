@@ -958,3 +958,21 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 **Consequences.**
 - #135 adds the ending's photo as the last leaf (`ALBUM_LEAVES`), credits over the album photos, and makes the 象山 postcard open the bonus page.
 - Chapter issues (#114 …) get their album pages for free: a chapter's leaf opens as its first page is registered; its treasure art replaces the foil token (`treasureArt.ts`).
+
+### D-77 · 2026-10-20 · Chapter 2's pages: specs in `docs/design/pages/`, the outline's changes, placeholder visuals for M2's mechanics (#114)
+
+**Context.** #114 writes chapter 2 「會揮手的公園」 in full and builds 2-1 … 2-6 as data. The GDD's § 4.4 gives one row per page; the issue lets the full spec live in the GDD or in a linked page doc. Building the pages also showed where the outline and the M2 engine (#112, D-75) disagree, and #112's notes listed view gaps the pages would show (a pressure plate drawn as a carriage, a light as a star, a held item on the floor beside its creature).
+
+**Decision.**
+1. **Chapter specs live in `docs/design/pages/cN.md`**, linked from the chapter's § 4.4 heading, in the § 4.3 format plus a node/edge sketch and the solver's numbers. § 4.4's rows stay as the outline, edited where the spec changed them. (The GDD is long; one file per chapter keeps each chapter reviewable on its own.)
+2. **Outline changes** (listed in `pages/c2.md`): 2-2 opens with Mocha in view, so hiding him in the 店員小哥's crate comes first (a light never beats Mocha), and the chapter's cameo plays there with Mocha's new line 「……又是你？」; 2-3's dog sleeps on the bead and Mocha is the first want, so the turtle's 淘氣 needs a trip back; 2-4's squirrel flees only when Mocha lands next to it; 2-5's 淘氣 becomes four egret rides on the pad, because a puff (`mochaPuff`) is a UI event and mischief predicates name § 3.2 events only (the C7 puff on the wet stone stays as the page's lesson; the stone is wet while the egret stamps on the pad, so L16 holds without an always-wet perch); 2-6's flaps are a bridge, a branch for Mocha and the portrait corner.
+3. **The stored-solution hint fallback also matches creatures** (`core/hint.ts` `solutionAction`): it first looks for a solution gesture played from the same part states *and* creature positions, then part states alone, then the driven parts. Pages whose puzzle is a creature (2-4 has no parts; 2-5's egret) otherwise looped on the first gesture that still "did something" (sending the squirrel back up).
+4. **Placeholder visuals for the M2 mechanics, until #115's art:** a node attached to a part that never moves it (a pressure plate) rides no carriage (`stage.ts`); a light attractor that follows a part (`nodeBy`) is a pool of lamplight on the floor under a faint beam (`spotPool`); a held item (`heldBy`, not yet dropped) is drawn smaller, up in its creature's paws. Four chapter 2 parts get real baked drawings now because their preset placeholder misleads (`env/art/c2.ts`): the umbrella (a pushable's default is a bead), the curtain (a lift's default is an elevator car), the trap-door plate and the lily-pad wheel. The 土地公's 斗笠 is drawn on the live placeholder. Creatures stay origami birds and backdrops the chapter's placeholder stage until #115.
+5. **Chapter 2's music-box loop** (`chapter2`, 8 bars in D) is added with its pages, so the chapter is not silent.
+
+**Why.** Each change keeps a page solver-green with no soft traps or free 淘氣, or keeps the chapter readable and playable before its art lands, without new engine features (an issue would be filed for `mochaPuff` predicates if a later page needs one).
+
+**Consequences.**
+- #116 and #118 put their specs in `docs/design/pages/c3.md` / `c4.md`.
+- #115 replaces the placeholders above (and keeps the four baked parts' hit areas); the decoy look (a moon reflection, a bell) is still open for #116.
+- `photo-spread` now runs from 1-6 into chapter 2's card and 2-1; `photo-spread-c2` plays 2-6 through chapter 3's 「未完待續」 card.

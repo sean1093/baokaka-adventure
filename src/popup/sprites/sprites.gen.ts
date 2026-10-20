@@ -22,7 +22,7 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
   "grades": {
     "775-785-860": {
       "by": [0.775, 0.785, 0.86],
-      "chapters": [0, 1]
+      "chapters": [0, 1, 2]
     }
   },
   "sprites": {
@@ -332,7 +332,16 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "events": []
         }
       },
-      "source": "aaa0458d107e78f2"
+      "source": "aaa0458d107e78f2",
+      "graded": {
+        "775-785-860": {
+          "bytes": [
+            [7352, 12598],
+            [7342, 12776]
+          ],
+          "source": "6f2dfd7d718f1cdc"
+        }
+      }
     },
     "baokaka.hug": {
       "kind": "pose",
