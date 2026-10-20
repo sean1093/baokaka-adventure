@@ -122,6 +122,10 @@ const ON_SPREAD: NavState = { base: { kind: 'page', id: 'c1p6', run: 0 }, layer:
 const AT_SPREAD_C2 = (['c2p1', 'c2p2', 'c2p3', 'c2p4', 'c2p5'] as const).reduce((s, id) => completePage(s, id, { moves: 3 }), C1_DONE);
 const C2_DONE = keepPhoto(completePage(AT_SPREAD_C2, 'c2p6', { moves: 4 }), 2, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 16, 50) });
 const ON_SPREAD_C2: NavState = { base: { kind: 'page', id: 'c2p6', run: 0 }, layer: null };
+/** At 3-6 (#116): chapters 1–2 and 3-1 … 3-5 solved; then chapter 3 done, the 書 photo kept. */
+const AT_SPREAD_C3 = (['c3p1', 'c3p2', 'c3p3', 'c3p4', 'c3p5'] as const).reduce((s, id) => completePage(s, id, { moves: 3 }), C2_DONE);
+const C3_DONE = keepPhoto(completePage(AT_SPREAD_C3, 'c3p6', { moves: 4 }), 3, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 17, 20) });
+const ON_SPREAD_C3: NavState = { base: { kind: 'page', id: 'c3p6', run: 0 }, layer: null };
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -198,11 +202,25 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'Chapter 2\'s end (GDD § 5.2 2-6 end; #114): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——畫筆。」 and 摩卡\'s 「他說：『我要畫摩卡。』……好吧。」 Live, the last tap fills the 抓周 tray\'s second slot.',
   },
   {
-    name: 'chapter-soon-c3',
-    page: 'c2p6',
+    name: 'spread-shell-c3',
+    page: 'c3p6',
     steps: [],
-    screen: { nav: ON_SPREAD_C2, save: C2_DONE, soonCard: 3 },
-    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 3 since #114): chapter 2 done, the chapter turn drops chapter 3\'s card over the book on the quilt — 第三章, 「醉月湖的鵝」, 01:20, 公館 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
+    screen: { nav: ON_SPREAD_C3, save: AT_SPREAD_C3 },
+    note: '3-6 in the game shell (#116): play it live — the bookmark page, 不要！ to the glasses, the page turned, Mocha beside 藍教授, the photo moment with the 書, the album page, the chapter-end line, the tray\'s third coin, the sticker card, chapter 4\'s card with 「未完待續」, then the 目錄 (`check:play` scenario `photo-spread-c3`).',
+  },
+  {
+    name: 'chapter-end-c3',
+    page: 'c3p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C3, save: C3_DONE, endLinesOf: 3 },
+    note: 'Chapter 3\'s end (GDD § 5.2 3-6 end; #116): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——書。」 Live, the tap fills the 抓周 tray\'s third slot.',
+  },
+  {
+    name: 'chapter-soon-c4',
+    page: 'c3p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C3, save: C3_DONE, soonCard: 4 },
+    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 4 since #116): chapter 3 done, the chapter turn drops chapter 4\'s card over the book on the quilt — 第四章, 「霓虹燈睡著了」, 01:50, 西門 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
   },
   {
     name: 'album-c1-retake',
@@ -475,6 +493,104 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     page: 'c2p6',
     steps: [{ tap: 'flapA' }, { tap: 'flapB' }, { tap: 'flapC' }, { wait: 5 }],
     note: '2-6: all three canvas flaps popped up — the bridge over the stream (he crossed and reaches for the 畫筆), the branch to the parasol and the portrait corner, where the 土地公 is painted in. Three open is the 淘氣: the painting becomes Mocha\'s portrait.',
+    expect: { mode: 'reaching' },
+  },
+  // ——— Chapter 3 「醉月湖的鵝」 (#116): placeholder art until #117 ———
+  {
+    name: 'c3p1-start',
+    page: 'c3p1',
+    steps: [{ wait: 3 }],
+    note: '3-1 「綠線」 (#116): inside a 松山新店線 car at 公館, the doors shut, the bead at the platform\'s far end. 1-1\'s backpacker dozes against his huge backpack across the aisle: Baokaka crawled up to it and reaches. The ad poster on the platform wall.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c3p1-doors',
+    page: 'c3p1',
+    steps: [{ wait: 'settle' }, { say: 'bye' }, { wait: 'settle' }],
+    note: '3-1: 掰掰 woke the backpacker; he sat up on a seat (「Excuse me… where is 101?」), and Baokaka crawled on to the shut doors and reaches. 嗶！ opens them.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c3p2-start',
+    page: 'c3p2',
+    steps: [{ wait: 2 }],
+    note: '3-2 「椰林大道」 (#116): three parked bikes between the palms. The outer two stand across the path (their handlebar knobs to pull back into the rack); the 店員小哥\'s delivery bike, red box on its rack, is parked between them. Baokaka reaches for the bead at the avenue\'s end; Mocha on a palm top, a paw print on the delivery bike\'s seat.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c3p2-shoved',
+    page: 'c3p2',
+    steps: [{ wait: 2 }, { set: 'bikeA', to: 'rack' }, { wait: 3 }],
+    note: '3-2: the first bike pulled back into the rack shoved the delivery bike out across the path (and the 土地公 peeks from behind its palm). Baokaka got one gap further and reaches again. Mocha on its seat would roll it back and hold it.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c3p2-clerk',
+    page: 'c3p2',
+    steps: [{ mocha: 'seat' }, { wait: 1 }],
+    show: { talk: ['c3p2.clerk.1', 'c3p2.clerk.2', 'c3p2.clerk.3'] },
+    note: '3-2: Mocha sits on the delivery bike\'s seat and the 店員小哥 cameo answers — 「叮咚～歡迎光臨！」「……連腳踏車也是你的？」「我們是連鎖的。」',
+  },
+  {
+    name: 'c3p3-start',
+    page: 'c3p3',
+    steps: [{ wait: 3 }],
+    note: '3-3 「醉月湖」 (#116): the moon\'s reflection on the lake is a decoy (drawn as itself, not as a bead); Baokaka crawled to the water\'s edge and reaches for it. The goose on her nest by the path; Mocha on the lakeside bench, a paw print on the rock by the nest.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c3p3-learn',
+    page: 'c3p3',
+    steps: [{ wait: 3 }, { mocha: 'rock' }],
+    show: { words: { card: 'no' } },
+    note: 'Learning 不要！ (GDD § 5.4, #116): Mocha on the rock beside the nest; the goose reared up 「嘎！不要過來！」 and Baokaka copied her. The word card 「不要！：換一個想要的」 is taped over the dimmed page.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'c3p3-chase',
+    page: 'c3p3',
+    steps: [{ mocha: 'rock' }, { wait: 'settle' }, { say: 'no' }, { wait: 2 }],
+    note: '3-3: 不要！ to the moon — he turned to Mocha, and passing the nest sent the goose charging off after Mocha; the bead shines in the nest beside him.',
+  },
+  {
+    name: 'c3p4-start',
+    page: 'c3p4',
+    steps: [{ wait: 4 }],
+    note: '3-4 「傅鐘」 (#116): the brass bell high in its tower is a decoy (drawn as itself); Baokaka sits at the tower\'s foot reaching up for it. Pigeons peck on the garden gate\'s plate; the bell-rope tab hangs by the tower; Mocha on a palm, a paw print on the gate\'s pillar.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c3p4-rung',
+    page: 'c3p4',
+    steps: [{ wait: 4 }, { set: 'rope', to: 'down' }, { mocha: 'pillar' }, { wait: 'settle' }],
+    note: '3-4: the rope pulled, the bell rang and the pigeons flew up to the eaves (the 土地公 shows in the arch); Mocha waits on the gate\'s pillar. Baokaka still reaches for the bell: 不要！ gets him moving.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c3p5-start',
+    page: 'c3p5',
+    steps: [{ wait: 3 }],
+    note: '3-5 「總圖書館」 (#116): four mobile shelves, every aisle shut; the end two have crank knobs on the rail, Mocha sleeps on top of the third. The returns desk splits the front: the bead is at the reading room\'s far end, and Baokaka reaches from the near side.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c3p5-aisle',
+    page: 'c3p5',
+    steps: [{ set: 'shelfD', to: 'e' }, { set: 'shelfA', to: 'e' }, { mocha: 'topB' }, { wait: 'settle' }, { set: 'shelfA', to: 'w' }, { wait: 2 }],
+    note: '3-5: Mocha holds the second shelf while the first rolled back west — aisle 1 opened (the 土地公 reads on its floor) and Baokaka crawled into the back of the stacks, heading for aisle 3, open beside Mocha\'s old shelf.',
+  },
+  {
+    name: 'c3p6-spread',
+    page: 'c3p6',
+    steps: [{ wait: 2 }],
+    note: '3-6 「藍教授的書」 as it opens (#116): the centrefold — a giant open book on the desk, a stack of books on the right page where 藍教授 sits on the 書 in her reading glasses (a decoy, drawn as glasses). Baokaka sits on the giant book\'s right-hand page reaching for them; Mocha on the desk lamp. The bookmark, the page under him and the cat page are flaps.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c3p6-turned',
+    page: 'c3p6',
+    steps: [{ tap: 'flapA' }, { say: 'no' }, { wait: 'settle' }, { tap: 'flapB' }, { wait: 1 }],
+    note: '3-6: 不要！ to the glasses sent him back across the book to reach up for Mocha, so the page he sat on could turn: it stands up as Mocha\'s bridge to 藍教授 (the 土地公 printed on it). The bookmark bridges the gap to the stack.',
     expect: { mode: 'reaching' },
   },
   {
