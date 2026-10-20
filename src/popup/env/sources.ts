@@ -5,6 +5,7 @@ import { BLOCK_DEPTH, FLOOR_BOTTOM, GUTTER_Y, PAGE_VIEW_BOX, PAGE_W, floorOutlin
 import { C0_BACKDROPS, C0_PARTS } from './art/c0';
 import { C1_BACKDROPS, C1_PARTS } from './art/c1';
 import { C2_BACKDROPS, C2_CUTOUTS, C2_PARTS } from './art/c2';
+import { C3_PARTS } from './art/c3';
 import { SCREEN_ART, type ScreenSource } from './art/screens';
 import type { EnvBox } from './manifest';
 
@@ -57,6 +58,7 @@ export const PART_SOURCES: Readonly<Record<string, PartSource>> = {
   ...C0_PARTS,
   ...C1_PARTS,
   ...C2_PARTS,
+  ...C3_PARTS,
 };
 
 /** Standing cut-outs by key (e.g. 'c1/lamp-post'). */

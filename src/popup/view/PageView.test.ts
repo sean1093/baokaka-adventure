@@ -358,3 +358,41 @@ describe('PageView character animations (#95)', () => {
     expect(render(lit, near, near)).toMatch(/data-lamp-glow="" [^>]*fill="url\(#/);
   });
 });
+
+describe('decoys and still sliders (#116)', () => {
+  const settle = (def: PageDef, ticks: number) => {
+    let s = initialState(def);
+    for (let i = 0; i < ticks; i++) s = step(def, s, { t: 'none' }).state;
+    return s;
+  };
+
+  test('a decoy is drawn as itself, not as a bead, and his bubble shows it', async () => {
+    const { bubbleShow } = await import('./talk/Talk');
+    const { thoughtContent, decoyArt } = await import('./art/placeholders');
+    for (const [id, decoy, art] of [['c3p3', 'moon', 'c3/moon'], ['c3p4', 'bell', 'c3/bell'], ['c3p6', 'glasses', 'c3/glasses']] as const) {
+      const def = pageById(id)!;
+      const s = settle(def, 4);
+      expect(s.baby.target, id).toBe(decoy);
+      const show = bubbleShow(def, s);
+      expect(show, id).toMatchObject({ kind: 'want', decoy: art });
+      expect(thoughtContent({ id: (x: string) => x, filters: false } as never, show!)).toContain(`data-bubble-decoy="${art}"`);
+      const html = render(def, s, s);
+      const item = html.slice(html.indexOf(`data-attractor="${decoy}"`), html.indexOf('</g>', html.indexOf(`data-attractor="${decoy}"`)));
+      expect(item, id).not.toContain('<circle r="9"');  // the bead
+      expect(decoyArt({ id: (x: string) => x, filters: false } as never, art)).not.toBe(decoyArt({ id: (x: string) => x, filters: false } as never));
+    }
+  });
+
+  test('a slider nobody drives is printed art, never the marigold knob', () => {
+    const def = pageById('c3p5')!;
+    const html = render(def, initialState(def), initialState(def));
+    for (const id of ['shelfB', 'shelfC']) {
+      const at = html.indexOf(`data-part="${id}"`);
+      expect(html.slice(at, html.indexOf('data-part=', at + 10)), id).not.toContain('data-grip');
+    }
+    for (const id of ['shelfA', 'shelfD']) {
+      const at = html.indexOf(`data-part="${id}"`);
+      expect(html.slice(at, html.indexOf('data-part=', at + 10)), id).toContain('data-grip');
+    }
+  });
+});

@@ -2,14 +2,17 @@ import { useMemo } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { LIFT, VERBS, brad, depth, doubleOutline, liftShadow, lockVeil, pullTab, rectOutline, ref, seal, sealR } from '../../art';
 import { wiggleClass } from '../affordance/look';
-import { ArtG, hitBox, r2, squashFor, stateAt, tweened, type PartViewProps } from './common';
+import { partBitmap } from '../art/registry';
+import { ArtG, bakedImage, hitBox, r2, squashFor, stateAt, tweened, type PartViewProps } from './common';
 
 /**
  * 拉 tab and 推 slider (GDD § 2.1; bible § 4): a marigold card riding a straight track, one stop
  * per state. The track (a slot cut in the paper, a dotted line to an end arrow) is printed and
  * still; the card slides along it by `translate` and rotates to the track's angle, while its verb
  * seal stays upright beside it so 拉 always reads. A tab whose part carries nodes (the train) wears
- * the linked brad with the dashed marigold ring.
+ * the linked brad with the dashed marigold ring. When its art key has a baked bitmap per state (the
+ * thing it moves: 3-2's bikes, 3-5's shelves, #116), that is drawn under the track, its origin on
+ * the hit centre as its source is authored, and swaps as the state lands.
  *
  * Touchable states (bible § 4.1, `look`): the card wiggles ±2° about its centre, lifts 5 units at
  * 1.04 over its dropped shadow while dragged, wears a 35 % veil while locked, and carries the
@@ -91,8 +94,15 @@ export function TabView(props: PartViewProps) {
   const [ox, oy] = slider ? [-24, -22] : [(22 - TAB.len / 2) * ux, (22 - TAB.len / 2) * uy];
   const lift = look.lifted ? LIFT.rise : 0;
   const k = look.lifted ? LIFT.scale : 1;
+  const baked = partBitmap(part.art, to);
+  const hb = hitBox(part);
   return (
     <g data-part={part.id} data-preset={part.preset}>
+      {baked && (
+        <g transform={`translate(${r2(hb.cx)} ${r2(hb.cy)})`}>
+          <ArtG html={bakedImage(baked)} />
+        </g>
+      )}
       <ArtG html={track} />
       {look.lifted && (
         <g data-anim="" transform={`translate(${r2(x + LIFT.shadow[0])} ${r2(y + LIFT.shadow[1])}) rotate(${r2(deg)})`}>

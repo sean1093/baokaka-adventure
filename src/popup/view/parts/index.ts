@@ -3,7 +3,7 @@ import type { PartPreset } from '../../core/types';
 import type { PartViewProps } from './common';
 import { FlapView } from './FlapView';
 import { CarrierView, LiftView, PushableView, type MoverProps } from './MoverView';
-import { GateView, LightView, LoopView, PropView } from './StateArtView';
+import { GateView, LightView, LoopView, PropView, StateArtView } from './StateArtView';
 import { TabView } from './TabView';
 import { WheelView } from './WheelView';
 
@@ -28,6 +28,15 @@ export const PART_VIEWS: Readonly<Record<PartPreset, ComponentType<PartViewProps
   pushable: PushableView,
   carrier: CarrierView,
 };
+
+/**
+ * The view for a part: its preset's, except a tab or slider nobody drives (`input: 'none'`, 3-2's
+ * shoved bike and 3-5's inner shelves, #116), which is printed art per state (no marigold knob:
+ * bible § 4, only touchables are marigold).
+ */
+export function partView(part: { preset: PartPreset; input?: string }): ComponentType<PartViewProps> | ComponentType<MoverProps> {
+  return (part.preset === 'tab' || part.preset === 'slider') && part.input === 'none' ? StateArtView : PART_VIEWS[part.preset];
+}
 
 /** Presets whose view needs `MoverProps`. */
 export const MOVERS: ReadonlySet<PartPreset> = new Set<PartPreset>(['lift', 'pushable', 'carrier']);
