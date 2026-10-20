@@ -99,10 +99,28 @@ export async function* freshPages(open, items) {
   await page?.close();
 }
 
-export async function openPopupFixture(page, base, name, still = true) {
+/**
+ * Opens `url` and waits for `selector`; a wait that times out loads the page once more and waits
+ * longer (#122). On a cold dev server a target's first load can outlast the first wait while Vite
+ * transforms and pre-bundles its modules, which made long runs fail at random targets.
+ */
+export async function gotoAndWait(page, url, selector, { timeout = 20000, retryTimeout = 60000 } = {}) {
   await page.goto('about:blank');
-  await page.goto(popupFixtureUrl(base, name, still), { waitUntil: 'load' });
-  await page.waitForSelector(`[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) :is(svg[data-page], [data-screen-ready])`, { timeout: 20000 });
+  await page.goto(url, { waitUntil: 'load' });
+  if (!selector) return;
+  try {
+    await page.waitForSelector(selector, { timeout });
+  } catch (error) {
+    if (error?.name !== 'TimeoutError') throw error;
+    console.warn(`  ~ slow load, retrying once: ${url}`);
+    await page.goto('about:blank');
+    await page.goto(url, { waitUntil: 'load' });
+    await page.waitForSelector(selector, { timeout: retryTimeout });
+  }
+}
+
+export async function openPopupFixture(page, base, name, still = true) {
+  await gotoAndWait(page, popupFixtureUrl(base, name, still), `[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) :is(svg[data-page], [data-screen-ready])`);
   await page.evaluate(() => document.fonts.ready);
 }
 

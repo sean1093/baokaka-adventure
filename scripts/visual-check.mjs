@@ -29,7 +29,7 @@ import { parseArgs } from 'node:util';
 import pixelmatch from 'pixelmatch';
 import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
-import { freshPages, listPopupFixtures } from './popup-checks.mjs';
+import { freshPages, gotoAndWait, listPopupFixtures } from './popup-checks.mjs';
 import { PERF_FIXTURE, TARGETS, VIEWPORTS, fixtureTarget, popupFixtureTarget } from './visual-targets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -91,9 +91,7 @@ const waitForQuiet = (page) =>
 
 async function openTarget(page, base, target) {
   // A fresh document per target: no state (or saved game) leaks from the previous one
-  await page.goto('about:blank');
-  await page.goto(new URL(target.hash, base).href, { waitUntil: 'load' });
-  if (target.waitFor) await page.waitForSelector(target.waitFor, { timeout: 20000 });
+  await gotoAndWait(page, new URL(target.hash, base).href, target.waitFor);
   await page.evaluate(() => document.fonts.ready);
   await waitForQuiet(page);
 }
