@@ -1026,3 +1026,20 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 **Why.** Each reading keeps the art baked and the view unchanged where it could, keeps the page data's hit areas (only 3-4's plate key moved to `c3/plate`), and stays inside the payload and animated-node budgets (c3p1 128 nodes at its busiest tick, every page ≤ 308 KB).
 
 **Consequences.** Later chapters reuse `carDoors`, `popFlap`, the campus ledge pattern (a single node drawn as what it is) and `HELD_DECOY_FACE` until a page needs a per-creature anchor.
+
+### D-81 · 2026-10-20 · Chapter 4's pages: unreachable lures, a lit trail, the claw as a node, props are never puzzle inputs (#118)
+
+**Context.** #118 writes chapter 4 「霓虹燈睡著了」 in full (`docs/design/pages/c4.md`, the D-77 pattern) and builds 4-1 … 4-6 as data. The outline met the engine in four places: a lure that must hold him in one spot after 不要！ (arriving at Mocha clears the refusal, so he walks straight back to the decoy); a trail of toggling lights with a cry that wakes a sign; a claw machine that "picks up Baokaka" before the `carrier` preset exists (#120); and a drop *button*, when the only tappable two-state preset without a flap's look is `prop`, which is drawn as a discovery and never wears marigold.
+
+**Decision.**
+1. **A lure meant to hold him has an unreachable place.** Where he must stay put after 不要！ (4-1's doors, 4-6's stage front), Mocha's `reachNode` is a node he can't enter (the shut doorway; behind the amp): he crawls as near as he can and reaches, never "arrives", so the refusal holds with no timing for the player (3-4's pillar, D-79, is the same idea).
+2. **Light trails toggle, and only one sign answers a cry, in the dark.** 4-3's signs toggle on 哇！ (radius 160, the first sign's 120) so each 哇！ lights the next one and puts out the last; only the first sign answers a cry (`within: 120`) and only while every sign is off. Otherwise 不要！ to a light (a cry on demand, D-75) relit the first sign and left two lights on — a soft trap the solver found. The outline's 淘氣 (every sign lit at once) can't happen with toggles, so it is Mocha hidden behind a sign as it lights (his shadow).
+3. **The claw is a node on a tab, not a carrier.** 4-4's claw is `hook`, attached to the cart tab (`clawX`); the drop lever is a second tab (`claw`, `up` / `down`); his entry (`babyEnter hook`) lifts the lever, and the lifted claw with him in it sends the cart home. One-way reactions (his weight → lever → cart), no cycle. The coin slot's `reachNode` is on the bead's side, so 不要！ mid-ride is harmless. The claw draws as a carriage (`c4/claw-cart`) until #119.
+4. **A prop is never a puzzle input.** Props are tap toys (`PropView`: "a discovery, never marigold"); a press the solution needs is a tab, a flap or a perch. 4-4's drop button became a lever.
+5. **A decoy can be made by the player.** 4-5's boombox flashing on its stack is a decoy only while it plays (`visibleWhen: boombox on`), and the boombox keeps playing (`wow → on`), so the way the music opens is closed by the music until 不要！. A light alone (priority 4) could never hold him against Mocha.
+6. **Placeholders where the preset misleads** (D-77): 4-2's lantern is baked (`env/art/c4.ts`; a pushable's default is a bead and would read as the goal); the three decoys are drawn as themselves (`decoyArt`: the ad screen, the boombox, the disco ball); the 土地公's 算命墨鏡 on the live figure. Chapter 4's music box is an 8-bar loop in E.
+7. **Outline changes** are listed in `pages/c4.md` and GDD § 4.4's rows: 4-1's 淘氣 is a tantrum (不要！ emits no event to count), 4-2 turns twice (once for Mocha, once for him), 4-3's 淘氣 the shadow, 4-4 two tabs, 4-5's decoy the boombox, 4-6's shutter is the stage's.
+
+**Why.** Every page stays solver-green with no dead ends, soft traps, walkable decoys or ties and 0 lint warnings, without engine changes, and every key move was checked necessary.
+
+**Consequences.** #119 replaces the placeholders (the claw carriage, the lantern, the decoys) and keeps the hit areas. #120's `carrier` is not needed by 4-4. Later chapters can reuse the unreachable-lure pattern.
