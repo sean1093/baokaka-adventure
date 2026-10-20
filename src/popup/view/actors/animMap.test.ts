@@ -194,7 +194,7 @@ describe('reading the tick', () => {
     expect(edgeKind({ edges: [{ a: 'a', b: 'b', kind: 'climb', oneWay: true }] }, 'b', 'a')).toBeNull();
   });
 
-  test('sayingWord: only while saying, from the word event or a grown refused set', () => {
+  test('sayingWord: only while saying, from the word event, else 不要！ (the word with no event)', () => {
     const s = initialState(def);
     const saying = { ...s, baby: { ...s.baby, mode: 'saying' as const } };
     expect(sayingWord(s, s, [{ type: 'beep' }])).toBeNull();
@@ -202,7 +202,9 @@ describe('reading the tick', () => {
     expect(sayingWord(s, saying, [{ type: 'wave' }])).toBe('bye');
     expect(sayingWord(s, saying, [{ type: 'sky' }])).toBe('plane');
     expect(sayingWord(s, { ...saying, baby: { ...saying.baby, refused: ['bead'] } }, [])).toBe('no');
-    expect(sayingWord(s, saying, [])).toBeNull();
+    // 不要！ with nothing to refuse (he is crying), and in a still (no prev): still 不要！ (#112)
+    expect(sayingWord(s, saying, [])).toBe('no');
+    expect(sayingWord(saying, saying, [{ type: 'bark' }])).toBe('no');
   });
 
   test('1-2 played through: every tick maps to frames that exist', () => {

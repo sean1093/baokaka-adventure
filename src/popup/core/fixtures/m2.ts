@@ -92,7 +92,7 @@ export const toySquirrel = definePage({
   mocha: { start: 'stump' },
   words: ['bye'],
   mischief: { text: '讓松鼠在樹上跑上跑下兩次', when: { type: 'catArrive', id: 'stump', count: 2, when: { creature: 'squirrel', at: 'high' } } },
-  tudigong: { x: 180, y: 260, visibleWhen: { creature: 'squirrel', at: 'low' }, hat: '' },
+  tudigong: { x: 50, y: 250, visibleWhen: { creature: 'squirrel', at: 'low' }, hat: '' },
   solution: [{ mocha: 'fork' }, { wait: 'settle' }, { say: 'bye' }, { wait: 'goal' }],
 });
 
@@ -135,7 +135,7 @@ export const toyMoon = definePage({
   words: ['beep', 'bye'],
   learns: { word: 'no', when: { mochaAt: 'rock' } },
   mischief: { text: '讓鵝對摩卡叫兩次', when: { type: 'catArrive', id: 'rock', count: 2 } },
-  tudigong: { x: 250, y: 280, visibleWhen: { mochaAt: 'rock' }, hat: '' },
+  tudigong: { x: 40, y: 240, visibleWhen: { mochaAt: 'rock' }, hat: '' },
   solution: [{ mocha: 'rock' }, { wait: 'settle' }, { say: 'no' }, { wait: 'goal' }],
 });
 

@@ -390,12 +390,16 @@ const WORD_EVENT: Readonly<Partial<Record<SimEvent['type'], Word>>> = {
   together: 'together',
 };
 
-/** The word he is saying this tick (`saying` mode): from its event, or 不要！ when his refused set grew. */
-export function sayingWord(prev: SimState, state: SimState, events: readonly SimEvent[]): Word | null {
+/**
+ * The word he is saying this tick (`saying` mode): from its event; with none it is 不要！, the only
+ * word that emits nothing (#112: read from his refused set before, which missed a 不要！ said with
+ * nothing to refuse, or with no `prev`, as in a still).
+ */
+export function sayingWord(_prev: SimState, state: SimState, events: readonly SimEvent[]): Word | null {
   if (state.baby.mode !== 'saying') return null;
   for (const e of events) {
     const w = WORD_EVENT[e.type];
     if (w !== undefined) return w;
   }
-  return state.baby.refused.length > prev.baby.refused.length ? 'no' : null;
+  return 'no';
 }
