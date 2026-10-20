@@ -127,8 +127,9 @@ function effective(def: PageDef, state: SimState, input: Input): boolean {
  * The stored-solution fallback (GDD § 2.7): the first solution gesture played from part states equal
  * to the current ones that still does something now (one already done — Mocha already on that
  * perch — is skipped), and only once the page has settled if the solution let it settle first
- * (until then: wait); a 不要！ only while he wants what he wanted then (`sameRefusal`, #116). The parts and the creatures' positions compare exactly first (a page whose
- * puzzle is a creature, like 2-4's squirrel, has few parts or none: #114), then the parts alone,
+ * (until then: wait); a 不要！ only while he wants what he wanted then (`sameRefusal`, #116).
+ * The parts and the creatures' positions compare exactly first (a page whose puzzle is a
+ * creature, like 2-4's squirrel, has few parts or none: #114), then the parts alone,
  * then only the parts the solution drives (a spun 床鈴 doesn't hide the way). A match with nothing
  * left to do, or the part states the solution's last gesture left, mean "wait" — while a wait still
  * changes something. Null when nothing
