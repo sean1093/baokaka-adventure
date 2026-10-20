@@ -345,12 +345,37 @@ const SCENARIOS = {
     { expect: '[data-card-talk] [data-card-line="nar"]', timeout: 6_000 },
     { tapEl: '[data-card-next]' },
   ],
+  // The whole album (#113, GDD § 2.9 album screen), live from the cover's 相簿 at chapter 2: the page
+  // arrows turn a leaf at a time (3 with its photo, 4 a placeholder), a one-finger swipe across the
+  // leaf turns it either way, a mostly vertical move does not; back to the cover, where ‹ stops
+  'album-flip': [
+    { expect: '[data-screen="album"][data-album-chapter="2"][data-album-photo="A+M"]' },
+    { tapEl: '[data-button="next"]' },
+    { expect: '[data-album-chapter="3"][data-album-photo="B"]' },
+    { tapEl: '[data-button="next"]' },
+    { expect: '[data-album-chapter="4"] [data-leaf-state="locked"] [data-locked-line]' },
+    // The finger pulls the page to the right: the previous leaf; to the left: the next
+    { swipe: [[90, 420], [300, 430]] },
+    { expect: '[data-album-chapter="3"]' },
+    { swipe: [[300, 420], [80, 410]] },
+    { expect: '[data-album-chapter="4"]' },
+    // Mostly down: the leaf's scroll, not a turn
+    { swipe: [[200, 520], [240, 300]] },
+    { settle: 500 },
+    { expect: '[data-album-chapter="4"]' },
+    { tapEl: '[data-button="prev"]' },
+    { tapEl: '[data-button="prev"]' },
+    { tapEl: '[data-button="prev"]' },
+    { expect: '[data-album-chapter="1"]' },
+    { tapEl: '[data-button="prev"]' },
+    { expect: '[data-album-cover="plain"]', absent: '[data-button="prev"]:not([disabled])' },
+  ],
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'photo-spread': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
-const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]' };
+const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
 
 /** Scenarios that start somewhere other than `#/popup?page=<id>`: a PageLab stage, live. */
 const SCENARIO_URLS = {
@@ -358,6 +383,7 @@ const SCENARIO_URLS = {
   'stickers-c1p2': '#/pagelab?fixture=page-hud',
   'photo-spread': '#/pagelab?fixture=spread-shell',
   'prologue-card': '#/',
+  'album-flip': '#/pagelab?fixture=album-multi',
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',
   'tutorial-c0p2': '#/popup?page=c0p2&tutorial=1',
   'tutorial-c0p3': '#/popup?page=c0p3&tutorial=1',
@@ -507,6 +533,17 @@ async function run(page, base, id, kind, viewport, shots) {
       await page.waitForTimeout(60);
       await input.up();
       await shot('tap');
+    } else if (stepDef.swipe) {
+      // A one-finger swipe in screen pixels (a screen, not a page: no world to hold)
+      const [a, b] = stepDef.swipe;
+      await page.waitForTimeout(350);
+      await input.down(a);
+      for (let i = 1; i <= 8; i++) {
+        await input.move([a[0] + ((b[0] - a[0]) * i) / 8, a[1] + ((b[1] - a[1]) * i) / 8]);
+        await page.waitForTimeout(16);
+      }
+      await input.up();
+      await shot('swipe');
     } else if (stepDef.drag) {
       // Through every point in turn (a straight drag has two; a turn on a rim, an arc of them)
       const points = stepDef.drag;

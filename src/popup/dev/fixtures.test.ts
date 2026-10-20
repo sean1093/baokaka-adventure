@@ -8,6 +8,9 @@ import { hintDisplay } from '../view/affordance/ladder';
 import { isFirstLaunch, resumeTarget } from '../game/nav';
 import { SAVE_KEY } from '../game/progress';
 import { mochaInFrame, photoFrameAt, photoReady } from '../game/photo';
+import { albumLeaf, coverLeaf } from '../game/album';
+import { rewardFlags } from '../game/stickers';
+import { registry } from '../pages';
 
 /** The visual QA fixtures (#92): valid, unique, deterministic, and still showing what they claim. */
 
@@ -125,5 +128,24 @@ describe('the photo and album fixtures (#103)', () => {
     expect(retake.screen!.save.photos[1]).toMatchObject({ frame: 'B', mocha: true });
     expect(retake.screen!.albumAfter?.retaken).toMatchObject({ frame: 'C', mocha: false });
     expect(popupFixture('spread-shell')!.screen!.nav.base).toEqual({ kind: 'page', id: 'c1p6', run: 0 });
+  });
+
+  test('#113: the whole album and the 目錄 for every chapter, on the saves they claim', () => {
+    const screen = (name: string) => popupFixture(name)!.screen!;
+    const leafOf = (name: string) => {
+      const sc = screen(name);
+      return sc.nav.layer?.kind === 'album' ? albumLeaf(sc.save, sc.nav.layer.leaf ?? 0, registry, sc.rewardTotal) : null;
+    };
+    expect(leafOf('album-multi')).toMatchObject({ kind: 'chapter', chapter: 2, state: 'photo', photo: { frame: 'A', mocha: true } });
+    expect(leafOf('album-locked')).toMatchObject({ kind: 'chapter', chapter: 4, state: 'locked' });
+    expect(leafOf('album-cover')).toMatchObject({ kind: 'cover', mischiefKing: false, latest: 1 });
+    expect(leafOf('album-cover-unlocked')).toMatchObject({ kind: 'cover', mischiefKing: true });
+    // Without the fixture's book size the game's 65 pages are needed: no 淘氣大王 yet
+    expect(coverLeaf(screen('album-cover-unlocked').save).mischiefKing).toBe(false);
+    expect(screen('album-left-big').save.settings).toMatchObject({ leftHand: true, bigText: true });
+    const all = screen('contents-all');
+    expect(all.nav.layer).toEqual({ kind: 'contents', chapter: 1 });
+    expect(rewardFlags(all.save, registry, all.rewardTotal).bonusPage).toBe(true);
+    expect(screen('contents-bonus').nav.layer).toEqual({ kind: 'contents', chapter: 1, bonus: true });
   });
 });

@@ -4,7 +4,7 @@ import type { BabyMode, Id, LineKey, PageDef, SimState, SolutionStep } from '../
 import type { LearnKey } from '../content/words';
 import type { NavState } from '../game/nav';
 import { completePage, earnSticker, encodeSave, freshSave, keepPhoto, ProgressStore, SAVE_KEY, updateSettings, type Photo, type SaveV1, type Sticker } from '../game/progress';
-import type { PageRegistry } from '../pages';
+import { registry as gameRegistry, type PageRegistry } from '../pages';
 import type { StorageLike } from '../../shared/storage';
 import { labPageById } from './labPages';
 import type { AffordanceFlags } from '../view/affordance/look';
@@ -90,6 +90,11 @@ export interface PopupFixture {
     readonly soonCard?: number;
     /** An old RPG save was found and deleted at this boot: the cover's one-time note (#109) */
     readonly farewell?: boolean;
+    /**
+     * The pages the § 2.8 rewards need (#113): the registered pages' count shows the 「淘氣大王」
+     * cover and 「象山的日出」 as if the book were finished (the game's 65 by default)
+     */
+    readonly rewardTotal?: number;
   };
 }
 
@@ -120,6 +125,21 @@ const ALBUM_A = keepPhoto(C1P2_DONE, 1, { frame: 'A', mocha: true, at: SHOT_AT }
 /** A Frame B photo with 摩卡 in it, then retaken as a Frame C without him (the pool's notes). */
 const ALBUM_B = keepPhoto(C1P2_DONE, 1, { frame: 'B', mocha: true, at: SHOT_AT });
 const RETAKEN_C: Photo = { frame: 'C', mocha: false, at: SHOT_AT + 60_000 };
+/**
+ * The whole album (#113): chapter 1 finished (its Frame A + 摩卡 photo), and photos already kept for
+ * chapters 2 (Frame A + 摩卡) and 3 (Frame B, no 摩卡) — the save as it will read once those chapters
+ * are built (a save keeps a chapter's photo whatever is registered; their stickers wait for their pages).
+ */
+const ALBUM_MULTI = keepPhoto(keepPhoto(C1_DONE, 2, { frame: 'A', mocha: true, at: SHOT_AT + 3_600_000 }), 3, { frame: 'B', mocha: false, at: SHOT_AT + 7_200_000 });
+/** Every registered page solved with every sticker, chapter 1's photo kept (#113): with `rewardTotal` the size of the registry, both § 2.8 rewards show. */
+const ALL_IDS = gameRegistry.pages.map((p) => p.id);
+const EVERYTHING = keepPhoto(
+  ALL_IDS.reduce((s: SaveV1, id) => completePage(s, id, { mischief: true, tudigong: true, moves: 2 }), FRESH),
+  1,
+  { frame: 'A', mocha: true, at: SHOT_AT },
+);
+const BOOK = ALL_IDS.length;
+const ALBUM_AT = (leaf: number): NavState => ({ base: { kind: 'cover' }, layer: { kind: 'album', leaf } });
 /** 1-6 up to its photo moment: the lid open (the pigeon swoops onto the cart), 嗶！ at the gate, the cart to the platform, Mocha onto its awning (the pigeon flies; +M). */
 const TO_PHOTO: readonly SolutionStep[] = [{ tap: 'lid' }, { wait: 'settle' }, { say: 'beep' }, { wait: 'settle' }, { set: 'cart', to: 'platform' }, { wait: 1 }, { mocha: 'canopy' }];
 
@@ -172,6 +192,41 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     screen: { nav: ON_PAGE, save: ALBUM_B, albumAfter: { chapter: 1, retaken: RETAKEN_C } },
     note: 'The album after the spread, retaken (§ 2.9 step 7, #103): the first shot (B, 摩卡 in) and the new one (C, chewing, no 摩卡) side by side, the new one chosen and printed big; the notes from the shared pool for chapter 1 Frame C (阿嬤 「怎麼拍，乖孫都古錐。」, 摩卡 out: 「大家手機裡，都是你的照片。」). 再拍一次 / 放進相簿.',
+  },
+  {
+    name: 'album-multi',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(2), save: ALBUM_MULTI },
+    note: 'The whole album, turned to chapter 2 (GDD § 2.9 album screen, #113): 第二章 「會揮手的公園」 00:50, its Frame A + 摩卡 print (the 畫筆 token until its art), 學會了 掰掰, its empty 0／18 grid (its pages aren\'t built), the chapter 2 notes (阿嬤 「會畫圖喔，以後當畫家！」 … 摩卡 「松鼠搶鏡頭。不予置評。」); under it the page arrows and the dots (the cover, 1–3 foil with their photos, 4–10 navy: not reached), 返回 and 再拍一次. Live: ‹ › or a one-finger swipe turn the leaf.',
+  },
+  {
+    name: 'album-locked',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(4), save: ALBUM_MULTI },
+    note: 'A chapter the 月亮線 hasn\'t reached (#113): 第四章 「霓虹燈睡著了」 01:50 as a placeholder — an empty print with a padlock and 「？」 under it, a blind-embossed 「？」 for the word, the empty 6 × 3 grid, and 「月亮線還沒開到這裡。」 where the notes go. Only 返回.',
+  },
+  {
+    name: 'album-cover',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(0), save: C1_DONE },
+    note: 'The album\'s cover, its first leaf (#113, bible § 7): the navy linen board with gold-foil frame and corner brackets, a die-cut round window with the latest photo (chapter 1\'s Frame A + 摩卡), 「寶咖咖 一歲的相簿」 stamped in foil, a foil moon. The dots: the cover ringed, chapter 1 foil.',
+  },
+  {
+    name: 'album-cover-unlocked',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(0), save: EVERYTHING, rewardTotal: BOOK },
+    note: 'The 「淘氣大王」 cover (GDD § 2.8, #113): every 淘氣 earned (here every registered page\'s, `rewardTotal` the registry\'s size; in the game all 65): a foil crown on the window, a ring of foil 嘿 stickers, 寶咖咖 laughing and 摩卡 smug in the window, the seal-red ribbon 「淘氣大王」 across it, the album\'s name in foil under it.',
+  },
+  {
+    name: 'album-left-big',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(1), save: updateSettings(updateSettings(C1_DONE, { leftHand: true }), { bigText: true }) },
+    note: 'The album with 大字 and 左手模式 (#113): chapter 1\'s page at the big text scale; the buttons mirrored (再拍一次 under the left thumb, 返回 right), the page arrows either side of the dots as always.',
   },
   {
     name: 'c0p1-start',
@@ -471,6 +526,20 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 1, locked: 4 } }, save: PLAYED },
     note: 'The 目錄 after tapping a station the line hasn\'t reached (西門町): 「月亮線還沒開到這裡。」',
+  },
+  {
+    name: 'contents-all',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 1 } }, save: EVERYTHING, rewardTotal: BOOK },
+    note: 'The 目錄 for the whole line (#113): all eleven stations — 序 12/12 and 台北車站 18/18 in foil (every page solved, every sticker), 大安森林 … 101 locked — and, every 土地公 found (`rewardTotal` the registry\'s size), the 「象山的日出」 postcard taped onto the map\'s free corner with a dotted gold branch from 101. Chapter 1\'s strip, all solved, with its 淘氣 list.',
+  },
+  {
+    name: 'contents-bonus',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 1, bonus: true } }, save: EVERYTHING, rewardTotal: BOOK },
+    note: 'The 「象山的日出」 postcard tapped (#113): ringed on the map; the panel names it and, until #135 builds the bonus page, says 「下一站還在畫……未完待續。」',
   },
   {
     name: 'page-hud',
