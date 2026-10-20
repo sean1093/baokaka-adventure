@@ -30,6 +30,9 @@ import { albumHome, keptPhoto, spreadPage, type Shot } from '../../game/photo';
 import type { Photo, SaveV1 } from '../../game/progress';
 import { audioUnlocked, chapterTrack, playMusic, setVolumes, stopMusic, suspendAudio, unlockAudio } from '../../../shared/audio';
 import { LIVE, SILENT, SoundContext, type SoundSink } from '../sound';
+import type { PlaytestLog } from '../../game/playtest';
+import type { PageTrace } from '../PagePlayer';
+import { PlaytestPanel } from '../hud/PlaytestPanel';
 import './screens.css';
 
 /**
@@ -102,6 +105,8 @@ export interface GameShellProps {
   readonly soonCard?: number;
   /** An old RPG save was deleted at this boot (#109): the cover shows `RPG_FAREWELL` until the player first leaves it */
   readonly farewell?: boolean;
+  /** The playtest log (#110, `#/?debug=metrics`): the shell records pages, live time, hints, 重來 and stickers into it and shows its chip */
+  readonly playtest?: PlaytestLog | null;
 }
 
 const SPEEDS: readonly TickSpeed[] = ['slow', 'normal', 'fast'];
@@ -117,6 +122,11 @@ const subscribeResize = (onChange: () => void) => {
   return () => window.removeEventListener('resize', onChange);
 };
 const readSize = () => `${window.innerWidth}x${window.innerHeight}`;
+const subscribeVisibility = (onChange: () => void) => {
+  document.addEventListener('visibilitychange', onChange);
+  return () => document.removeEventListener('visibilitychange', onChange);
+};
+const readVisible = () => document.visibilityState !== 'hidden';
 
 /** The sticker card on screen: the page it is for, and how to end it (the turn goes on). */
 interface CardShow {
@@ -147,7 +157,7 @@ interface AlbumAfter {
   readonly go: () => void;
 }
 
-export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter, endLinesOf, soonCard, farewell = false }: GameShellProps) {
+export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter, endLinesOf, soonCard, farewell = false, playtest = null }: GameShellProps) {
   const [store] = useState(() => given ?? new ProgressStore({ registry: reg }));
   useEffect(() => (given ? undefined : () => store.dispose()), [given, store]);
   const save = useSyncExternalStore(store.subscribe, store.get);
@@ -425,6 +435,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   const onDone = useCallback(
     (from: PageDef, result: PageResult) => {
       const coinsBefore = treasuresFound(store.get());
+      playtest?.add({ t: 'done', at: Date.now(), moves: result.moves ?? 0 });
       store.completePage(from.id, result);
       const newCoin = treasuresFound(store.get()) > coinsBefore;
       // The tray's new coin waits for the chapter's end (#107)
@@ -469,9 +480,15 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
         }
       }, GRAB_HOLD_MS);
     },
-    [store, reg, go, showCard, startTurn, endChapter],
+    [store, reg, go, showCard, startTurn, endChapter, playtest],
   );
-  const onSticker = useCallback((id: string, sticker: 'mischief' | 'tudigong') => store.earnSticker(id, sticker), [store]);
+  const onSticker = useCallback(
+    (id: string, sticker: 'mischief' | 'tudigong') => {
+      playtest?.add({ t: 'sticker', sticker, at: Date.now() });
+      store.earnSticker(id, sticker);
+    },
+    [store, playtest],
+  );
   // A tap while the sticker card is up turns the page on; while the chapter card's lines play it is
   // the next beat; any other tap in the turn skips it
   const onSkip = useCallback(() => {
@@ -490,12 +507,16 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
         trayFill,
         stickers: pageStickers(save, def.id),
         leftHand: save.settings.leftHand,
-        onRetry: () => go({ t: 'retry' }),
+        onRetry: () => {
+          playtest?.add({ t: 'retry', at: Date.now() });
+          go({ t: 'retry' });
+        },
+        onTrace: playtest ? (trace: PageTrace) => playtest.add(trace.t === 'hint' ? { t: 'hint', level: trace.level, at: Date.now() } : { t: trace.t, at: Date.now() }) : undefined,
         onMenu: () => go({ t: 'menu' }),
         // The hint ladder runs in the page (#100); the nudge comes after the 自動提示 setting's delay
         autoHintMs: autoHintMs(save.settings),
       },
-    [def, save, go, trayHold, trayFill],
+    [def, save, go, trayHold, trayFill, playtest],
   );
 
   // 大字 (#104): the chapter card as large as the screen allows
@@ -507,6 +528,21 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   const layer = nav.layer;
   // A full-screen layer (the 目錄, the album, the settings) covers the base: it is hidden (a page stays mounted, held)
   const covered = layer !== null && layer.kind !== 'menu';
+
+  // ——— The playtest log (#110, `debug=metrics`): each page opened, and whether it is live ———
+  const [logOpen, setLogOpen] = useState(false);
+  const visible = useSyncExternalStore(subscribeVisibility, readVisible, () => true);
+  const attempt = def && base.kind === 'page' ? `${def.id}-${base.run}` : null;
+  useEffect(() => {
+    if (playtest === null || attempt === null || def === undefined) return;
+    playtest.add({ t: 'open', page: def.id, at: Date.now(), replay: store.get().pages[def.id]?.solved === true });
+    // Only a new attempt (the page, or 重來) opens one: `def` and the save follow it
+  }, [playtest, attempt]);
+  const live = attempt !== null && !holdsPage(nav) && !turning && !opening && !reading && !ending && after === null && card === null && visible && !logOpen;
+  useEffect(() => {
+    if (playtest === null || attempt === null) return;
+    playtest.add({ t: 'live', on: live, at: Date.now() });
+  }, [playtest, attempt, live]);
 
   return (
     <ReducedMotionContext.Provider value={reduceSetting === true}>
@@ -547,7 +583,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                     still={still}
                     reduced={reduced}
                     // A page that opens with its chapter card is held from its first frame (its intro waits for the card)
-                    hold={holdsPage(nav) || turning || opening || fixtureBoard !== null || endLinesOf !== undefined}
+                    hold={holdsPage(nav) || turning || opening || fixtureBoard !== null || endLinesOf !== undefined || logOpen}
                     onDone={(_, result) => onDone(def, result)}
                     onPhoto={(shot) => onPhoto(def, shot)}
                     onSticker={(sticker) => onSticker(def.id, sticker)}
@@ -597,6 +633,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                 {turning && !reading && <button type="button" className="fixed inset-0 z-40 cursor-default opacity-0" aria-label={card ? UI.card.next : UI.chapterCard.skip} onClick={onSkip} data-turn-skip="" />}
               </>
             )}
+            {playtest !== null && !still && <PlaytestPanel log={playtest} open={logOpen} onOpenChange={setLogOpen} />}
             <PauseMenu
               open={layer?.kind === 'menu'}
               onResume={() => go({ t: 'resume' })}
