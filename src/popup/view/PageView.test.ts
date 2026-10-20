@@ -7,7 +7,8 @@ import { PAGES, pageById } from '../pages';
 import { compilePart } from '../core/presets';
 import { NO_GESTURE, targetsOf, type GestureFlags } from './gestures';
 import { ANIMATED_LAYERS, ANIMATED_NODE_BUDGET, LAYERS, type LayerId } from './layers';
-import { PageView } from './PageView';
+import { CARRY_AHEAD, CARRY_LIFT, PageView, carriedPose } from './PageView';
+import { toyHug } from '../core/fixtures/m3';
 
 /**
  * The page renderer, rendered to static markup (#89; GDD § 3.9): the layers in order, node counts
@@ -394,5 +395,33 @@ describe('decoys and still sliders (#116)', () => {
       const at = html.indexOf(`data-part="${id}"`);
       expect(html.slice(at, html.indexOf('data-part=', at + 10)), id).toContain('data-grip');
     }
+  });
+});
+
+describe('carried (抱抱, #120): he rides in the carrier\'s arms', () => {
+  const learnt = replay(toyHug, [{ wait: 1 }]).state;
+  const lifted = step(toyHug, learnt, { t: 'say', word: 'hug' }).state;
+  const walked = step(toyHug, lifted, { t: 'none' }).state;
+  const pose = { x: 0, y: 0, moving: false };
+
+  test('carried on both sides of the tick, he follows her feet CARRY_LIFT up, tweened as her art is', () => {
+    const end = carriedPose(toyHug, lifted, walked, pose, 10_000, false, 1);
+    expect(end).toEqual({ x: 190 + CARRY_AHEAD, y: 430 - CARRY_LIFT, moving: true });
+    const start = carriedPose(toyHug, lifted, walked, pose, 0, false, 0);
+    expect(start).toMatchObject({ x: 110 + CARRY_AHEAD, y: 430 - CARRY_LIFT });
+  });
+
+  test('lifted over the pick-up tick and lowered over the set-down tick; untouched otherwise', () => {
+    const at = { x: 110, y: 430, moving: false };
+    expect(carriedPose(toyHug, learnt, lifted, at, 0, false, 0.5)).toMatchObject({ x: 110 + CARRY_AHEAD / 2, y: 430 - CARRY_LIFT / 2 });
+    const down = step(toyHug, step(toyHug, walked, { t: 'none' }).state, { t: 'none' });
+    expect(down.state.baby.mode).toBe('idle');
+    expect(carriedPose(toyHug, step(toyHug, walked, { t: 'none' }).state, down.state, at, 0, false, 1)).toMatchObject({ x: 110, y: 430 });
+    expect(carriedPose(toyHug, learnt, learnt, at, 0, false, 1)).toBe(at);
+  });
+
+  test('the carried page renders (the carried frame, in front of the carrier)', () => {
+    const html = renderToStaticMarkup(createElement(PageView, { def: toyHug, prev: lifted, state: walked, ms: 200, tickMs: 500 }));
+    expect(html).toContain('data-preset="carrier"');
   });
 });

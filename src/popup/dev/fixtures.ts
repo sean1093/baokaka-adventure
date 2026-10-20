@@ -55,6 +55,8 @@ export interface PopupFixture {
     readonly sticker?: Sticker;
     /** The photo moment up over a spread (#103), its slow-motion clock at `at` ms into the loop */
     readonly photo?: { readonly at: number };
+    /** The still drawn this many ms into the last tick, not at its end (#120: a climb step in flight) */
+    readonly stepAt?: number;
   };
   /**
    * The still's motion look: `motion` (default) draws the idle cues of full motion, `reduced` the
@@ -1170,6 +1172,81 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     page: 'toy-moon',
     steps: [{ wait: 6 }],
     note: 'The moon decoy toy page (#112, after 3-3): the moon\'s reflection is a shiny he can never reach; he sits at the water\'s edge reaching for it, the goose on her nest past him.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'm3-balloon',
+    page: 'toy-balloon',
+    steps: [{ mocha: 'post' }],
+    note: 'The balloon basket toy page (#120, after 5-2): a counterweight lift. Mocha jumped out of the basket onto the stall\'s post; without his weight the basket rose to the ledge, and Baokaka crawls off it toward the bead.',
+    expect: { mode: 'moving' },
+  },
+  {
+    name: 'word-card-hug',
+    page: 'toy-hug',
+    steps: [{ wait: 1 }],
+    show: { words: { card: 'hug' } },
+    note: 'The 抱抱 learn beat\'s card (GDD § 5.4, #120): beside the 夜市阿姨 at the crowded lane he learned 抱抱: 「抱抱：大人載你走」 with its seal, taped over the dimmed page. Toy page after 5-3.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'word-say-hug',
+    page: 'toy-hug',
+    steps: [{ wait: 1 }, { say: 'hug' }],
+    note: 'Saying 抱抱 next to a carrier (GDD § 2.4, #120): the big speech bubble, and the 夜市阿姨 lifts him into her arms (carried).',
+    expect: { mode: 'carried', event: 'hug' },
+  },
+  {
+    name: 'c5p3-carried',
+    page: 'toy-hug',
+    steps: [{ wait: 1 }, { say: 'hug' }, { wait: 1 }],
+    note: 'Carried (GDD § 2.4 抱抱, #120): the 夜市阿姨 walks her route one edge a tick with him in her arms (the `carried` frame, legs dangling), over the crowd of legs that blocks his own crawl.',
+    expect: { mode: 'carried' },
+  },
+  {
+    name: 'm3-carousel',
+    page: 'toy-carousel',
+    steps: [{ set: 'belt', to: '2' }],
+    note: 'The baggage carousel toy page (#120, after 6-2): a loop with a crank. Two clicks of the crank carried his suitcase two slots round (a ride); one more and it reaches the far side.',
+    expect: { event: 'ride' },
+  },
+  {
+    name: 'word-card-plane',
+    page: 'toy-plane',
+    steps: [{ wait: 1 }],
+    show: { words: { card: 'plane' } },
+    note: 'The 飛機！ learn beat\'s card (GDD § 5.4, #120): on the observation deck the sleeping plane blinked and he pointed: 「飛機！：鳥都飛起來」. Toy page after 6-3.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'word-say-plane',
+    page: 'toy-plane',
+    steps: [{ wait: 1 }, { say: 'plane' }],
+    note: 'Saying 飛機！ (GDD § 2.4, #120): a whole-page word. The pigeons on the deck flew up off the page and the runway lights came on.',
+    expect: { mode: 'saying', event: 'sky' },
+  },
+  {
+    name: 'word-card-climb',
+    page: 'toy-climb',
+    steps: [{ wait: 1 }, { say: 'bye' }],
+    show: { words: { card: 'climb' } },
+    note: 'The 爬樓梯 learn beat\'s card (GDD § 5.4, #120): 掰掰 sent the tea farmer up the terrace and he copied him: 「爬樓梯：爬上一階」 (a growth stage: a star, no word). Toy page after 7-3.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'climb-step',
+    page: 'toy-climb',
+    steps: [{ wait: 1 }, { say: 'bye' }, { wait: 1 }],
+    show: { stepAt: 190 },
+    note: 'A climb in flight (GDD § 2.5 爬樓梯, #120, #141): the still is drawn mid-step, at the knee-over frame, on the 22-unit riser the climb frames are drawn for.',
+    expect: { mode: 'moving' },
+  },
+  {
+    name: 'word-ring-6',
+    page: 'lab-ring6',
+    steps: [{ wait: 3 }],
+    show: { words: { ring: true } },
+    note: 'The ring with M3\'s six words (GDD § 2.4, #120): 嗶！ 掰掰 不要！ 哇！ 抱抱 飛機！ in learning order from beside 「好了」 round over the top, each on its seal. Lab stage (the deck toy page with every word to chapter 6).',
     expect: { mode: 'reaching' },
   },
 ];

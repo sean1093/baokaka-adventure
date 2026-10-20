@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import c1p3 from '../core/fixtures/c1p3';
 import { toyMoon, toySquirrel } from '../core/fixtures/m2';
+import { toyClimb, toyHug, toyPlane } from '../core/fixtures/m3';
 import { SCRIPT } from '../content/script';
 import { initialState, replay, step } from '../core';
 import type { PageDef, SimState, Word } from '../core/types';
@@ -168,5 +169,34 @@ describe('the M2 words: 掰掰, 不要！, 哇！ through the #99 flow (#112)', 
   test('the ring with M2\'s four words (the `word-ring-4` stage): 嗶！ 掰掰 不要！ 哇！ in learning order', () => {
     const ring4: PageDef = { ...toyMoon, words: ['wow', 'no', 'bye', 'beep'], learns: undefined };
     expect(ringWords(ring4, initialState(ring4))).toEqual(['beep', 'bye', 'no', 'wow']);
+  });
+});
+
+describe('the M3 words and growth: 抱抱, 飛機！, 爬樓梯 through the #99 flow (#120)', () => {
+  test.each([
+    ['hug', toyHug, ['learn.hug.src', 'learn.hug.baby', 'learn.hug.mocha']],
+    ['plane', toyPlane, ['learn.plane.baby', 'learn.plane.mocha']],
+  ] as const)('%s is learned on its toy page; its learn beat lines exist; the ring offers it after', (word, def, lines) => {
+    expect(ringWords(def, initialState(def))).toEqual([]);
+    const taught = run(def, [{ t: 'none' }]);
+    expect(learnedNow(taught.events)).toBe(word);
+    expect(ringWords(def, taught.state)).toEqual([word]);
+    expect(learnLines(word)).toEqual(lines);
+    for (const key of lines) expect(SCRIPT[key], key).toBeDefined();
+    // Its own learn page has no follow-up; anywhere else its first say gets Mocha's translation
+    expect(firstUseLine(def, word)).toBeNull();
+    expect(firstUseLine(toyMoon, word)).toBe(`learn.${word}.mocha`);
+  });
+
+  test('爬樓梯 is a growth stage: learned when the farmer climbs; Mocha\'s line, no word in the ring', () => {
+    const taught = run(toyClimb, [{ t: 'none' }, { t: 'say', word: 'bye' }]);
+    expect(learnedNow(taught.events)).toBe('climb');
+    expect(learnLines('climb')).toEqual(['learn.climb.mocha']);
+    expect(ringWords(toyClimb, taught.state)).toEqual(['bye']);
+  });
+
+  test('the ring with M3\'s six words (the `word-ring-6` stage): 嗶！ 掰掰 不要！ 哇！ 抱抱 飛機！ in learning order', () => {
+    const ring6: PageDef = { ...toyPlane, words: ['plane', 'hug', 'wow', 'no', 'bye', 'beep'], learns: undefined };
+    expect(ringWords(ring6, initialState(ring6))).toEqual(['beep', 'bye', 'no', 'wow', 'hug', 'plane']);
   });
 });

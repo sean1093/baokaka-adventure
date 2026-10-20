@@ -393,9 +393,11 @@ const WORD_EVENT: Readonly<Partial<Record<SimEvent['type'], Word>>> = {
 /**
  * The word he is saying this tick (`saying` mode): from its event; with none it is 不要！, the only
  * word that emits nothing (#112: read from his refused set before, which missed a 不要！ said with
- * nothing to refuse, or with no `prev`, as in a still).
+ * nothing to refuse, or with no `prev`, as in a still). 抱抱 that a carrier answered ends the say
+ * tick `carried` (#120): he says it as she lifts him.
  */
 export function sayingWord(_prev: SimState, state: SimState, events: readonly SimEvent[]): Word | null {
+  if (state.baby.mode === 'carried') return events.some((e) => e.type === 'hug') ? 'hug' : null;
   if (state.baby.mode !== 'saying') return null;
   for (const e of events) {
     const w = WORD_EVENT[e.type];

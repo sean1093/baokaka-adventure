@@ -223,9 +223,10 @@ export const PRESET_ART: Readonly<Record<PartPreset, PresetArt>> = {
   carrier: {
     preset: 'carrier',
     touchable: false,
-    anchor: 'the feet (ground line)',
-    box: { x: -26, y: -76, w: 56, h: 82 },
-    draw: (ctx) => figure(ctx, 70),
+    // An adult beside the baby's ~100-unit sit: tall enough to hold him (he rides CARRY_LIFT up, #120)
+    anchor: 'the feet (ground line); an adult, 160 tall',
+    box: { x: -48, y: -164, w: 98, h: 170 },
+    draw: (ctx) => figure(ctx, 160),
   },
   prop: {
     preset: 'prop',

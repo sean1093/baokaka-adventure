@@ -118,6 +118,26 @@ describe('ringLayout', () => {
     }
   });
 
+  test("M3's six words (… 抱抱 飛機！, #120): learning order round from the thumb's side, every disc clear of the others", () => {
+    const six = ['beep', 'bye', 'no', 'wow', 'hug', 'plane'] as const;
+    for (const leftHand of [false, true]) {
+      const ring = ringLayout(mid, six, { safe, leftHand });
+      const words = ring.slots.filter((s) => s.kind === 'word');
+      expect(words.map((s) => s.kind === 'word' && s.word)).toEqual([...six]);
+      // The first word starts low on the thumb's side, and the sixth has gone over the top
+      const side = leftHand ? -1 : 1;
+      expect(side * (words[0].at[0] - mid[0])).toBeGreaterThan(0);
+      expect(words[0].at[1]).toBeGreaterThan(mid[1]);
+      expect(side * (words[5].at[0] - mid[0])).toBeLessThan(0);
+      for (let i = 0; i < ring.slots.length; i++) {
+        for (let j = i + 1; j < ring.slots.length; j++) {
+          const [a, b] = [ring.slots[i].at, ring.slots[j].at];
+          expect(Math.hypot(a[0] - b[0], a[1] - b[1])).toBeGreaterThanOrEqual(DISC);
+        }
+      }
+    }
+  });
+
   test('discs are at least 64 px (bible § 7, R6)', () => {
     expect(DISC).toBeGreaterThanOrEqual(64);
   });

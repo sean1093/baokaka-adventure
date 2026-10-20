@@ -66,6 +66,7 @@ export function FixtureView({ name, still, big: bigParam = false }: { name: stri
             events={frame.events}
             talk={fixture.show?.talk}
             still={still}
+            stillAt={fixture.show?.stepAt}
             reduced={reduced}
             showGesture={fixture.show?.gesture}
             affordance={fixture.show?.affordance}
