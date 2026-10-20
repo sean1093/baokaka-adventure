@@ -1043,3 +1043,19 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 **Why.** Every page stays solver-green with no dead ends, soft traps, walkable decoys or ties and 0 lint warnings, without engine changes, and every key move was checked necessary.
 
 **Consequences.** #119 replaces the placeholders (the claw carriage, the lantern, the decoys) and keeps the hit areas. #120's `carrier` is not needed by 4-4. Later chapters can reuse the unreachable-lure pattern.
+
+### D-82 · 2026-10-20 · Chapter 4's art: the neon kit, 紅樓 in plan, one bitmap for a turning drawing, the claw over the pit (#119)
+
+**Context.** #119 draws chapter 4 「霓虹燈睡著了」 (西門町) over #118's pages: the one chapter where the bible lets neon (§ 3.3 luminous ink) run free. Four things were open: how a sign is lit and asleep in baked paper; how an 8-step wheel that is a *building* reads (and which face is which, since the page's spec numbered them before any art existed); how to keep 4-2 inside its 350 KB when a wheel bakes a bitmap per state (and a lifted one each); and what 4-4's claw hangs over, since a carriage's tab draws a train's track pit under it.
+
+**Decision.**
+1. **The neon kit** (`POPUP_NEON`, `env/art/c4.ts`): plum and 紅樓 brick dominant, neon pink and cyan the accent (`POPUP.neonPink` / `neonCyan`, never graded; violet and red tubes added to the never-graded list). Luminous ink is `neonTube` / `neonChars`: the stroke under the kit's 1.6-unit `glowS` with a white-hot core and a 12 % spill (`spill`); a sleeping sign is grey ink with chalk 「zz」 (`signBoard(…, { lit: false })`). Reusable cut-outs: `signBoard`, `brickFace`, `shopfront`, `streetLamp`, `speakerCab`, `ximenSky`, `streetFloor`, `crowd`, `scooter`, `cardboardBox`, `plushHeap`. Ledge styles `neonStreet`, `arcadeShelf`, `karaokeStage`.
+2. **紅樓 is drawn in plan** — the octagonal house seen from above as it turns (brick walls, a dark eight-facet roof to its lantern, three lit doorways, the roof's lantern window) inside the marigold knurled rim — while the backdrop shows its upper storey in elevation behind it, the lantern's lit sill being Mocha's `window`. Faces are numbered clockwise from the front: face `k` at bearing 180 + 45k unturned (`RED_HOUSE_FACE`), so doorways 0 and 4 line up west–east in states 2 and 6, the third doorway comes to the front in state 5 (the 土地公) and the window — over face **7**, not the spec's provisional face 2 — faces the street lamp in state 4. `pages/c4.md` is updated; the page data is unchanged.
+3. **A wheel whose drawing never changes is baked once.** `c4/red-house` declares one state; the loader already serves a state's bitmap from the first state's when it has none. 4-2's parts went from 388 KB to 66 KB.
+4. **A carriage can hang over the backdrop's own floor.** `StageDress.trackPit: false` skips the track pit under a carriage; 4-4's claw (`carriages.ts`, live) hangs over the baked plush heap, and its tab's bitmap is the gantry rail.
+5. **The playing boombox is drawn once.** 4-5's boombox part draws the silent boombox `off` and only the music round it `on` (rings, notes, the EQ), because the decoy (`decoyArt('c4/boombox-shine')`) draws the boombox itself on the same spot while it plays; both use `boomboxBody` (`view/art/ximen.ts`).
+6. **The dancers' arch is a lift.** Mocha's `archMid` sits 154 above the street; two dancers hold the third up on their hands and Mocha sits on his cap. The cast (`ximen.ts`) are die-cut figures with merged paths (c4p5's busiest tick 141 animated nodes of 150).
+
+**Why.** The page data and every hit area stay as #118 left them; every page is ≤ 283 KB of page art; the chapter reads at a squint as plum and brick with neon accents, the marigold touchables still the brightest warm thing.
+
+**Consequences.** Later chapters with a turning building or a decoy that is also a part reuse the one-bitmap and draw-once patterns; `trackPit: false` is there for any carriage that is not a train.

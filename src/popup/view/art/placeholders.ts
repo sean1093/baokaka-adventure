@@ -4,6 +4,7 @@ import { PRESET_DEFS, brad, depth, f1, kitDefs, pageBlock, paw, pinholes, ref, s
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorOutline, floorWiden, towardVp } from '../geometry';
 import { treasureArt } from '../photo/treasureArt';
 import { LEDGE_DEPTH, type Carriage, type LedgeRun, type PerchPost, type Slope } from '../stage';
+import { boomboxBody } from './ximen';
 
 /**
  * The placeholder stage (#89): what a page shows until its own art is baked (#96) and the
@@ -482,7 +483,7 @@ export function origamiBird(ctx: KitCtx): string {
  * with an ochre band (the prologue); `站務帽` is chapter 1's navy station cap with a peak and a
  * foil badge (#108); `斗笠` is chapter 2's wide straw hat (#114) with his 掃把 on his shoulder (#115);
  * `藍色校工帽` is chapter 3's blue campus janitor's cap with a short peak (#116); `算命墨鏡` is chapter 4's
- * fortune-teller's round dark glasses under his red 員外帽 (#118).
+ * fortune-teller's round dark glasses in gold wire under his red 員外帽 (#118, #119).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -507,9 +508,9 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
       + `<path d="M8 7L3 19L16 16Z" fill="${C.corrugatedLight}"/><path d="M8 8L6 18M9 8L10 17M10 8L13 16" stroke="${C.corrugatedDark}" stroke-width=".6" opacity=".8"/>`
       + `<path d="M5 8.5L11 10" stroke="${C.hatRed}" stroke-width="1.6"/>`
     : '';
-  // Chapter 4's 算命墨鏡 (#118): a fortune-teller's round dark glasses over his own red 員外帽
+  // Chapter 4's 算命墨鏡 (#118; gold wire rims #119): a fortune-teller's round dark glasses over his own red 員外帽
   const shades = hat === '算命墨鏡'
-    ? `<path d="M-1.4 -.4h2.8" stroke="${C.printDark}" stroke-width="1"/><circle cx="-3.6" cy="-.2" r="2.6" fill="${C.ink}"/><circle cx="3.6" cy="-.2" r="2.6" fill="${C.ink}"/>`
+    ? `<path d="M-1.4 -.4h2.8" stroke="${C.printDark}" stroke-width="1"/><circle cx="-3.6" cy="-.2" r="2.6" fill="${C.ink}" stroke="${C.goldDeep}" stroke-width=".6"/><circle cx="3.6" cy="-.2" r="2.6" fill="${C.ink}" stroke="${C.goldDeep}" stroke-width=".6"/>`
       + `<path d="M-4.6 -1.4l1 -.6M2.6 -1.4l1 -.6" stroke="${C.standeeCard}" stroke-width=".7" stroke-linecap="round" opacity=".8"/>`
     : '';
   return depth(ctx, 2, broom + face + shades + cap, `<circle r="7.5"/>`);
@@ -574,26 +575,32 @@ export function decoyArt(ctx: KitCtx, key?: string): string {
         + `<circle cx="-8" r="5.6" fill="${C.glassine}" fill-opacity=".55" stroke="${C.goldDeep}" stroke-width="1.5"/><circle cx="8" r="5.6" fill="${C.glassine}" fill-opacity=".55" stroke="${C.goldDeep}" stroke-width="1.5"/>`
         + `<path d="M-10.4 -2.6l2.6 -1.2M5.6 -2.6l2.6 -1.2" stroke="${C.foilShine}" stroke-width="1.4" stroke-linecap="round"/>`
         + glint(16, -9, 3.6);
-    case 'c4/ad-screen':
-      // 4-1's ad screen over the seats (#118, a placeholder until #119): a glowing panel playing a
-      // neon ad, a pink burst and a cyan banner, in a dark frame. No glow, and within ±18 units: in his
-      // bubble it sits beside 「要！」 and must not run under it (R5 contrast)
-      return `<g transform="scale(.68)"><rect x="-26" y="-16" width="52" height="32" rx="3" fill="${C.printDark}"/><rect x="-23" y="-13" width="46" height="26" rx="1.5" fill="${C.nightCard}"/>`
-        + `<circle cx="-9" cy="-1" r="8" fill="${C.neonPink}" opacity=".9"/><rect x="2" y="-8" width="18" height="5" rx="1" fill="${C.neonCyan}"/><rect x="2" y="1" width="12" height="4" rx="1" fill="${C.foilShine}" opacity=".8"/>`
-        + glint(22, -14, 3.8) + '</g>';
+    case 'c4/ad-screen': {
+      // 4-1's ad screen over the seats (#119): a slim LED panel in a steel frame playing a neon ad — a
+      // pink heart bursting over a cyan wave, a ticker line. Within ±18 units: in his bubble it sits
+      // beside 「要！」 (R5 contrast)
+      const panel = 'M-18 -12H18V12H-18Z';
+      return depth(ctx, 3, `<path d="${panel}" fill="${C.printDark}"/><rect x="-16" y="-10" width="32" height="17" fill="${C.nightCardDeep}"/>`
+          + `<path d="M-16 4q4 -4 8 0t8 0t8 0t8 0V7H-16Z" fill="${C.neonCyan}" opacity=".8"/>`
+          + `<path d="M-3 -1.6q-4 -3 -4 -5.4q0 -2.6 2.4 -2.6q1.6 0 1.6 1.6q0 -1.6 1.6 -1.6q2.4 0 2.4 2.6q0 2.4 -4 5.4z" fill="${C.neonPink}"/>`
+          + `<path d="M6 -7h7M6 -4h5" stroke="${C.foilShine}" stroke-width="1.2" stroke-linecap="round"/>`
+          + `<rect x="-14" y="8.6" width="20" height="1.6" rx=".8" fill="${C.neonPink}" opacity=".8"/>`, `<path d="${panel}"/>`)
+        + `<path d="M-17 -11.2H17" stroke="${C.cutRim}" stroke-width=".7" opacity=".4"/>` + glint(16, -14, 3.6);
+    }
     case 'c4/boombox-shine':
-      // 4-5's boombox, playing on its speaker stack (#118): two speaker cones, a handle, a pink tape window
-      return '<g transform="scale(.68)">' + depth(ctx, 3, `<rect x="-24" y="-12" width="48" height="26" rx="4" fill="${C.printDark}"/>`
-          + `<path d="M-14 -12V-18H14V-12" stroke="${C.printDark}" stroke-width="2.4" fill="none"/>`
-          + `<circle cx="-13" cy="2" r="7.4" fill="${C.ink}" stroke="${C.foilShine}" stroke-width="1.2"/><circle cx="13" cy="2" r="7.4" fill="${C.ink}" stroke="${C.foilShine}" stroke-width="1.2"/>`
-          + `<circle cx="-13" cy="2" r="2.4" fill="${C.neonCyan}"/><circle cx="13" cy="2" r="2.4" fill="${C.neonCyan}"/><rect x="-5" y="-9" width="10" height="5" rx="1" fill="${C.neonPink}"/>`, `<rect x="-24" y="-12" width="48" height="26" rx="4"/>`)
-        + glint(-24, -16, 3.6) + glint(22, -16, 4) + '</g>';
-    case 'c4/disco-ball':
-      // 4-6's disco ball (#118): a mirrored ball on its chain, its facets in foil and glassine
-      return `<path d="M0 -40V-15" stroke="${C.printDark}" stroke-width="1.4"/>`
-        + `<circle r="15" fill="${ref(ctx, 'foil')}"/><path d="M-15 0H15M-13 -7.5H13M-13 7.5H13M0 -15V15M-7.5 -13Q-11 0 -7.5 13M7.5 -13Q11 0 7.5 13" stroke="${C.goldDeep}" stroke-width=".8" fill="none" opacity=".8"/>`
-        + `<path d="M-7 -9h5v4h-5z" fill="${C.foilShine}"/><path d="M4 2h5v4h-5z" fill="${C.glassine}" opacity=".8"/>`
+      // 4-5's boombox, playing on its speaker stack (#119): the same boombox the baked part draws silent
+      return `<g transform="scale(.92)">${boomboxBody(ctx, true)}</g>` + glint(-18, -14, 3.6) + glint(18, -16, 4);
+    case 'c4/disco-ball': {
+      // 4-6's disco ball (#119): a mirrored ball on its chain, its facets a mosaic of foil and glassine
+      const id = ctx.id('discoClip');
+      let tiles = '';
+      for (let y = -15; y < 15; y += 4) for (let x = -15 + ((y + 15) % 8 ? 2 : 0); x < 15; x += 4) if ((x * 7 + y * 3) % 5 === 0) tiles += `M${x} ${y}h3v3h-3z`;
+      return `<path d="M0 -40V-15" stroke="${C.printDark}" stroke-width="1.4"/><clipPath id="${id}"><circle r="15"/></clipPath>`
+        + `<circle r="15" fill="${C.printLilac}"/><circle cx="4" cy="5" r="11" fill="${C.printLilacDeep}" opacity=".5"/><g clip-path="url(#${id})"><path d="${tiles}" fill="${C.foilShine}" opacity=".9"/>`
+        + `<path d="M-15 -11H15M-15 -7H15M-15 -3H15M-15 1H15M-15 5H15M-15 9H15M-15 13H15M-11 -15V15M-7 -15V15M-3 -15V15M1 -15V15M5 -15V15M9 -15V15M13 -15V15" stroke="${C.printLilacDeep}" stroke-width=".5" opacity=".7"/></g>`
+        + `<circle r="15" fill="none" stroke="${C.printLilacDeep}" stroke-width="1"/><ellipse cx="-5" cy="-6" rx="4" ry="3" fill="${C.foilShine}" opacity=".8"/>`
         + glint(-20, -10, 4) + glint(18, 12, 3.4);
+    }
     default:
       return softEllipse(ctx, 0, 0, 16, 16, 'lamp', 0.16, 'blur8') + `<circle r="7" fill="${C.glassine}" stroke="${C.moonRim}" stroke-width="1.2"/>`
         + `<circle cx="-2.4" cy="-2.4" r="2" fill="${C.foilShine}"/>` + glint(12, -10, 3.6);

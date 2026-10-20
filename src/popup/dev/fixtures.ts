@@ -611,7 +611,7 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: '3-6: 不要！ to the glasses sent him back across the book to reach up for Mocha, so the page he sat on could turn: it stands up as Mocha\'s bridge to 藍教授 (the 土地公 printed on it). The bookmark bridges the gap to the stack.',
     expect: { mode: 'reaching' },
   },
-  // ——— Chapter 4 「霓虹燈睡著了」 (#118): placeholder art until #119 ———
+  // ——— Chapter 4 「霓虹燈睡著了」 (#118; its art #119) ———
   {
     name: 'c4p1-start',
     page: 'c4p1',
@@ -667,6 +667,12 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [{ wait: 'settle' }, { say: 'wow' }, { wait: 'settle' }],
     note: '4-3: 哇！ under the first sign woke the second down the alley and put the first back to sleep; Baokaka crawled on and watches it. From here 哇！ reaches the third, round the corner.',
     expect: { mode: 'watching' },
+  },
+  {
+    name: 'c4p3-shadow',
+    page: 'c4p3',
+    steps: [{ mocha: 'behind' }, { wait: 'settle' }, { say: 'wow' }, { wait: 1 }],
+    note: '4-3\'s 淘氣 (#119): Mocha hid behind the second sign, and 哇！ lit it — his shadow, enormous, up the alley wall 「喵？」.',
   },
   {
     name: 'c4p4-start',

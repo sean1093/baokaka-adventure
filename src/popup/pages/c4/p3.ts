@@ -67,6 +67,8 @@ export default definePage({
     text: '讓摩卡躲在招牌後面，再把招牌點亮',
     when: { type: 'partEnter', id: 'sign2', when: { all: [{ part: 'sign2', in: ['on'] }, { mochaAt: 'behind' }] } },
   },
+  // The 淘氣's art (#119): Mocha's enormous shadow up the wall, while he hides behind the lit second sign
+  cutouts: [{ art: 'c4/mocha-shadow', x: 186, y: 300, visibleWhen: { all: [{ part: 'sign2', in: ['on'] }, { mochaAt: 'behind' }] } }],
   // A fortune-teller's stool under the second sign, seen while it glows
   tudigong: { x: 206, y: 440, visibleWhen: { part: 'sign2', in: ['on'] }, hat: '算命墨鏡' },
   solution: [{ wait: 'settle' }, { say: 'wow' }, { wait: 'settle' }, { say: 'wow' }, { wait: 'goal' }],

@@ -20,7 +20,8 @@ import { themeOf } from './placeholders';
 
 /** What a page's ledges are made of. */
 export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'carBodyXinyi' | 'granite' | 'shopFloor' | 'balcony' | 'parkPath' | 'boardwalk' | 'stage'
-  | 'carBodySongshan' | 'campusPath' | 'lakeside' | 'gallery' | 'libraryFloor' | 'desk' | 'bookPage';
+  | 'carBodySongshan' | 'campusPath' | 'lakeside' | 'gallery' | 'libraryFloor' | 'desk' | 'bookPage'
+  | 'neonStreet' | 'arcadeShelf' | 'karaokeStage';
 
 /** The near-corner foreground card. */
 export type ForegroundCard = 'plant' | 'blocks' | 'luggage' | 'shrub' | 'azalea';
@@ -40,6 +41,8 @@ export interface StageDress {
    * umbrella bridges; 2-6's stream, which the painted bridge pops up over)
    */
   readonly crossing?: 'rail' | 'none';
+  /** False when the backdrop draws what a carriage hangs over (4-4's claw over the plush pit, #119): no track pit */
+  readonly trackPit?: boolean;
   /** Fireflies drifting live over the page (bible § 6: the only moving pinholes in the game), how many */
   readonly fireflies?: number;
 }
@@ -78,6 +81,16 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c3/stacks': { ledge: [{ below: 400, style: 'gallery' }, { below: 999, style: 'libraryFloor' }], ownPosts: ['cart'], foreground: null, crossing: 'none' },
   // The desk, the giant book from x 112, the stack of books 藍教授 sits on (the bookmark page bridges the gap)
   'c3/book-spread': { ledge: 'desk', ledgeSplit: { x: 112, style: 'bookPage' }, ownPosts: ['lamp', 'catPage', 'near'], foreground: null, crossing: 'none' },
+  // 西門町 (#119): the 板南線 car's body, then the platform's granite past the doors
+  'c4/blue-car': { ledge: 'carBody', ledgeSplit: { x: 284, style: 'granite' }, ownPosts: ['strap', 'header'], foreground: null },
+  // 紅樓's plaza: the pavements either side of the turning house (the house is the way across)
+  'c4/red-house': { ledge: 'neonStreet', ownPosts: ['lamp', 'window', 'eave'], foreground: null, crossing: 'none' },
+  'c4/neon-alley': { ledge: 'neonStreet', ownPosts: ['box', 'behind'], foreground: null },
+  // Inside the claw machine: its prize shelves either side of the plush pit
+  'c4/claw-machine': { ledge: 'arcadeShelf', ownPosts: ['stool', 'coinSlot', 'pile'], foreground: null, crossing: 'none', trackPit: false },
+  'c4/street-dance': { ledge: 'neonStreet', ownPosts: ['lamp', 'crate', 'archMid', 'sign'], foreground: null },
+  // The arcade's pavement on the left page, the karaoke stage on the right (the shutter is the way on)
+  'c4/karaoke-spread': { ledge: 'neonStreet', ledgeSplit: { x: 196, style: 'karaokeStage' }, ownPosts: ['sign', 'amp'], foreground: null, crossing: 'none' },
 };
 
 const NONE: StageDress = {};

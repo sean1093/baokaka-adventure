@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_STATION as T } from '../../../art/palette';
+import { POPUP as C, POPUP_NEON as N, POPUP_STATION as T } from '../../../art/palette';
 import { brad, depth, f1, ref, type KitCtx } from '../../art';
 import { LEDGE_DEPTH } from '../stage';
 import { carriage } from './placeholders';
@@ -69,17 +69,24 @@ function bentoCart(ctx: KitCtx, w: number, linked: boolean): string {
 }
 
 /**
- * 4-4's claw (#118, a placeholder until #119): the cart's rope runs up to the gantry and the claw
- * hangs round the deck — a foil hub over his head and three prongs curling down around him (the
- * middle one behind), so the 'carriage' reads as the claw that carries him, not as a train car.
+ * 4-4's claw (#119): it hangs from the cart on the gantry (its cable runs up to the rail, 272 above
+ * the deck) round the riders' deck — a chrome motor hub with a pink cap lamp, and three chrome
+ * prongs curling down around him (the middle one behind, paler), each ending in a little hook, so the
+ * "carriage" reads as the claw that carries him. Flat fills only (it moves).
  */
 function clawCart(ctx: KitCtx, w: number, linked: boolean): string {
   const cx = w / 2;
-  const prongs = `M${f1(cx - 8)} -74q-26 22 -18 66l5 -3M${f1(cx + 8)} -74q26 22 18 66l-5 -3`;
-  return `<path d="M${f1(cx)} -272V-84" stroke="${C.printDark}" stroke-width="2"/>`
-    + `<path d="M${f1(cx)} -72V-16" stroke="${C.printDark}" stroke-width="3" stroke-linecap="round" opacity=".6"/>`
-    + `<path d="${prongs}" stroke="${C.printDark}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
-    + `<rect x="${f1(cx - 13)}" y="-88" width="26" height="16" rx="5" fill="${ref(ctx, 'foil')}" stroke="${C.printDark}" stroke-width="1.2"/>`
+  const x = (n: number) => f1(cx + n);
+  const prong = (side: -1 | 1) => `M${x(side * 9)} -70q${side * 30} 18 ${side * 22} 64q-2 6 ${-side * 7} 4`;
+  const hub = `M${x(-15)} -70L${x(-11)} -90H${x(11)}L${x(15)} -70Z`;
+  return `<path d="M${f1(cx)} -272V-96" stroke="${C.printDark}" stroke-width="1.8"/><path d="M${f1(cx + 1)} -272V-96" stroke="${N.chrome}" stroke-width=".7" opacity=".7"/>`
+    + `<path d="M${f1(cx)} -72q0 34 -2 62q-1 6 5 6" stroke="${N.chromeDeep}" stroke-width="3.4" fill="none" stroke-linecap="round" opacity=".75"/>`
+    + `<path d="${prong(-1)}${prong(1)}" stroke="${C.printDark}" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+    + `<path d="${prong(-1)}${prong(1)}" stroke="${N.chrome}" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+    + `<rect x="${x(-8)}" y="-100" width="16" height="11" rx="2" fill="${N.chromeDeep}"/>`
+    + `<path d="${hub}" fill="${N.chromeDeep}"/><path d="M${x(-12)} -72L${x(-9)} -88H${x(-2)}L${x(-4)} -72Z" fill="${N.chrome}"/>`
+    + `<ellipse cx="${f1(cx)}" cy="-70" rx="15" ry="3" fill="${C.printDark}"/><circle cx="${f1(cx)}" cy="-93" r="3" fill="${C.neonPink}"/>`
+    + `<path d="M${x(-14)} -89.4H${x(14)}" stroke="${C.cutRim}" stroke-width=".8" opacity=".6"/>`
     + (linked ? brad(ctx, cx, -80, 4.5, true) : '');
 }
 

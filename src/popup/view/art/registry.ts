@@ -5,6 +5,7 @@ import { campusPoster, goose, magpie } from './campus';
 import { backpacker, origamiPigeon } from './creatures';
 import { commuter, egret, jogger, painter, shiba, squirrel, sweeper, turtle } from './park';
 import { origamiBird, placeholderBackdrop } from './placeholders';
+import { busker, dancers, karaokeKing } from './ximen';
 
 /**
  * The art registry (GDD § 3.5, § 3.9): an art key → what draws it. In order:
@@ -46,6 +47,10 @@ const CREATURES: Readonly<Record<string, CreatureArt>> = {
   'c3/poster': campusPoster,
   'c3/goose': goose,
   'c3/magpie': magpie,
+  // 西門町 (#119, `ximen.ts`): the dance crew, the busker, 走音天王
+  'c4/dancers': dancers,
+  'c4/busker': busker,
+  'c4/karaoke-king': karaokeKing,
 };
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';
