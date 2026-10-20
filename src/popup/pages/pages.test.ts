@@ -74,6 +74,15 @@ describe.each(rows.map((row) => [row.def.id, row] as const))('page %s', (_id, { 
     expect(traps, table()).toEqual([]);
   });
 
+  test('no walkable decoy: every decoy stays out of his reach in every reachable state (#112)', () => {
+    const decoys = r.decoysReachable.map((d) => ({ decoy: d.id, at: d.node, after: toSolutionSteps(d.path) }));
+    expect(decoys, table()).toEqual([]);
+  });
+
+  test('no visible ties in reachable states (GDD § 3.6 rule 14; warning only)', () => {
+    for (const t of r.visibleTies) console.warn(`${def.id}: '${t.ids[0]}' and '${t.ids[1]}' tie (only distance or id decides) after ${JSON.stringify(toSolutionSteps(t.path))}`);
+  });
+
   test(def.allowTrivial ? 'trivial is allowed' : 'not trivial', () => {
     if (!def.allowTrivial) expect(r.trivial, table()).toBe(false);
   });

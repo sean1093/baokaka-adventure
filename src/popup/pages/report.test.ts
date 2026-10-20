@@ -40,6 +40,8 @@ function solved(over: Partial<SolveResult> = {}): SolveResult {
     error: null,
     nextAction: () => null,
     softTraps: () => [],
+    decoysReachable: [],
+    visibleTies: [],
     ...over,
   };
 }
@@ -71,6 +73,7 @@ describe('judge', () => {
     ['cascade', { complete: false, stop: 'error', error: { kind: 'cascadeOverflow', message: 'loop', path: [] } }, true, /^cascadeOverflow: loop$/],
     ['replay', {}, false, /authored solution does not reach done/],
     ['a soft trap', { softTraps: () => [{ path: [], move: { t: 'tap', id: 'curtain' }, regret: 2 }] }, true, /^1 soft trap: a move that must be undone \(first: \[\{"tap":"curtain"\}\] after \[\], \+2 moves\)$/],
+    ['a walkable decoy', { decoysReachable: [{ id: 'moon', node: 'L3', path: [{ t: 'none' }] }] }, true, /^decoy 'moon' is walkable at 'L3' \(first: \[\{"wait":1\}\]\)$/],
   ])('fails on %s', (_name, over, replayOk, re) => {
     const r = judge(c1p2, CLEAN, solved(over), { replayOk });
     expect(r.failures.some((f) => re.test(f)), r.failures.join('\n')).toBe(true);
@@ -82,6 +85,12 @@ describe('judge', () => {
       cap: 50,
     });
     expect(r.failures).toEqual(['exceeded the state cap (50 states): simplify the page']);
+  });
+
+  test('a visible tie in a reachable state only warns (GDD § 3.6 rule 14, #112)', () => {
+    const r = judge(c1p2, CLEAN, solved({ visibleTies: [{ ids: ['lampA', 'lampB'], path: [{ t: 'set', part: 'spot', to: '1' }] }] }), { replayOk: true });
+    expect(r.failures).toEqual([]);
+    expect(r.warnings).toEqual([`visible tie: 'lampA' and 'lampB' only by distance or id (first: [{"set":"spot","to":"1"}])`]);
   });
 
   test('allowTrivial makes a trivial page pass', () => {

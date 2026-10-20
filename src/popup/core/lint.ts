@@ -1,4 +1,4 @@
-import { rankCandidates } from './baby';
+import { rankCandidates, visibleTie } from './baby';
 import { EVENT_RADIUS, EVENT_TYPES } from './events';
 import { PRESETS } from './presets';
 import { initialState } from './state';
@@ -841,9 +841,9 @@ class Linter {
     } catch {
       return;
     }
-    const [first, second] = ranked;
-    if (second === undefined) return;
-    if (first.priority === second.priority && (first.approach === null) === (second.approach === null) && first.steps === second.steps) {
+    const tie = visibleTie(ranked);
+    if (tie !== null) {
+      const [first, second] = tie;
       const how = first.approach === null ? 'both unreachable' : `both ${first.steps} edges away`;
       this.warn(
         'L14-visible-tie',

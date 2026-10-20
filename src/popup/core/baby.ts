@@ -213,6 +213,18 @@ export function rankCandidates(def: PageDef, state: SimState, opts: BabyOptions 
   return rank(def, state, opts).ranked;
 }
 
+/**
+ * GDD § 6 risk 4: the first two ranked candidates tie on priority, reachability and path length,
+ * so only straight-line distance or id decides his target, which players can't read. Returns the
+ * pair, or null.
+ */
+export function visibleTie(ranked: readonly Ranked[]): [Ranked, Ranked] | null {
+  const [first, second] = ranked;
+  if (second === undefined) return null;
+  const tie = first.priority === second.priority && (first.approach === null) === (second.approach === null) && first.steps === second.steps;
+  return tie ? [first, second] : null;
+}
+
 /** § 2.2.2: this tick's target, or null when he wants nothing. */
 export function selectTarget(def: PageDef, state: SimState, opts: BabyOptions = {}): Ranked | null {
   return rankCandidates(def, state, opts)[0] ?? null;
