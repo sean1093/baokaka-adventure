@@ -277,7 +277,16 @@ async function main() {
         const file = `${target.name}.png`;
         const actualPath = join(outDir, file);
         await openTarget(page, base, target);
-        await page.screenshot({ path: actualPath, fullPage: Boolean(target.fullPage), animations: 'disabled', caret: 'hide' });
+        let shot = page;
+        // The dev server refused the tab a module or a bitmap (#104, #122): shoot it again in a fresh tab
+        if (errors.some((e) => e.includes('ERR_INSUFFICIENT_RESOURCES'))) {
+          console.warn(`  ~ ${target.name}: the tab ran out of request resources, shooting again in a fresh tab`);
+          errors.length = 0;
+          shot = await open();
+          await openTarget(shot, base, target);
+        }
+        await shot.screenshot({ path: actualPath, fullPage: Boolean(target.fullPage), animations: 'disabled', caret: 'hide' });
+        if (shot !== page) await shot.close();
 
         let status;
         let detail = '';

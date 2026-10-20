@@ -82,9 +82,10 @@ export async function listPopupFixtures(page, base) {
 /**
  * Fixtures per tab before the checks open a fresh one: a dev-server tab that has loaded dozens of
  * fixtures (hundreds of unbundled modules and font slices each) starts failing requests with
- * ERR_INSUFFICIENT_RESOURCES (#104).
+ * ERR_INSUFFICIENT_RESOURCES (#104). 15 was still too many for a full visual run (#122: one target in
+ * every tab failed so), hence 8.
  */
-export const FIXTURES_PER_TAB = 15;
+export const FIXTURES_PER_TAB = 8;
 
 /** Yields a page for each item, replaced by a fresh one every `FIXTURES_PER_TAB` items. */
 export async function* freshPages(open, items) {
