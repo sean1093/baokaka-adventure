@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
+import { POPUP as C, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
 import { depth, f1, ref, seeded, softEllipse, type KitCtx } from '../../art';
 import { PAGE_W, towardVp } from '../geometry';
 import { LEDGE_DEPTH, type LedgeRun, type Slope } from '../stage';
@@ -431,6 +431,52 @@ function bookPile(ctx: KitCtx, x: number, y: number): string {
   return depth(ctx, 4, `<path d="${top}" fill="${mixHex(K.bookRed, C.cutRim, 0.2)}"/>` + body, outline + `<path d="${top}"/>`);
 }
 
+/**
+ * 西門町's pavement (#119): plum-grey pavers on top, a granite curb, and the street's dark face under
+ * it with a smear of neon reflected in the wet asphalt (pink and cyan, alternating along the run).
+ */
+function neonStreet(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let smears = '';
+  for (let x = b.x0 + 10, i = 0; x < b.x1 - 16; x += 38, i++) smears += `<rect x="${f1(x)}" y="${b.y + 22 + (i % 2) * 6}" width="${f1(Math.min(26, b.x1 - x - 4))}" height="2.4" rx="1.2" fill="${i % 2 ? C.neonCyan : C.neonPink}" opacity=".4"/>`;
+  const body = (b.side ? `<path d="${b.side}" fill="${N.paverDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(N.asphalt, C.shadow, 0.2)}"/>` + smears
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="12" fill="${N.curb}"/>`
+    + `<path d="${Array.from({ length: Math.ceil((b.x1 - b.x0) / 26) }, (_, i) => `M${f1(b.x0 + 26 * (i + 1))} ${b.y}v12`).join('')}" stroke="${N.paverDeep}" stroke-width=".8" opacity=".6"/>`
+    + `<path d="M${b.x0} ${b.y + 12}H${b.x1}" stroke="${C.shadow}" stroke-width="1.6" opacity=".4"/>`
+    + `<path d="${b.top}" fill="${N.paverLight}"/><path d="${topJoints(b, 12)}" stroke="${N.paverDeep}" stroke-width=".7" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The claw machine's prize shelves (#119): a pink cabinet card on top with star stickers, a chrome lip and a row of little bulbs in front. */
+function arcadeShelf(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let bulbs = '';
+  for (let x = b.x0 + 8; x < b.x1 - 4; x += 12) bulbs += `M${f1(x - 2)} ${b.y + 20}a2 2 0 1 0 4 0a2 2 0 1 0 -4 0z`;
+  const body = (b.side ? `<path d="${b.side}" fill="${N.cabinetDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(N.cabinet, N.cabinetDeep, 0.5)}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="8" fill="${N.chrome}"/><path d="M${b.x0} ${b.y + 1}H${b.x1}" stroke="${C.cutRim}" stroke-width="1" opacity=".7"/>`
+    + `<path d="${bulbs}" fill="${C.lampHot}"/><path d="M${b.x0} ${b.y + 30}H${b.x1}" stroke="${N.cabinetLight}" stroke-width="1.4" opacity=".6"/>`
+    + `<path d="${b.top}" fill="${N.cabinetLight}"/>` + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The karaoke bar's stage (#119): dark boards on top, a velvet skirt in front with a row of footlights. */
+function karaokeStage(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let lights = '';
+  for (let x = b.x0 + 14; x < b.x1 - 8; x += 28) lights += softEllipse(ctx, x, b.y + 7, 6, 4, 'lamp', 0.3) + `<rect x="${f1(x - 4)}" y="${b.y + 4}" width="8" height="5" rx="2" fill="${C.lampHot}"/>`;
+  let folds = '';
+  for (let x = b.x0 + 6; x < b.x1; x += 10) folds += `M${f1(x)} ${b.y + 12}v${b.t - 12}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${N.velvetDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${N.velvet}"/><path d="${folds}" stroke="${N.velvetDeep}" stroke-width="3" opacity=".55"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="11" fill="${N.stageBoard}"/>` + lights
+    + `<path d="${b.top}" fill="${N.stageBoardLight}"/><path d="${topJoints(b, 9)}" stroke="${N.stageBoard}" stroke-width=".8" opacity=".7"/>`
+    + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
 /** A ledge in its page's material (`dress.ts`): the dressed styles here, brick and rug from the placeholder stage. */
 export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme: StageTheme): string {
   if (run.single) {
@@ -439,11 +485,18 @@ export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme
     if (style === 'lakeside') return nestMound(ctx, (run.x0 + run.x1) / 2, run.y);
     if (style === 'bookPage' || style === 'desk') return bookPile(ctx, (run.x0 + run.x1) / 2, run.y);
     if (style === 'campusPath') return campusPath(ctx, run);
+    if (style === 'neonStreet') return neonStreet(ctx, run);
     return plainLedge(ctx, run, theme);
   }
   switch (style) {
     case 'carBodySongshan':
       return carBody(ctx, run, K.songshan, K.songshanDeep);
+    case 'neonStreet':
+      return neonStreet(ctx, run);
+    case 'arcadeShelf':
+      return arcadeShelf(ctx, run);
+    case 'karaokeStage':
+      return karaokeStage(ctx, run);
     case 'campusPath':
       return campusPath(ctx, run);
     case 'lakeside':

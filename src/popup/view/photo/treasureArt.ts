@@ -5,7 +5,7 @@ import { albumChapter } from '../../content/album';
 /**
  * The chapter treasures as the spread and the photo draw them (GDD § 2.9, § 4.2; #103), flat SVG
  * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1), 畫筆 (chapter 2,
- * #115) and 書 (chapter 3, #117) are drawn; the other chapters' treasures are a foil token with the treasure's first
+ * #115), 書 (chapter 3, #117) and 麥克風 (chapter 4, #119) are drawn; the other chapters' treasures are a foil token with the treasure's first
  * character until their chapters' art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
  * never marigold (reserved for touchables). The caller's defs must hold `foil`.
  */
@@ -68,6 +68,25 @@ function book(ctx: KitCtx): string {
     + `</g>`;
 }
 
+/**
+ * 麥克風 (chapter 4, #119): a hand-held microphone laid at a slant — its round head in silver foil
+ * (bible § 3.1: microphone heads are silver) with a mesh and a gold band, a dark handle with a neon
+ * pink stripe and its switch, a little sparkle.
+ */
+function microphone(ctx: KitCtx): string {
+  return `<g transform="rotate(32)">`
+    + `<ellipse cx="2" cy="18" rx="14" ry="3" fill="${C.shadow}" opacity=".28" transform="rotate(-32)"/>`
+    // The handle: tapering, dark, the pink stripe and the switch
+    + `<path d="M-5 4L-3.4 26Q0 29 3.4 26L5 4Z" fill="${C.printDark}"/><path d="M-4.4 12h8.8" stroke="${C.neonPink}" stroke-width="2"/>`
+    + `<rect x="-1.6" y="16" width="3.2" height="5" rx="1" fill="${C.printLilac}"/><path d="M-3.6 5L-2.4 24" stroke="${C.cutRim}" stroke-width=".8" opacity=".4"/>`
+    // The gold band and the silver head with its mesh
+    + `<rect x="-7" y="0" width="14" height="5" rx="1.6" fill="${ref(ctx, 'foil')}"/>`
+    + `<circle cy="-9" r="11" fill="${C.printLilac}"/><circle cx="2.4" cy="-7" r="8.4" fill="${C.printLilacDeep}" opacity=".45"/>`
+    + `<path d="M-10 -12H10M-11 -8H11M-10 -4H10M-6 -19V1M-2 -20V2M2 -20V2M6 -19V1" stroke="${C.foilShine}" stroke-width=".6" opacity=".7"/>`
+    + `<circle cy="-9" r="11" fill="none" stroke="${C.printLilacDeep}" stroke-width="1"/><ellipse cx="-4" cy="-14" rx="3.4" ry="2.4" fill="${C.foilShine}" opacity=".9"/>`
+    + `</g>` + sparkle(ctx, 16, -16, 4);
+}
+
 /** A treasure not drawn yet: a foil token with its first character. */
 function token(ctx: KitCtx, name: string): string {
   return `<ellipse cx="1" cy="17" rx="15" ry="3" fill="${C.shadow}" opacity=".28"/>`
@@ -80,6 +99,7 @@ export function treasureArt(ctx: KitCtx, chapter: number): string {
   if (chapter === 1) return drumstick(ctx);
   if (chapter === 2) return paintbrush(ctx);
   if (chapter === 3) return book(ctx);
+  if (chapter === 4) return microphone(ctx);
   return token(ctx, albumChapter(chapter).treasure);
 }
 

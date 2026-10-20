@@ -315,6 +315,35 @@ describe('sources', () => {
     expect(pageById('c3p4')!.parts.find((x) => x.id === 'plate')!.art).toBe('c3/plate');
   });
 
+  test('chapter 4 (#119): every art key resolves to its own art — no live placeholder, no placeholder stage', () => {
+    const c4 = PAGES.filter((p) => p.chapter === 4);
+    expect(c4.map((p) => p.id)).toEqual(['c4p1', 'c4p2', 'c4p3', 'c4p4', 'c4p5', 'c4p6']);
+    for (const b of backdropSources(c4)) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+    for (const p of c4) {
+      expect(pageArt(p, M).placeholders, p.id).toEqual([]);
+      for (const part of p.parts) expect(isPlaceholder(part.art), `${p.id} ${part.art}`).toBe(false);
+      for (const c of p.creatures) expect(hasCreatureArt(c.art), `${p.id} ${c.art}`).toBe(true);
+      for (const c of p.cutouts ?? []) expect(cutoutBitmap(c.art), `${p.id} ${c.art}`).not.toBeNull();
+    }
+    // 紅樓 turns one drawing: baked once, every state served from it
+    for (const state of ['0', '4', '7']) expect(partImage('c4/red-house', state)?.url, state).toBe(partImage('c4/red-house', '0')?.url);
+  });
+
+  test('4-3\'s shadow (the 淘氣\'s art) shows only while Mocha hides behind the lit second sign (#119)', () => {
+    const src = CUTOUT_SOURCES['c4/mocha-shadow'];
+    expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c4p3', touchable: () => false, expected: [], where: 'shadow' })).toEqual([]);
+    const def = pageById('c4p3')!;
+    const html = (state: ReturnType<typeof initialState>) => renderToStaticMarkup(createElement(PageView, { def, prev: state, state, ms: 0, tickMs: 500 }));
+    const s = initialState(def);
+    const behind = { ...s, mocha: { ...s.mocha, perch: 'behind' } };
+    expect(html(behind)).not.toContain('data-cutout="c4/mocha-shadow"');
+    expect(html(withPartState(s, 'sign2', 'on'))).not.toContain('data-cutout="c4/mocha-shadow"');
+    expect(html(withPartState(behind, 'sign2', 'on'))).toContain('data-cutout="c4/mocha-shadow"');
+  });
+
   test('3-5\'s squeeze (the 淘氣\'s art) shows only while Mocha is shut in aisle 2 (#117)', () => {
     const src = CUTOUT_SOURCES['c3/squeeze'];
     expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c3p5', touchable: () => false, expected: [], where: 'squeeze' })).toEqual([]);

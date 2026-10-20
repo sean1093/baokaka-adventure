@@ -293,7 +293,7 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c4/blue-car": {
       "file": "backdrops/c4/blue-car",
-      "bytes": 152468,
+      "bytes": 135378,
       "chapter": 4,
       "grade": [1.045, 1.014, 1.024],
       "box": {
@@ -302,11 +302,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "90c61839489e323c"
+      "source": "a3fd0fb3342857b9"
     },
     "c4/red-house": {
       "file": "backdrops/c4/red-house",
-      "bytes": 152468,
+      "bytes": 212418,
       "chapter": 4,
       "grade": [1.045, 1.014, 1.024],
       "box": {
@@ -315,11 +315,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "90c61839489e323c"
+      "source": "52f542dffb4bacaa"
     },
     "c4/neon-alley": {
       "file": "backdrops/c4/neon-alley",
-      "bytes": 152468,
+      "bytes": 219162,
       "chapter": 4,
       "grade": [1.045, 1.014, 1.024],
       "box": {
@@ -328,11 +328,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "90c61839489e323c"
+      "source": "3c4777b60ba88d43"
     },
     "c4/claw-machine": {
       "file": "backdrops/c4/claw-machine",
-      "bytes": 152468,
+      "bytes": 175882,
       "chapter": 4,
       "grade": [1.045, 1.014, 1.024],
       "box": {
@@ -341,11 +341,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "90c61839489e323c"
+      "source": "fddc6b6b7c497390"
     },
     "c4/street-dance": {
       "file": "backdrops/c4/street-dance",
-      "bytes": 152468,
+      "bytes": 195994,
       "chapter": 4,
       "grade": [1.045, 1.014, 1.024],
       "box": {
@@ -354,11 +354,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "90c61839489e323c"
+      "source": "24b842d93181103e"
     },
     "c4/karaoke-spread": {
       "file": "backdrops/c4/karaoke-spread",
-      "bytes": 152468,
+      "bytes": 219030,
       "chapter": 4,
       "grade": [1.045, 1.014, 1.024],
       "box": {
@@ -367,7 +367,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "90c61839489e323c"
+      "source": "766a8bc0a355e86e"
     }
   },
   "parts": {
@@ -1376,6 +1376,49 @@ export const ENV_MANIFEST: EnvManifest = {
       },
       "source": "ae4ca6b322465a4d"
     },
+    "c4/doors": {
+      "preset": "gate",
+      "box": {
+        "x": -37,
+        "y": -101,
+        "w": 82,
+        "h": 164
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c4/doors.closed",
+          "bytes": 3886
+        },
+        "open": {
+          "file": "parts/c4/doors.open",
+          "bytes": 3530
+        }
+      },
+      "source": "b8eef4fba945d60b"
+    },
+    "c4/red-house": {
+      "preset": "wheel",
+      "box": {
+        "x": -108,
+        "y": -107,
+        "w": 216,
+        "h": 215
+      },
+      "pivot": [0, 0],
+      "states": {
+        "0": {
+          "file": "parts/c4/red-house.0",
+          "bytes": 22228
+        }
+      },
+      "lifted": {
+        "0": {
+          "file": "parts/c4/red-house.0.lifted",
+          "bytes": 27450
+        }
+      },
+      "source": "9a1e62812a4ee93a"
+    },
     "c4/lantern": {
       "preset": "pushable",
       "box": {
@@ -1399,6 +1442,305 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "719dc7efb8ac667d"
+    },
+    "c4/shutter-button": {
+      "preset": "button",
+      "box": {
+        "x": -23,
+        "y": -14,
+        "w": 50,
+        "h": 38
+      },
+      "states": {
+        "up": {
+          "file": "parts/c4/shutter-button.up",
+          "bytes": 1564
+        },
+        "down": {
+          "file": "parts/c4/shutter-button.down",
+          "bytes": 1366
+        }
+      },
+      "source": "735844c1c92d5781"
+    },
+    "c4/shutter": {
+      "preset": "gate",
+      "box": {
+        "x": -36,
+        "y": -57,
+        "w": 81,
+        "h": 113
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c4/shutter.closed",
+          "bytes": 3214
+        },
+        "open": {
+          "file": "parts/c4/shutter.open",
+          "bytes": 3974
+        }
+      },
+      "source": "8c2d694d6599ccb6"
+    },
+    "c4/neon-1": {
+      "preset": "light",
+      "box": {
+        "x": -52,
+        "y": -108,
+        "w": 104,
+        "h": 160
+      },
+      "states": {
+        "off": {
+          "file": "parts/c4/neon-1.off",
+          "bytes": 2874
+        },
+        "on": {
+          "file": "parts/c4/neon-1.on",
+          "bytes": 16756
+        }
+      },
+      "source": "ece6aed4d022869f"
+    },
+    "c4/neon-2": {
+      "preset": "light",
+      "box": {
+        "x": -52,
+        "y": -108,
+        "w": 104,
+        "h": 160
+      },
+      "states": {
+        "off": {
+          "file": "parts/c4/neon-2.off",
+          "bytes": 3346
+        },
+        "on": {
+          "file": "parts/c4/neon-2.on",
+          "bytes": 16764
+        }
+      },
+      "source": "82f1b2915258d505"
+    },
+    "c4/neon-3": {
+      "preset": "light",
+      "box": {
+        "x": -52,
+        "y": -108,
+        "w": 104,
+        "h": 160
+      },
+      "states": {
+        "off": {
+          "file": "parts/c4/neon-3.off",
+          "bytes": 2818
+        },
+        "on": {
+          "file": "parts/c4/neon-3.on",
+          "bytes": 16618
+        }
+      },
+      "source": "e1bbbfb61d853c6b"
+    },
+    "c4/coin-slot": {
+      "preset": "button",
+      "box": {
+        "x": -20,
+        "y": -27,
+        "w": 57,
+        "h": 60
+      },
+      "states": {
+        "up": {
+          "file": "parts/c4/coin-slot.up",
+          "bytes": 1884
+        },
+        "down": {
+          "file": "parts/c4/coin-slot.down",
+          "bytes": 2020
+        }
+      },
+      "source": "b3d2d68440e60739"
+    },
+    "c4/machine-lights": {
+      "preset": "light",
+      "box": {
+        "x": -121,
+        "y": -41,
+        "w": 244,
+        "h": 85
+      },
+      "states": {
+        "off": {
+          "file": "parts/c4/machine-lights.off",
+          "bytes": 5560
+        },
+        "on": {
+          "file": "parts/c4/machine-lights.on",
+          "bytes": 11660
+        }
+      },
+      "source": "5c5c74cc9dd1361c"
+    },
+    "c4/claw-cart": {
+      "preset": "tab",
+      "box": {
+        "x": -128,
+        "y": -19,
+        "w": 256,
+        "h": 51
+      },
+      "states": {
+        "x0": {
+          "file": "parts/c4/claw-cart.x0",
+          "bytes": 2418
+        },
+        "x1": {
+          "file": "parts/c4/claw-cart.x1",
+          "bytes": 2418
+        },
+        "x2": {
+          "file": "parts/c4/claw-cart.x2",
+          "bytes": 2418
+        }
+      },
+      "lifted": {
+        "x0": {
+          "file": "parts/c4/claw-cart.x0.lifted",
+          "bytes": 4972
+        },
+        "x1": {
+          "file": "parts/c4/claw-cart.x1.lifted",
+          "bytes": 4972
+        },
+        "x2": {
+          "file": "parts/c4/claw-cart.x2.lifted",
+          "bytes": 4972
+        }
+      },
+      "source": "3816c998d49055a4"
+    },
+    "c4/drop-lever": {
+      "preset": "tab",
+      "box": {
+        "x": -46,
+        "y": -60,
+        "w": 96,
+        "h": 128
+      },
+      "states": {
+        "up": {
+          "file": "parts/c4/drop-lever.up",
+          "bytes": 2552
+        },
+        "down": {
+          "file": "parts/c4/drop-lever.down",
+          "bytes": 2672
+        }
+      },
+      "lifted": {
+        "up": {
+          "file": "parts/c4/drop-lever.up.lifted",
+          "bytes": 5504
+        },
+        "down": {
+          "file": "parts/c4/drop-lever.down.lifted",
+          "bytes": 5558
+        }
+      },
+      "source": "1a181e295047980d"
+    },
+    "c4/boombox": {
+      "preset": "light",
+      "box": {
+        "x": -51,
+        "y": -53,
+        "w": 102,
+        "h": 84
+      },
+      "states": {
+        "off": {
+          "file": "parts/c4/boombox.off",
+          "bytes": 2102
+        },
+        "on": {
+          "file": "parts/c4/boombox.on",
+          "bytes": 7490
+        }
+      },
+      "source": "6eca11dfbd9dc42a"
+    },
+    "c4/stage-shutter": {
+      "preset": "flap",
+      "box": {
+        "x": -15,
+        "y": -9,
+        "w": 89,
+        "h": 87
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c4/stage-shutter.closed",
+          "bytes": 3792
+        },
+        "open": {
+          "file": "parts/c4/stage-shutter.open",
+          "bytes": 3464
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c4/stage-shutter.closed.lifted",
+          "bytes": 4964
+        },
+        "open": {
+          "file": "parts/c4/stage-shutter.open.lifted",
+          "bytes": 4510
+        }
+      },
+      "source": "74794c8564dcdc85"
+    },
+    "c4/stage-lights": {
+      "preset": "light",
+      "box": {
+        "x": -90,
+        "y": -37,
+        "w": 180,
+        "h": 185
+      },
+      "states": {
+        "off": {
+          "file": "parts/c4/stage-lights.off",
+          "bytes": 3962
+        },
+        "on": {
+          "file": "parts/c4/stage-lights.on",
+          "bytes": 10686
+        }
+      },
+      "source": "935a3303ed07fc65"
+    },
+    "c4/stage-lift": {
+      "preset": "lift",
+      "box": {
+        "x": -32,
+        "y": -9,
+        "w": 71,
+        "h": 103
+      },
+      "states": {
+        "down": {
+          "file": "parts/c4/stage-lift.down",
+          "bytes": 6440
+        },
+        "up": {
+          "file": "parts/c4/stage-lift.up",
+          "bytes": 6440
+        }
+      },
+      "source": "1b5b6a6fb2e0bdef"
     }
   },
   "cutouts": {
@@ -1427,6 +1769,19 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 70
       },
       "source": "e19543527289a5ed"
+    },
+    "c4/mocha-shadow": {
+      "file": "cutouts/c4/mocha-shadow",
+      "bytes": 10850,
+      "chapter": 4,
+      "grade": [1.045, 1.014, 1.024],
+      "box": {
+        "x": -40,
+        "y": -250,
+        "w": 170,
+        "h": 256
+      },
+      "source": "e88d2fc2061d0fdb"
     }
   },
   "screens": {

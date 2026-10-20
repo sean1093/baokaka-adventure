@@ -842,26 +842,28 @@ const lilyPad: PartSource = {
  * and the line's band, meeting on a rubber seal under the door lamp, lit red while they are
  * shut (「車門即將關閉。」); open, the leaves are slid into their pockets (only their edges show) and
  * the platform's light spills onto the threshold. Local origin at the hit centre (160, 430); the
- * doorway's floor at local y 40, the lintel at −226.
+ * doorway's floor at local y 40, the lintel at −226 (or `top` − 4: 4-1's doors are low, under the
+ * route map's header, #119; the band is drawn only where the leaves reach it).
  */
-export function carDoors(band: string, bandDeep: string): PartSource {
+export function carDoors(band: string, bandDeep: string, { top = -222 }: { top?: number } = {}): PartSource {
+  const glassH = Math.min(96, 40 - top - 64);
+  const lampY = top - 14;
   return {
     preset: 'gate',
     states: ['closed', 'open'],
-    box: { x: -38, y: -240, w: 76, h: 292 },
+    box: { x: -38, y: top - 18, w: 76, h: 70 - top },
     draw(ctx, state) {
       const open = state === 'open';
-      const top = -222;
       const foot = 40;
       const leaf = (x0: number, w: number, glass: number) => `<rect x="${x0}" y="${top}" width="${w}" height="${foot - top}" fill="${T.steel}"/>`
-        + `<rect x="${x0 + glass}" y="${top + 34}" width="${w - 10}" height="96" rx="5" fill="${mixHex(P.stationTile, T.navy, 0.35)}"/>`
+        + `<rect x="${x0 + glass}" y="${top + 34}" width="${w - 10}" height="${glassH}" rx="5" fill="${mixHex(P.stationTile, T.navy, 0.35)}"/>`
         + `<path d="M${x0 + glass} ${top + 90}L${x0 + glass + 12} ${top + 34}h6L${x0 + glass} ${top + 110}Z" fill="${C.cutRim}" opacity=".18"/>`
         // The line's band, level with the car wall's (y 236)
-        + `<rect x="${x0}" y="-194" width="${w}" height="10" fill="${band}"/><rect x="${x0}" y="-183" width="${w}" height="2" fill="${bandDeep}"/>`
+        + (top < -194 ? `<rect x="${x0}" y="-194" width="${w}" height="10" fill="${band}"/><rect x="${x0}" y="-183" width="${w}" height="2" fill="${bandDeep}"/>` : '')
         + `<path d="M${x0 + 3} ${top + 1}h${w - 6}" stroke="${C.cutRim}" stroke-width="1" opacity=".5"/>`;
       const lamp = open
-        ? `<rect x="-8" y="-236" width="16" height="7" rx="3" fill="${C.printDark}"/><rect x="-5" y="-234.5" width="10" height="4" rx="2" fill="${T.steelDeep}"/>`
-        : softEllipse(ctx, 0, -232, 12, 8, 'lamp', 0.3) + `<rect x="-8" y="-236" width="16" height="7" rx="3" fill="${C.printDark}"/><rect x="-5" y="-234.5" width="10" height="4" rx="2" fill="${T.lampStop}"/>`;
+        ? `<rect x="-8" y="${lampY}" width="16" height="7" rx="3" fill="${C.printDark}"/><rect x="-5" y="${lampY + 1.5}" width="10" height="4" rx="2" fill="${T.steelDeep}"/>`
+        : softEllipse(ctx, 0, lampY + 4, 12, 8, 'lamp', 0.3) + `<rect x="-8" y="${lampY}" width="16" height="7" rx="3" fill="${C.printDark}"/><rect x="-5" y="${lampY + 1.5}" width="10" height="4" rx="2" fill="${T.lampStop}"/>`;
       const threshold = `<rect x="-30" y="${foot - 2}" width="60" height="5" fill="${T.steelDeep}"/><path d="M-28 ${foot - 1}h56" stroke="${C.cutRim}" stroke-width=".8" opacity=".5"/>`;
       if (open) {
         return softEllipse(ctx, 0, foot - 4, 30, 8, 'lamp', 0.3)

@@ -162,7 +162,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       // A spread is a centrefold (GDD § 2.9, #103): the same 390 × 560 space, with the spine's crease down its middle
       + (def.spread ? spine(ctx) : '');
     // Standing cut-outs the page places (GDD § 3.9 layer 2), then the track pits from the walk graph
-    const cutouts = (def.cutouts ?? []).filter((c) => c.visibleWhen === undefined).map(cutoutSvg).join('') + stage.carriages.map(trackPit).join('');
+    const cutouts = (def.cutouts ?? []).filter((c) => c.visibleWhen === undefined).map(cutoutSvg).join('') + (dressOf(def).trackPit === false ? '' : stage.carriages.map(trackPit).join(''));
     // The ledges in the page's material and the perch furniture its backdrop doesn't draw itself (#108, `art/dress.ts`)
     const floor = stage.slopes.map((s) => styledRamp(ctx, s, ledgeStyleOf(def, Math.max(s.from[1], s.to[1])), theme)).join('')
       + stage.runs.map((run) => dressedLedge(ctx, run, (y) => ledgeStyleOf(def, y), theme, dressOf(def).ledgeSplit)).join('')

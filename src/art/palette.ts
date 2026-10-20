@@ -1340,6 +1340,80 @@ export const POPUP_CAMPUS = {
   posterSun: '#E8B4A0',
 } as const;
 
+/**
+ * Chapter 4's palette kit (西門町, 01:50; popup art bible § 6 row 4, #119): **plum** and **紅樓
+ * brick** dominant, **neon pink and cyan** the accent (luminous ink; the tubes themselves are
+ * `POPUP.neonPink` / `neonCyan`, never graded). The signature materials are neon ink and brick
+ * card. A sleeping sign is grey ink. Every warm decoration here (the brick, the plush, the busker's
+ * guitar, the karaoke king's jacket) is held ≥ ΔE 12 from marigold by `affordance.test.ts`.
+ */
+export const POPUP_NEON = {
+  // The night street's plum card: walls, shopfronts, the alley
+  plum: '#2A2266',
+  plumDeep: '#1A143E',
+  plumLight: '#463A8A',
+  plumMist: '#6A5AA4',
+  // 紅樓's red brick, its mortar, the white trim of its bands and arches
+  brick: '#B04A44',
+  brickLight: '#C8645A',
+  brickDeep: '#7A2E34',
+  mortar: '#D9B8A8',
+  trim: '#E8DCCC',
+  trimShade: '#B8A8A0',
+  roof: '#2E2A44',
+  roofLight: '#48405E',
+  // Extra neon tubes (lights: never graded) and a sleeping sign's grey ink
+  neonViolet: '#B98CFF',
+  neonRed: '#FF5A6E',
+  sleepInk: '#6E6A86',
+  sleepInkDeep: '#4A4664',
+  // Sign boards (printed, unlit): deep teal, maroon, ink-blue
+  boardTeal: '#1E4A56',
+  boardMaroon: '#4E1E36',
+  boardInk: '#1C2050',
+  // The street: asphalt, its painted crossing (cream, desaturated), the curb, the 徒步區's pavers
+  asphalt: '#2A2840',
+  asphaltLight: '#3C3858',
+  stripe: '#CFC8D2',
+  curb: '#7E7896',
+  paver: '#5A4E6E',
+  paverLight: '#7A6C8E',
+  paverDeep: '#3A3050',
+  // Steel: the shutters' ribs, the claw machine's chrome
+  shutter: '#8A88A0',
+  shutterLight: '#B4B2C6',
+  shutterDeep: '#5A5872',
+  chrome: '#C4CCDC',
+  chromeDeep: '#7A84A0',
+  // The claw machine: its cabinet (hot pink card), the back wall's print, the plush (pastels)
+  cabinet: '#C2407A',
+  cabinetDeep: '#7E2452',
+  cabinetLight: '#E0669A',
+  machineWall: '#3A2E6E',
+  plushPink: '#F2A6C2',
+  plushMint: '#9CDCC4',
+  plushLilac: '#C2AEEA',
+  plushSky: '#9CC4EE',
+  plushCream: '#EEE2DA',
+  // Speakers, amps and the stage: black card, the karaoke bar's velvet, the stage boards
+  speaker: '#24203A',
+  speakerCone: '#3E3858',
+  velvet: '#8E2448',
+  velvetDeep: '#5A1430',
+  stageBoard: '#5A3A4E',
+  stageBoardLight: '#7A5468',
+  // The cast: the dancers' hoodies, the busker's beanie and guitar, the king's sequin jacket
+  danceCyan: '#2E9AAE',
+  dancePink: '#D2508A',
+  danceDenim: '#3A4C8A',
+  beanie: '#3E7A6A',
+  guitar: '#8A4A36',
+  guitarDeep: '#5A2E26',
+  jacket: '#A23E9A',
+  jacketDeep: '#6E2468',
+  pompadour: '#1E1A2A',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 
