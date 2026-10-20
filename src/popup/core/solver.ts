@@ -114,15 +114,15 @@ export interface SolveResult {
   /**
    * Decoys whose node Baokaka can walk to in some explored state (GDD § 2.2.1, #112: a decoy is
    * never grabbable because its node is unreachable *by design*; the engine never lets him grab one,
-   * but a walkable decoy would read as a bug). One entry per decoy, the first state found (fewest
-   * moves). Must be empty; on an incomplete search, empty means "none found".
+   * but a walkable decoy would read as a bug). One entry per decoy, the first state the search
+   * created with it (search order: few moves, not always the fewest). Must be empty; on an incomplete search, empty means "none found".
    */
   readonly decoysReachable: DecoyReach[];
   /**
    * GDD § 3.6 rule 14 over every explored state (lint's L14 checks only the start, #112): states
    * where his target ties with another candidate on priority, reachability and path length, so only
    * distance or id decides it (§ 6 risk 4) — a spotlight or a dropped bead can make one mid-page.
-   * One entry per pair of ids, the first state found (fewest moves). A warning, not a failure.
+   * One entry per pair of ids, the first state found in search order. A warning, not a failure.
    */
   readonly visibleTies: TieReach[];
   readonly statesExplored: number;
@@ -737,7 +737,7 @@ export function solve(def: PageDef, from: SimState = initialState(def), opts: So
     return traps;
   };
 
-  // Vertices are created in search order, so the first found per decoy has the fewest moves
+  // Vertices are created in search order (layer by layer in moves), so the first found is a short way there
   const decoysReachable = decoys.flatMap((a): DecoyReach[] => {
     const at = decoyAt.get(a.id);
     return at === undefined ? [] : [{ id: a.id, node: at.node, path: pathTo(at.vertex) }];
