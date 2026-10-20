@@ -1,4 +1,4 @@
-import { rankCandidates } from './baby';
+import { rankCandidates, visibleTie } from './baby';
 import { EVENT_RADIUS, EVENT_TYPES } from './events';
 import { PRESETS } from './presets';
 import { initialState } from './state';
@@ -61,7 +61,7 @@ import { inReach, WORDS } from './words';
  * | `L12-cascade-loop` | error | 12: parts that re-trigger each other with unconditional `next`/`prev`/`toggle` reactions: every cascade through them overflows |
  * | `L12-cascade-cycle` | warning | 12: parts whose reactions can trigger each other in a cycle; the solver (#87) proves it stays under 32 |
  * | `L13-custom-reaction` | warning | 13: a function in the page data (the custom-reaction escape hatch, § 3.1) |
- * | `L14-visible-tie` | warning | 14: his first target ties with another on priority, reachability and path length in the initial state (GDD § 6 risk 4) |
+ * | `L14-visible-tie` | warning | 14: his first target ties with another on priority, reachability and path length in the initial state (GDD § 6 risk 4; the solver's `visibleTies` checks every reachable state, #112) |
  * | `L15-lock-order` | warning | 15: a part's `lockedWhen`/`stateWhen` reads a part that reacts to the same event earlier in data order, so it sees that event's new state (D-45) |
  * | `L16-always-wet-perch` | warning | 16: a `wet`/`steam` perch with no `blockedWhen` is refused forever (C7) |
  *
@@ -841,9 +841,9 @@ class Linter {
     } catch {
       return;
     }
-    const [first, second] = ranked;
-    if (second === undefined) return;
-    if (first.priority === second.priority && (first.approach === null) === (second.approach === null) && first.steps === second.steps) {
+    const tie = visibleTie(ranked);
+    if (tie !== null) {
+      const [first, second] = tie;
       const how = first.approach === null ? 'both unreachable' : `both ${first.steps} edges away`;
       this.warn(
         'L14-visible-tie',

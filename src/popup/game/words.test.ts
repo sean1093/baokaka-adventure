@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import c1p3 from '../core/fixtures/c1p3';
+import { toyMoon, toySquirrel } from '../core/fixtures/m2';
+import { SCRIPT } from '../content/script';
 import { initialState, replay, step } from '../core';
 import type { PageDef, SimState, Word } from '../core/types';
 import { WORDS } from '../core/words';
@@ -139,4 +141,32 @@ describe('1-3 end to end through the ring\'s words', () => {
 test('every word has a distinct sound motif (§ 6 risk 10)', () => {
   const motifs = WORDS.map((w) => WORD_MOTIF[w].join(','));
   expect(new Set(motifs).size).toBe(WORDS.length);
+});
+
+describe('the M2 words: 掰掰, 不要！, 哇！ through the #99 flow (#112)', () => {
+  test('不要！ is learned on the moon toy page: the goose honks when Mocha lands on the rock', () => {
+    expect(ringWords(toyMoon, initialState(toyMoon))).toEqual(['beep', 'bye']);
+    const taught = run(toyMoon, [{ t: 'mocha', perch: 'rock' }]);
+    expect(learnedNow(taught.events)).toBe('no');
+    expect(ringWords(toyMoon, taught.state)).toEqual(['beep', 'bye', 'no']);
+    // The learn beat: the goose, then Baokaka, then Mocha's translation; no follow-up on its learn page
+    expect(learnLines('no')).toEqual(['learn.no.src', 'learn.no.baby', 'learn.no.mocha']);
+    expect(firstUseLine(toyMoon, 'no')).toBeNull();
+    expect(tutorialWord(toyMoon)).toBeNull();
+  });
+
+  test.each([
+    ['bye', ['learn.bye.src', 'learn.bye.baby', 'learn.bye.mocha']],
+    ['no', ['learn.no.src', 'learn.no.baby', 'learn.no.mocha']],
+    ['wow', ['learn.wow.baby', 'learn.wow.mocha']],
+  ] as const)('%s: its learn beat lines exist; on any other page its first say gets Mocha\'s translation', (word, lines) => {
+    expect(learnLines(word)).toEqual(lines);
+    for (const key of lines) expect(SCRIPT[key], key).toBeDefined();
+    expect(firstUseLine(toySquirrel, word)).toBe(`learn.${word}.mocha`);
+  });
+
+  test('the ring with M2\'s four words (the `word-ring-4` stage): 嗶！ 掰掰 不要！ 哇！ in learning order', () => {
+    const ring4: PageDef = { ...toyMoon, words: ['wow', 'no', 'bye', 'beep'], learns: undefined };
+    expect(ringWords(ring4, initialState(ring4))).toEqual(['beep', 'bye', 'no', 'wow']);
+  });
 });

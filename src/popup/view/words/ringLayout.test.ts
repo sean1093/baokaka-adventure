@@ -101,6 +101,23 @@ describe('ringLayout', () => {
     for (const s of ring.slots) expect(dist(s.at, ring.center)).toBeCloseTo(ring.radius);
   });
 
+  test("M2's four words (嗶！ 掰掰 不要！ 哇！, #112): all on the thumb's side, the first two in the lower half, the last at the top", () => {
+    const four = ['beep', 'bye', 'no', 'wow'] as const;
+    for (const leftHand of [false, true]) {
+      const ring = ringLayout(mid, four, { safe, leftHand });
+      expect(ring.step).toBe(MAX_STEP);
+      const words = ring.slots.filter((s) => s.kind === 'word');
+      expect(words.map((s) => s.kind === 'word' && s.word)).toEqual([...four]);
+      const side = leftHand ? -1 : 1;
+      // Every word on the thumb's side of him (the last one, at the top, a hair past the middle at most)
+      for (const w of words) expect(side * (w.at[0] - mid[0])).toBeGreaterThan(-DISC / 2);
+      // 嗶！ and 掰掰 in the lower half (by its centre, 掰掰 sits just under his middle), 哇！ near the top
+      expect(words[0].at[1]).toBeGreaterThan(mid[1]);
+      expect(words[1].at[1]).toBeGreaterThan(mid[1] - 1);
+      expect(words[3].at[1]).toBeLessThan(mid[1] - ring.radius * 0.9);
+    }
+  });
+
   test('discs are at least 64 px (bible § 7, R6)', () => {
     expect(DISC).toBeGreaterThanOrEqual(64);
   });

@@ -159,12 +159,12 @@ describe('the toy pages', () => {
     expect(() => solve(broken)).toThrow(TypeError);
   });
 
-  test('with 不要！ he can refuse the only bead and cry forever: the solver finds that soft-lock', () => {
+  test('with 不要！ he can refuse the only bead, but he forgets after two cries: no soft-lock (D-75)', () => {
+    // Before D-75 this was a dead end (he cried forever), which D-46 (11) worked around with `words: []`
     const talky = { ...trivial, words: undefined };
     const r = solve(talky);
-    expect(r.solvable).toBe(true);
-    expect(r.deadEndCount).toBeGreaterThan(0);
-    expect(r.deadEnds[0].path.some((i) => i.t === 'say' && i.word === 'no')).toBe(true);
+    expect(r).toMatchObject({ solvable: true, deadEndCount: 0 });
+    expect(r.softTraps()).toEqual([]);
   });
 });
 
@@ -261,8 +261,10 @@ describe('the other fixtures', () => {
 describe('soft traps (#183)', () => {
   test("the engine fixture's 0-4 (the GDD's first layout) has the curtain-first order trap", () => {
     // Opened first, the curtain shows the bead behind the shut door: he reaches at it and never cries
-    // (The engine fixture knows every word, so 不要！ adds traps of its own after it; the page doesn't.)
-    const traps = solve(c0p4).softTraps();
+    // (The engine fixture knows every word: with 不要！ the bead can be refused and the cry lights the
+    // train, so curtain-first costs one move, not a trap. The page itself offers no words.)
+    expect(solve(c0p4).softTraps().some((t) => t.path.length === 0 && t.move.t === 'tap')).toBe(false);
+    const traps = solve({ ...c0p4, words: [] }).softTraps();
     expect(traps[0]).toEqual({ path: [], move: { t: 'tap', id: 'curtain' }, regret: 2 });
   });
 

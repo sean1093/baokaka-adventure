@@ -293,6 +293,7 @@ export interface SimState {
     mode: BabyMode;
     facing: 'l' | 'r';
     refused: Id[];
+    /** Ticks of `looking` (1–2); while `crying` over refusals, the cries so far (1, D-75); else 0. */
     lookCount: number;
     /** The attractor he is after (`'mocha'` for Mocha), or null (D-43). The view's bubble reads it. */
     target: Id | null;

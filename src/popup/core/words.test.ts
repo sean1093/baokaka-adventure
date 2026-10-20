@@ -189,6 +189,42 @@ describe('saying a word (step, § 3.3 phases 1 and 5)', () => {
     expect(s.events.filter((ev) => ev.type === 'cry')).toHaveLength(1);
   });
 
+  test('refusing the only thing: two cries, then he forgets and wants it again (D-75, never stranded)', () => {
+    // A bead behind a closed edge: he reaches for it, refuses it, looks twice, cries twice, then goes back to reaching.
+    const far = page({ nodes: [n('A', 0), n('B', 100)], edges: [e('A', 'B', { when: { flag: 'bridge' } })], attractors: [{ id: 'bead', kind: 'shiny', node: 'B', goal: true }] });
+    let s = run(far, [NONE, NONE]).state;
+    expect(s.baby).toMatchObject({ mode: 'reaching', target: 'bead' });
+    const modes: string[] = [];
+    const refusedLog: string[][] = [];
+    let cries = 0;
+    for (const input of [say('no'), NONE, NONE, NONE, NONE, NONE]) {
+      const r = step(far, s, input);
+      s = r.state;
+      modes.push(s.baby.mode);
+      refusedLog.push(s.baby.refused);
+      cries += r.events.filter((ev) => ev.type === 'cry').length;
+    }
+    expect(modes).toEqual(['saying', 'looking', 'looking', 'crying', 'crying', 'reaching']);
+    expect(refusedLog).toEqual([['bead'], ['bead'], ['bead'], ['bead'], [], []]);
+    expect(cries).toBe(2);
+    // Comfort is silent, and the count is back to 0
+    expect(s.baby).toMatchObject({ target: 'bead', lookCount: 0 });
+  });
+
+  test('crying with nothing refused goes on (0-4: crying is a tool) and keeps lookCount at 0', () => {
+    const def = page({ ...line('AB') });
+    let s = initialState(def);
+    for (let i = 0; i < 8; i++) s = step(def, s, NONE).state;
+    expect(s.baby).toMatchObject({ mode: 'crying', lookCount: 0 });
+  });
+
+  test('a cry over a refusal still works as a tool: it wakes what hears it', () => {
+    const door = part('door', 'gate', 0, 0, { react: [{ on: 'cry', to: 'open' }] });
+    const def = page({ ...line('AB'), parts: [door], attractors: [{ id: 'moon', kind: 'shiny', node: 'B', decoy: true }] });
+    const s = run(def, [NONE, say('no'), NONE, NONE, NONE]).state;
+    expect(s.parts.door).toBe('open');
+  });
+
   test('a refusal lapses on the say tick when its attractor changes then (哇！ turns the refused lamp off)', () => {
     const lamp = part('lamp', 'light', 100, 0, { attractor: 'glow', react: [{ on: 'wow', to: 'toggle' }] });
     const def = page({ ...line('AB'), parts: [lamp], attractors: [{ id: 'glow', kind: 'light', node: 'B', activeWhen: { part: 'lamp', in: ['on'] } }] });

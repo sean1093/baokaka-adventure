@@ -677,6 +677,57 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'Saying 嗶！ (#99, #107): the big speech bubble, the word\'s 120-unit reach in its seal colour, gate B open and the cleaning robot spinning; Mocha\'s 「……閘門真的開了。」',
     expect: { mode: 'saying', event: 'beep' },
   },
+  {
+    name: 'word-ring-4',
+    page: 'lab-ring4',
+    steps: [{ wait: 4 }],
+    show: { words: { ring: true } },
+    note: 'The ring with M2\'s four words (GDD § 2.4, #112): 嗶！ 掰掰 不要！ 哇！ in learning order from beside 「好了」 on the thumb\'s side round to the top, 44° apart, each on its seal; reaching for the moon decoy, he was tapped. Lab stage (the moon toy page with every M2 word).',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'word-card-no',
+    page: 'toy-moon',
+    steps: [{ mocha: 'rock' }],
+    show: { words: { card: 'no' } },
+    note: 'The 不要！ learn beat\'s card (GDD § 5.4, #112): Mocha landed on the rock, the goose honked 「嘎！不要過來！」 and he copied it: 「不要！：換一個想要的」 with its seal, taped over the dimmed page. Toy page after 3-3.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'word-say-no',
+    page: 'toy-moon',
+    steps: [{ mocha: 'rock' }, { wait: 'settle' }, { say: 'no' }],
+    note: 'Saying 不要！ to the moon decoy (GDD § 2.4, #112): the big speech bubble and the small burst at him; next tick he turns from the moon to Mocha on the rock.',
+    expect: { mode: 'saying' },
+  },
+  {
+    name: 'm2-spotlight',
+    page: 'toy-spotlight',
+    steps: [{ set: 'spot', to: 'trap' }, { wait: 1 }],
+    note: 'The spotlight toy page (#112, after 2-2): the wheel aims the light at the trap-door plate, he crawled into it and sits watching; his weight pressed the plate and the curtain rose on the bead.',
+    expect: { mode: 'watching' },
+  },
+  {
+    name: 'm2-squirrel-herded',
+    page: 'toy-squirrel',
+    steps: [{ mocha: 'fork' }, { wait: 'settle' }],
+    note: 'The squirrel toy page (#112, after 2-4): Mocha on the fork scared the squirrel down to the low branch, where it sits on the bead; he reaches for it. Next: 掰掰.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'm2-squirrel-bye',
+    page: 'toy-squirrel',
+    steps: [{ mocha: 'fork' }, { wait: 'settle' }, { say: 'bye' }],
+    note: 'Saying 掰掰 to the squirrel (GDD § 2.4, #112): its 160-unit reach in the word\'s seal colour; the squirrel waved and ran off the page, dropping the bead where it sat.',
+    expect: { mode: 'saying', event: 'wave' },
+  },
+  {
+    name: 'm2-moon-decoy',
+    page: 'toy-moon',
+    steps: [{ wait: 6 }],
+    note: 'The moon decoy toy page (#112, after 3-3): the moon\'s reflection is a shiny he can never reach; he sits at the water\'s edge reaching for it, the goose on her nest past him.',
+    expect: { mode: 'reaching' },
+  },
 ];
 
 /** A fixture's page and its final frame: the state, and the state before the last tick. */

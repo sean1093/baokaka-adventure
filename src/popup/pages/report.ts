@@ -104,11 +104,15 @@ export function judge(
     const t = traps[0];
     failures.push(`${traps.length} soft trap${traps.length === 1 ? '' : 's'}: a move that must be undone (first: ${JSON.stringify(toSolutionSteps([t.move]))} after ${JSON.stringify(toSolutionSteps(t.path))}, +${t.regret} moves)`);
   }
+  // A decoy's node is unreachable by design (GDD § 2.2.1, #112); one he can walk to reads as a bug
+  for (const d of r.decoysReachable) failures.push(`decoy '${d.id}' is walkable at '${d.node}' (first: ${JSON.stringify(toSolutionSteps(d.path))})`);
   if (r.trivial && !allowTrivial) failures.push('trivial (solvable by waiting) without allowTrivial');
   // On an incomplete search `false` only means "not found"; the stop reason already fails the page.
   if (r.complete && !r.mischiefReachable) failures.push('the 淘氣 is not reachable');
   if (r.complete && !r.tudigongReachable) failures.push('the 土地公 is not reachable');
   const warnings = lint.warnings.map((w) => `lint ${w.message}`);
+  // GDD § 3.6 rule 14 over the reachable states (lint's L14 sees the start only)
+  for (const t of r.visibleTies) warnings.push(`visible tie: '${t.ids[0]}' and '${t.ids[1]}' only by distance or id (first: ${JSON.stringify(toSolutionSteps(t.path))})`);
   if (!parInBand && r.solvable) warnings.push(`par ${r.par ?? '-'} is outside difficulty ${def.difficulty}'s band ${band[0]}–${band[1]}`);
   return {
     id: def.id,

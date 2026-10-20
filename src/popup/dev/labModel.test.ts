@@ -209,9 +209,9 @@ describe('the page list', () => {
     expect(pageBadge(r === undefined ? undefined : report(r))).toBe(badge);
   });
 
-  test('the lab lists every registered page, then the broken fixture', () => {
+  test('the lab lists every registered page, then the lab fixtures', () => {
     expect(LAB_PAGES.slice(0, PAGES.length)).toEqual(PAGES);
-    expect(LAB_FIXTURES.map((p) => p.id)).toEqual(['c1p2-broken', 'lab-words']);
+    expect(LAB_FIXTURES.map((p) => p.id)).toEqual(['c1p2-broken', 'lab-words', 'toy-spotlight', 'toy-squirrel', 'toy-moon', 'lab-ring4']);
     expect(labPageById('c1p2')).toBe(c1p2);
     expect(labPageById('c1p2-broken')).toBe(LAB_FIXTURES[0]);
     expect(labPageById('nope')).toBeUndefined();

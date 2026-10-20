@@ -216,6 +216,7 @@ The first candidate is the **target**.
   - pigeons scatter to their away positions;
   - 「哭了就會有人來」: a gate with `opensOn: cry` opens (the balcony door, a guard booth window).
 - **Comfort:** crying stops the moment any candidate appears (for example, a woken creature turns out to be Mocha). He says nothing; the bubble pops.
+- **Crying over a refusal** (不要！ said to the only thing he wanted): after two cries he forgets the refusal and wants it again (D-75). The cries still go out, so crying on demand works, but a refusal never strands him.
 - **Cry presentation:** a gentle wobbly wail with small tears and a soft visual "sound ring". It never sounds distressing. It lasts until something appears, but the view loops a calm 2-second animation, so it never feels like an alarm.
 
 **Design use:** many puzzles ask you to *make him cry on purpose*: close the flap, send Mocha out of sight, or say 不要！ to the only thing he wants.
@@ -290,14 +291,14 @@ Baokaka knows about 12 words (`docs/story/script.md` vocabulary). Some are **bar
 |---|---|---|---|---|---|
 | **嗶！** | 1-3 台北車站 fare gates (imitating the card reader) | `beep` | 120 | Parts with `onBeep` react: fare gates toggle to `open` (they stay open); elevator card readers call the lift; robots start or stop. | Open gates and call lifts without a card. |
 | **掰掰** | 2-3 大安森林公園 (a jogger waves at him) | `wave` | 160 | Creatures with `onWave` wave back, then move to their `away` position. If they hold an item, they drop it at their node (it becomes an attractor or a pushable on the floor). Saying it again near the away position brings them back (reversibility). | Clear blockers. Make the squirrel drop the bead. |
-| **不要！** | 3-3 台大 醉月湖 (the goose honks it; he copies) | none (self) | — | Adds his **current target** to `refused`. He immediately re-targets. `refused` clears when he **arrives at his new target**, or when the refused attractor changes state (moves, or is revealed again). If nothing else is a candidate, he goes looking → crying. | Ignore decoys. Pick Mocha over a visible bead. Trigger crying on demand. |
+| **不要！** | 3-3 台大 醉月湖 (the goose honks it; he copies) | none (self) | — | Adds his **current target** to `refused`. He immediately re-targets. `refused` clears when he **arrives at his new target**, or when the refused attractor changes state (moves, or is revealed again). If nothing else is a candidate, he goes looking → crying; after **two cries** he forgets the refusals and wants the refused thing again, so 不要！ can never strand him (D-75). | Ignore decoys. Pick Mocha over a visible bead. Trigger crying on demand. |
 | **哇！** | 4-3 西門町 (the neon sign flickers on as he gasps) | `wow` | 160 | `light` parts with `onWow` switch `on`, and their `light` attractors become active. Flowers with `onWow` open. Saying it again turns them back `off`. | Lay a trail of lights as stepping-stones of desire. |
 | **抱抱** | 5-3 士林夜市 (a vendor 阿姨 picks him up) | `hug` | 1 edge (adjacent node) | If an idle `carrier` is on an adjacent node, it picks him up (`carried`) and walks its route 1 edge per tick, then sets him down at the end. If there's no carrier, he raises his arms and Mocha purrs (no effect). | Cross crowds, counters, steps. Ride an adult. |
 | **飛機！** | 6-3 松山機場 observation deck (a sleeping plane's lights blink) | `sky` | whole page | All creatures tagged `winged` toggle between ground and sky positions (fly away, or come back). Parts with `onSky` react (runway lights, a taxiing plane advances one stop). | Clear birds off perches, nodes and buttons, or bring them back as weights. |
 | **咻——** | 8-3 北投 (溫泉阿嬤 says 「呼呼再吃」) | `whoosh` | 140, in a 90° cone in his facing direction | `blowable` parts in the cone advance one state (pinwheel +1, boat +1 stop, steam cloud `clear`, sail `full`). | Move light objects, clear steam, spin pinwheel-driven lifts. |
 | **一起** | 10-5 台北101 | `together` | — | Enters `linked` mode for the rest of the page. Mocha hops down to Baokaka's node, and cat rule C1 is suspended. **Tapping any floor node walks Mocha there** (over crawl/climb/cruise/walk edges), and Baokaka **follows Mocha**: in `linked` mode Mocha has priority 0, above shiny. Creatures tagged `lonely` (咻咻) follow the pair. In linked mode, cat rules C1, C7 and C8 are suspended: Mocha walks the floor, **even through puddles, for him**. | The finale: the first time you lead him, because he trusts you. |
 
-**For engineers.** `core/words.ts` (#84): `wordEvent`, `inReach` (the radius, and 咻——'s cone as exact integer math: |dy| ≤ dx in his facing, edges included), `wordAvailable` (a page's `words`, plus its `learns` word once learned) and `sayNo`. 嗶！, 哇！ and 掰掰 act only through page reactions (a `toggle` reaction makes 哇！ reversible; two `when`-guarded reactions make 掰掰 send a creature away and back). Built in: 飛機！ toggles each `winged` creature with no `sky` reaction between `initial` and `sky` (else `away`), and 咻—— advances `blowable` parts with no `whoosh` reaction (wrapping). 抱抱 (#120) and 一起 (#128) emit their event only for now (D-45).
+**For engineers.** `core/words.ts` (#84): `wordEvent`, `inReach` (the radius, and 咻——'s cone as exact integer math: |dy| ≤ dx in his facing, edges included), `wordAvailable` (a page's `words`, plus its `learns` word once learned) and `sayNo`. 嗶！, 哇！ and 掰掰 act only through page reactions (a `toggle` reaction makes 哇！ reversible; two `when`-guarded reactions make 掰掰 send a creature away and back). Built in: 飛機！ toggles each `winged` creature with no `sky` reaction between `initial` and `sky` (else `away`), and 咻—— advances `blowable` parts with no `whoosh` reaction (wrapping). 抱抱 (#120) and 一起 (#128) emit their event only for now (D-45). M2 (#112, D-75): a refusal is forgotten after two cries (`FORGET_AFTER_CRIES`, `baby.ts`); the toy pages `core/fixtures/m2.ts` prove the spotlight (`nodeBy`), the squirrel (`heldBy`, `fleesFromCat`, 掰掰's `drop`) and the moon decoy with 不要！ solver-green, and PageLab lists them as stages.
 
 Each word's first use on a page shows a one-time **Mocha translation** joke (§5.4). The word ring button for a newly learned word glows until it is first used.
 
@@ -661,7 +662,7 @@ export type BabyMode = 'idle' | 'moving' | 'reaching' | 'looking' | 'crying' | '
 export interface SimState {
   tick: number;
   parts: Record<Id, string>;
-  baby: { node: Id; mode: BabyMode; facing: 'l' | 'r'; refused: Id[]; lookCount: number;
+  baby: { node: Id; mode: BabyMode; facing: 'l' | 'r'; refused: Id[]; lookCount: number;   // looking ticks; cries over refusals (D-75)
           target: Id | null; reachTicks: number;   // current target ('mocha' = Mocha) and reach beat 0–3 (D-43)
           carriedBy?: { id: Id; k: number }; linked: boolean };
   mocha: { perch: Id | null; path: Id[]; to?: Id; stare?: Id; floorNode?: Id };
@@ -811,7 +812,7 @@ Each of the following is an error:
 11. Exactly one `goal` attractor. `tudigong` is present. `mischief` is present.
 12. The cascade never exceeds 32 iterations (fuzzed by running the solver).
 13. Warning only: a custom reaction function is present.
-14. Warning only: in the initial state, Baokaka's target ties with another candidate on priority, reachability and path length, so only distance or id decides (§ 6 risk 4).
+14. Warning only: in the initial state, Baokaka's target ties with another candidate on priority, reachability and path length, so only distance or id decides (§ 6 risk 4). The solver repeats the check in every reachable state (`visibleTies`, #112), since a spotlight or a dropped bead can make a tie mid-page.
 15. Warning only: a part's `lockedWhen`/`stateWhen` reads a part that reacts to the same event earlier in data order, so it sees that event's new state while reaction `when`s see the old one (D-45).
 16. Warning only: a perch on a `wet`/`steam` node has no `blockedWhen`, so Mocha refuses it forever (C7).
 
@@ -838,8 +839,10 @@ Each of the following is an error:
   - `tudigongReachable`: likewise for the 土地公's `visibleWhen`.
   - `nextAction(state)`: the first input on a shortest path to the goal (used by hints).
   - `softTraps()` (#183): first moves of a part or of Mocha, made from a state on a shortest way to the goal, after which the goal costs at least two more moves (the move must be undone; undoing progress is not counted). The page looks alive but never progresses until the player thinks to reverse it. **Must be empty.**
+  - `decoysReachable` (#112): decoys whose node Baokaka can walk to in some reachable state. A decoy is unreachable by design (§ 2.2.1); the engine never lets him grab one, but a walkable one reads as a bug. **Must be empty.**
+  - `visibleTies` (#112): states where his target is decided only by distance or id (rule 14 over every reachable state). A warning.
 - **Tests** (`src/popup/pages/pages.test.ts`):
-  - for every page: lint passes; replaying `solution` reaches `done`; `solve()` reports solvable, no dead ends, no soft traps, not trivial, and mischief and 土地公 reachable;
+  - for every page: lint passes; replaying `solution` reaches `done`; `solve()` reports solvable, no dead ends, no soft traps, no walkable decoy, not trivial, and mischief and 土地公 reachable (visible ties only warn);
   - par is within the difficulty band (a warning, not a failure).
 - **CI cost target:** all 65 pages in under 60 s.
 - **Hints at runtime:** `hint.worker.ts` runs `solve(def, current, {cap: 200_000, timeMs: 300})` and returns `nextAction`.

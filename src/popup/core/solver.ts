@@ -1,9 +1,11 @@
+import { attractorNode, rankCandidates, visibleTie } from './baby';
 import { holds } from './cond';
+import { walkGraph } from './graph';
 import { mochaNode, mochaSettled, catPath } from './mocha';
 import { compilePart } from './presets';
 import { initialState } from './state';
-import { CascadeOverflowError, learned, matchPredicate, partLocked, step } from './step';
-import type { Input, PageDef, SimState, SolutionStep } from './types';
+import { CascadeOverflowError, learned, matchPredicate, partLocked, step, stepGrowth } from './step';
+import type { Id, Input, PageDef, SimState, SolutionStep } from './types';
 import { WORDS, wordAvailable } from './words';
 
 /**
@@ -59,6 +61,24 @@ export interface DeadEnd {
   readonly state: SimState;
 }
 
+/** A decoy Baokaka could walk to (`SolveResult.decoysReachable`). */
+export interface DecoyReach {
+  /** The decoy attractor */
+  readonly id: Id;
+  /** Where it was, on his walk graph */
+  readonly node: Id;
+  /** Inputs from the search's start to the first state found where he can walk there (waits as `none`) */
+  readonly path: Input[];
+}
+
+/** A state where only distance or id decides his target (`SolveResult.visibleTies`). */
+export interface TieReach {
+  /** The two candidates that tie: his target first */
+  readonly ids: readonly [Id, Id];
+  /** Inputs from the search's start to the first state found with that tie (waits as `none`) */
+  readonly path: Input[];
+}
+
 /** A page error the search ran into (GDD § 3.6 rule 12: a reaction loop). */
 export interface SolveError {
   readonly kind: 'cascadeOverflow';
@@ -91,6 +111,20 @@ export interface SolveResult {
   readonly mischiefReachable: boolean;
   /** Likewise for the 土地公's `visibleWhen` (absent: always visible). */
   readonly tudigongReachable: boolean;
+  /**
+   * Decoys whose node Baokaka can walk to in some explored state (GDD § 2.2.1, #112: a decoy is
+   * never grabbable because its node is unreachable *by design*; the engine never lets him grab one,
+   * but a walkable decoy would read as a bug). One entry per decoy, the first state the search
+   * created with it (search order: few moves, not always the fewest). Must be empty; on an incomplete search, empty means "none found".
+   */
+  readonly decoysReachable: DecoyReach[];
+  /**
+   * GDD § 3.6 rule 14 over every explored state (lint's L14 checks only the start, #112): states
+   * where his target ties with another candidate on priority, reachability and path length, so only
+   * distance or id decides it (§ 6 risk 4) — a spotlight or a dropped bead can make one mid-page.
+   * One entry per pair of ids, the first state found in search order. A warning, not a failure.
+   */
+  readonly visibleTies: TieReach[];
   readonly statesExplored: number;
   readonly edges: number;
   /** Wall time in ms, or null without `opts.clock`. */
@@ -277,6 +311,21 @@ export function firesMischief(def: PageDef, state: SimState): boolean {
 /** Whether the 土地公 is visible in the state. */
 export function tudigongVisible(def: PageDef, state: SimState): boolean {
   return holds(def, state, def.tudigong.visibleWhen);
+}
+
+/**
+ * The decoys (of `decoys`, default the page's) whose node Baokaka could walk to in `state`, at his
+ * growth there, with that node: GDD § 2.2.1 says a decoy's node is unreachable by design.
+ */
+export function reachableDecoys(def: PageDef, state: SimState, decoys = def.attractors.filter((a) => a.decoy === true)): [Id, Id][] {
+  if (decoys.length === 0) return [];
+  const reach = walkGraph(def, state, { who: 'baby', growth: stepGrowth(def, state) }).reachSet(state.baby.node);
+  const out: [Id, Id][] = [];
+  for (const a of decoys) {
+    const node = attractorNode(def, state, a);
+    if (node !== null && reach.has(node)) out.push([a.id, node]);
+  }
+  return out;
 }
 
 /** `inputs` as `SolutionStep`s, runs of waits folded into `{ wait: n }` (for reports and authoring). */
@@ -478,6 +527,11 @@ export function solve(def: PageDef, from: SimState = initialState(def), opts: So
     return i;
   };
   const noneId = internInput(NONE);
+  const decoys = def.attractors.filter((a) => a.decoy === true);
+  /** Per decoy, the first vertex where Baokaka can walk to it. */
+  const decoyAt = new Map<Id, { node: Id; vertex: number }>();
+  /** Per tied pair of candidates, the first vertex showing the tie. */
+  const tieAt = new Map<string, { ids: [Id, Id]; vertex: number }>();
 
   /** The vertex for `state`, created (with its flags) when new. */
   const vertex = (key: string, state: SimState): number => {
@@ -500,6 +554,14 @@ export function solve(def: PageDef, from: SimState = initialState(def), opts: So
     if (firesMischief(def, state)) f |= FLAG_MISCHIEF;
     if (tudigongVisible(def, state)) f |= FLAG_TUDIGONG;
     flags[id] = f;
+    if (!state.done) {
+      const tie = visibleTie(rankCandidates(def, state, { growth: stepGrowth(def, state) }));
+      const k = tie === null ? '' : [tie[0].id, tie[1].id].sort().join(F);
+      if (tie !== null && !tieAt.has(k)) tieAt.set(k, { ids: [tie[0].id, tie[1].id], vertex: id });
+    }
+    if (decoys.length > 0 && decoyAt.size < decoys.length) {
+      for (const [decoy, node] of reachableDecoys(def, state, decoys)) if (!decoyAt.has(decoy)) decoyAt.set(decoy, { node, vertex: id });
+    }
     return id;
   };
 
@@ -675,8 +737,18 @@ export function solve(def: PageDef, from: SimState = initialState(def), opts: So
     return traps;
   };
 
+  // Vertices are created in search order (layer by layer in moves), so the first found is a short way there
+  const decoysReachable = decoys.flatMap((a): DecoyReach[] => {
+    const at = decoyAt.get(a.id);
+    return at === undefined ? [] : [{ id: a.id, node: at.node, path: pathTo(at.vertex) }];
+  });
+
+  const visibleTies = [...tieAt.values()].map((t): TieReach => ({ ids: t.ids, path: pathTo(t.vertex) }));
+
   return {
     softTraps,
+    decoysReachable,
+    visibleTies,
     solvable: goal !== -1,
     complete,
     stop,
