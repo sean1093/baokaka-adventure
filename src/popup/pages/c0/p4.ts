@@ -30,12 +30,13 @@ export default definePage({
     { a: 'rodTop', b: 'roofTop', kind: 'jump', when: { part: 'balconyDoor', in: ['open'] } },
   ],
   parts: [
+    // The paper 月亮線 train outside: the cry wakes it (it is further away than the cry's 220 units).
+    // Listed first so the curtain's grip ear draws over its roof (#108)
+    { id: 'train', preset: 'light', hit: { x: 300, y: 372, w: 84, h: 82 }, react: [{ on: { type: 'cry', within: 400 }, to: 'on' }], art: 'c0/moon-train' },
     // The curtain over the balcony window: closed, it hides the train and the bead
     { id: 'curtain', preset: 'flap', hit: { x: 226, y: 180, w: 148, h: 166 }, art: 'c0/curtain' },
     // The balcony door: only his cry opens it, and it stays open
     { id: 'balconyDoor', preset: 'gate', hit: { x: 234, y: 392, w: 56, h: 100 }, react: [{ on: 'cry', to: 'open' }], art: 'c0/balcony-door' },
-    // The paper 月亮線 train outside: the cry wakes it (it is further away than the cry's 220 units)
-    { id: 'train', preset: 'light', hit: { x: 300, y: 372, w: 84, h: 82 }, react: [{ on: { type: 'cry', within: 400 }, to: 'on' }], art: 'c0/moon-train' },
   ],
   perches: [
     { id: 'sill', node: 'sillTop', reachNode: 'rug2' },

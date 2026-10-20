@@ -31,7 +31,9 @@ export function FlapView(props: PartViewProps) {
     const back = depth(ctx, 3, `<path d="${card}" fill="${ref(ctx, 'kraft')}"/><path d="M3 3H${w - 3}" stroke="${C.cutRim}" stroke-width="1" opacity=".3"/>`, `<path d="${card}"/>`)
       + depth(ctx, 4, `<path data-grip="ear" d="${ear}" fill="${ref(ctx, 'tabG')}"/>`, `<path d="${ear}"/>`)
       + `<path data-cue="curl" d="M${f1(w - c * 0.2)} ${f1(h + c * 0.62)}q8 6 14 2" stroke="${C.marigoldLight}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
-    return { front: flap(ctx, 0, 0, w, h, { sealed: false }), back, veil: lockVeil(`<path d="${card}"/>`), shadow: liftShadow(ctx, { x: 0, y: 0, w, h }, 2) };
+    // A baked face (#96) carries its own marigold ear in pixels; its printed curl cue stays live (#108)
+    const cue = `<path data-cue="curl" d="M${f1(w - c * 0.2)} ${f1(h + c * 0.62)}q8 6 14 2M${w + 4} ${f1(h - c * 0.4)}l6 -3" stroke="${C.marigoldLight}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    return { front: flap(ctx, 0, 0, w, h, { sealed: false }), back, cue, veil: lockVeil(`<path d="${card}"/>`), shadow: liftShadow(ctx, { x: 0, y: 0, w, h }, 2) };
   }, [ctx, w, h]);
   const sealSvg = useMemo(() => seal(ctx, 0, 0, VERBS.flap, sealR(11, look.elder)), [ctx, look.elder]);
   // Baked art (#96): the front is the first state's bitmap, the back the second's, each hung from its
@@ -66,6 +68,7 @@ export function FlapView(props: PartViewProps) {
       <g data-anim="" transform={`translate(0 ${-lift}) scale(${k} ${r2(shown * k)})`}>
         <g className={wiggleClass('flap', look.wiggle)} data-grip={baked ? 'ear' : undefined} data-baked-marigold={baked ? '' : undefined}>
           <ArtG html={baked ? (shown >= 0 ? baked.front : baked.back) : shown >= 0 ? art.front : art.back} />
+          {baked && <ArtG html={art.cue} />}
           {look.locked && <ArtG html={art.veil} />}
         </g>
       </g>

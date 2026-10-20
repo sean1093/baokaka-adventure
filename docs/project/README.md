@@ -176,6 +176,7 @@ npm run art:report             # the per-page payload report from the committed 
 - `src/popup/env/env.test.ts` fails when files and `env.gen.ts` disagree, when a source changed without a re-bake (the source hashes), when a page's art passes **350 KB**, or when the first load passes **2.5 MB**.
 - The characters' half grade is baked by `npm run sync:sprites` per graded chapter (`g/<grade>/` variants); re-run it when a page in a new chapter is registered.
 - Needs Playwright's Chromium and Python 3 with Pillow, like `sync:sprites`; CI needs neither.
+- **Dressing the live stage** (#108, D-71). The ledges, perch furniture and corner card stay live (drawn from the walk graph); `src/popup/view/art/dress.ts` says, per backdrop key, what they are made of (`ledge`, `ledgeSplit`), which perches' furniture the backdrop draws itself (`ownPosts`) and which corner card it uses (`foreground`). Carriage art per part key is in `view/art/carriages.ts`; creatures (origami) and the paper-style cast in `view/art/creatures.ts` (drawn per position). A **baked flap** draws its face and back in the card's shape with the marigold dog-ear (local origin at the card's top-left, `hinge: 0`); its seal and curl cue stay live.
 
 ### Bubbles and subtitles: `view/talk/` (#98, D-61)
 

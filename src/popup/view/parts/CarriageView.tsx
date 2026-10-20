@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { KitCtx } from '../../art';
 import type { PageDef, SimState } from '../../core/types';
-import { carriage } from '../art/placeholders';
+import { carriageArt } from '../art/carriages';
 import type { PartPreview } from '../gestures';
 import { drawnNodePos } from '../interp';
 import { CARRIAGE_REACH, type Carriage } from '../stage';
@@ -34,7 +34,9 @@ export function CarriageView({ def, prev, state, carriage: c, ctx, ms, reduced, 
     return { min: Math.min(...xs), max: Math.max(...xs), lead: xs[0] };
   }, [c, def]);
   const w = spread.max - spread.min + 2 * CARRIAGE_REACH;
-  const html = useMemo(() => carriage(ctx, w, 1, true), [ctx, w]);
+  // Its own drawing by the part's art key (#108: the train, the bento cart), else the placeholder card
+  const key = def.parts.find((p) => p.id === c.part)?.art ?? '';
+  const html = useMemo(() => carriageArt(key)(ctx, w, true), [ctx, w, key]);
   const x = leadPos[0] - (spread.lead - spread.min) - CARRIAGE_REACH;
   return (
     <g data-carriage={c.part} data-anim="" transform={`translate(${r2(x)} ${r2(leadPos[1])})`}>

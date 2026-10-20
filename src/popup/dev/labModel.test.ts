@@ -190,8 +190,8 @@ describe('readability and art keys', () => {
       ['part', 'board', 'c1/departure-board'],
       ['creature', 'pigeon', 'common/pigeon'],
     ]);
-    // #96: the backdrop and the board are baked; the train tab and the pigeon are live placeholders
-    expect(rows.map((r) => r.status)).toEqual(['baked', 'placeholder', 'baked', 'placeholder']);
+    // #96: the backdrop and the board are baked; the train tab is a live placeholder; #108: the pigeon has its origami art
+    expect(rows.map((r) => r.status)).toEqual(['baked', 'placeholder', 'baked', 'baked']);
   });
 });
 

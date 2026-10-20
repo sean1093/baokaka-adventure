@@ -2,6 +2,7 @@ import { grain, translate, type KitCtx } from '../art';
 import type { PageDef, PartPreset } from '../core/types';
 import { chapterSky, placeholderBackdrop, stageDefs } from '../view/art/placeholders';
 import { BLOCK_DEPTH, FLOOR_BOTTOM, GUTTER_Y, PAGE_VIEW_BOX, PAGE_W, floorOutline, floorWiden } from '../view/geometry';
+import { C0_BACKDROPS, C0_PARTS } from './art/c0';
 import { departureBoard } from './art/c1';
 import { SCREEN_ART, type ScreenSource } from './art/screens';
 import type { EnvBox } from './manifest';
@@ -48,10 +49,11 @@ export interface CutoutSource {
 export type BackdropDraw = (ctx: KitCtx, def: Pick<PageDef, 'chapter'>) => string;
 
 /** Backdrops with their own drawing (chapter art issues add theirs; until then the placeholder stage). */
-export const BACKDROP_ART: Readonly<Record<string, BackdropDraw>> = {};
+export const BACKDROP_ART: Readonly<Record<string, BackdropDraw>> = { ...C0_BACKDROPS };
 
 /** Part art keys with their own drawing. */
 export const PART_SOURCES: Readonly<Record<string, PartSource>> = {
+  ...C0_PARTS,
   'c1/departure-board': departureBoard,
 };
 

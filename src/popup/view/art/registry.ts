@@ -1,6 +1,7 @@
 import { PRESET_ART, PRESET_DEFS, kitDefs, type KitCtx, type PartArtOptions, type PartPreset, type PresetArt } from '../../art';
 import type { PageDef } from '../../core/types';
 import { backdropImage, cutoutImage, partImage, type EnvImage, type PartImage } from '../../env/loader';
+import { backpacker, origamiPigeon } from './creatures';
 import { origamiBird, placeholderBackdrop } from './placeholders';
 
 /**
@@ -19,15 +20,18 @@ import { origamiBird, placeholderBackdrop } from './placeholders';
 
 /** Draws a page's backdrop (sky, standing cut-outs, floor page, gutter) in page units. */
 export type BackdropArt = (ctx: KitCtx, def: Pick<PageDef, 'chapter'>) => string;
-/** Draws a creature in its local space: feet at the origin, facing +x. */
-export type CreatureArt = (ctx: KitCtx) => string;
+/** Draws a creature in its local space: feet at the origin, facing +x; `pos` is its current position key. */
+export type CreatureArt = (ctx: KitCtx, pos?: string) => string;
 
 /** Part art registered under an explicit key (e.g. 'c1/train-blue'). Empty until chapter art lands. */
 const KEYED: Readonly<Record<string, PresetArt>> = {};
 /** Backdrops by key (e.g. 'c1/hall-night'). Empty until #96 bakes them. */
 const BACKDROPS: Readonly<Record<string, BackdropArt>> = {};
-/** Creatures by key (e.g. 'common/pigeon'). */
-const CREATURES: Readonly<Record<string, CreatureArt>> = {};
+/** Creatures by key (#108: origami creatures and the paper-style cast, `creatures.ts`). */
+const CREATURES: Readonly<Record<string, CreatureArt>> = {
+  'common/pigeon': origamiPigeon,
+  'c1/backpacker': backpacker,
+};
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';
 

@@ -36,7 +36,9 @@ import { haloShape, handGesture, linkThread } from './affordance/hints';
 import { GhostHand, HintHalo, LinkThread } from './affordance/Hints';
 import { NO_AFFORDANCE, wearsMarigold, type AffordanceFlags, type PartLook } from './affordance/look';
 import { treasureOnPage } from './photo/treasureArt';
-import { attractorArt, chapterSky, spine, ledge, perchMark, perchPost, pottedPlant, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
+import { dressOf, ledgeStyleOf, ownsPost } from './art/dress';
+import { dressedLedge, foregroundCard } from './art/ledges';
+import { attractorArt, chapterSky, spine, perchMark, perchPost, rail, ramp, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
 import { NO_GESTURE, hitCenter, minHit, rideHome, shiftHit, targetsOf, type GestureFlags } from './gestures';
@@ -163,11 +165,13 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       const img = cutoutBitmap(c.art);
       return img ? `<g data-cutout="${c.art}" transform="translate(${c.x} ${c.y})">${image(img.url, img.box)}</g>` : '';
     }).join('') + stage.carriages.map(trackPit).join('');
+    // The ledges in the page's material and the perch furniture its backdrop doesn't draw itself (#108, `art/dress.ts`)
     const floor = stage.slopes.map((s) => ramp(ctx, s, theme)).join('')
-      + stage.runs.map((run) => ledge(ctx, run, theme)).join('')
-      + [...stage.posts].sort((a, b) => a.foot - b.foot).map((p) => perchPost(ctx, p)).join('');
-    const slot = foregroundSlot(def);
-    const foreground = slot === null ? '' : `<g transform="translate(${slot.x} ${slot.foot})">${pottedPlant(ctx)}</g>`;
+      + stage.runs.map((run) => dressedLedge(ctx, run, (y) => ledgeStyleOf(def, y), theme, dressOf(def).ledgeSplit)).join('')
+      + stage.posts.filter((p) => !ownsPost(def, p.perch)).sort((a, b) => a.foot - b.foot).map((p) => `<g data-post="${p.perch}">${perchPost(ctx, p)}</g>`).join('');
+    const card = dressOf(def).foreground;
+    const slot = card === null ? null : foregroundSlot(def);
+    const foreground = slot === null ? '' : `<g data-foreground="${card ?? 'plant'}" transform="translate(${slot.x} ${slot.foot})">${foregroundCard(ctx, card ?? 'plant')}</g>`;
     const crossing = stage.crossings.map((c) => ({ c, rail: rail(ctx, theme, c.part !== undefined), ramp: c.from[1] === c.to[1] ? '' : ramp(ctx, c, theme) }));
     return { backdrop, cutouts, floor, foreground, crossing };
   }, [ctx, def, stage, theme]);
@@ -278,7 +282,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     if (a === null || b === null) return null;
     const k = reduced ? 1 : clamp01(t);
     const [x, y] = lerpPt(a, b, k);
-    return <Creature key={c.id} ctx={ctx} id={c.id} art={c.art} x={x} y={y} flip={b[0] < a[0]} />;
+    return <Creature key={c.id} ctx={ctx} id={c.id} art={c.art} x={x} y={y} flip={b[0] < a[0]} pos={state.creatures[c.id] ?? c.initial} />;
   });
 
   // ——— Mocha and Baokaka (#95): standees on the tick, each mode mapped to its frames (`actors/animMap.ts`) ———
@@ -433,7 +437,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       <Layer id="backdrop" html={statics.backdrop} />
       <Layer id="cutouts">
         <ArtG html={statics.cutouts} />
-        {tudigongShown && <TudigongItem ctx={ctx} x={tdg.x} y={tdg.y} />}
+        {tudigongShown && <TudigongItem ctx={ctx} x={tdg.x} y={tdg.y} hat={tdg.hat} />}
       </Layer>
       <Layer id="parts-mid">
         {haloMid && halo}
@@ -545,8 +549,8 @@ function PerchMarkItem({ ctx, perch, def, state, bold }: { ctx: KitCtx; perch: P
   return <ArtG html={html} className="perch-mark" />;
 }
 
-function TudigongItem({ ctx, x, y }: { ctx: KitCtx; x: number; y: number }) {
-  const html = useMemo(() => `<g transform="translate(${x} ${y}) rotate(14) scale(1.2)">${tudigong(ctx)}</g>`, [ctx, x, y]);
+function TudigongItem({ ctx, x, y, hat }: { ctx: KitCtx; x: number; y: number; hat?: string }) {
+  const html = useMemo(() => `<g data-tudigong="" transform="translate(${x} ${y}) rotate(14) scale(1.2)">${tudigong(ctx, hat)}</g>`, [ctx, x, y, hat]);
   return <ArtG html={html} />;
 }
 

@@ -974,6 +974,196 @@ export const POPUP_STAGE = {
   pigeonBeak: '#D9825A',
 } as const;
 
+/**
+ * 序章 home (#108; bible § 6 row 序): the vertical slice's prologue art (`src/popup/env/art/c0.ts`).
+ * Warm wood, kraft, washi and 花布 under lamp amber, with the indigo night at the windows. Pastel
+ * 巧拼 foam play-mat tiles are the floor ledges. Decorative yellows stay ochre (bible § 4).
+ */
+export const POPUP_HOME = {
+  // The walls: dusky rose wallpaper with a cream washi print, a wood wainscot and skirting
+  wallTop: '#3E2C52',
+  wallMid: '#5A3C62',
+  wallLow: '#77506C',
+  wallPrint: '#E9D6C8',
+  wainscot: '#6E4232',
+  wainscotLit: '#8E5A40',
+  wainscotDeep: '#4A2A22',
+  skirting: '#3A2420',
+  // Floorboards: honey wood in lamplight, its seams and its far end in shadow
+  board: '#9A6644',
+  boardLight: '#B07A52',
+  boardSeam: '#5E3A28',
+  // Furniture wood (crib, shelves, frames, tables)
+  pine: '#D2A878',
+  pineDeep: '#A87A50',
+  pineShade: '#7E5638',
+  teak: '#7A4A30',
+  teakDeep: '#4E2C1E',
+  // The crib's sheet: pale blue gingham
+  sheet: '#E6EEF2',
+  sheetCheck: '#B4C8DA',
+  sheetShade: '#9AAEC4',
+  // 巧拼 foam play-mat tiles (the floor ledges): five pastels and the foam's cut side
+  matPink: '#E6A6A2',
+  matMint: '#9ECDB6',
+  matSky: '#A2BEE2',
+  matLilac: '#C4B0DE',
+  matCream: '#EBDDC2',
+  matCut: '#5A4258',
+  // The living room's sofa (deep teal velvet), its piping and its shadowed folds
+  sofa: '#3C6870',
+  sofaLight: '#5A8C8C',
+  sofaDeep: '#264850',
+  // 爸爸 asleep: his tee, his shorts, his hair, his stubble
+  dadShirt: '#6E8CC0',
+  dadShirtDeep: '#4E6A9E',
+  dadShorts: '#4A4A62',
+  dadHair: '#2A2228',
+  stubble: '#C9A890',
+  // The newspaper (unbranded): newsprint, its print and its headline red
+  news: '#ECE6D6',
+  newsInk: '#7E786C',
+  newsRed: '#A8443A',
+  // 阿嬤's 抓周 table: lacquer red cloth with a foil trim, and the red tray
+  zhuaRed: '#9E2E36',
+  zhuaRedLight: '#C04848',
+  zhuaRedDeep: '#6E1E28',
+  // The 農民曆 calendar, the 紅包, the lamp shade (washi) and the night-light
+  almanac: '#F2E8D4',
+  almanacRed: '#B4302C',
+  envelope: '#C8342E',
+  shade: '#F2DCC0',
+  // 花布 accents (the crib quilt, cushions)
+  floral: '#B83E56',
+  floralLight: '#E88AA0',
+  floralLeaf: '#3E7A5E',
+  floralGround: '#5A2648',
+  // Moonlight through the windows: the glass sheen and the cool spill on the floor
+  glass: '#8EA4E0',
+  moonSpill: '#B8C4F4',
+  // The street outside: the lane's houses, the shrine's red roof and its lantern
+  street: '#1C2052',
+  streetLit: '#2C3270',
+  shrineRoof: '#A8302C',
+  shrineWall: '#D8C0A0',
+  lantern: '#E85A3A',
+  // The paper 月亮線 train (0-4): navy body, cream band, its gold moon (foil)
+  trainBody: '#24306E',
+  trainBand: '#EDE4CC',
+  trainRoof: '#3A4688',
+  // Toys: the mobile's felt pieces and the wooden ㄅㄆㄇ blocks in the near corner
+  feltBlue: '#7FA2D6',
+  feltPink: '#E9A0AE',
+  feltMint: '#8CC8B0',
+  blockRed: '#C85A50',
+  blockBlue: '#5A7EC0',
+  blockGreen: '#5E9E7A',
+} as const;
+
+/**
+ * 台北車站 (#108; bible § 6 row 1): chapter 1's art (`src/popup/env/art/c1.ts`). Navy and
+ * sandstone with amber windows; the hall's checker; the 板南線 blue; a 台鐵 cream train. Lit
+ * vellum stays calm (the squint test, bible § 4.2): bloom is small and the moon sits off the path.
+ */
+export const POPUP_STATION = {
+  // Sandstone (the station's walls) under lamplight, and its shaded and deep tones
+  sand: '#D2B48E',
+  sandLight: '#E6CFAA',
+  sandShade: '#A88A70',
+  sandDeep: '#7E6658',
+  // Navy (signs, frames, the hall's dark checker)
+  navy: '#1A2464',
+  navyLight: '#2E3A86',
+  navyDeep: '#10173E',
+  // The hall's checker (contrast kept low: bible § 11) and the concourse's terrazzo
+  checkLight: '#D4C4AE',
+  checkDark: '#8E86A6',
+  terrazzo: '#C8BCAE',
+  terrazzoFleck: '#8A7E7A',
+  // Granite walkway boxes (indoors) and their cut side
+  granite: '#9C94A6',
+  graniteLight: '#BEB4C0',
+  graniteDeep: '#6A6280',
+  // Ceiling: coffers and the skylight lattice
+  ceiling: '#2A2C5E',
+  ceilingLit: '#3E3E78',
+  lattice: '#141A44',
+  // The 板南線 car: its blue, the car's cream interior, seats, the 博愛座 teal, steel
+  bannan: '#2F5FB0',
+  bannanDeep: '#1E3E80',
+  carWall: '#E8E2D2',
+  carWallShade: '#C2BCB0',
+  carCeiling: '#D6D2C6',
+  seat: '#4E6AA8',
+  seatDeep: '#34488A',
+  priority: '#3E9A92',
+  priorityDeep: '#2A6E6A',
+  steel: '#B4BACC',
+  steelDeep: '#7A8098',
+  floorLino: '#7C7A8E',
+  floorLinoDeep: '#5C5A70',
+  // The 台鐵 train: cream body, its blue band and its thin orange line
+  trainCream: '#F4EEE0',
+  trainCreamShade: '#C9C2C8',
+  trainBlue: '#2F5FB0',
+  trainLine: '#D8784A',
+  trainNose: '#2A3366',
+  // Fare gates: the cabinet, its top, the paddles, the lamps
+  gate: '#4A5490',
+  gateTop: '#D8D4E4',
+  gateDeep: '#2E3668',
+  paddle: '#D85A5A',
+  paddleDeep: '#A23C44',
+  lampGo: '#5CD68A',
+  lampStop: '#E8505A',
+  // The card (unbranded, a moon on blue) and the reader's teal pad
+  card: '#3A6EC8',
+  cardLight: '#7EA6E8',
+  reader: '#2E8C96',
+  readerLight: '#7FD8D8',
+  // The cleaning robot
+  robot: '#E8E6F0',
+  robotShade: '#AEAAC4',
+  robotEye: '#3A7A9A',
+  // The bento shop: menu board, lantern, noren, the counter, tiles, the 便當 sleeve's kraft
+  menu: '#2A2A3E',
+  menuChalk: '#EDE6D4',
+  noren: '#2E4A86',
+  counter: '#8E5E3E',
+  counterTop: '#C9A27A',
+  shopTile: '#E2DCCE',
+  shopTileLine: '#B8B0A2',
+  steam: '#F0ECF8',
+  // The 店員小哥 cameo: his cap and apron
+  clerkCap: '#C84A3E',
+  clerkApron: '#3A5A8E',
+  // The elevator: car, doors, shaft, its call-button lamp
+  lift: '#C8CAD8',
+  liftDeep: '#8A8CA4',
+  shaft: '#2A2648',
+  // The bento cart: wood, its awning stripes and the giant bento's band (unbranded)
+  cartWood: '#9A6A44',
+  cartWoodDeep: '#6A4430',
+  awningRed: '#C04A44',
+  awningCream: '#F2E6CE',
+  bentoBox: '#5A3A2A',
+  bentoBand: '#C8A066',
+  // The backpacker (paper-style cast): his jacket, backpack, cap, shorts
+  packer: '#3E8A6E',
+  packerDeep: '#2A6450',
+  backpack: '#C8643E',
+  backpackDeep: '#8E4028',
+  packerCap: '#2E4A86',
+  packerHair: '#C8A070',
+  // The pigeon (origami): two folds and a beak; the hall clock's face
+  dove: '#E4E2F0',
+  doveShade: '#ABA6CA',
+  doveNeck: '#8AB8B0',
+  clockFace: '#F6F0DE',
+  // Station caps (土地公's 站務帽): navy with a foil badge
+  capNavy: '#22306E',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 

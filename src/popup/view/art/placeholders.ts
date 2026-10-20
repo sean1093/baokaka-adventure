@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_CHAPTER_CLOCK, POPUP_STAGE as S, mixHex, type PopupChapterSky } from '../../../art/palette';
+import { POPUP as C, POPUP_CHAPTER_CLOCK, POPUP_STAGE as S, POPUP_STATION as T, mixHex, type PopupChapterSky } from '../../../art/palette';
 import type { Kind, PageDef } from '../../core/types';
 import { PRESET_DEFS, brad, depth, f1, kitDefs, pageBlock, paw, pinholes, ref, scallopBand, seeded, skyline, softEllipse, sparkle, translate, type DefName, type KitCtx } from '../../art';
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorOutline, floorWiden, towardVp } from '../geometry';
@@ -473,10 +473,24 @@ export function origamiBird(ctx: KitCtx): string {
     + depth(ctx, 4, `<path d="${body}" fill="${S.pigeon}"/><path d="M-4 -16L0 0L4 -10Z" fill="${S.pigeonShade}"/><path d="M10 -6l6 -2l-5 4z" fill="${S.pigeonBeak}"/><circle cx="7" cy="-10" r=".9" fill="${C.ink}"/>`, `<path d="${body}"/>`);
 }
 
-/** The 土地公 peeking (the per-page secret sticker): face, red hat with a gold band, white beard. */
-export function tudigong(ctx: KitCtx): string {
-  return depth(ctx, 2, `<circle r="7.5" fill="${S.skin}"/><path d="M-7 -2a7.5 7.5 0 0 1 14 0z" fill="${C.hatRed}"/><rect x="-8.5" y="-3.5" width="17" height="3" rx="1.5" fill="${C.gold}"/>`
-    + `<path d="M-6 2q6 12 12 0q-2 3 -6 3q-4 0 -6 -3z" fill="${C.standeeCard}"/><circle cx="-2.6" cy="0" r=".9" fill="${C.ink}"/><circle cx="2.6" cy="0" r=".9" fill="${C.ink}"/>`, `<circle r="7.5"/>`);
+/**
+ * The 土地公 peeking (the per-page secret sticker): a round face with a long white beard and kind
+ * eyes under the chapter's hat (GDD § 5.1: each chapter dresses him). `''` is his own red 員外帽
+ * with an ochre band (the prologue); `站務帽` is chapter 1's navy station cap with a peak and a
+ * foil badge (#108).
+ */
+export function tudigong(ctx: KitCtx, hat = ''): string {
+  const face = `<circle r="7.5" fill="${S.skin}"/>`
+    + `<path d="M-6.4 1.5q-.6 9 6.4 11q7 -2 6.4 -11q-2 3.4 -6.4 3.4q-4.4 0 -6.4 -3.4z" fill="${C.standeeCard}"/>`
+    + `<path d="M-4.6 -1.2q1.6 -1.2 3 0M1.6 -1.2q1.6 -1.2 3 0" stroke="${C.standeeCard}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`
+    + `<path d="M-3.6 .9q.9 .8 1.8 0M1.8 .9q.9 .8 1.8 0" stroke="${C.ink}" stroke-width=".9" stroke-linecap="round" fill="none"/>`
+    + `<circle cx="-4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/><circle cx="4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/>`;
+  const cap = hat === '站務帽'
+    ? `<path d="M-7.6 -2.4q0 -7.2 7.6 -7.2q7.6 0 7.6 7.2z" fill="${T.capNavy}"/><path d="M-8.6 -2.6h17.2l-1 2.2h-15.2z" fill="${C.printDark}"/>`
+      + `<path d="M-9.4 -.8q4 2.6 9.4 2.6" stroke="${C.printDark}" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="0" cy="-5.6" r="1.7" fill="${ref(ctx, 'foil')}"/>`
+    : `<path d="M-7 -2a7.5 7.5 0 0 1 14 0z" fill="${C.hatRed}"/><rect x="-8.5" y="-3.5" width="17" height="3" rx="1.5" fill="${C.ochre}"/>`
+      + `<path d="M-9.6 -3.2q-2.4 -1 -3 1.4M9.6 -3.2q2.4 -1 3 1.4" stroke="${C.printDark}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
+  return depth(ctx, 2, face + cap, `<circle r="7.5"/>`);
 }
 
 /** A light attractor where it lies: a little paper star lamp. */
