@@ -22,8 +22,9 @@
  * the board flipped and the 土地公 tapped, the solve, the sticker card, then 1-3);
  * `photo-spread` plays 1-6 in the shell (#103, #107: the photo moment, the album, a retake, the
  * chapter-end lines, the tray's first coin, the sticker card, chapter 2's card, into 2-1); since #114
- * `photo-spread-c2` plays 2-6 the same way into chapter 3's card and 3-1 (#116), and `photo-spread-c3`
- * plays 3-6 through chapter 4's 「未完待續」 card to the 目錄.
+ * `photo-spread-c2` plays 2-6 the same way into chapter 3's card and 3-1 (#116), `photo-spread-c3`
+ * plays 3-6 into chapter 4's card and 4-1 (#118), and `photo-spread-c4` plays 4-6 through chapter 5's
+ * 「未完待續」 card to the 目錄.
  * A `drag` through more than two points follows them in turn (1-4's turntable is turned on its rim).
  * `{ heard: [cues] }` checks the shell played those sounds (#105; the dev build lists them in
  * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
@@ -326,6 +327,101 @@ const SCENARIOS = {
     { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
     { tapEl: '[data-shutter]', paused: true },
   ],
+  // Chapter 4 「霓虹燈睡著了」 (#118). 4-1 「板南線往西門」: 廣播姊姊's line, Mocha onto the header over the
+  // doors, 不要！ to the ad screen (he crawls to the doors), then 嗶！
+  c4p1: [
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [250, 330] },
+    { settle: 1200 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 2500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="beep"]', paused: true },
+  ],
+  // 4-2 「紅樓」: turn 紅樓 four steps (its roof window to the lamp), Mocha through the window to the
+  // eave (the lantern drops on the button: the shutter rolls up), two more steps (the doorways align)
+  c4p2: [
+    { wait: 'reaching' },
+    { tap: [176, 380] },
+    { settle: 500 },
+    { tap: [176, 380] },
+    { settle: 500 },
+    { tap: [176, 380] },
+    { settle: 500 },
+    { tap: [176, 380] },
+    { settle: 800 },
+    { tap: [262, 300] },
+    { settle: 3000 },
+    { tap: [176, 380] },
+    { settle: 500 },
+    { tap: [176, 380] },
+  ],
+  // 4-3 「霓虹燈睡著了」: he cries in the dark and the first sign flickers awake — he learns 哇！ (the
+  // beat and its card) — then 哇！ twice down the trail of lights
+  c4p3: [
+    { wait: 'watching' },
+    { readTalk: true },
+    { tapEl: '[data-word-card]', paused: true },
+    { wait: 'watching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="wow"]', paused: true },
+    { settle: 1500 },
+    { wait: 'watching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="wow"]', paused: true },
+  ],
+  // 4-4 「夾娃娃機」: Mocha onto the coin slot (the 店員小哥 cameo), the claw's cart over to him, the
+  // drop lever down: the claw grabs him and carries him home over the chute
+  c4p4: [
+    { wait: 'reaching' },
+    { tap: [352, 300] },
+    { expect: '[data-subtitle]', timeout: 6_000 },
+    { readTalk: true },
+    { drag: [[290, 150], [140, 150]] },
+    { settle: 800 },
+    { drag: [[178, 484], [178, 536]] },
+  ],
+  // 4-5 「街頭藝人」: Mocha onto the amp crate (he follows), 哇！ (the boombox plays, the dancers freeze
+  // into an arch, the boombox is a decoy), Mocha over the arch to the bus-stop sign, 不要！ to the music
+  c4p5: [
+    { wait: 'cuddling' },
+    { tap: [76, 396] },
+    { settle: 1500 },
+    { wait: 'cuddling' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="wow"]', paused: true },
+    { settle: 1200 },
+    { readTalk: true },
+    { tap: [300, 300] },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+  ],
+  // 4-6 「走音天王」: the shutter rolled up (the disco ball: he crawls back under it), Mocha onto the amp,
+  // 不要！ to the disco ball (he crawls up to the stage front), 哇！ — the king sings, the lift rises —
+  // the photo moment, 咔嚓, the grab
+  c4p6: [
+    { wait: 'cuddling' },
+    { tap: [232, 366] },
+    { settle: 1500 },
+    { tap: [312, 370] },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 2500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="wow"]', paused: true },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+  ],
   // A tap anywhere reads the lines on (#183): 1-1's opening announcements, cleared by a tap on the
   // sway tab — which must not move it — then the map's punchline cleared by a tap on empty floor
   'talk-anywhere-c1p1': [
@@ -545,7 +641,37 @@ const SCENARIOS = {
     { tapEl: '[data-end-next]' },
     { expect: '[data-tray-fill="3"]', timeout: 3_000 },
     { expect: '[data-sticker-card]', timeout: 5_000 },
-    { expect: '[data-chapter-board="4"][data-card-soon]', timeout: 8_000 },
+    // Chapter 4 is built (#118): its card, 廣播姊姊 first, then 4-1 opens
+    { expect: '[data-chapter-board="4"]', absent: '[data-card-soon]', timeout: 8_000 },
+    { expect: '[data-card-talk] [data-card-line="pa"]', timeout: 6_000 },
+    { tapEl: '[data-card-next]' },
+  ],
+  // Chapter 4's spread (#118) in the game shell: 4-6 played up to 哇！ with Mocha on the amp (in the
+  // frame); 咔嚓, the album, 放進相簿, the end line, the tray's fourth coin, the sticker card, chapter
+  // 5's card with 「未完待續」, the 目錄
+  'photo-spread-c4': [
+    { wait: 'cuddling' },
+    { tap: [232, 366] },
+    { settle: 1500 },
+    { tap: [312, 370] },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 2500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="wow"]', paused: true },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+    { expect: '[data-screen="album"] [data-album-note="mocha"]', timeout: 10_000 },
+    { tapEl: '[data-button="keep"]' },
+    { expect: '[data-end-layer] [data-card-line="nar"]', timeout: 5_000 },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-tray-fill="4"]', timeout: 3_000 },
+    { expect: '[data-sticker-card]', timeout: 5_000 },
+    { expect: '[data-chapter-board="5"][data-card-soon]', timeout: 8_000 },
     { expect: '[data-card-talk] [data-card-line="nar"]', timeout: 6_000 },
     { tapEl: '[data-card-next]' },
   ],
@@ -577,7 +703,7 @@ const SCENARIOS = {
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
 const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
 
@@ -588,6 +714,7 @@ const SCENARIO_URLS = {
   'photo-spread': '#/pagelab?fixture=spread-shell',
   'photo-spread-c2': '#/pagelab?fixture=spread-shell-c2',
   'photo-spread-c3': '#/pagelab?fixture=spread-shell-c3',
+  'photo-spread-c4': '#/pagelab?fixture=spread-shell-c4',
   'prologue-card': '#/',
   'album-flip': '#/pagelab?fixture=album-multi',
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',

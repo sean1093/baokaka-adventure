@@ -126,6 +126,10 @@ const ON_SPREAD_C2: NavState = { base: { kind: 'page', id: 'c2p6', run: 0 }, lay
 const AT_SPREAD_C3 = (['c3p1', 'c3p2', 'c3p3', 'c3p4', 'c3p5'] as const).reduce((s, id) => completePage(s, id, { moves: 3 }), C2_DONE);
 const C3_DONE = keepPhoto(completePage(AT_SPREAD_C3, 'c3p6', { moves: 4 }), 3, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 17, 20) });
 const ON_SPREAD_C3: NavState = { base: { kind: 'page', id: 'c3p6', run: 0 }, layer: null };
+/** At 4-6 (#118): chapters 1–3 and 4-1 … 4-5 solved; then chapter 4 done, the 麥克風 photo kept. */
+const AT_SPREAD_C4 = (['c4p1', 'c4p2', 'c4p3', 'c4p4', 'c4p5'] as const).reduce((s, id) => completePage(s, id, { moves: 3 }), C3_DONE);
+const C4_DONE = keepPhoto(completePage(AT_SPREAD_C4, 'c4p6', { moves: 4 }), 4, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 17, 50) });
+const ON_SPREAD_C4: NavState = { base: { kind: 'page', id: 'c4p6', run: 0 }, layer: null };
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -216,11 +220,25 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'Chapter 3\'s end (GDD § 5.2 3-6 end; #116): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——書。」 Live, the tap fills the 抓周 tray\'s third slot.',
   },
   {
-    name: 'chapter-soon-c4',
-    page: 'c3p6',
+    name: 'spread-shell-c4',
+    page: 'c4p6',
     steps: [],
-    screen: { nav: ON_SPREAD_C3, save: C3_DONE, soonCard: 4 },
-    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 4 since #116): chapter 3 done, the chapter turn drops chapter 4\'s card over the book on the quilt — 第四章, 「霓虹燈睡著了」, 01:50, 西門 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
+    screen: { nav: ON_SPREAD_C4, save: AT_SPREAD_C4 },
+    note: '4-6 in the game shell (#118): play it live — the shutter rolled up, 不要！ to the disco ball, Mocha onto the amp, 哇！ to the stage lights (the king sings, the lift rises), the photo moment with the 麥克風, the album page, the chapter-end line, the tray\'s fourth coin, the sticker card, chapter 5\'s card with 「未完待續」, then the 目錄 (`check:play` scenario `photo-spread-c4`).',
+  },
+  {
+    name: 'chapter-end-c4',
+    page: 'c4p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C4, save: C4_DONE, endLinesOf: 4 },
+    note: 'Chapter 4\'s end (GDD § 5.2 4-6 end; #118): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——麥克風。」 Live, the tap fills the 抓周 tray\'s fourth slot.',
+  },
+  {
+    name: 'chapter-soon-c5',
+    page: 'c4p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C4, save: C4_DONE, soonCard: 5 },
+    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 5 since #118): chapter 4 done, the chapter turn drops chapter 5\'s card over the book on the quilt — 第五章, 「夜市抱抱」, 02:20, 劍潭 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
   },
   {
     name: 'album-c1-retake',
@@ -592,6 +610,118 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [{ tap: 'flapA' }, { say: 'no' }, { wait: 'settle' }, { tap: 'flapB' }, { wait: 1 }],
     note: '3-6: 不要！ to the glasses sent him back across the book to reach up for Mocha, so the page he sat on could turn: it stands up as Mocha\'s bridge to 藍教授 (the 土地公 printed on it). The bookmark bridges the gap to the stack.',
     expect: { mode: 'reaching' },
+  },
+  // ——— Chapter 4 「霓虹燈睡著了」 (#118): placeholder art until #119 ———
+  {
+    name: 'c4p1-start',
+    page: 'c4p1',
+    steps: [{ wait: 3 }],
+    note: '4-1 「板南線往西門」 (#118): inside a 板南線 car at 西門, the doors shut. The ad screen over the seats is a decoy (drawn as itself): Baokaka crawled under it and reaches up. Mocha on a hand strap, a paw print on the header over the doors.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c4p1-doors',
+    page: 'c4p1',
+    steps: [{ mocha: 'header' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }],
+    note: '4-1: Mocha on the header over the doors, and 不要！ to the ad screen: Baokaka crawled to the shut doors and reaches up for Mocha — close enough for 嗶！.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c4p2-start',
+    page: 'c4p2',
+    steps: [{ wait: 2 }],
+    note: '4-2 「紅樓」 (#118): the octagonal red house is a wheel; no two doorways line up, so Baokaka reaches for the bead in the shop behind the shutter on the far side. Mocha on the street lamp; the lantern hangs from the east eave over the shutter\'s button.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c4p2-window',
+    page: 'c4p2',
+    steps: [{ wait: 2 }, { set: 'tower', to: '4' }, { mocha: 'window' }, { wait: 1 }],
+    note: '4-2: 紅樓 turned until its roof window faces the lamp (state 4): Mocha sits in the lantern window (the 淘氣 is a whole turn with him up there). The doorways still don\'t line up.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c4p2-shutter',
+    page: 'c4p2',
+    steps: [{ set: 'tower', to: '4' }, { mocha: 'eave' }, { wait: 'settle' }, { set: 'tower', to: '6' }, { wait: 2 }],
+    note: '4-2: Mocha knocked the lantern onto the button and the shutter rolled up; 紅樓 turned until two doorways line up (state 6), and Baokaka crawled through it to the east side.',
+  },
+  {
+    name: 'c4p3-start',
+    page: 'c4p3',
+    steps: [{ wait: 2 }],
+    note: '4-3 「霓虹燈睡著了」 (#118): a dark alley, every sign asleep, Mocha hidden in a box: nothing to want, Baokaka looks about 「？」 — next tick he cries.',
+    expect: { mode: 'looking' },
+  },
+  {
+    name: 'c4p3-learn',
+    page: 'c4p3',
+    steps: [{ wait: 3 }],
+    show: { words: { card: 'wow' } },
+    note: 'Learning 哇！ (GDD § 5.4, #118): his cry flickered the first sign awake — 「哇！」. The word card 「哇！：燈亮起來」 is taped over the dimmed page.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'c4p3-trail',
+    page: 'c4p3',
+    steps: [{ wait: 'settle' }, { say: 'wow' }, { wait: 'settle' }],
+    note: '4-3: 哇！ under the first sign woke the second down the alley and put the first back to sleep; Baokaka crawled on and watches it. From here 哇！ reaches the third, round the corner.',
+    expect: { mode: 'watching' },
+  },
+  {
+    name: 'c4p4-start',
+    page: 'c4p4',
+    steps: [{ wait: 2 }],
+    note: '4-4 「夾娃娃機」 (#118): inside the claw machine, dark until a coin goes in. Baokaka on the left ledge reaches for the bead across the plush pit; the claw hangs at home over the chute. Mocha on a stool, a paw print on the coin slot.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c4p4-clerk',
+    page: 'c4p4',
+    steps: [{ mocha: 'coinSlot' }, { wait: 1 }],
+    show: { talk: ['c4p4.clerk.1', 'c4p4.clerk.2', 'c4p4.clerk.3'] },
+    note: '4-4: Mocha sits on the coin slot, the machine lights up and the 店員小哥 cameo answers — 「叮咚～歡迎光臨！」「……夾娃娃機也是你們的？」「我們是連鎖的。」',
+  },
+  {
+    name: 'c4p4-grabbed',
+    page: 'c4p4',
+    steps: [{ mocha: 'coinSlot' }, { wait: 1 }, { set: 'clawX', to: 'x0' }, { set: 'claw', to: 'down' }, { wait: 1 }],
+    note: '4-4: the claw pulled over him and its lever pulled down; he crawled in, and it grabbed him (it only ever works for 寶咖咖) and carried him home over the chute.',
+  },
+  {
+    name: 'c4p5-start',
+    page: 'c4p5',
+    steps: [{ wait: 2 }],
+    note: '4-5 「街頭藝人」 (#118): a dance crew fills the street; past them the busker sits on his hat. Baokaka cuddles Mocha under the street lamp; the boombox sits silent on the speaker stack.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c4p5-arch',
+    page: 'c4p5',
+    steps: [{ mocha: 'crate' }, { wait: 'settle' }, { say: 'wow' }, { wait: 2 }],
+    note: '4-5: Mocha on the amp crate brought him near; 哇！ started the boombox, the dancers froze into an arch over the street (the 土地公 in the crowd) — and the flashing boombox is a decoy: he reaches up for it at the stack\'s foot.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c4p6-spread',
+    page: 'c4p6',
+    steps: [{ wait: 2 }],
+    note: '4-6 「走音天王」 as it opens (#118): the centrefold — the arcade door and the dance floor on the left, a karaoke stage behind a rolled-down shutter on the right. Baokaka cuddles Mocha on the arcade\'s sign.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c4p6-disco',
+    page: 'c4p6',
+    steps: [{ tap: 'shutter' }, { mocha: 'amp' }, { wait: 'settle' }],
+    note: '4-6: the shutter rolled up — the stage, the karaoke screen (the 土地公 in its lyrics) and a disco ball over the dance floor, a decoy he crawled back under. Mocha on the amp at the back of the stage.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c4p6-sing',
+    page: 'c4p6',
+    steps: [{ tap: 'shutter' }, { mocha: 'amp' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'wow' }],
+    show: { talk: ['c4p6.king.1', 'c4p6.king.2'] },
+    note: '4-6: 不要！ to the disco ball took him onto the stage, under the lights; his 哇！ switched them on — the karaoke king sings 「這首歌，獻給一歲的你！」 (Mocha: 「……耳朵。我的耳朵。」) and the lift rises with the 麥克風.',
   },
   {
     name: 'c0p2-start',
