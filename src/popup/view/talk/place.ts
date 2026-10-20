@@ -125,8 +125,8 @@ export function barkCandidates(head: Pt, size: { w: number; h: number }, side: 1
 export const subtitleCandidates = (anchor: Pt, size: { w: number; h: number }, side: 1 | -1): Box[] => thoughtCandidates(anchor, size, side, 22);
 
 /** A subtitle with no one to hang from (an off-page voice): centred under the top, stepping down. */
-export function voiceCandidates(top: number, size: { w: number; h: number }): Box[] {
-  return [0, 1, 2, 3, 4, 5].map((i) => ({ x: (PAGE_W - size.w) / 2, y: top + i * (size.h * 0.6 + 8), w: size.w, h: size.h }));
+export function voiceCandidates(top: number, size: { w: number; h: number }, steps = 6): Box[] {
+  return Array.from({ length: steps }, (_, i) => i).map((i) => ({ x: (PAGE_W - size.w) / 2, y: top + i * (size.h * 0.6 + 8), w: size.w, h: size.h }));
 }
 
 /** The narration strip: across the top of the page, else low on the page when that covers him or the goal. */

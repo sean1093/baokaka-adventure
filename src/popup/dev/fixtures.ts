@@ -785,6 +785,12 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     expect: { mode: 'cuddling' },
   },
   {
+    name: 'c5p2-loose',
+    page: 'c5p2',
+    steps: [{ tap: 'knot' }, { wait: 1 }],
+    note: '5-2\'s 淘氣 (#122): the knot of the stall\'s spare bunch untied — every balloon floats off up the page (「飛走了～」); 咻咻 has already blown one loose over the stall.',
+  },
+  {
     name: 'c5p3-start',
     page: 'c5p3',
     steps: [{ wait: 1 }],
@@ -812,6 +818,13 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [{ wait: 'settle' }, { say: 'hug' }, { wait: 'settle' }, { mocha: 'bell' }, { wait: 1 }],
     show: { talk: ['c5p3.boss.1', 'c5p3.boss.2'] },
     note: '5-3: the 阿姨 set him down by the 雞排 stall; Mocha sits on the counter\'s bell, and the 雞排老闆 comes to the counter — 「來了！要切嗎？要辣嗎？」 (Mocha: 「……他只要抱抱。」). 抱抱 now, and he lifts Baokaka over the counter.',
+  },
+  {
+    name: 'c5p3-twirl',
+    page: 'c5p3',
+    steps: [{ wait: 'settle' }, { say: 'hug' }, { wait: 'settle' }, { say: 'hug' }, { wait: 1 }],
+    note: '5-3\'s 淘氣 (#122): set down by the stall, 抱抱 again before the 老闆 is called and the 夜市阿姨 carries him back over the crowd — with a twirl (「轉圈圈～」, her 茄芷袋 flying out). The 老闆 is still in the back at the fryer.',
+    expect: { mode: 'carried' },
   },
   {
     name: 'c5p4-start',

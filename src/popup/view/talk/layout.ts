@@ -205,7 +205,8 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
     const size = subtitleSize(line.text, line.label, k, from === null ? VOICE_MAX_W : SUB_MAX_W);
     const own = rides === 'baby' ? [] : rides === 'mocha' && mocha ? [mocha.box] : [];
     let candidates: Box[];
-    if (from === null) candidates = voiceCandidates(voiceTop, size);
+    // An off-page voice may step further down the page, so a beat's lines keep their reading order
+    if (from === null) candidates = voiceCandidates(voiceTop, size, 10);
     // 廣播姊姊 under her loudspeaker; then anywhere down the page's open middle, so her lines never
     // have to sit on a strap or a perch paw (#183: 1-1's intro covered them)
     else if (anchor === 'speaker') candidates = [...belowLeft(from, size), ...voiceCandidates(voiceTop, size)];
@@ -213,7 +214,8 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
       const s = from[0] > PAGE_W / 2 ? -1 : 1;
       candidates = [...subtitleCandidates(from, size, s), ...belowLeft(from, size), ...voiceCandidates(voiceTop, size)];
     }
-    const pick = pickBox(candidates, { hard, soft: [...soft, ...own, ...(scene.touch ?? [])] });
+    // A beat's earlier subtitles are as hard to cover as he is: one line never hides another (#122)
+    const pick = pickBox(candidates, { hard: [...hard, ...subs.map((x) => x.box)], soft: [...soft, ...own, ...(scene.touch ?? [])] });
     subs.push({ line, box: pick.box, rows: size.rows, label: line.label, from, rides });
     soft.push(pick.box);
   }

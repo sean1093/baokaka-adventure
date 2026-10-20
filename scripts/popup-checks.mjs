@@ -82,9 +82,10 @@ export async function listPopupFixtures(page, base) {
 /**
  * Fixtures per tab before the checks open a fresh one: a dev-server tab that has loaded dozens of
  * fixtures (hundreds of unbundled modules and font slices each) starts failing requests with
- * ERR_INSUFFICIENT_RESOURCES (#104).
+ * ERR_INSUFFICIENT_RESOURCES (#104). 15 was still too many for a full visual run (#122: one target in
+ * every tab failed so), hence 8.
  */
-export const FIXTURES_PER_TAB = 15;
+export const FIXTURES_PER_TAB = 8;
 
 /** Yields a page for each item, replaced by a fresh one every `FIXTURES_PER_TAB` items. */
 export async function* freshPages(open, items) {
@@ -99,10 +100,28 @@ export async function* freshPages(open, items) {
   await page?.close();
 }
 
-export async function openPopupFixture(page, base, name, still = true) {
+/**
+ * Opens `url` and waits for `selector`; a wait that times out loads the page once more and waits
+ * longer (#122). On a cold dev server a target's first load can outlast the first wait while Vite
+ * transforms and pre-bundles its modules, which made long runs fail at random targets.
+ */
+export async function gotoAndWait(page, url, selector, { timeout = 20000, retryTimeout = 60000 } = {}) {
   await page.goto('about:blank');
-  await page.goto(popupFixtureUrl(base, name, still), { waitUntil: 'load' });
-  await page.waitForSelector(`[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) :is(svg[data-page], [data-screen-ready])`, { timeout: 20000 });
+  await page.goto(url, { waitUntil: 'load' });
+  if (!selector) return;
+  try {
+    await page.waitForSelector(selector, { timeout });
+  } catch (error) {
+    if (error?.name !== 'TimeoutError') throw error;
+    console.warn(`  ~ slow load, retrying once: ${url}`);
+    await page.goto('about:blank');
+    await page.goto(url, { waitUntil: 'load' });
+    await page.waitForSelector(selector, { timeout: retryTimeout });
+  }
+}
+
+export async function openPopupFixture(page, base, name, still = true) {
+  await gotoAndWait(page, popupFixtureUrl(base, name, still), `[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) :is(svg[data-page], [data-screen-ready])`);
   await page.evaluate(() => document.fonts.ready);
 }
 

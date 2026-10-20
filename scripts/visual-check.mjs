@@ -29,7 +29,7 @@ import { parseArgs } from 'node:util';
 import pixelmatch from 'pixelmatch';
 import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
-import { freshPages, listPopupFixtures } from './popup-checks.mjs';
+import { freshPages, gotoAndWait, listPopupFixtures } from './popup-checks.mjs';
 import { PERF_FIXTURE, TARGETS, VIEWPORTS, fixtureTarget, popupFixtureTarget } from './visual-targets.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -91,9 +91,7 @@ const waitForQuiet = (page) =>
 
 async function openTarget(page, base, target) {
   // A fresh document per target: no state (or saved game) leaks from the previous one
-  await page.goto('about:blank');
-  await page.goto(new URL(target.hash, base).href, { waitUntil: 'load' });
-  if (target.waitFor) await page.waitForSelector(target.waitFor, { timeout: 20000 });
+  await gotoAndWait(page, new URL(target.hash, base).href, target.waitFor);
   await page.evaluate(() => document.fonts.ready);
   await waitForQuiet(page);
 }
@@ -279,7 +277,16 @@ async function main() {
         const file = `${target.name}.png`;
         const actualPath = join(outDir, file);
         await openTarget(page, base, target);
-        await page.screenshot({ path: actualPath, fullPage: Boolean(target.fullPage), animations: 'disabled', caret: 'hide' });
+        let shot = page;
+        // The dev server refused the tab a module or a bitmap (#104, #122): shoot it again in a fresh tab
+        if (errors.some((e) => e.includes('ERR_INSUFFICIENT_RESOURCES'))) {
+          console.warn(`  ~ ${target.name}: the tab ran out of request resources, shooting again in a fresh tab`);
+          errors.length = 0;
+          shot = await open();
+          await openTarget(shot, base, target);
+        }
+        await shot.screenshot({ path: actualPath, fullPage: Boolean(target.fullPage), animations: 'disabled', caret: 'hide' });
+        if (shot !== page) await shot.close();
 
         let status;
         let detail = '';

@@ -371,7 +371,7 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c5/red-car": {
       "file": "backdrops/c5/red-car",
-      "bytes": 149534,
+      "bytes": 217506,
       "chapter": 5,
       "grade": [1.067, 1.03, 1.032],
       "box": {
@@ -380,11 +380,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "6cf38cbe42240703"
+      "source": "e718e36cba6948a1"
     },
     "c5/balloon-stall": {
       "file": "backdrops/c5/balloon-stall",
-      "bytes": 149534,
+      "bytes": 218058,
       "chapter": 5,
       "grade": [1.067, 1.03, 1.032],
       "box": {
@@ -393,11 +393,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "6cf38cbe42240703"
+      "source": "f8300c4422173bb2"
     },
     "c5/market-lane": {
       "file": "backdrops/c5/market-lane",
-      "bytes": 149534,
+      "bytes": 221486,
       "chapter": 5,
       "grade": [1.067, 1.03, 1.032],
       "box": {
@@ -406,11 +406,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "6cf38cbe42240703"
+      "source": "c4d41c1ec7c87279"
     },
     "c5/pachinko": {
       "file": "backdrops/c5/pachinko",
-      "bytes": 149534,
+      "bytes": 187900,
       "chapter": 5,
       "grade": [1.067, 1.03, 1.032],
       "box": {
@@ -419,11 +419,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "6cf38cbe42240703"
+      "source": "c500dc60ee8f4526"
     },
     "c5/massage-chairs": {
       "file": "backdrops/c5/massage-chairs",
-      "bytes": 149534,
+      "bytes": 214210,
       "chapter": 5,
       "grade": [1.067, 1.03, 1.032],
       "box": {
@@ -432,11 +432,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "6cf38cbe42240703"
+      "source": "d5e982113d37686e"
     },
     "c5/scallion-spread": {
       "file": "backdrops/c5/scallion-spread",
-      "bytes": 149534,
+      "bytes": 213678,
       "chapter": 5,
       "grade": [1.067, 1.03, 1.032],
       "box": {
@@ -445,7 +445,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "6cf38cbe42240703"
+      "source": "ac5f6be96098b5ba"
     }
   },
   "parts": {
@@ -1820,67 +1820,443 @@ export const ENV_MANIFEST: EnvManifest = {
       },
       "source": "1b5b6a6fb2e0bdef"
     },
-    "c5/coin": {
-      "preset": "pushable",
+    "c5/car-lights": {
+      "preset": "light",
       "box": {
-        "x": -17,
-        "y": -14,
-        "w": 32,
-        "h": 36
+        "x": -350,
+        "y": -348,
+        "w": 462,
+        "h": 564
       },
       "states": {
-        "onPerch": {
-          "file": "parts/c5/coin.onPerch",
-          "bytes": 1468
+        "off": {
+          "file": "parts/c5/car-lights.off",
+          "bytes": 2934
         },
-        "falling": {
-          "file": "parts/c5/coin.falling",
-          "bytes": 1498
-        },
-        "landed": {
-          "file": "parts/c5/coin.landed",
-          "bytes": 1330
+        "on": {
+          "file": "parts/c5/car-lights.on",
+          "bytes": 51294
         }
       },
-      "source": "d00918e2725a4b0b"
+      "source": "9819b492cb8ef8f1"
+    },
+    "c5/balloon-basket": {
+      "preset": "lift",
+      "box": {
+        "x": -50,
+        "y": -182,
+        "w": 119,
+        "h": 200
+      },
+      "states": {
+        "down": {
+          "file": "parts/c5/balloon-basket.down",
+          "bytes": 14476
+        },
+        "up": {
+          "file": "parts/c5/balloon-basket.up",
+          "bytes": 14462
+        }
+      },
+      "source": "1ecaacb865ad95dd"
+    },
+    "c5/stall-bulbs": {
+      "preset": "light",
+      "box": {
+        "x": -127,
+        "y": -28,
+        "w": 224,
+        "h": 119
+      },
+      "states": {
+        "off": {
+          "file": "parts/c5/stall-bulbs.off",
+          "bytes": 3536
+        },
+        "on": {
+          "file": "parts/c5/stall-bulbs.on",
+          "bytes": 9338
+        }
+      },
+      "source": "71e454a0942960b8"
+    },
+    "c5/balloon-knot": {
+      "preset": "prop",
+      "box": {
+        "x": -44,
+        "y": -241,
+        "w": 94,
+        "h": 270
+      },
+      "states": {
+        "tied": {
+          "file": "parts/c5/balloon-knot.tied",
+          "bytes": 8818
+        },
+        "loose": {
+          "file": "parts/c5/balloon-knot.loose",
+          "bytes": 7446
+        }
+      },
+      "source": "776fa2697170b8d8"
+    },
+    "c5/chicken-boss": {
+      "preset": "carrier",
+      "box": {
+        "x": -63,
+        "y": -195,
+        "w": 132,
+        "h": 213
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c5/chicken-boss.idle",
+          "bytes": 8850
+        },
+        "away": {
+          "file": "parts/c5/chicken-boss.away",
+          "bytes": 7352
+        },
+        "carrying": {
+          "file": "parts/c5/chicken-boss.carrying",
+          "bytes": 8026
+        },
+        "back": {
+          "file": "parts/c5/chicken-boss.back",
+          "bytes": 8424
+        },
+        "done": {
+          "file": "parts/c5/chicken-boss.done",
+          "bytes": 7796
+        }
+      },
+      "source": "57f3cac809acc7cb"
+    },
+    "c5/auntie": {
+      "preset": "carrier",
+      "box": {
+        "x": -52,
+        "y": -170,
+        "w": 113,
+        "h": 187
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c5/auntie.idle",
+          "bytes": 9250
+        },
+        "carrying": {
+          "file": "parts/c5/auntie.carrying",
+          "bytes": 9264
+        },
+        "back": {
+          "file": "parts/c5/auntie.back",
+          "bytes": 11630
+        },
+        "done": {
+          "file": "parts/c5/auntie.done",
+          "bytes": 8854
+        }
+      },
+      "source": "b5e7e5ec0ce0bc7d"
+    },
+    "c5/counter-bell": {
+      "preset": "button",
+      "box": {
+        "x": -26,
+        "y": -28,
+        "w": 57,
+        "h": 51
+      },
+      "states": {
+        "up": {
+          "file": "parts/c5/counter-bell.up",
+          "bytes": 2116
+        },
+        "down": {
+          "file": "parts/c5/counter-bell.down",
+          "bytes": 2788
+        }
+      },
+      "source": "83238b0b1345a43e"
     },
     "c5/pachinko-board": {
       "preset": "tab",
       "box": {
         "x": -166,
-        "y": -216,
+        "y": -176,
         "w": 302,
-        "h": 442
+        "h": 412
       },
       "states": {
         "start": {
           "file": "parts/c5/pachinko-board.start",
-          "bytes": 12502
+          "bytes": 3020
         },
         "jackpot": {
           "file": "parts/c5/pachinko-board.jackpot",
-          "bytes": 12970
+          "bytes": 11720
         },
         "tray": {
           "file": "parts/c5/pachinko-board.tray",
-          "bytes": 15814
+          "bytes": 7062
         }
       },
       "lifted": {
         "start": {
           "file": "parts/c5/pachinko-board.start.lifted",
-          "bytes": 20900
+          "bytes": 16118
         },
         "jackpot": {
           "file": "parts/c5/pachinko-board.jackpot.lifted",
-          "bytes": 21374
+          "bytes": 19058
         },
         "tray": {
           "file": "parts/c5/pachinko-board.tray.lifted",
-          "bytes": 23108
+          "bytes": 17756
         }
       },
-      "source": "217fee589f022261"
+      "source": "37898d7ece5e5c73"
+    },
+    "c5/flipper-upper": {
+      "preset": "tab",
+      "box": {
+        "x": -53,
+        "y": 10,
+        "w": 109,
+        "h": 62
+      },
+      "states": {
+        "l": {
+          "file": "parts/c5/flipper-upper.l",
+          "bytes": 1422
+        },
+        "r": {
+          "file": "parts/c5/flipper-upper.r",
+          "bytes": 1466
+        }
+      },
+      "lifted": {
+        "l": {
+          "file": "parts/c5/flipper-upper.l.lifted",
+          "bytes": 3884
+        },
+        "r": {
+          "file": "parts/c5/flipper-upper.r.lifted",
+          "bytes": 3782
+        }
+      },
+      "source": "28a0565cf2b1d78d"
+    },
+    "c5/flipper-lower": {
+      "preset": "tab",
+      "box": {
+        "x": -53,
+        "y": 10,
+        "w": 109,
+        "h": 62
+      },
+      "states": {
+        "l": {
+          "file": "parts/c5/flipper-lower.l",
+          "bytes": 1422
+        },
+        "r": {
+          "file": "parts/c5/flipper-lower.r",
+          "bytes": 1466
+        }
+      },
+      "lifted": {
+        "l": {
+          "file": "parts/c5/flipper-lower.l.lifted",
+          "bytes": 3884
+        },
+        "r": {
+          "file": "parts/c5/flipper-lower.r.lifted",
+          "bytes": 3782
+        }
+      },
+      "source": "7cf477a358a31886"
+    },
+    "c5/launch-knob": {
+      "preset": "button",
+      "box": {
+        "x": -17,
+        "y": -32,
+        "w": 48,
+        "h": 57
+      },
+      "states": {
+        "up": {
+          "file": "parts/c5/launch-knob.up",
+          "bytes": 2372
+        },
+        "down": {
+          "file": "parts/c5/launch-knob.down",
+          "bytes": 2332
+        }
+      },
+      "source": "93c1f161650194f0"
+    },
+    "c5/massage-abe": {
+      "preset": "carrier",
+      "box": {
+        "x": -58,
+        "y": -159,
+        "w": 118,
+        "h": 175
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c5/massage-abe.idle",
+          "bytes": 7400
+        },
+        "carrying": {
+          "file": "parts/c5/massage-abe.carrying",
+          "bytes": 7376
+        },
+        "back": {
+          "file": "parts/c5/massage-abe.back",
+          "bytes": 7444
+        },
+        "done": {
+          "file": "parts/c5/massage-abe.done",
+          "bytes": 7614
+        }
+      },
+      "source": "06119877bc9ad461"
+    },
+    "c5/massage-chair-1": {
+      "preset": "lift",
+      "box": {
+        "x": -70,
+        "y": -98,
+        "w": 160,
+        "h": 176
+      },
+      "states": {
+        "up": {
+          "file": "parts/c5/massage-chair-1.up",
+          "bytes": 7566
+        },
+        "flat": {
+          "file": "parts/c5/massage-chair-1.flat",
+          "bytes": 12952
+        }
+      },
+      "source": "b7008715b0550b08"
+    },
+    "c5/massage-chair-2": {
+      "preset": "lift",
+      "box": {
+        "x": -70,
+        "y": -98,
+        "w": 160,
+        "h": 186
+      },
+      "states": {
+        "up": {
+          "file": "parts/c5/massage-chair-2.up",
+          "bytes": 8002
+        },
+        "flat": {
+          "file": "parts/c5/massage-chair-2.flat",
+          "bytes": 13716
+        }
+      },
+      "source": "15e14f2c51ee13b7"
+    },
+    "c5/coin": {
+      "preset": "pushable",
+      "box": {
+        "x": -17,
+        "y": -16,
+        "w": 36,
+        "h": 38
+      },
+      "states": {
+        "onPerch": {
+          "file": "parts/c5/coin.onPerch",
+          "bytes": 1520
+        },
+        "falling": {
+          "file": "parts/c5/coin.falling",
+          "bytes": 1594
+        },
+        "landed": {
+          "file": "parts/c5/coin.landed",
+          "bytes": 1488
+        }
+      },
+      "source": "0d2bf09cc583f87e"
+    },
+    "c5/scallion-vendor": {
+      "preset": "carrier",
+      "box": {
+        "x": -48,
+        "y": -142,
+        "w": 102,
+        "h": 157
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c5/scallion-vendor.idle",
+          "bytes": 7678
+        },
+        "carrying": {
+          "file": "parts/c5/scallion-vendor.carrying",
+          "bytes": 7396
+        },
+        "back": {
+          "file": "parts/c5/scallion-vendor.back",
+          "bytes": 7416
+        },
+        "done": {
+          "file": "parts/c5/scallion-vendor.done",
+          "bytes": 7750
+        }
+      },
+      "source": "2705c51c1337a4a9"
+    },
+    "c5/tray-stack": {
+      "preset": "lift",
+      "box": {
+        "x": -33,
+        "y": -33,
+        "w": 71,
+        "h": 211
+      },
+      "states": {
+        "up": {
+          "file": "parts/c5/tray-stack.up",
+          "bytes": 9596
+        },
+        "down": {
+          "file": "parts/c5/tray-stack.down",
+          "bytes": 3580
+        }
+      },
+      "source": "669acf3f4c13809b"
+    },
+    "c5/pancake": {
+      "preset": "prop",
+      "box": {
+        "x": -25,
+        "y": -51,
+        "w": 55,
+        "h": 65
+      },
+      "states": {
+        "up": {
+          "file": "parts/c5/pancake.up",
+          "bytes": 3038
+        },
+        "flipped": {
+          "file": "parts/c5/pancake.flipped",
+          "bytes": 2752
+        }
+      },
+      "source": "aa465dd1de21073d"
     }
   },
   "cutouts": {

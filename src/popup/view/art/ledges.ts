@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
+import { POPUP as C, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
 import { depth, f1, ref, seeded, softEllipse, type KitCtx } from '../../art';
 import { PAGE_W, towardVp } from '../geometry';
 import { LEDGE_DEPTH, type LedgeRun, type Slope } from '../stage';
@@ -477,6 +477,69 @@ function karaokeStage(ctx: KitCtx, run: LedgeRun): string {
   return depth(ctx, 4, body, boxOutline(b));
 }
 
+/**
+ * 士林夜市's lane (#122): the calm dark band the play path runs on — worn red-brick pavers on top, a
+ * granite curb, the lane's dark face under it with the bulbs' reflections in the wet (amber and
+ * vermilion smears, alternating along the run).
+ */
+function marketLane(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let smears = '';
+  for (let x = b.x0 + 12, i = 0; x < b.x1 - 16; x += 40, i++) smears += `<rect x="${f1(x)}" y="${b.y + 24 + (i % 2) * 6}" width="${f1(Math.min(24, b.x1 - x - 4))}" height="2.4" rx="1.2" fill="${i % 2 ? M.vermilionLight : C.lampAmber}" opacity=".35"/>`;
+  const body = (b.side ? `<path d="${b.side}" fill="${M.laneDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${M.lane}"/>` + smears
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="11" fill="${M.laneLight}"/>`
+    + `<path d="${Array.from({ length: Math.ceil((b.x1 - b.x0) / 24) }, (_, i) => `M${f1(b.x0 + 24 * (i + 1))} ${b.y}v11`).join('')}" stroke="${M.laneDeep}" stroke-width=".8" opacity=".6"/>`
+    + `<path d="M${b.x0} ${b.y + 11}H${b.x1}" stroke="${C.shadow}" stroke-width="1.6" opacity=".4"/>`
+    + `<path d="${b.top}" fill="${mixHex(M.vermilionDeep, M.laneLight, 0.45)}"/><path d="${topJoints(b, 11)}" stroke="${M.laneDeep}" stroke-width=".7" opacity=".55"/>`
+    + rim(b.x0, b.x1, b.y, 0.5);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** A stall's tiled floor (#122): small cream-grey tiles on top, a stainless kick plate in front. */
+function stallFloor(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${M.tinDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(M.tin, M.laneDeep, 0.35)}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="9" fill="${M.steelWarm}"/><path d="M${b.x0} ${b.y + 1}H${b.x1}" stroke="${C.cutRim}" stroke-width="1" opacity=".6"/>`
+    + `<path d="M${b.x0} ${b.y + 28}H${b.x1}" stroke="${M.tinLight}" stroke-width="1" opacity=".4"/>`
+    + `<path d="${b.top}" fill="${mixHex(M.awningCream, M.tin, 0.45)}"/><path d="${topJoints(b, 8)}" stroke="${M.tinDeep}" stroke-width=".7" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** A stall's shelf (#122): a dark wooden plank on top, a vermilion valance with a fringe of little bulbs in front. */
+function stallShelf(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let bulbs = '';
+  for (let x = b.x0 + 8; x < b.x1 - 4; x += 12) bulbs += `M${f1(x - 2)} ${b.y + 22}a2 2 0 1 0 4 0a2 2 0 1 0 -4 0z`;
+  let fringe = '';
+  for (let x = b.x0; x < b.x1; x += 8) fringe += `M${f1(x)} ${b.y + 12}l4 7l4 -7z`;
+  const body = (b.side ? `<path d="${b.side}" fill="${M.woodDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(M.woodDeep, M.laneDeep, 0.4)}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="12" fill="${M.vermilion}"/><path d="${fringe}" fill="${M.vermilionDeep}"/>`
+    + `<path d="${bulbs}" fill="${C.lamp}"/>`
+    + `<path d="${b.top}" fill="${M.woodLight}"/>` + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/**
+ * The 蔥抓餅 stall's counter (#122): its front faces the lane — stainless steel with a vermilion
+ * banner and a cream 「蔥抓餅」 band — and its top is the stall's floor behind it, where she works.
+ */
+function stallCounter(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let flutes = '';
+  for (let x = b.x0 + 4; x < b.x1; x += 6) flutes += `M${f1(x)} ${b.y + 30}v${b.t - 30}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${M.tinDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${M.tin}"/><path d="${flutes}" stroke="${M.tinDeep}" stroke-width="2" opacity=".45"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="8" fill="${M.steelWarm}"/><path d="M${b.x0} ${b.y + 1}H${b.x1}" stroke="${C.cutRim}" stroke-width="1" opacity=".7"/>`
+    + `<rect x="${b.x0}" y="${b.y + 10}" width="${b.x1 - b.x0}" height="18" fill="${M.vermilion}"/><path d="M${b.x0} ${b.y + 26}H${b.x1}" stroke="${M.vermilionDeep}" stroke-width="2"/>`
+    + `<path d="${b.top}" fill="${mixHex(M.awningCream, M.tin, 0.5)}"/><path d="${topJoints(b, 8)}" stroke="${M.tinDeep}" stroke-width=".7" opacity=".45"/>`
+    + rim(b.x0, b.x1, b.y, 0.65);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
 /** A ledge in its page's material (`dress.ts`): the dressed styles here, brick and rug from the placeholder stage. */
 export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme: StageTheme): string {
   if (run.single) {
@@ -486,6 +549,8 @@ export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme
     if (style === 'bookPage' || style === 'desk') return bookPile(ctx, (run.x0 + run.x1) / 2, run.y);
     if (style === 'campusPath') return campusPath(ctx, run);
     if (style === 'neonStreet') return neonStreet(ctx, run);
+    if (style === 'marketLane') return marketLane(ctx, run);
+    if (style === 'stallFloor' || style === 'stallShelf' || style === 'stallCounter') return styledLedge(ctx, { ...run, single: false }, style, theme);
     return plainLedge(ctx, run, theme);
   }
   switch (style) {
@@ -493,6 +558,14 @@ export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme
       return carBody(ctx, run, K.songshan, K.songshanDeep);
     case 'neonStreet':
       return neonStreet(ctx, run);
+    case 'marketLane':
+      return marketLane(ctx, run);
+    case 'stallFloor':
+      return stallFloor(ctx, run);
+    case 'stallShelf':
+      return stallShelf(ctx, run);
+    case 'stallCounter':
+      return stallCounter(ctx, run);
     case 'arcadeShelf':
       return arcadeShelf(ctx, run);
     case 'karaokeStage':
