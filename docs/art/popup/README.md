@@ -347,6 +347,8 @@ Each chapter has **2 dominant hues + 1 accent**, a **signature material**, and a
 | ★ | 象山的日出 (GDD bonus page) | gold sunrise + city indigo | foil sun, many skyline layers | The view back at 101 from the trail: 6 parallax skyline layers and the sun rising as a foil disc on a slider |
 | ★ | Others to consider: 中正紀念堂 (white-blue gate, plaza tiles), 北門 (a brick gate at night), 迪化街 (Lunar New Year lanterns) | | | Only if content grows. Each fits the same recipe. |
 
+*Engineers' note (#108, D-71):* the slice's art is in `src/popup/env/art/c0.ts` (序) and `c1.ts` (1). Backdrops carry the room or station, its furniture and its lights; the walk-graph stage stays live but is dressed per backdrop (`src/popup/view/art/dress.ts`): 巧拼 play-mat and crib ledges at home; the car body, granite walkways, the shop's cut floor and brick platforms at the station; furniture the art draws itself; and the corner cards (ㄅㄆㄇ blocks, a suitcase). The pigeon is origami, and the backpacker and 店員小哥 are paper-style die-cut figures (`view/art/creatures.ts`). Baked flaps and the 1-4 turntable keep their marigold grip in the source, with their seal and cue live. The squint test made the play-mat dusky, kept the moon small and veiled, and darkened the station's sandstone toward night. Screenshots: `docs/screenshots/108/`.
+
 ---
 
 ## 7. UI framing: the book is the UI

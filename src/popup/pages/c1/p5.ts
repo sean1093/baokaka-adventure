@@ -54,7 +54,7 @@ export default definePage({
   baby: { start: 'b1', facing: 'r' },
   mocha: { start: 'counter' },
   mischief: { text: '讓摩卡按三次叮咚鈴', when: { type: 'partEnter', id: 'bell', count: 3, when: { part: 'bell', in: ['down'] } } },
-  tudigong: { x: 296, y: 152, hat: '' },   // on the shop's menu board, among the dish pictures; always visible
+  tudigong: { x: 296, y: 152, hat: '站務帽' },   // on the shop's menu board, among the dish pictures; always visible
   solution: [{ mocha: 'carPanel' }, { wait: 'settle' }, { pet: true }, { wait: 'goal' }],
   lines: {
     // The 店員小哥 cameo (§ 5.2 ch1): the bell's first 叮咚

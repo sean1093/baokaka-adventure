@@ -1,6 +1,7 @@
 import { POPUP as C, POPUP_HOME as H, POPUP_STAGE as S, mixHex } from '../../../art/palette';
 import { depth, f1, ref, seeded, softEllipse, type KitCtx } from '../../art';
 import { gutter } from '../../view/art/placeholders';
+import type { PartSource } from '../sources';
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorOutline, floorWiden } from '../../view/geometry';
 
 /**
@@ -205,3 +206,37 @@ export function bunting(ctx: KitCtx, x0: number, y0: number, x1: number, y1: num
   return `<path d="M${x0} ${y0}Q${f1(mx)} ${f1(my + sag)} ${x1} ${y1}" stroke="${C.pageEdge}" stroke-width=".8" fill="none" opacity=".7"/>`
     + depth(ctx, 1, flags, flags.replace(/ fill="[^"]*"/g, ''));
 }
+
+/** The flap preset's card size for a hit area (FlapView: the hit less 22, at least 40 × 32). */
+export const flapSize = (hw: number, hh: number) => ({ w: Math.max(40, hw - 22), h: Math.max(32, hh - 22) });
+/** The flap's marigold dog-ear corner (FlapView and the kit's `flap`: 22 units). */
+const EAR = 22;
+
+/**
+ * A baked flap (#96, FlapView): its face for `closed` (`face`, clipped to the card with its cut
+ * corner) and its back for `open` (`back`), each with the marigold dog-ear at the bottom-right — the
+ * grip, the one marigold the part wears (the 翻 seal and the curl cue stay live). Local space: the
+ * card's top-left at the origin, the hinge along y 0.
+ */
+export function bakedFlap(w: number, h: number, face: (ctx: KitCtx) => string, back: (ctx: KitCtx) => string): PartSource {
+  const card = `M0 0H${w}V${h - EAR}L${w - EAR} ${h}H0Z`;
+  const ear = `M${w} ${h - EAR}L${w - EAR} ${h}L${f1(w - EAR * 0.35)} ${f1(h + EAR * 0.42)}Z`;
+  return {
+    preset: 'flap',
+    states: ['closed', 'open'],
+    hinge: 0,
+    box: { x: -4, y: -4, w: w + 12, h: h + 16 },
+    draw(ctx, state) {
+      const clip = ctx.id(`flapClip${state}`);
+      const body = state === 'open' ? back(ctx) : face(ctx);
+      return `<clipPath id="${clip}"><path d="${card}"/></clipPath>`
+        + depth(ctx, 3, `<g clip-path="url(#${clip})">${body}</g><path d="M2 1.2H${w - 2}" stroke="${C.cutRim}" stroke-width="1" opacity=".45"/>`, `<path d="${card}"/>`)
+        + depth(ctx, 4, `<path data-grip="ear" d="${ear}" fill="${ref(ctx, 'tabG')}"/><path d="M${w - EAR} ${h}L${f1(w - EAR * 0.35)} ${f1(h + EAR * 0.42)}" stroke="${C.marigoldEdge}" stroke-width="1" opacity=".6"/>`, `<path d="${ear}"/>`);
+    },
+  };
+}
+
+/** A kraft flap back (bible § 3.1: the back sides of flaps are kraft) with its fibres. */
+export const kraftBack = (w: number, h: number, seed: number) => (ctx: KitCtx): string =>
+  `<rect width="${w}" height="${h}" fill="${ref(ctx, 'kraft')}"/>` + paperFibres(0, 0, w, h, Math.round((w * h) / 120), C.kraftFiber, seed, 0.35);
+

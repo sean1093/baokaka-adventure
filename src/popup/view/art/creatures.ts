@@ -41,17 +41,20 @@ function packerFace(x: number, y: number, asleep: boolean): string {
     + (asleep ? `<ellipse cx="${x + 1}" cy="${y + 7.4}" rx="1.6" ry="1.2" fill="${C.ink}" opacity=".7"/>` : `<path d="M${x - 1.5} ${y + 7}q2 1.6 4 0" stroke="${C.ink}" stroke-width="1" fill="none" stroke-linecap="round"/>`);
 }
 
-/** The huge backpack: orange canvas, a rolled sleeping mat on top, straps and a pocket. */
+/** The huge backpack: a rounded orange canvas body, a darker top flap with two buckled straps, a pocket, a rolled mat on top. */
 function backpack(x: number, y: number, w: number, h: number): { outline: string; print: string } {
-  const d = `M${x} ${y + h}V${y + 12}q0 -12 12 -12h${w - 24}q12 0 12 12V${y + h}Z`;
-  const mat = `M${x - 4} ${y - 10}h${w + 8}a7 7 0 0 1 0 14h${-(w + 8)}a7 7 0 0 1 0 -14z`;
+  const r = Math.min(14, w * 0.3);
+  const d = `M${x} ${y + h - 4}V${y + r}q0 ${-r} ${r} ${-r}h${w - 2 * r}q${r} 0 ${r} ${r}V${y + h - 4}q0 4 -4 4h${-(w - 8)}q-4 0 -4 -4z`;
+  const flap = `M${x + 2} ${y + r * 0.8}q0 ${-r * 0.8} ${r} ${-r * 0.8}h${w - 2 * r - 4}q${r} 0 ${r} ${r * 0.8}v${h * 0.22}q${-(w - 4) / 2} 8 ${-(w - 4)} 0z`;
+  const mat = `M${x - 3} ${y - 9}h${w + 6}a6.5 6.5 0 0 1 0 13h${-(w + 6)}a6.5 6.5 0 0 1 0 -13z`;
   return {
     outline: `<path d="${d}"/><path d="${mat}"/>`,
-    print: `<path d="${d}" fill="${T.backpack}"/><path d="M${x} ${y + h * 0.55}h${w}" stroke="${T.backpackDeep}" stroke-width="2"/>`
-      + `<rect x="${x + w * 0.22}" y="${y + h * 0.6}" width="${w * 0.56}" height="${h * 0.3}" rx="5" fill="${T.backpackDeep}"/>`
-      + `<path d="M${x + w * 0.3} ${y + 4}v${h * 0.5}M${x + w * 0.7} ${y + 4}v${h * 0.5}" stroke="${T.backpackDeep}" stroke-width="2.4"/>`
-      + `<path d="${mat}" fill="${T.packer}"/><path d="M${x + w * 0.3} ${y - 10}v14M${x + w * 0.7} ${y - 10}v14" stroke="${T.packerDeep}" stroke-width="2"/>`
-      + `<path d="M${x + 4} ${y + 14}q4 -8 12 -9" stroke="${C.cutRim}" stroke-width="1.2" fill="none" opacity=".4"/>`,
+    print: `<path d="${d}" fill="${T.backpack}"/><path d="${flap}" fill="${T.backpackDeep}"/>`
+      + `<path d="M${x + w * 0.3} ${y + h * 0.2}v${h * 0.16}M${x + w * 0.7} ${y + h * 0.2}v${h * 0.16}" stroke="${C.printDark}" stroke-width="2.6" stroke-linecap="round"/>`
+      + `<rect x="${x + w * 0.24}" y="${y + h * 0.56}" width="${w * 0.52}" height="${h * 0.3}" rx="7" fill="${T.backpackDeep}" opacity=".75"/>`
+      + `<path d="M${x + w * 0.3} ${y + h * 0.6}h${w * 0.4}" stroke="${C.cutRim}" stroke-width="1" opacity=".35"/>`
+      + `<path d="${mat}" fill="${T.packer}"/><path d="M${x + w * 0.25} ${y - 9}v13M${x + w * 0.75} ${y - 9}v13" stroke="${T.packerDeep}" stroke-width="2"/>`
+      + `<path d="M${x + 5} ${y + r + 2}q3 -8 10 -10" stroke="${C.cutRim}" stroke-width="1.2" fill="none" opacity=".4"/>`,
   };
 }
 

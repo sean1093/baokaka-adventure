@@ -26,7 +26,7 @@ export default definePage({
   ],
   parts: [
     { id: 'train', preset: 'tab', states: ['out', 'half', 'full'], initial: 'out', input: 'drag-linear',
-      track: { from: [80, 610], to: [200, 610] }, hit: { x: 56, y: 590, w: 150, h: 56 },
+      track: { from: [80, 610], to: [200, 610] }, hit: { x: 28, y: 590, w: 178, h: 56 },
       stateWhen: { full: { creature: 'pigeon', at: 'away' } },   // the pigeon on the track jams the tab at 'half'
       art: 'c1/train-blue' },
     { id: 'board', preset: 'prop', states: ['still', 'flip'], hit: { x: 90, y: 120, w: 96, h: 64 },

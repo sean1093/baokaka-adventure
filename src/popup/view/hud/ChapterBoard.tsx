@@ -259,7 +259,7 @@ function CardLine({ line, maxW, delay, reduced }: { line: TalkLine; maxW: number
       <g className={reduced ? 'cb-line-fade' : label === null ? 'cb-line-strip' : 'cb-line'} style={{ animationDelay: `${delay}ms` }}>
         <g dangerouslySetInnerHTML={{ __html: art }} />
         {label !== null && (
-          <text x={M + 24} y={M + LABEL_H / 2 + f * 0.36} fontFamily={SERIF} fontWeight={900} fontSize={f} fill={C.sealGlyph}>
+          <text x={M + 24} y={M + LABEL_H / 2 + f * 0.36} fontFamily={SERIF} fontWeight={900} fontSize={f} fill={C.sealGlyph} stroke={SPEAKER_INK[line.who]} strokeWidth={3} paintOrder="stroke" strokeLinejoin="round">
             {label}
           </text>
         )}
@@ -274,6 +274,11 @@ function CardLine({ line, maxW, delay, reduced }: { line: TalkLine; maxW: number
             fontWeight={label === null ? 600 : 700}
             fontSize={f}
             fill={C.ink}
+            // On a speech card the speaker's tab can sit inside a short row's box: a halo in the card's white keeps it ≥ 7:1 (#108)
+            stroke={label === null ? undefined : C.standeeCard}
+            strokeWidth={label === null ? undefined : 3}
+            paintOrder={label === null ? undefined : 'stroke'}
+            strokeLinejoin="round"
           >
             {row}
           </text>
