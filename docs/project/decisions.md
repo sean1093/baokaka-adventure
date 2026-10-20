@@ -976,3 +976,23 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - #116 and #118 put their specs in `docs/design/pages/c3.md` / `c4.md`.
 - #115 replaces the placeholders above (and keeps the four baked parts' hit areas); the decoy look (a moon reflection, a bell) is still open for #116.
 - `photo-spread` now runs from 1-6 into chapter 2's card and 2-1; `photo-spread-c2` plays 2-6 through chapter 3's 「未完待續」 card.
+
+### D-78 · 2026-10-20 · Chapter 2's art: the park kit, pop-up flaps, conditional cut-outs, live fireflies (#115)
+
+**Context.** #115 draws 大安森林公園 over #114's pages: six backdrops, the parts and cast the pages name, the 土地公's 掃把, the 畫筆 and the 淘氣 portrait of Mocha. Several things were left open: how the painted flaps on 2-6 "pop up into real paper" when the flap view only folds a card; how a drawing can appear with a state; how fireflies drift without a moving backdrop; what the stage draws at a crossing whose obstacle is the art itself; and the payload of a wheel whose four states are one drawing.
+
+**Decision.**
+1. **The palette kit** is `POPUP_PARK` (bible § 6 row 2) plus reusable cut-outs in `env/art/c2.ts`. New ledge styles (`parkPath`, `boardwalk`, `stage`, `carBodyXinyi`), plank ramps (`styledRamp`) and an arched bridge for a single-node park run; a `shrub` foreground card.
+2. **Pop-up flaps** (`popFlap`): a flap's open bitmap is drawn through the inverse of `FlapView`'s fold (`scaleY −0.35` about the hinge), so the painted thing stands where it belongs on the page (a footbridge over the stream, a branch from the easel to the parasol) and grows out of the hinge as the card lifts. The kraft back and the marigold ear stay; the seal and cue stay live. No view change.
+3. **`CutoutDef.visibleWhen`**: a cut-out shown only while a condition holds (2-6's portrait of Mocha, all three flaps open). Conditional cut-outs are drawn in the cut-outs layer, outside the static memo; they never move.
+4. **`StageDress.crossing: 'none'`**: where the backdrop's art is the obstacle and a part is the way across (2-1's gap, 2-6's stream), the stage draws no rail.
+5. **Fireflies drift live** (`StageDress.fireflies`, `view/Fireflies.tsx`): a few lime pinholes per page in the creatures layer, one node each on a CSS transform/opacity loop, counted in the animated budget; still under reduced motion and in screenshot stills. The backdrops also bake a field of still ones.
+6. **A wheel whose states are one drawing bakes one bitmap** (the lily pad lists one state: the loader draws the first listed for any other). 2-5 went from 296 KB to 250 KB.
+7. **A run wholly past a dress's `ledgeSplit` takes the split's material** (it took the main one). No existing page had such a run.
+8. **People on the page drop one shadow** (`figure` in `view/art/park.ts`) instead of `depth`'s four copies: the die-cut card is their cut edge. This keeps 2-6 (two figures, three flaps) within 150 animated nodes (149 at its busiest tick).
+9. **Not drawn:** the photo frames stay #103's composites (D-66, as chapter 1's do), now with the 畫筆; the chapter card has no landmark slot (it hangs over 2-1's new art) and the 目錄's page strip shows the new backdrops; the 月亮線 window strip does not scroll (the car is stopped at the station).
+
+**Why.** Each reading keeps the art baked and the view unchanged where it could, keeps the page data's hit areas, and stays inside the payload and animated-node budgets.
+
+**Consequences.** Later chapters reuse `popFlap`, `visibleWhen` cut-outs, `crossing: 'none'` and `fireflies` as they need them. A landmark vignette on the chapter card, if wanted, is one issue for all chapters.
+
