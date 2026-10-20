@@ -368,6 +368,84 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "766a8bc0a355e86e"
+    },
+    "c5/red-car": {
+      "file": "backdrops/c5/red-car",
+      "bytes": 149534,
+      "chapter": 5,
+      "grade": [1.067, 1.03, 1.032],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "6cf38cbe42240703"
+    },
+    "c5/balloon-stall": {
+      "file": "backdrops/c5/balloon-stall",
+      "bytes": 149534,
+      "chapter": 5,
+      "grade": [1.067, 1.03, 1.032],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "6cf38cbe42240703"
+    },
+    "c5/market-lane": {
+      "file": "backdrops/c5/market-lane",
+      "bytes": 149534,
+      "chapter": 5,
+      "grade": [1.067, 1.03, 1.032],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "6cf38cbe42240703"
+    },
+    "c5/pachinko": {
+      "file": "backdrops/c5/pachinko",
+      "bytes": 149534,
+      "chapter": 5,
+      "grade": [1.067, 1.03, 1.032],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "6cf38cbe42240703"
+    },
+    "c5/massage-chairs": {
+      "file": "backdrops/c5/massage-chairs",
+      "bytes": 149534,
+      "chapter": 5,
+      "grade": [1.067, 1.03, 1.032],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "6cf38cbe42240703"
+    },
+    "c5/scallion-spread": {
+      "file": "backdrops/c5/scallion-spread",
+      "bytes": 149534,
+      "chapter": 5,
+      "grade": [1.067, 1.03, 1.032],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "6cf38cbe42240703"
     }
   },
   "parts": {
@@ -1741,6 +1819,68 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "1b5b6a6fb2e0bdef"
+    },
+    "c5/coin": {
+      "preset": "pushable",
+      "box": {
+        "x": -17,
+        "y": -14,
+        "w": 32,
+        "h": 36
+      },
+      "states": {
+        "onPerch": {
+          "file": "parts/c5/coin.onPerch",
+          "bytes": 1468
+        },
+        "falling": {
+          "file": "parts/c5/coin.falling",
+          "bytes": 1498
+        },
+        "landed": {
+          "file": "parts/c5/coin.landed",
+          "bytes": 1330
+        }
+      },
+      "source": "d00918e2725a4b0b"
+    },
+    "c5/pachinko-board": {
+      "preset": "tab",
+      "box": {
+        "x": -166,
+        "y": -216,
+        "w": 302,
+        "h": 442
+      },
+      "states": {
+        "start": {
+          "file": "parts/c5/pachinko-board.start",
+          "bytes": 12502
+        },
+        "jackpot": {
+          "file": "parts/c5/pachinko-board.jackpot",
+          "bytes": 12970
+        },
+        "tray": {
+          "file": "parts/c5/pachinko-board.tray",
+          "bytes": 15814
+        }
+      },
+      "lifted": {
+        "start": {
+          "file": "parts/c5/pachinko-board.start.lifted",
+          "bytes": 20900
+        },
+        "jackpot": {
+          "file": "parts/c5/pachinko-board.jackpot.lifted",
+          "bytes": 21374
+        },
+        "tray": {
+          "file": "parts/c5/pachinko-board.tray.lifted",
+          "bytes": 23108
+        }
+      },
+      "source": "217fee589f022261"
     }
   },
   "cutouts": {

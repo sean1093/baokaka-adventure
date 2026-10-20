@@ -431,7 +431,7 @@ export function voiceVoices(syllables: number, pitch = 1): Voice[] {
 // downloaded and nothing drifts. The RPG has a theme per place; 翻翻台北 has a music box per
 // chapter (GDD § 2.12: "one 8–16 bar loop per chapter in a pentatonic key").
 
-export type Track = 'field' | 'night' | 'battle' | 'boss' | 'ending' | 'chapter0' | 'chapter1' | 'chapter2' | 'chapter3' | 'chapter4';
+export type Track = 'field' | 'night' | 'battle' | 'boss' | 'ending' | 'chapter0' | 'chapter1' | 'chapter2' | 'chapter3' | 'chapter4' | 'chapter5';
 
 /** 宮商角徵羽 across three octaves, as semitone offsets from the root. */
 export const PENTATONIC = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24];
@@ -550,11 +550,25 @@ export const TRACKS: Readonly<Record<Track, TrackSpec>> = {
     peak: 0.05,
     box: true,
   },
+  // 第五章 士林夜市 (#121): the night market still busy at 02:20, a vendor's bell and a bouncy
+  // skip from stall to stall, 8 bars in D
+  chapter5: {
+    root: 293.66,
+    step: 0.28,
+    melody: [
+      2, 4, 5, -1, 4, 2, 4, -1, 5, -1, 7, 5, 4, -1, -1, -1,
+      2, 4, 2, 0, 1, -1, 2, -1, 4, 5, 4, 2, 0, -1, -1, -1,
+    ],
+    bass: [0, 2, 3, 0, 1, 2, 3, 0],
+    wave: 'sine',
+    peak: 0.05,
+    box: true,
+  },
 };
 
-/** 翻翻台北's music box for a chapter, or null where its loop isn't written yet (chapters 5–10 bring theirs). */
+/** 翻翻台北's music box for a chapter, or null where its loop isn't written yet (chapters 6–10 bring theirs). */
 export function chapterTrack(chapter: number): Track | null {
-  const tracks: readonly Track[] = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4'];
+  const tracks: readonly Track[] = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5'];
   return tracks[chapter] ?? null;
 }
 

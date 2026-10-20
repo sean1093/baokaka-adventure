@@ -149,6 +149,25 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c4p6.king.2': { who: 'mocha', text: '……耳朵。我的耳朵。' },
   // § 5.2 4-6 end
   'c4p6.end.1': { who: 'nar', text: '找到了！抓周寶物——麥克風。' },
+  // § 5.2 Ch5 「夜市抱抱」 02:20 (the chapter card)
+  'c5.intro.1': { who: 'pa', text: '劍潭站，到了。' },
+  'c5.intro.2': { who: 'nar', text: '士林夜市，半夜還是好香。' },
+  'c5.intro.3': { who: 'mocha', text: '不准吃。我們是來工作的。' },
+  // § 5.3 店員小哥's chapter 5 cameo (5-2: Mocha lands in his balloon stall's basket)
+  'c5p2.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c5p2.clerk.2': { who: 'mocha', text: '……射氣球也是你們的？' },
+  'c5p2.clerk.3': { who: 'clerk', text: '我們是連鎖的。' },
+  // 5-3: Mocha rings the 雞排 stall's bell, and the 老闆 comes to the counter
+  'c5p3.boss.1': { who: 'npc', label: '雞排老闆', text: '來了！要切嗎？要辣嗎？' },
+  'c5p3.boss.2': { who: 'mocha', text: '……他只要抱抱。' },
+  // 5-4's 淘氣: the jackpot wakes the 彈珠台阿伯
+  'c5p4.uncle.1': { who: 'npc', label: '彈珠台阿伯', text: '哈哈哈！大獎！……沒有獎品啦。' },
+  // 5-6: the 蔥抓餅 vendor lifts him over her counter
+  'c5p6.vendor.1': { who: 'npc', label: '蔥抓餅阿姨', text: '小帥哥，要不要加蛋？' },
+  'c5p6.vendor.2': { who: 'mocha', text: '……不要問我。' },
+  // § 5.2 5-6 end
+  'c5p6.end.1': { who: 'nar', text: '找到了！抓周寶物——蔥。' },
+  'c5p6.end.2': { who: 'mocha', text: '蔥抓餅……加蛋。……我什麼都沒說。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

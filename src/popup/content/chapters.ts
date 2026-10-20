@@ -32,7 +32,7 @@ export const CHAPTERS: readonly ChapterInfo[] = [
   { chapter: 2, title: '會揮手的公園', landmark: '大安森林公園', station: '大安森林', time: '00:50', next: '大安森林公園', pages: 6, pageTitles: ['信義線', '露天音樂台', '跑步的阿姨', '松鼠的樹', '生態池', '畫畫的阿伯'] },
   { chapter: 3, title: '醉月湖的鵝', landmark: '台灣大學', station: '台大', time: '01:20', next: '公館', pages: 6, pageTitles: ['綠線', '椰林大道', '醉月湖', '傅鐘', '總圖書館', '藍教授的書'] },
   { chapter: 4, title: '霓虹燈睡著了', landmark: '西門町', station: '西門町', time: '01:50', next: '西門', pages: 6, pageTitles: ['板南線往西門', '紅樓', '霓虹燈睡著了', '夾娃娃機', '街頭藝人', '走音天王'] },
-  { chapter: 5, title: '夜市抱抱', landmark: '士林夜市', station: '士林', time: '02:20', next: '劍潭', pages: 6 },
+  { chapter: 5, title: '夜市抱抱', landmark: '士林夜市', station: '士林', time: '02:20', next: '劍潭', pages: 6, pageTitles: ['往劍潭', '射氣球攤', '抱抱', '彈珠台', '按摩椅', '蔥抓餅'] },
   { chapter: 6, title: '飛機睡著的時候', landmark: '松山機場', station: '松山機場', time: '02:50', next: '松山機場', pages: 6 },
   { chapter: 7, title: '纜車上的月亮', landmark: '貓空', station: '貓空', time: '03:30', next: '動物園', pages: 6 },
   { chapter: 8, title: '熱呼呼的煙', landmark: '北投', station: '北投', time: '04:00', next: '新北投', pages: 6 },
@@ -53,6 +53,7 @@ const CARD_LINES: Readonly<Record<number, readonly LineKey[]>> = {
   2: ['c2.intro.1', 'c2.intro.2', 'c2.intro.3'],
   3: ['c3.intro.1', 'c3.intro.2', 'c3.intro.3'],
   4: ['c4.intro.1', 'c4.intro.2', 'c4.intro.3'],
+  5: ['c5.intro.1', 'c5.intro.2', 'c5.intro.3'],
 };
 
 /** The chapter card's lines (none for a chapter not written yet). */
@@ -68,6 +69,7 @@ const END_LINES: Readonly<Record<number, readonly LineKey[]>> = {
   2: ['c2p6.end.1', 'c2p6.end.2'],
   3: ['c3p6.end.1'],
   4: ['c4p6.end.1'],
+  5: ['c5p6.end.1', 'c5p6.end.2'],
 };
 
 /** A chapter's end lines (none for a chapter not written yet). */
