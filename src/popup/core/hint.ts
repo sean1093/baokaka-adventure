@@ -147,11 +147,12 @@ function effective(def: PageDef, state: SimState, input: Input): boolean {
  * (until then: wait); a 不要！ only while he wants what he wanted then (`sameRefusal`, #116).
  * The parts, the creatures' positions and Mocha's perch compare exactly first (#121: 5-2's basket
  * goes down and up again with Mocha), then the parts and the creatures (a page whose puzzle is a
- * creature, like 2-4's squirrel, has few parts or none: #114), then the parts alone,
- * then the scene without its props (5-2's untied balloon knot), then only the parts the solution drives (a spun 床鈴 doesn't hide the way). A match with nothing
- * left to do, or the part states the solution's last gesture left, mean "wait" — while a wait still
- * changes something; so does a carry (#121: a carrier's walk matches no gesture). Null when nothing
- * matches (or the page has settled with nothing to do).
+ * creature, like 2-4's squirrel, has few parts or none: #114), then the parts alone, then the
+ * scene without its props (5-2's untied balloon knot), then only the parts the solution drives (a
+ * spun 床鈴 doesn't hide the way). A match with nothing left to do, or the part states the
+ * solution's last gesture left, mean "wait" — while a wait still changes something; so does a carry
+ * (#121: a carrier's walk matches no gesture). Null when nothing matches (or the page has settled
+ * with nothing to do).
  */
 export function solutionAction(def: PageDef, state: SimState): Input | null {
   if (state.done) return null;
