@@ -279,7 +279,7 @@ const SCENARIO_URLS = {
   'hints-c1p2': '#/popup?page=c1p2&speed=fast',
   'stickers-c1p2': '#/pagelab?fixture=page-hud',
   'photo-spread': '#/pagelab?fixture=spread-shell',
-  'prologue-card': '#/popup',
+  'prologue-card': '#/',
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',
   'tutorial-c0p2': '#/popup?page=c0p2&tutorial=1',
   'tutorial-c0p3': '#/popup?page=c0p3&tutorial=1',

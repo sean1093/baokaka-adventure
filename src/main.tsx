@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { retireRpgSave } from './popup/game/progress';
 import { cleanupLegacyStorage } from './shared/legacy';
 import { installRouteRedirect } from './shared/route';
 import { browserStorage } from './shared/storage';
@@ -9,13 +10,16 @@ import './components/kit.css';
 import './index.css';
 
 installRouteRedirect();
-cleanupLegacyStorage(browserStorage());
+const storage = browserStorage();
+cleanupLegacyStorage(storage);
+// The routing switch (#109): the RPG is gone, so its saves go too; the cover says one warm line, once (§ 2.10, D-55)
+const farewell = retireRpgSave(storage);
 
 const host = document.getElementById('root');
 if (!host) throw new Error('Missing #root element');
 
 createRoot(host).render(
   <StrictMode>
-    <App />
+    <App farewell={farewell} />
   </StrictMode>,
 );

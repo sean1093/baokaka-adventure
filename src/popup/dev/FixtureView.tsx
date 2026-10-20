@@ -56,7 +56,7 @@ export function FixtureView({ name, still, big: bigParam = false }: { name: stri
         ) : fixture.sheet === 'sprites-anchors' ? (
           <SpritesAnchorsSheet still={still} />
         ) : fixture.screen && store ? (
-          <GameShell key={`${fixture.name}-${still}-${big}`} store={store} initial={fixture.screen.nav} still={still} reduced={reduced} stickerCard={fixture.screen.card} chapterCard={fixture.screen.chapterCard} albumAfter={fixture.screen.albumAfter} endLinesOf={fixture.screen.endLinesOf} soonCard={fixture.screen.soonCard} />
+          <GameShell key={`${fixture.name}-${still}-${big}`} store={store} initial={fixture.screen.nav} still={still} reduced={reduced} stickerCard={fixture.screen.card} chapterCard={fixture.screen.chapterCard} albumAfter={fixture.screen.albumAfter} endLinesOf={fixture.screen.endLinesOf} soonCard={fixture.screen.soonCard} farewell={fixture.screen.farewell} />
         ) : (
           <PagePlayer
             key={`${fixture.name}-${still}`}

@@ -1,10 +1,11 @@
 import { useMemo, useSyncExternalStore } from 'react';
-import { POPUP as C } from '../../../art/palette';
+import { POPUP as C, withAlpha } from '../../../art/palette';
 import { chapterName, UI } from '../../content';
 import { screenImage } from '../../env/loader';
 import { COVER_SCENE } from '../../env/art/screens';
 import { SpriteAnim, deviceScale, spriteUrls, floorUrl } from '../../sprites';
-import { PaperButton, Quilt, SealIcon, useScreenReady } from './paper';
+import { useTextScale } from '../textSize';
+import { CREAM_CARD, PaperButton, Quilt, SealIcon, useScreenReady } from './paper';
 import { AlbumIcon, ContentsIcon, SettingsIcon } from './icons';
 
 /**
@@ -16,6 +17,8 @@ import { AlbumIcon, ContentsIcon, SettingsIcon } from './icons';
  * - **Resume in one tap** (R7, § 1.2): 「繼續」 opens the save's current page.
  * - The table and the book are one baked bitmap (`cover-scene`), the quilt another; the standees
  *   are the baked character frames; every word is live text on paper.
+ * - **The RPG farewell** (§ 2.10; #93, #109): on the first boot that found and deleted an old RPG
+ *   save, a small cream note taped above the buttons says `RPG_FAREWELL`, warm and not technical.
  */
 
 export interface CoverProps {
@@ -27,6 +30,8 @@ export interface CoverProps {
   readonly onContents: () => void;
   readonly onAlbum: () => void;
   readonly onSettings: () => void;
+  /** The one-time line for a player whose old RPG save was just discarded (`RPG_FAREWELL`) */
+  readonly farewell?: string;
   /** A still (screenshots): no idle motion */
   readonly still?: boolean;
   readonly reduced?: boolean;
@@ -36,6 +41,8 @@ export interface CoverProps {
 const BUTTONS_H = { first: 96, resume: 196 } as const;
 /** Room between the scene and the buttons, and around the group. */
 const GAP = 20;
+/** The farewell note's block above the buttons (CSS px at text scale 1): the note and the gap under it. */
+const NOTE_H = 60;
 
 const subscribeResize = (onChange: () => void) => {
   window.addEventListener('resize', onChange);
@@ -51,8 +58,9 @@ function useViewport(): [number, number] {
 /** Baokaka sits at the book's lower left, Mocha at its lower right (scene units). */
 const STANDEES = { baby: { x: 72, y: 412, scale: 1.25 }, mocha: { x: 334, y: 414, scale: 1.55 } } as const;
 
-export function Cover({ first, resume, onResume, onContents, onAlbum, onSettings, still = false, reduced = false }: CoverProps) {
+export function Cover({ first, resume, onResume, onContents, onAlbum, onSettings, farewell, still = false, reduced = false }: CoverProps) {
   const [vw, vh] = useViewport();
+  const textScale = useTextScale();
   const scene = screenImage('cover-scene');
   const frames = useMemo(() => {
     const s = deviceScale();
@@ -61,7 +69,8 @@ export function Cover({ first, resume, onResume, onContents, onAlbum, onSettings
   }, []);
   const ready = useScreenReady(['quilt', 'cover-scene'], frames);
   // The scene fits above the buttons: never wider than the phone, never taller than what is left
-  const buttons = first ? BUTTONS_H.first : BUTTONS_H.resume;
+  const note = farewell ? Math.round(NOTE_H * textScale) : 0;
+  const buttons = (first ? BUTTONS_H.first : BUTTONS_H.resume) + note;
   const k = Math.min(vw / 390, Math.max(0.5, (vh - buttons - 3 * GAP) / COVER_SCENE.h), 1.15);
   const sceneW = COVER_SCENE.w * k;
   const sceneH = COVER_SCENE.h * k;
@@ -88,6 +97,7 @@ export function Cover({ first, resume, onResume, onContents, onAlbum, onSettings
         </svg>
       </div>
       <div className="flex w-full shrink-0 flex-col items-center gap-3 px-6" style={{ height: buttons }}>
+        {farewell && <FarewellNote text={farewell} height={note - 12} width={first ? 320 : 332} />}
         {first ? (
           <PaperButton tone="marigold" className="w-full max-w-[320px] py-4" onClick={onResume} testId="start" icon={<SealIcon size={48}><path d="M-6 -9L9 0L-6 9Z" fill={C.sealGlyph} /></SealIcon>}>
             <span className="block font-serif text-[34px] font-black leading-none tracking-[0.3em]">{UI.cover.start}</span>
@@ -123,5 +133,18 @@ export function Cover({ first, resume, onResume, onContents, onAlbum, onSettings
       </div>
       </div>
     </main>
+  );
+}
+
+/**
+ * The RPG farewell: a cream index card as wide as the buttons under it, turned a little, held by a strip of pink washi, its line in
+ * ink at 20 px (R5). It is a note, not a button; screen readers hear it as the cover's status.
+ */
+function FarewellNote({ text, height, width }: { text: string; height: number; width: number }) {
+  return (
+    <div className="relative flex w-full shrink-0 items-center justify-center rounded-[3px] px-3 py-1" style={{ ...CREAM_CARD, maxWidth: width, minHeight: height, transform: 'rotate(-1.2deg)' }} role="status" data-farewell="">
+      <span className="absolute -top-[7px] left-1/2 h-[14px] w-[52px] -translate-x-1/2 rotate-[2.5deg]" style={{ background: withAlpha(C.washiPink, 0.85) }} aria-hidden="true" />
+      <span className="block text-center text-[20px] font-black leading-[1.3] tracking-[0.04em]">{text}</span>
+    </div>
   );
 }
