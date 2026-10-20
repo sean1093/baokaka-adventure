@@ -290,6 +290,84 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "71806766c51af891"
+    },
+    "c4/blue-car": {
+      "file": "backdrops/c4/blue-car",
+      "bytes": 152468,
+      "chapter": 4,
+      "grade": [1.045, 1.014, 1.024],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "90c61839489e323c"
+    },
+    "c4/red-house": {
+      "file": "backdrops/c4/red-house",
+      "bytes": 152468,
+      "chapter": 4,
+      "grade": [1.045, 1.014, 1.024],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "90c61839489e323c"
+    },
+    "c4/neon-alley": {
+      "file": "backdrops/c4/neon-alley",
+      "bytes": 152468,
+      "chapter": 4,
+      "grade": [1.045, 1.014, 1.024],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "90c61839489e323c"
+    },
+    "c4/claw-machine": {
+      "file": "backdrops/c4/claw-machine",
+      "bytes": 152468,
+      "chapter": 4,
+      "grade": [1.045, 1.014, 1.024],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "90c61839489e323c"
+    },
+    "c4/street-dance": {
+      "file": "backdrops/c4/street-dance",
+      "bytes": 152468,
+      "chapter": 4,
+      "grade": [1.045, 1.014, 1.024],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "90c61839489e323c"
+    },
+    "c4/karaoke-spread": {
+      "file": "backdrops/c4/karaoke-spread",
+      "bytes": 152468,
+      "chapter": 4,
+      "grade": [1.045, 1.014, 1.024],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "90c61839489e323c"
     }
   },
   "parts": {
@@ -1297,6 +1375,30 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "ae4ca6b322465a4d"
+    },
+    "c4/lantern": {
+      "preset": "pushable",
+      "box": {
+        "x": -28,
+        "y": -40,
+        "w": 55,
+        "h": 77
+      },
+      "states": {
+        "onPerch": {
+          "file": "parts/c4/lantern.onPerch",
+          "bytes": 2290
+        },
+        "falling": {
+          "file": "parts/c4/lantern.falling",
+          "bytes": 3234
+        },
+        "landed": {
+          "file": "parts/c4/lantern.landed",
+          "bytes": 2448
+        }
+      },
+      "source": "719dc7efb8ac667d"
     }
   },
   "cutouts": {
