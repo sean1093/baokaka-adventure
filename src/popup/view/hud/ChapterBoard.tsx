@@ -7,6 +7,7 @@ import { textEm, wrapText } from '../talk/place';
 import { SPEAKER_INK } from '../talk/Talk';
 import { useTextScale } from '../textSize';
 import './chapterBoard.css';
+import { TapMark } from './TapMark';
 
 /**
  * The chapter card (GDD § 2.13 "the departure-board card", § 5.2; popup art bible § 7, § 2.4
@@ -227,6 +228,10 @@ export function CardTalk({ beat, serial, width, reduced }: CardTalkProps) {
       {beat.map((line, i) => (
         <CardLine key={`${serial}:${i}`} line={line} maxW={width} delay={i * 180} reduced={reduced} />
       ))}
+      {/* The lines wait for a tap: a bobbing ▼ under them says so (#183) */}
+      <div className="cb-tap" key={`tap:${serial}`}>
+        <TapMark delay={reduced ? 0 : beat.length * 180 + 300} />
+      </div>
     </div>
   );
 }

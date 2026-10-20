@@ -19,11 +19,11 @@ const boxOf = (hit: Hit) => ('r' in hit ? { x: hit.cx - hit.r, y: hit.cy - hit.r
  * The L1 halo; `once` is the L0 nudge's single shimmer (it fades in and out once, then is gone; under
  * reduced motion it holds still for the nudge's moment like L1's).
  */
-export function HintHalo({ ctx, shape, reduced, strong, once = false }: { ctx: KitCtx; shape: HaloShape; reduced: boolean; strong?: boolean; once?: boolean }) {
+export function HintHalo({ ctx, shape, reduced, strong, once = false, target }: { ctx: KitCtx; shape: HaloShape; reduced: boolean; strong?: boolean; once?: boolean; target?: string }) {
   const { hit, at, deg = 0 } = shape;
   const html = useMemo(() => hintHalo(ctx, boxOf(hit), 'r' in hit, strong), [ctx, hit, strong]);
   return (
-    <g data-hint-halo={once ? 'nudge' : ''} transform={at ? `translate(${r2(at[0])} ${r2(at[1])}) rotate(${r2(deg)})` : undefined}>
+    <g data-hint-halo={once ? 'nudge' : ''} data-hint-target={target} transform={at ? `translate(${r2(at[0])} ${r2(at[1])}) rotate(${r2(deg)})` : undefined}>
       <g className={reduced ? undefined : once ? 'aff-halo-once' : 'aff-halo'}>
         <ArtG html={html} />
       </g>

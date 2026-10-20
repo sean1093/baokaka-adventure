@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type MutableRefObject, type Ref } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type MutableRefObject, type PointerEvent as ReactPointerEvent, type Ref } from 'react';
 import { POPUP } from '../../art/palette';
 import { useSvgIds } from '../../art/useSvgIds';
 import { useReducedMotion } from '../../components/motion';
@@ -368,8 +368,8 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     onDoneRef.current?.(frame.state, attemptResult({ ...attemptRef.current, moves: session.moves }));
   }, [def, frame.state, still, session, moment]);
 
-  // What is said (#98): the subtitle queue (the intro, then lines the page's events fire; a tap on a
-  // bubble advances) and the barks of the last few ticks
+  // What is said (#98): the subtitle queue (the intro, then lines the page's events fire; a tap
+  // anywhere on the page advances, #183) and the barks of the last few ticks
   const [talk, setTalk] = useState<TalkQueue>(EMPTY_TALK);
   // 大字 on a small book (#104): the bubbles grow so much that a beat holds one line, not 3
   const textScale = useTextScale();
@@ -463,7 +463,10 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   const closeRing = useCallback(() => setRingOpen(false), []);
   const cardDone = useCallback(() => setLearning(null), []);
   const onAdvance = useMemo(() => () => setTalk(advance), []);
-  const talkView = useMemo(() => ({ beat: currentBeat(talk), serial: talk.serial, onAdvance }), [talk, onAdvance]);
+  // The photo moment is a modal over the page (#183: a line left up under it was stranded under the
+  // HUD): the beat waits under it and comes back after the shot
+  const momentUp = moment !== null;
+  const talkView = useMemo(() => ({ beat: momentUp ? null : currentBeat(talk), serial: talk.serial, onAdvance }), [talk, onAdvance, momentUp]);
 
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
@@ -559,6 +562,39 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     [def, session, locked, idle.poke, onGesture, acted, earn],
   );
   const gestures = useGestures(def, session, layout, frame, ms, reduced, ringOpen, onEvent);
+  // A tap anywhere on the page while a subtitle beat is up reads it on (#183: the AI playtest only
+  // found that a tap on the line itself did). A pointer that comes down while a beat is up is a
+  // reader: if it lifts as a tap, the gesture is cancelled (no input, nothing pressed, the world
+  // resumes) and the beat moves on; if it turned into a drag, it plays on the page as usual and the
+  // line stays. A gesture already under way when a line arrives is never a reader. The bar, the
+  // ring, the word card and the photo moment keep their own taps (they stop propagation).
+  const talkUpRef = useRef(false);
+  talkUpRef.current = currentBeat(talk) !== null;
+  const draggingRef = useRef<Id | null>(null);
+  draggingRef.current = gestures.flags.dragging;
+  const readers = useRef(new Set<number>());
+  const pageHandlers = useMemo(() => {
+    const g = gestures.handlers;
+    return {
+      onPointerDown(e: ReactPointerEvent<Element>) {
+        if (talkUpRef.current) readers.current.add(e.pointerId);
+        g.onPointerDown(e);
+      },
+      onPointerMove: g.onPointerMove,
+      onPointerUp(e: ReactPointerEvent<Element>) {
+        if (readers.current.delete(e.pointerId) && draggingRef.current === null && talkUpRef.current) {
+          g.onPointerCancel(e);
+          setTalk(advance);
+          return;
+        }
+        g.onPointerUp(e);
+      },
+      onPointerCancel(e: ReactPointerEvent<Element>) {
+        readers.current.delete(e.pointerId);
+        g.onPointerCancel(e);
+      },
+    };
+  }, [gestures.handlers]);
   const live = gestures.flags;
   // 長輩模式: the hold-to-reveal outlines are always on (§ 2.11 "hold-to-show-parts always on")
   const elder = affordance?.elder === true;
@@ -592,10 +628,17 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   });
   // The prologue's scripted tutorial (#106): its cue must hold for its delay, live, with nothing said
   const scripted = useScriptedTutorial(def, frame.state, tutorials && !still && !paused && !hold && !ringOpen && learning === null && moment === null && currentBeat(talk) === null);
-  const scriptedHand = scripted?.kind === 'hand' ? { level: 2 as const, key: scripted.key, stop: scripted.stop } : null;
+  // A scripted nudge's line (1-5, #183): Mocha says it once as the nudge shows
+  const nudgeLine = scripted?.kind === 'nudge' ? scripted.line ?? null : null;
+  useEffect(() => {
+    const now = session.frame().state;
+    if (nudgeLine === null || mochaNode(def, now) === null) return;
+    setBarks((log) => barkLog(log, [{ who: 'mocha', bark: 'hint', text: nudgeLine, tick: now.tick }], now.tick));
+  }, [def, session, nudgeLine]);
+  const scriptedHand = scripted?.kind === 'hand' ? { level: 2 as const, key: scripted.key, stop: scripted.stop } : scripted?.kind === 'nudge' ? { level: 0 as const, key: scripted.key } : null;
   // What the page shows: a fixture's own flags, else the ladder's hint, else a tutorial's hand
   const hintShow = affordance?.hint ?? hintShown.show ?? scriptedHand ?? (tutorial.baby ? { level: 2 as const, key: 'baby:baby' } : null);
-  const mochaCue = affordance?.mocha ?? hintShown.mocha;
+  const mochaCue = affordance?.mocha ?? hintShown.mocha ?? (hintShown.show === null && scripted?.kind === 'nudge' ? scripted.mocha : null);
   const bubble = affordance?.bubble ?? scripted?.kind === 'bubble';
   const pageAffordance = useMemo(
     () => ({ ...affordance, wiggle: idle.wiggle, hint: hintShow, mocha: mochaCue, bubble }),
@@ -666,7 +709,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       data-sprites={spritesReady && artReady ? 'ready' : 'loading'}
       data-hint-level={ladder.level}
       data-hint-source={ladder.answer?.source}
-      {...gestures.handlers}
+      {...pageHandlers}
     >
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
       <div style={block} aria-hidden="true" />

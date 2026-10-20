@@ -23,6 +23,8 @@ import { PAGES, pageById } from '../../pages';
 import { NO_GESTURE, targetsOf, type GestureFlags } from '../gestures';
 import { PageView } from '../PageView';
 import { handGesture, linkThread } from './hints';
+import { hintDisplay } from './ladder';
+import { nextHint } from '../../core/hint';
 import { lintAffordance, lintAffordanceData, lintMarkup, lintPresetArt, MIN_HIT_UNITS, REFERENCE_SCALE } from './lint';
 import { marigoldParts, wearsMarigold, type AffordanceFlags } from './look';
 import { WIGGLE_JITTER_MS, WIGGLE_MS, WIGGLE_PERIOD_MS, WiggleScheduler } from './wiggle';
@@ -189,8 +191,27 @@ describe('affordance lint', () => {
       expect(r.errors[0].message).toMatch(/ΔE \d+\.\d from the reserved marigold/);
     }
     // … but the same paint inside a marked affordance is fine
-    const marked = html.replace('data-layer="backdrop">', 'data-layer="backdrop"><g data-affordance="perch"><rect fill="#F7B731"/></g>');
+    const marked = html.replace('data-layer="backdrop">', 'data-layer="backdrop"><g data-affordance="link"><rect fill="#F7B731"/></g>');
     expect(lintAffordance(c1p2, marked).errors).toEqual([]);
+  });
+
+  test.each(PAGES.map((def) => [def.id, def] as const))('%s: perch paws and the L1 halo are drawn over the standees and bubbles (A08, #183)', (_, def) => {
+    for (const state of solutionStates(def)) {
+      const hint = hintDisplay(def, nextHint(def, state), 1).show;
+      const r = lintAffordance(def, render(def, state, { affordance: { hint } }));
+      expect(r.errors.filter((e) => e.code === 'A08-mark-under').map((e) => e.message)).toEqual([]);
+    }
+  });
+
+  test('negative fixture: a perch paw drawn under a standee or a bubble is an error (A08)', () => {
+    const html = render(c1p2, initialState(c1p2));
+    expect(html).toContain('data-affordance="perch"');
+    // The paws moved back under the actors, where they were before #183
+    const paws = /<g data-marks="">.*?<\/g><\/g><\/g>/.exec(html);
+    expect(paws).not.toBeNull();
+    const under = html.replace(paws![0], '').replace('<g data-layer="parts-near">', `<g data-layer="parts-near">${paws![0]}`);
+    expect(lintAffordance(c1p2, under).errors.map((e) => e.code)).toContain('A08-mark-under');
+    expect(lintAffordance(c1p2, html).errors).toEqual([]);
   });
 
   test('negative fixture: a prop painted marigold is a decoration, not a touchable', () => {

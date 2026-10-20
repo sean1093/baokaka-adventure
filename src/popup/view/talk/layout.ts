@@ -19,8 +19,8 @@ import {
 /**
  * Lays out everything said on the page at once (#98): the thought bubble first (the main teaching
  * device, GDD § 2.2.6), then the barks, the narration strip and the subtitle bubbles, each placed
- * by `pickBox` so it never covers Baokaka or the goal, and avoids Mocha and the bubbles placed
- * before it. Page units at the tick's end positions; the view moves a speaker's bubbles with him
+ * by `pickBox` so it never covers Baokaka or the goal, and avoids Mocha, his perch paws, the
+ * hinted target and the bubbles placed before it. Page units at the tick's end positions; the view moves a speaker's bubbles with him
  * between ticks. Every size is multiplied by `k` (`talkScale`) so the text stays ≥ 20 screen px.
  */
 
@@ -49,6 +49,11 @@ export interface TalkScene {
    * where they can (a soft avoid; the thought bubble and barks let taps through).
    */
   readonly touch?: readonly Box[];
+  /**
+   * Mocha's perch paws and the hinted target (#183): every bubble keeps off these where it can (a
+   * soft avoid); the paws are drawn over the thought bubble and the barks anyway.
+   */
+  readonly marks?: readonly Box[];
 }
 
 export interface PlacedThought {
@@ -148,6 +153,7 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
   if (goal) hard.push(goal);
   const soft: Box[] = [];
   if (mocha) soft.push(mocha.box);
+  soft.push(...(scene.marks ?? []));
 
   // 1. The thought bubble, over his head
   let thought: PlacedThought | null = null;
@@ -200,7 +206,9 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
     const own = rides === 'baby' ? [] : rides === 'mocha' && mocha ? [mocha.box] : [];
     let candidates: Box[];
     if (from === null) candidates = voiceCandidates(voiceTop, size);
-    else if (anchor === 'speaker') candidates = belowLeft(from, size);
+    // 廣播姊姊 under her loudspeaker; then anywhere down the page's open middle, so her lines never
+    // have to sit on a strap or a perch paw (#183: 1-1's intro covered them)
+    else if (anchor === 'speaker') candidates = [...belowLeft(from, size), ...voiceCandidates(voiceTop, size)];
     else {
       const s = from[0] > PAGE_W / 2 ? -1 : 1;
       candidates = [...subtitleCandidates(from, size, s), ...belowLeft(from, size), ...voiceCandidates(voiceTop, size)];

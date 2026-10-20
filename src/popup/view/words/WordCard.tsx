@@ -2,6 +2,7 @@ import { useMemo, useRef, type MouseEvent } from 'react';
 import { POPUP as C, withAlpha } from '../../../art/palette';
 import { UI } from '../../content';
 import { LEARN_BEATS, type LearnKey } from '../../content/words';
+import { TapMark } from '../hud/TapMark';
 import { ArtG, r2 } from '../parts/common';
 import { wordSeal } from './icons';
 import './words.css';
@@ -10,7 +11,8 @@ import './words.css';
  * The word card (GDD § 5.4; popup art bible § 7; #99): the end of a learn beat — a cream index card
  * taped to the page with two washi strips, the word's seal stamp, the word big in red serif and its
  * short effect (「嗶！：閘門開開」 as § 5.4 prints it). It drops in and swings to rest (a fade under
- * reduced motion). The world waits while it is up; a tap anywhere puts it away (`onDone`).
+ * reduced motion). The world waits while it is up; a tap anywhere puts it away (`onDone`): its
+ * corner's bobbing ▼ (`TapMark`, #183) says so.
  *
  * Screen px, centred over the page; every glyph ≥ 20 px (R5), ink and seal ink on cream (≥ 7:1).
  */
@@ -94,6 +96,7 @@ export function WordCard({ learn, vw, cy, reduced, onDone }: WordCardProps) {
                 </text>
               </>
             )}
+            <TapMark x={CARD_W - 30} y={CARD_H - 30} size={28} delay={reduced ? 0 : 700} />
           </g>
         </svg>
       </button>

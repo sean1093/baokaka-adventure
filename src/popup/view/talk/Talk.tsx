@@ -8,7 +8,7 @@ import type { Pt } from '../geometry';
 import { ArtG, r2 } from '../parts/common';
 import { barkCard, cloudCard, labelTab, paHorn, speechCard, springEnd, stripCard, talkSpring } from './art';
 import { LABEL_H, LABEL_RISE, type PlacedBark, type PlacedStrip, type PlacedSub, type PlacedThought } from './layout';
-import { TALK_FONT, textEm } from './place';
+import { TALK_BOUNDS, TALK_FONT, textEm, type Box } from './place';
 import './talk.css';
 
 /**
@@ -50,6 +50,16 @@ export function bubbleShow(def: PageDef, state: SimState): BubbleShow | null {
 export const showKey = (show: BubbleShow | null): string => (show === null ? '' : JSON.stringify(show));
 
 const SERIF = "'Noto Serif TC', serif";
+
+/** A rider's offset, cut so `box` moved by it stays inside the page's talk bounds (it may stay where it was placed). */
+export function rideWithin(box: Box, [dx, dy]: Pt, bounds: Box = TALK_BOUNDS): Pt {
+  const clamp = (d: number, lo: number, size: number, blo: number, bsize: number) => {
+    const min = Math.min(0, blo - lo);
+    const max = Math.max(0, blo + bsize - (lo + size));
+    return Math.max(min, Math.min(max, d));
+  };
+  return [clamp(dx, box.x, box.w, bounds.x, bounds.w), clamp(dy, box.y, box.h, bounds.y, bounds.h)];
+}
 
 export interface ThoughtProps {
   readonly ctx: KitCtx;
@@ -157,8 +167,9 @@ export function BarkBubble({ placed, offset, k, reduced }: { placed: PlacedBark;
   const f = TALK_FONT * k * (bark.size ?? 1);
   const baby = bark.who === 'baby';
   const [line, arrow] = bark.point ? pointerPath(box, bark.point).split('|') : [];
+  const within = rideWithin(box, offset);
   return (
-    <g data-bark={bark.who} data-bark-kind={bark.bark} data-anim="" transform={`translate(${r2(offset[0])} ${r2(offset[1])})`}>
+    <g data-bark={bark.who} data-bark-kind={bark.bark} data-anim="" transform={`translate(${r2(within[0])} ${r2(within[1])})`}>
       <g key={`${bark.who}:${bark.tick}:${bark.bark}`} className={reduced ? 'tb-bark-fade' : 'tb-bark'}>
         {line && (
           <g data-bark-point="" fill="none" stroke={C.chalk} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
@@ -219,7 +230,8 @@ export interface SubtitlesProps {
 /**
  * The beat on the page (GDD § 2.13): the narration strip at the top and up to three subtitle
  * bubbles, each on a spring from its speaker (§ 5.1). Tapping any of them advances; the tap never
- * reaches the page (no play input, no pause).
+ * reaches the page (no play input, no pause). In the game a tap anywhere else on the page does the
+ * same (`PagePlayer`, #183); a still with no `onAdvance` only draws them.
  */
 export function Subtitles({ strip, subs, horn, k, ride, serial, reduced, onAdvance }: SubtitlesProps) {
   const tap = (e: ReactPointerEvent<SVGGElement>) => {
@@ -236,7 +248,9 @@ export function Subtitles({ strip, subs, horn, k, ride, serial, reduced, onAdvan
       )}
       {horn && <HornArt at={horn} />}
       {subs.map((sub, i) => {
-        const off = sub.rides === null ? ([0, 0] as Pt) : ride[sub.rides];
+        // A bubble rides its speaker between ticks, but never off the page (#183: a long trip held
+        // mid-way by the photo moment left one under the HUD)
+        const off = sub.rides === null ? ([0, 0] as Pt) : rideWithin(sub.box, ride[sub.rides]);
         return (
           <g key={`${serial}:${i}`} data-subtitle={sub.line.who} data-anim={sub.rides ? '' : undefined} transform={sub.rides ? `translate(${r2(off[0])} ${r2(off[1])})` : undefined}>
             <g className={reduced ? 'tb-fade-in' : 'tb-sub'} style={{ animationDelay: `${(i + (strip ? 1 : 0)) * 180}ms` }}>

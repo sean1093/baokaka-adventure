@@ -6,8 +6,8 @@ import type { LineKey, PageDef, SimState } from '../core/types';
 /**
  * The subtitle queue (GDD § 2.13, § 5.1): dialogue plays in short bubbles over the page, never a
  * box covering play. Lines arrive in groups (a page's intro, a line its event fired); each group is
- * cut into **beats** of at most three lines, shown together; a tap on a bubble or the narration
- * strip advances to the next beat, and the last tap clears the page. Pure: `PagePlayer` holds a
+ * cut into **beats** of at most three lines, shown together; a tap anywhere on the page (#183)
+ * advances to the next beat, and the last tap clears the page. Pure: `PagePlayer` holds a
  * `TalkQueue` in state and `PageView` draws the current beat.
  */
 

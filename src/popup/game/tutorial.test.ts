@@ -11,8 +11,19 @@ const page = (id: string): PageDef => pageById(id)!;
 const at = (def: PageDef, steps: readonly SolutionStep[]): SimState => replay(def, steps).state;
 
 describe('scripted tutorials', () => {
-  test('0-1, 0-2 and 0-3 have one; 0-4 (the hint ladder\'s first real use) and chapter 1 do not', () => {
-    expect(PAGES.filter(hasTutorial).map((p) => p.id)).toEqual(['c0p1', 'c0p2', 'c0p3']);
+  test('0-1, 0-2, 0-3 and 1-5 have one; 0-4 (the hint ladder\'s first real use) and the rest of chapter 1 do not', () => {
+    expect(PAGES.filter(hasTutorial).map((p) => p.id)).toEqual(['c0p1', 'c0p2', 'c0p3', 'c1p5']);
+  });
+
+  test('1-5 (#183): once the car is down with him in it, Mocha nudges toward tapping him; gone once the car goes up', () => {
+    const def = page('c1p5');
+    expect(tutorialCue(def, at(def, [{ wait: 3 }]))).toBeNull(); // reaching at the B1 door, the car upstairs
+    const down = at(def, [{ mocha: 'carPanel' }, { wait: 'settle' }]);
+    expect(down.parts.elevator).toBe('B1');
+    expect(down.baby).toMatchObject({ node: 'E', mode: 'reaching' });
+    expect(tutorialCue(def, down)).toEqual({ show: { kind: 'nudge', key: 'mocha:mocha', mocha: 'wait', line: '再按一次？' }, afterMs: TUTORIAL_DELAY_MS });
+    expect(targetsOf(def, down).some((t) => t.key === 'mocha:mocha')).toBe(true);
+    expect(tutorialCue(def, step(def, down, { t: 'pet' }).state)).toBeNull();
   });
 
   test('0-1: the ghost hand on the rail tab once he reaches with the rail up, after 4 s; gone once it is down', () => {

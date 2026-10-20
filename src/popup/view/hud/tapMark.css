@@ -1,0 +1,11 @@
+/* The tap-to-go-on mark (#183): fades in after the card's entrance, then bobs 3 px (0.6 Hz). Off under reduced motion and in stills. */
+.tm-bob { animation: tm-in 300ms ease-out both, tm-bob 1600ms ease-in-out 300ms infinite; }
+@keyframes tm-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes tm-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tm-bob { animation: tm-in 300ms ease-out both; }
+}
+.reduce-motion .tm-bob { animation: tm-in 300ms ease-out both; }

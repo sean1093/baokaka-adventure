@@ -159,6 +159,11 @@
 }
 
 /* The lines under the card */
+.cb-tap {
+  align-self: flex-end;
+  margin: -6px 14px 0 0;
+}
+
 .cb-talk {
   display: flex;
   flex-direction: column;
