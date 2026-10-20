@@ -883,3 +883,22 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 - The `title` visual target is now the cover on first launch (`#/`, waiting for `[data-screen-ready]`).
 - Tailwind still scans `src/quest/` (the art lab needs its classes in dev), so the CSS keeps the RPG's utilities until #111.
 
+
+### D-73 · 2026-10-20 · The M1 playtest kit and the on-device log (#110)
+
+**Context.** #110 asks for a playtest kit (a run guide, an observation sheet, a metrics log at `#/popup?debug=metrics`) and rules out analytics of any kind. GDD § 8 says the M1 gates are observed, not instrumented. The issue left open where the log lives, what "time per page" means, and how the kit reaches the family (who read 繁體中文).
+
+**Decision.**
+1. **The log is on in every build, behind the parameter.** The playtest runs on the live site (#109), so `debug=metrics` works in production: `#/?debug=metrics` (and `#/popup?debug=metrics`). Without the parameter nothing is recorded and no code path writes. With it, the shell appends events to `popup.playtest.v1` in `localStorage` (capped at 6000) and shows a small chip at the top. The chip has a ★ to mark a moment and opens a panel to copy, save (`.md`) or clear the report. Nothing leaves the phone.
+2. **Active time, not wall time.** A page's time is the time it is live: open, not held by a layer (the 選單 / 目錄 / 設定, the log panel), not in a turn or the chapter card, not behind the sticker card or album, and the tab visible. Reading the page's own lines counts; the card's don't. An attempt runs from the open to the solve; 重來 continues it, and opening another page ends it unsolved.
+3. **What is recorded** (no names, no content typed by anyone): page opens (and whether the page was already solved, a replay), live on/off, the player's own moves, taps on locked parts, taps on Baokaka, hints shown with their level (0 = the auto nudge), 重來, mid-page stickers, the solve with its move count, and the observer's ★ marks.
+4. **The report reads only what the device can measure.** It shows 0-1's time and whether it was solved with no 提示 / 重來, the prologue's total and its 提示 presses, chapter 1 pages that reached level 3, chapter 1's median, "stuck" stretches (over 2 min with no move and no 提示 press, on a page with no 提示) and replays. The observed gates (unaided, laughs, predictions, the child's rule) stay on the sheet.
+5. **The kit** is `docs/playtest/`. The observer's guide and the sheet are in English, as the repo's docs are. The page the testers read (`guide-zh.md`) and the owner's summary (`owner-guide.md`) are in 繁體中文. `ai-playtest.md` records an automated first-time run on the production build; it lists things to watch, not results. `m1-results.md` is a template until the session.
+6. **No fixture or visual baseline for the chip.** It is an observer's tool, its text is a live clock, and it never shows without the parameter. It is covered by `playtest.test.ts` and the kit's screenshots.
+
+**Why.** An in-memory, opt-in log answers "how long, how many hints" exactly. That spares the observer a stopwatch, so they can watch faces. Keeping it on the device and off by default stays inside the issue's "no analytics" rule.
+
+**Consequences.**
+- #110 stays open until the session: `m1-results.md` is filled, every failed gate gets an issue on the roadmap, and the owner's go/no-go is recorded here as a new decision. That unblocks #111, #112 and #113.
+- The chip is 22 px tall (below R6's 48 px): it is not part of the game's UI. It sits flush with the top so it never covers the HUD's title.
+- New shell layers that hold the page should also count as "not live" (`live` in `GameShell`).
