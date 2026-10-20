@@ -1224,14 +1224,16 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 
 #### Chapter 4 「霓虹燈睡著了」 (西門町, 01:50) · treasure 麥克風 · word 哇！
 
+**Specified in full** (the § 4.3 format, node/edge sketches, the solver's numbers): [`docs/design/pages/c4.md`](pages/c4.md) (#118). The rows below are the outline, updated where the full spec changed it.
+
 | Page | Title | Key mechanic → aha | 淘氣 | Diff |
 |---|---|---|---|---|
-| 4-1 | 板南線往西門 | A shiny ad screen in the car is a decoy. 不要！ plus a Mocha lure to reach the door, then 嗶！. | Say 不要！ three times in a row (dramatic head-shake) | 2 |
-| 4-2 | 紅樓 | The octagonal 紅樓 is an 8-step **wheel** with three doorways. Align two doors at once. Mocha squeezes through the roof lantern window to push a lantern onto a button. | Spin 紅樓 a full turn with Mocha on the roof | 3 |
-| 4-3 | 霓虹燈睡著了 | **Learn 哇！**: a dark alley with nothing visible, so he cries, and the cry flickers a neon sign: 「哇！」. Then 哇！ wakes three signs in turn, a **trail of lights** leading him around the corner. → *Make your own leash.* | Light every sign at once: Mocha's shadow becomes enormous | 2 |
-| 4-4 | 夾娃娃機 | Claw machine: an X **tab** plus a drop **button**. Mocha sits on the coin slot to start it. The claw (a lift-carrier) picks up **Baokaka** and drops him by the bead. Running joke: the claw only works for 寶咖咖. | Grab Mocha with the claw (「……」) | 3 |
-| 4-5 | 街頭藝人 | 哇！ turns on the boombox (a light attractor). The dancers freeze into an arch, opening a path, but now he wants to watch forever: 不要！ the music, then lure him through the arch with Mocha. → *Create a desire, then refuse it.* | Get the dancers to pose with Mocha in the middle | 4 |
-| 4-6 | 走音天王 (spread) | Karaoke stage: 哇！ the stage lights, and the karaoke king sings (off-key), raising the stage **lift** that holds the 麥克風. Shutters (flaps) and a decoy disco ball. | Make him sing three songs (the lights cycle) | 4 |
+| 4-1 | 板南線往西門 | A shiny ad screen in the car is a decoy. Mocha onto the header over the doors, 不要！ the screen (he crawls to the doors, reaching for Mocha), then 嗶！. | Keep saying 不要！ — to the screen, then to Mocha — until he bursts into tears (a dramatic tantrum) | 2 |
+| 4-2 | 紅樓 | The octagonal 紅樓 is an 8-step **wheel** with three doorways and a roof lantern window. Turn it so the window faces the street lamp: Mocha jumps in, squeezes along the roof and knocks a lantern onto the shop shutter's button. Turn it again until two doorways line up, and he crawls straight through. | Spin 紅樓 a full turn with Mocha on the roof | 3 |
+| 4-3 | 霓虹燈睡著了 | **Learn 哇！**: a dark alley with nothing visible, so he cries, and the cry flickers a neon sign: 「哇！」. Then 哇！ wakes the next sign down the alley (and the last one sleeps) twice, a **trail of lights** leading him around the corner. → *Make your own leash.* | Hide Mocha behind a sign, then light it: Mocha's shadow becomes enormous | 2 |
+| 4-4 | 夾娃娃機 | Claw machine: the claw's cart **tab** plus a drop **lever** (a second tab). Mocha sits on the coin slot to start it (the 店員小哥 cameo). The claw comes down, he crawls in, and it picks up **Baokaka** and carries him home over the chute, by the bead. Running joke: the claw only works for 寶咖咖. | Grab Mocha with the claw (「……」) | 3 |
+| 4-5 | 街頭藝人 | Bring him near the speaker stack with Mocha; 哇！ turns on the boombox. The dancers freeze into an arch, opening a path, but the flashing boombox is now a decoy he wants forever: Mocha hops over the arch, 不要！ the music, and he follows Mocha through. → *Create a desire, then refuse it.* | Get the dancers to pose with Mocha in the middle | 4 |
+| 4-6 | 走音天王 (spread) | Karaoke stage behind a shop shutter (a flap): rolling it up reveals a decoy disco ball. Mocha onto the amp and 不要！ the disco ball, and he waits at the stage front; 哇！ the stage lights, and the karaoke king sings (off-key), raising the stage **lift** that holds the 麥克風. | Make him sing three songs (the lights come on three times) | 4 |
 
 #### Chapter 5 「夜市抱抱」 (士林夜市, 02:20) · treasure 蔥 · word 抱抱
 
@@ -1345,7 +1347,7 @@ Unlocked by collecting all 65 土地公 stickers. It's a gentle sunrise page on 
 
 The chapter card shows: 第N章｜title｜HH:MM｜下一站 (≤ 8 chars). The lines below play over the card or the first page. They are all skippable with a tap.
 
-**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines.
+**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines. #118 adds chapter 4's (`c4.intro.N`, `c4p4.clerk.N`, `c4p4.claw.N`, `c4p6.king.N`, `c4p6.end.1`); its card plays all three intro lines.
 
 **P · 序章「度晬前一晚」 00:00** (card, then 0-1)
 
@@ -1432,6 +1434,7 @@ nar：紅樓旁的招牌，一個一個暗了。
 mocha：「連霓虹燈都想睡覺。」
 ```
 
+- **4-4 店員小哥** (Mocha sits on his claw machine's coin slot; #118): `clerk：「叮咚～歡迎光臨！」`, `mocha：「……夾娃娃機也是你們的？」`, `clerk：「我們是連鎖的。」`; when the claw grabs him, `mocha：「這台機器，只夾得起寶咖咖。」`; when it drops on Mocha (the 淘氣), `mocha：「……」`
 - **4-6 走音天王:** `npc(走音天王)：「這首歌，獻給一歲的你！」`, `mocha：「……耳朵。我的耳朵。」`
 - **4-6 end:** `nar：找到了！抓周寶物——麥克風。`
 
