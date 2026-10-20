@@ -175,7 +175,15 @@ export interface PageChrome {
   readonly autoHintMs?: number | null;
   readonly onRetry?: () => void;
   readonly onMenu?: () => void;
+  /**
+   * The playtest log (#110, `game/playtest.ts`; only with `debug=metrics`): the player's own moves,
+   * taps on a locked part, taps on him, and each hint shown with its level (0 is the auto nudge)
+   */
+  readonly onTrace?: (trace: PageTrace) => void;
 }
+
+/** What the page tells the playtest log (#110) */
+export type PageTrace = { readonly t: 'move' | 'nope' | 'ring' } | { readonly t: 'hint'; readonly level: HintLevel };
 
 export interface PagePlayerProps {
   readonly def: PageDef;
@@ -487,11 +495,14 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   }, [def, session, hintShown.line, hintSerial]);
   // 提示 or the nudge shows a hint: the soft bell with its shimmer (§ 2.12)
   const hintRung = useRef(ladder.serial);
+  const traceRef = useRef(pageChrome?.onTrace);
+  traceRef.current = pageChrome?.onTrace;
   useEffect(() => {
     if (ladder.serial === hintRung.current) return;
     hintRung.current = ladder.serial;
     soundRef.current([{ cue: 'hint' }]);
-  }, [ladder.serial]);
+    traceRef.current?.({ t: 'hint', level: ladder.level });
+  }, [ladder.serial, ladder.level]);
   const onHint = useCallback(() => {
     pressHint();
     pageChrome?.onHint?.();
@@ -500,6 +511,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   const say = useCallback(
     (word: Word) => {
       acted();
+      traceRef.current?.({ t: 'move' });
       session.input({ t: 'say', word });
       setRingOpen(false);
     },
@@ -512,7 +524,11 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   const onEvent = useMemo(
     () => (event: GestureEvent) => {
       // The player's own move (a part, a perch, Mocha; a drag landing on a stop) puts the hint ladder back to rest
-      if ((event.type === 'tap' && (event.target.kind === 'part' || event.target.kind === 'perch' || event.target.kind === 'mocha')) || event.type === 'snap') acted();
+      if ((event.type === 'tap' && (event.target.kind === 'part' || event.target.kind === 'perch' || event.target.kind === 'mocha')) || event.type === 'snap') {
+        acted();
+        traceRef.current?.({ t: 'move' });
+      }
+      if (event.type === 'nope' || event.type === 'wordRing') traceRef.current?.({ t: event.type === 'nope' ? 'nope' : 'ring' });
       if (event.type === 'snap') pulse('snap', vibrateRef.current);
       // Its sound now, on release (§ 2.12); the tick that applies it stays quiet for that part
       if (event.type === 'snap') movedRef.current.set(event.part, performance.now());

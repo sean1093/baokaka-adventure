@@ -708,3 +708,35 @@ Format:
   - #110: the playtest runs on the live site; watch whether the farewell note is noticed by old players.
   - #111: delete `src/quest/`, the art lab and its baselines, and the RPG utilities Tailwind still generates.
   - A pop-up-style "turn the phone upright" notice, if the playtest shows landscape use (the RPG's guard was not carried over).
+
+### 2026-10-20 · Staff engineer · #110 Playtest kit, the on-device log and an automated first-time run
+- **Kit (`docs/playtest/`).**
+  - `README.md` is the observer's guide: who plays, the phone and sound set-up (an iPhone's silent switch mutes web audio), a fresh save per tester (設定 → 「重新開始」), the one sentence said at hand-over, when to step in (2 min / 4 min), consent and roles-only notes, what to do afterwards, and the log's columns.
+  - Its § 6 collects every watch-point the slice's engineers left on #110 and in this log: sound, the iOS unlock, 「要！要！」, the cry and loops (#105); the reading load at the start (#102); the sticker card (#101); the 4 s tutorial delay (#106); the word card (#99); 1-1's sway tab, 1-4's turn, 1-5's Mocha tap and 1-6's pigeon (#107); the printed travellers and the paper backpacker (#108); the farewell note and landscape use (#109).
+  - `sheet.md` is the per-tester observation sheet: time, first touch, hints and help per page; the 1-2 and 1-4 prediction questions and the child's rule question word for word; a tick list per watch-point; the device log; the § 8 gates.
+  - `guide-zh.md` is the testers' one page in 繁體中文. `owner-guide.md` is the owner's summary: how to play, what to watch, how to report.
+  - `m1-results.md` is the results template (go/no-go, follow-up issues).
+- **The log (`#/?debug=metrics`, D-73).**
+  - `game/playtest.ts` holds the event log (`popup.playtest.v1`), the fold into attempts (active time while the page is live, 重來 continuing the attempt, the longest still stretch), the § 8 readings and the Markdown report.
+  - `GameShell` records opens, live on/off (layers, turns, the card, the album, the panel, a hidden tab), 重來, stickers and the solve.
+  - `PagePlayer`'s new `chrome.onTrace` reports the player's moves, nope taps, taps on him and each hint shown with its level.
+  - `view/hud/PlaytestPanel.tsx` is the chip (page + live time, ★) and the panel (copy, save `.md`, clear twice).
+  - Off without the parameter. Nothing is sent.
+- **AI playtest (`docs/playtest/ai-playtest.md`).** The whole slice played on the production build at 390×844 from a fresh save, through an interactive Playwright driver.
+  - No-hint pass: all 10 pages, the photo, the album and the 目錄. Hints were used on 1-4 (L1, L2) and 1-5 (L1). There were no console errors.
+  - Hints-only pass: every page reached done by 提示 alone (3–8 presses).
+  - It found 12 friction points to watch, each with a screenshot in `docs/screenshots/110/`. The main ones:
+    - lines advance only on a tap on the line itself;
+    - perches are hidden under barks, bubbles or art (0-3's table, 1-1's rack, 1-3's counter);
+    - 0-4's curtain-first order trap;
+    - 1-1's intro bubbles cover the straps, and the third strap is decoration;
+    - after 1-5's lift goes down there is no cue, and a tap on an unreachable perch gives no feedback;
+    - a subtitle bubble is stranded under the HUD during 1-6's photo moment.
+- **QA.** `npm test` (2459, new `playtest.test.ts`) and `npm run build` pass, and so do `npm run visual` (every target 0 px; the chip only shows with the parameter), `check:play` (every scenario, run in three chunks) and `check:prod`.
+  - `check:ui --popup` failed once in the full run, on `chapter-end-c1`: 「寶咖咖」 and 「好吃！」 measured 18.7 px. That fixture passes alone, both on this branch and on `main`, so it looks like a mid-animation capture. Watch it.
+  - The full `check:ui` (RPG plus popup) runs longer than 10 minutes here, so run `--popup` on its own.
+- **Decision.** D-73. GDD § 8 and the handbook § 5 have notes.
+- **Not done (needs people).** The dry run, the family session, `m1-results.md`, the follow-up issues and the owner's sign-off. #110 stays open for them.
+- **Follow-ups.**
+  - After the session: an issue per failed gate.
+  - The AI run's friction list is input for those decisions.

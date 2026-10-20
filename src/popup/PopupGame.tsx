@@ -4,6 +4,7 @@ import { initialState, replay, step } from './core';
 import type { Input, PageDef, SimState } from './core/types';
 import { TICK_MS, type TickSpeed } from './game/session';
 import { pageById } from './pages';
+import { PlaytestLog } from './game/playtest';
 import { PagePlayer } from './view/PagePlayer';
 import { GameShell } from './view/screens/GameShell';
 
@@ -19,6 +20,9 @@ import { GameShell } from './view/screens/GameShell';
  * `paused=1` (hold the clock), `speed=slow|normal|fast`, `demo=1` (after three idle ticks, play
  * the page's authored solution through the session) and `tutorial=1` (the prologue's scripted
  * tutorial runs, as on a first play in the shell, #106). The page is playable by touch and mouse (#90).
+ *
+ * Playtest (#110, every build): `#/?debug=metrics` keeps the playtest log on this device
+ * (`game/playtest.ts`) and shows its chip: time per page, hints per level, 重來, copyable as text.
  */
 
 const subscribe = (onChange: () => void) => {
@@ -55,6 +59,8 @@ export default function PopupGame({ farewell = false }: PopupGameProps) {
   const speed: TickSpeed = speedParam !== null && speedParam in TICK_MS ? (speedParam as TickSpeed) : 'normal';
   const demo = params.get('demo') === '1';
   const script = useMemo(() => (def && demo && ticks === 0 ? demoScript(def) : undefined), [def, demo, ticks]);
+  const metrics = params.get('debug') === 'metrics';
+  const playtest = useMemo(() => (metrics ? new PlaytestLog() : null), [metrics]);
   if (def) return <PagePlayer key={`${def.id}-${ticks}-${demo}`} def={def} from={from} speed={speed} paused={params.get('paused') === '1'} script={script} tutorials={params.get('tutorial') === '1'} />;
-  return <GameShell farewell={farewell} />;
+  return <GameShell farewell={farewell} playtest={playtest} />;
 }

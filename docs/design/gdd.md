@@ -1772,6 +1772,8 @@ Exit criterion: a playtest with **at least 1 grandparent, 1 child aged 4–8, an
 - 阿嬤 asks to play again the next day.
 - Someone shows the album to a relative.
 
+**For engineers.** #110 built the playtest kit in `docs/playtest/`: the run guide, the observation sheet (every gate above, the prediction and rule questions, the build's watch-points), a one-page guide in 繁體中文 for the family testers, an owner's summary, the automated first-time run, and `m1-results.md` for the outcome. The gates stay observed, as above; `#/?debug=metrics` adds an on-device log (time per page, hints per level, 重來; copy as text, never sent anywhere; D-73) so the observer can check numbers afterwards.
+
 ---
 
 ## 9. Glossary
