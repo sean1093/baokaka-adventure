@@ -58,7 +58,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [108](https://github.com/sean1093/baokaka-adventure/issues/108) | Vertical-slice art: prologue + 台北車站 (all 10 pages), cover and ch0–1 creatures/cast in the pop-up style | art, content, m1 | #95, #96, #140 | done (#177, #178, #179) |
 | [109](https://github.com/sean1093/baokaka-adventure/issues/109) | Routing switch: #/ boots into 翻翻台北; the RPG stays in the repo unrouted; deployment checks | chore, m1 | #107, #108, #105, #104, #92 | done (#180) |
 | [110](https://github.com/sean1093/baokaka-adventure/issues/110) | Playtest kit and the M1 playtest: checklist, observation sheet, metrics, owner sign-off | docs, qa, m1 | #109 | blocked (kit merged in #182; awaiting the owner's playtest and sign-off) |
-| [183](https://github.com/sean1093/baokaka-adventure/issues/183) | M1 polish: fix AI-playtest friction before the family playtest | m1, content, ui | #110's kit (#182) | in progress |
+| [183](https://github.com/sean1093/baokaka-adventure/issues/183) | M1 polish: fix AI-playtest friction before the family playtest | m1, content, ui | #110's kit (#182) | done (#184) |
 | [111](https://github.com/sean1093/baokaka-adventure/issues/111) | Delete the old RPG after M1 sign-off: src/quest, RPG-only art, art lab sections, sim script and baselines | chore, m1 | #110 | todo |
 | **M2 · Chapters 2–4** | | | | |
 | [112](https://github.com/sean1093/baokaka-adventure/issues/112) | M2 engine: light attractors with nodeBy, creatures holding items (heldBy/drop), decoys, and words 掰掰 / 不要！ / 哇！ | engine, ui, m2 | #110 | todo |
