@@ -1,11 +1,11 @@
-import { POPUP as C } from '../../../art/palette';
+import { POPUP as C, POPUP_CAMPUS as K } from '../../../art/palette';
 import { ref, softEllipse, sparkle, type KitCtx } from '../../art';
 import { albumChapter } from '../../content/album';
 
 /**
  * The chapter treasures as the spread and the photo draw them (GDD § 2.9, § 4.2; #103), flat SVG
- * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1) and 畫筆 (chapter 2,
- * #115) are drawn; the other chapters' treasures are a foil token with the treasure's first
+ * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1), 畫筆 (chapter 2,
+ * #115) and 書 (chapter 3, #117) are drawn; the other chapters' treasures are a foil token with the treasure's first
  * character until their chapters' art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
  * never marigold (reserved for touchables). The caller's defs must hold `foil`.
  */
@@ -47,6 +47,27 @@ function paintbrush(ctx: KitCtx): string {
     + `</g>`;
 }
 
+/**
+ * 書 (chapter 3, #117): a small clothbound book, closed, laid at a slant: a lake-blue cover with
+ * foil corners and a foil 「書」 on it, the cream page block showing, a red ribbon bookmark.
+ */
+function book(ctx: KitCtx): string {
+  return `<g transform="rotate(-12)">`
+    + `<ellipse cx="2" cy="15" rx="20" ry="3.4" fill="${C.shadow}" opacity=".28"/>`
+    // The page block under the cover, then the back board's edge
+    + `<path d="M-17 -10H17V12H-17Z" fill="${K.pageEdge}"/><path d="M-15 -4H15M-15 1H15M-15 6H15" stroke="${K.pageEdgeShade}" stroke-width=".7"/>`
+    + `<path d="M-19 10H19V14H-19Z" fill="${K.magpieDeep}"/>`
+    // The ribbon falling out of the pages
+    + `<path d="M6 10l2 9l2.4 -2.6l2.6 2.4l-1 -9z" fill="${K.bookRed}"/>`
+    // The front board: blue cloth, its spine band, foil corners, the foil title
+    + `<path d="M-19 -14H17Q19 -14 19 -12V8H-19Z" fill="${K.magpie}"/><path d="M-19 -14H-12V8H-19Z" fill="${K.magpieDeep}"/>`
+    + `<path d="M19 -14V-8L13 -14ZM19 8V2L13 8Z" fill="${ref(ctx, 'foil')}"/><path d="M-12 -12V6" stroke="${ref(ctx, 'foil')}" stroke-width="1.2"/>`
+    + `<rect x="-4" y="-10" width="16" height="14" rx="1.5" fill="none" stroke="${ref(ctx, 'foil')}" stroke-width="1"/>`
+    + `<text data-art-text="" x="4" y="1.6" text-anchor="middle" font-family="'Noto Serif TC', serif" font-weight="900" font-size="10" fill="${C.goldLight}">書</text>`
+    + `<path d="M-18 -13.2H17" stroke="${C.cutRim}" stroke-width=".8" opacity=".5"/>`
+    + `</g>`;
+}
+
 /** A treasure not drawn yet: a foil token with its first character. */
 function token(ctx: KitCtx, name: string): string {
   return `<ellipse cx="1" cy="17" rx="15" ry="3" fill="${C.shadow}" opacity=".28"/>`
@@ -58,6 +79,7 @@ function token(ctx: KitCtx, name: string): string {
 export function treasureArt(ctx: KitCtx, chapter: number): string {
   if (chapter === 1) return drumstick(ctx);
   if (chapter === 2) return paintbrush(ctx);
+  if (chapter === 3) return book(ctx);
   return token(ctx, albumChapter(chapter).treasure);
 }
 

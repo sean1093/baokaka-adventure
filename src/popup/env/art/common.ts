@@ -240,3 +240,44 @@ export function bakedFlap(w: number, h: number, face: (ctx: KitCtx) => string, b
 export const kraftBack = (w: number, h: number, seed: number) => (ctx: KitCtx): string =>
   `<rect width="${w}" height="${h}" fill="${ref(ctx, 'kraft')}"/>` + paperFibres(0, 0, w, h, Math.round((w * h) / 120), C.kraftFiber, seed, 0.35);
 
+/** The fold of an open flap (`FlapView`: closed 1, open −0.35 about the hinge). */
+const OPEN_FOLD = -0.35;
+/**
+ * A pop-up flap (a `flap`, 翻; D-78): closed, its printed face (`face`; 2-6's patches of the painter's
+ * canvas), taped down, its marigold dog-ear the grip; open, the card folds up over its hinge
+ * (its kraft back shows) and the painted thing **pops up as real paper** (`pop`, drawn in page units).
+ * The view draws the open state folded (`scaleY −0.35` about the hinge), so the pop-up is drawn
+ * through the inverse of that fold: it stands where `pop` puts it, and grows out of the hinge line as
+ * the flap lifts. `origin` is the card's top-left on the page (the hit's corner + 4). Chapter 2's
+ * painted flaps (#115) and chapter 3's book pages (#117) use it.
+ */
+export function popFlap(hit: readonly [number, number, number, number], face: (w: number, h: number) => string, pop: (ctx: KitCtx) => string, popBox: { x: number; y: number; w: number; h: number }): PartSource {
+  const [hx, hy, hw, hh] = hit;
+  const { w, h } = flapSize(hw, hh);
+  const [ox, oy] = [hx + 4, hy + 4];
+  const card = `M0 0H${w}V${h - EAR}L${w - EAR} ${h}H0Z`;
+  const ear = `M${w} ${h - EAR}L${w - EAR} ${h}L${f1(w - EAR * 0.35)} ${f1(h + EAR * 0.42)}Z`;
+  // The page-unit box of the pop-up, in the flap's local space (through the inverse fold)
+  const ly = (y: number) => (y - oy) / OPEN_FOLD;
+  const yA = ly(popBox.y), yB = ly(popBox.y + popBox.h);
+  const top = Math.min(-4, yA, yB), bottom = Math.max(h + 16, yA, yB);
+  const left = Math.min(-4, popBox.x - ox), right = Math.max(w + 12, popBox.x + popBox.w - ox);
+  return {
+    preset: 'flap',
+    states: ['closed', 'open'],
+    hinge: 0,
+    box: { x: f1(left), y: f1(top), w: f1(right - left), h: f1(bottom - top) },
+    draw(ctx, state) {
+      const clip = ctx.id(`popClip${state}`);
+      const open = state === 'open';
+      const body = open ? kraftBack(w, h, Math.round(hx + hy))(ctx) : face(w, h);
+      const cardArt = `<clipPath id="${clip}"><path d="${card}"/></clipPath>`
+        + depth(ctx, 3, `<g clip-path="url(#${clip})">${body}</g><path d="M2 1.2H${w - 2}" stroke="${C.cutRim}" stroke-width="1" opacity=".45"/>`, `<path d="${card}"/>`)
+        + depth(ctx, 4, `<path data-grip="ear" d="${ear}" fill="${ref(ctx, 'tabG')}"/><path d="M${w - EAR} ${h}L${f1(w - EAR * 0.35)} ${f1(h + EAR * 0.42)}" stroke="${C.marigoldEdge}" stroke-width="1" opacity=".6"/>`, `<path d="${ear}"/>`);
+      if (!open) return cardArt;
+      // Page units → the flap's local space: x − ox, (y − oy) / −0.35
+      const k = (n: number) => Math.round(n * 10000) / 10000;
+      return `<g transform="matrix(1 0 0 ${k(1 / OPEN_FOLD)} ${-ox} ${k(oy / -OPEN_FOLD)})">${pop(ctx)}</g>` + cardArt;
+    },
+  };
+}

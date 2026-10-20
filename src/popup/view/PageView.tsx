@@ -588,6 +588,9 @@ function PartBadge({ hit, kind }: { hit: Hit; kind: 'locked' | 'done' }) {
 
 type AttractorLook = 'pool' | 'held' | 'decoy' | 'decoyHeld';
 
+/** Where a held decoy sits on its holder's face, from the holder's feet: 3-6's glasses on 藍教授's eye (#117, `campus.ts`). */
+const HELD_DECOY_FACE = [-11, -31] as const;
+
 function AttractorItem({ ctx, id, kind, art, x, y, treasure, look, from }: { ctx: KitCtx; id: string; kind: PageDef['attractors'][number]['kind']; art?: string; x: number; y: number; treasure?: number; look?: AttractorLook; from?: Pt }) {
   // A spread's goal is the chapter treasure (GDD § 2.9, #103), drawn as itself in its cup of light
   const html = useMemo(
@@ -598,7 +601,7 @@ function AttractorItem({ ctx, id, kind, art, x, y, treasure, look, from }: { ctx
   // a held item is up in its creature's paws, a little smaller; a decoy lies where it is (the moon on
   // the water, the bell in its tower), or on its holder's face
   const at = look === 'pool' || look === 'decoy' ? `translate(${r2(x)} ${r2(y)})`
-    : look === 'decoyHeld' ? `translate(${r2(x + 8)} ${r2(y - 14)}) scale(0.8)`
+    : look === 'decoyHeld' ? `translate(${r2(x + HELD_DECOY_FACE[0])} ${r2(y + HELD_DECOY_FACE[1])}) scale(0.62)`
     : look === 'held' ? `translate(${r2(x + 9)} ${r2(y - 20)}) scale(0.72)` : `translate(${r2(x)} ${r2(y - 14)})`;
   return (
     <g data-attractor={id} transform={at}>

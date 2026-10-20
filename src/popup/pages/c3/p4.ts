@@ -38,8 +38,8 @@ export default definePage({
     // The bell-rope: pull it and the 傅鐘 rings
     { id: 'rope', preset: 'tab', states: ['up', 'down'], initial: 'up', input: 'drag-linear',
       track: { from: [108, 300], to: [108, 380] }, hit: { x: 80, y: 284, w: 56, h: 112 }, art: 'c3/bell-rope' },
-    // The garden gate's plate, pressed by his weight (2-2's trap-plate drawing until #117)
-    { id: 'plate', preset: 'button', hit: { x: 192, y: 470, w: 56, h: 56 }, art: 'c2/plate' },
+    // The garden gate's plate, pressed by his weight
+    { id: 'plate', preset: 'button', hit: { x: 192, y: 470, w: 56, h: 56 }, art: 'c3/plate' },
     // The garden gate: it opens on the plate's press and stays open
     { id: 'gate', preset: 'gate', hit: { x: 254, y: 386, w: 56, h: 110 },
       react: [{ on: { type: 'partEnter', id: 'plate', state: 'down' }, to: 'open' }], art: 'c3/garden-gate' },

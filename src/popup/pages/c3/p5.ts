@@ -24,7 +24,7 @@ const TOP_C: Record<string, [number, number]> = { w: [186, 268], e: [210, 268] }
  * only once it has rolled east), and roll A back west without it — aisle 1 opens, and he crawls in,
  * along the back and out to the bead. Roll D after Mocha has left C, and C rolls too: Mocha goes
  * back to C and D is rolled again. The 淘氣: shut Mocha in aisle 2's book cart between two shelves
- * (he squeezes out on top, unimpressed: art, #117).
+ * (he squeezes out on top, unimpressed: the `c3/squeeze` cut-out, #117).
  *
  * ```
  *   topB ─jump (B east)─ topC (Mocha, asleep)    cart (in aisle 2, while it is open)
@@ -88,5 +88,7 @@ export default definePage({
   mischief: { text: '把摩卡關在兩排書架中間', when: { type: 'partEnter', when: { all: [{ mochaAt: 'cart' }, { not: AISLE_2 }] } } },
   // Reading on the floor of aisle 1, seen when it opens
   tudigong: { x: 108, y: 400, visibleWhen: AISLE_1, hat: '藍色校工帽' },
+  // The 淘氣's art (#117): shut in, he squeezes out on top — books tumble off the shelves over aisle 2
+  cutouts: [{ art: 'c3/squeeze', x: 168, y: 300, visibleWhen: { all: [{ mochaAt: 'cart' }, { not: AISLE_2 }] } }],
   solution: [{ set: 'shelfD', to: 'e' }, { set: 'shelfA', to: 'e' }, { mocha: 'topB' }, { wait: 'settle' }, { set: 'shelfA', to: 'w' }, { wait: 'goal' }],
 });

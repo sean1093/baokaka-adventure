@@ -19,10 +19,11 @@ import { themeOf } from './placeholders';
  */
 
 /** What a page's ledges are made of. */
-export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'carBodyXinyi' | 'granite' | 'shopFloor' | 'balcony' | 'parkPath' | 'boardwalk' | 'stage';
+export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'carBodyXinyi' | 'granite' | 'shopFloor' | 'balcony' | 'parkPath' | 'boardwalk' | 'stage'
+  | 'carBodySongshan' | 'campusPath' | 'lakeside' | 'gallery' | 'libraryFloor' | 'desk' | 'bookPage';
 
 /** The near-corner foreground card. */
-export type ForegroundCard = 'plant' | 'blocks' | 'luggage' | 'shrub';
+export type ForegroundCard = 'plant' | 'blocks' | 'luggage' | 'shrub' | 'azalea';
 
 export interface StageDress {
   /** The ledges' material for every run, or per run by its feet line (first match by `y` ≤ `below`) */
@@ -66,6 +67,17 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c2/tree': { ledge: 'parkPath', ownPosts: ['stump', 'westFork', 'eastFork'], foreground: 'shrub', fireflies: 6 },
   'c2/pond': { ledge: 'boardwalk', ownPosts: ['pavilion', 'stone'], foreground: null, fireflies: 6 },
   'c2/painter-spread': { ledge: 'parkPath', ownPosts: ['lamp', 'easel', 'parasol'], foreground: null, crossing: 'none', fireflies: 4 },
+  // 台灣大學 (#117): the 松山新店線 car's body, then the station's granite platform past the doors
+  'c3/green-car': { ledge: 'carBodySongshan', ledgeSplit: { x: 284, style: 'granite' }, ownPosts: ['strap'], foreground: null },
+  // 椰林大道's walkway between the parked bikes (the bikes are the obstacle: no rail)
+  'c3/palm-avenue': { ledge: 'campusPath', ownPosts: ['palm'], foreground: null, crossing: 'none' },
+  // 醉月湖's promenade, the nest's hummock on the bank and stone steps down to it; an azalea in the corner
+  'c3/lake': { ledge: 'lakeside', ownPosts: ['bench', 'rock'], foreground: 'azalea' },
+  'c3/fu-bell': { ledge: 'campusPath', ownPosts: ['palm', 'pillar'], foreground: null },
+  // The stacks' gallery at the back, the reading room's floor in front (the shelves are the obstacle)
+  'c3/stacks': { ledge: [{ below: 400, style: 'gallery' }, { below: 999, style: 'libraryFloor' }], ownPosts: ['cart'], foreground: null, crossing: 'none' },
+  // The desk, the giant book from x 112, the stack of books 藍教授 sits on (the bookmark page bridges the gap)
+  'c3/book-spread': { ledge: 'desk', ledgeSplit: { x: 112, style: 'bookPage' }, ownPosts: ['lamp', 'catPage', 'near'], foreground: null, crossing: 'none' },
 };
 
 const NONE: StageDress = {};

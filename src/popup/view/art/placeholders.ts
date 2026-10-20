@@ -539,28 +539,33 @@ export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string 
  * as a bead and never in the bead's cup of light, so the player can tell it from the goal. By its
  * art key: `c3/moon` the moon's reflection on the water (a foil ellipse under glassine ripples, its
  * origin on the water), `c3/bell` the brass 傅鐘 (origin at its crown), `c3/glasses` reading glasses
- * (origin at the bridge); any other key a cold silver glint. Placeholders until #117's art.
+ * (origin at the bridge); any other key a cold silver glint. Drawn in the campus kit by #117.
  */
 export function decoyArt(ctx: KitCtx, key?: string): string {
   const glint = (x: number, y: number, r: number) => sparkle(ctx, x, y, r);
   switch (key) {
     case 'c3/moon':
-      return softEllipse(ctx, 0, 0, 30, 9, 'lamp', 0.22, 'blur8')
-        + `<ellipse rx="17" ry="5.4" fill="${C.moon}"/><ellipse rx="17" ry="5.4" fill="none" stroke="${C.moonRim}" stroke-width="1.2"/>`
-        + `<path d="M-14 -1.2h9M-2 1.4h12M-9 3h6" stroke="${C.glassineDeep}" stroke-width="1.2" stroke-linecap="round" opacity=".9"/>`
-        + `<path d="M-30 6q8 -3 16 0M14 7q8 -3 16 0M-22 -7q6 -2 12 0M10 -8q6 -2 12 0" stroke="${C.vellum}" stroke-width="1" fill="none" opacity=".6"/>`
+      // The moon's reflection (#117): foil slivers broken by the ripples, under glassine, a vellum glow
+      return softEllipse(ctx, 0, 0, 30, 9, 'lamp', 0.24, 'blur8')
+        + `<ellipse rx="18" ry="5.6" fill="${ref(ctx, 'foil')}"/><ellipse rx="18" ry="5.6" fill="${C.glassine}" opacity=".35"/>`
+        + `<path d="M-19 -1.4h38M-16 2.4h32" stroke="${C.glassineDeep}" stroke-width="1.3" opacity=".9"/>`
+        + `<ellipse cx="-3" cy="8.4" rx="11" ry="1.8" fill="${ref(ctx, 'foil')}" opacity=".7"/><ellipse cx="4" cy="12.6" rx="6" ry="1.2" fill="${ref(ctx, 'foil')}" opacity=".45"/>`
+        + `<path d="M-32 6q8 -3 16 0M16 7q8 -3 16 0M-24 -8q6 -2 12 0M12 -9q6 -2 12 0" stroke="${C.vellum}" stroke-width="1" fill="none" opacity=".6"/>`
         + glint(20, -12, 3.6);
     case 'c3/bell': {
+      // 傅鐘's brass bell (#117): its crown loop, the shoulder and lip bands, an inscription panel
       const bell = 'M-12 22Q-12 2 -7 -2Q-4 -5 0 -5Q4 -5 7 -2Q12 2 12 22Q14 24 14 26H-14Q-14 24 -12 22Z';
-      return depth(ctx, 4, `<path d="${bell}" fill="${C.gold}"/><path d="M4 -3Q10 2 10 22L13 26H6Q7 8 4 -3Z" fill="${C.goldDeep}" opacity=".7"/>`
-        + `<path d="M-6 0Q-9 8 -9 20" stroke="${C.goldLight}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".9"/>`
-        + `<path d="M-11 15H11" stroke="${C.goldDeep}" stroke-width="1.4"/><circle cy="-8" r="3.4" fill="none" stroke="${C.goldDeep}" stroke-width="2"/>`
+      return depth(ctx, 4, `<path d="${bell}" fill="${ref(ctx, 'foil')}"/><path d="M4 -3Q10 2 10 22L13 26H6Q7 8 4 -3Z" fill="${C.goldDeep}" opacity=".55"/>`
+        + `<path d="M-6 0Q-9 8 -9 20" stroke="${C.goldLight}" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".9"/>`
+        + `<path d="M-9 3H9M-12 19H12M-13 23H13" stroke="${C.goldDeep}" stroke-width="1.2"/><rect x="-4" y="7" width="8" height="9" rx="1" fill="none" stroke="${C.goldDeep}" stroke-width=".9"/>`
+        + `<circle cy="-8" r="3.4" fill="none" stroke="${C.goldDeep}" stroke-width="2"/>`
         + `<circle cy="28" r="3" fill="${C.goldDeep}"/>`, `<path d="${bell}"/>`)
         + glint(-18, 2, 4.4) + glint(17, 14, 3.4);
     }
     case 'c3/glasses':
-      return `<path d="M-3 0q3 -3 6 0" stroke="${C.goldDeep}" stroke-width="1.4" fill="none"/>`
-        + `<circle cx="-8" r="5.6" fill="${C.glassine}" fill-opacity=".55" stroke="${C.goldDeep}" stroke-width="1.6"/><circle cx="8" r="5.6" fill="${C.glassine}" fill-opacity=".55" stroke="${C.goldDeep}" stroke-width="1.6"/>`
+      // 藍教授's round reading glasses (#117): fine gold wire, glassine lenses catching the light
+      return `<path d="M-3 0q3 -3 6 0M-13.6 -1l-4 -2.4M13.6 -1l4 -2.4" stroke="${C.goldDeep}" stroke-width="1.3" fill="none" stroke-linecap="round"/>`
+        + `<circle cx="-8" r="5.6" fill="${C.glassine}" fill-opacity=".55" stroke="${C.goldDeep}" stroke-width="1.5"/><circle cx="8" r="5.6" fill="${C.glassine}" fill-opacity=".55" stroke="${C.goldDeep}" stroke-width="1.5"/>`
         + `<path d="M-10.4 -2.6l2.6 -1.2M5.6 -2.6l2.6 -1.2" stroke="${C.foilShine}" stroke-width="1.4" stroke-linecap="round"/>`
         + glint(16, -9, 3.6);
     default:

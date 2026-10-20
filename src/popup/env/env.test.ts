@@ -298,6 +298,36 @@ describe('sources', () => {
     }
   });
 
+  test('chapter 3 (#117): every art key resolves to its own art — no live placeholder, no placeholder stage', () => {
+    const c3 = PAGES.filter((p) => p.chapter === 3);
+    expect(c3.map((p) => p.id)).toEqual(['c3p1', 'c3p2', 'c3p3', 'c3p4', 'c3p5', 'c3p6']);
+    for (const b of backdropSources(c3)) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+    for (const p of c3) {
+      expect(pageArt(p, M).placeholders, p.id).toEqual([]);
+      for (const part of p.parts) expect(isPlaceholder(part.art), `${p.id} ${part.art}`).toBe(false);
+      for (const c of p.creatures) expect(hasCreatureArt(c.art), `${p.id} ${c.art}`).toBe(true);
+      for (const c of p.cutouts ?? []) expect(cutoutBitmap(c.art), `${p.id} ${c.art}`).not.toBeNull();
+    }
+    // 3-4's gate plate is the campus's own now, not 2-2's trap door
+    expect(pageById('c3p4')!.parts.find((x) => x.id === 'plate')!.art).toBe('c3/plate');
+  });
+
+  test('3-5\'s squeeze (the 淘氣\'s art) shows only while Mocha is shut in aisle 2 (#117)', () => {
+    const src = CUTOUT_SOURCES['c3/squeeze'];
+    expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c3p5', touchable: () => false, expected: [], where: 'squeeze' })).toEqual([]);
+    const def = pageById('c3p5')!;
+    const html = (state: ReturnType<typeof initialState>) => renderToStaticMarkup(createElement(PageView, { def, prev: state, state, ms: 0, tickMs: 500 }));
+    const s = initialState(def);
+    expect(html(s)).not.toContain('data-cutout="c3/squeeze"');
+    // In the cart with aisle 2 open (B west, C east): not yet; shut (C back west): squeezed
+    const inCart = { ...withPartState(withPartState(s, 'shelfB', 'w'), 'shelfC', 'e'), mocha: { ...s.mocha, perch: 'cart' } };
+    expect(html(inCart)).not.toContain('data-cutout="c3/squeeze"');
+    expect(html(withPartState(inCart, 'shelfC', 'w'))).toContain('data-cutout="c3/squeeze"');
+  });
+
   test('2-6\'s portrait of Mocha is printed paper, and shows only once all three flaps are open (#115)', () => {
     const src = CUTOUT_SOURCES['c2/mocha-portrait'];
     expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c2p6', touchable: () => false, expected: [], where: 'portrait' })).toEqual([]);
