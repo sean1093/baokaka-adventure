@@ -639,7 +639,7 @@ Format:
   - #107: 1-2 is now reached after 0-4.
   - #110: watch whether 4 s is right for grandparents.
 
-### 2026-10-19 · Staff engineer · #107 Chapter 1 pages 1-1, 1-3, 1-4, 1-5, 1-6 and the chapter's end (PR #TBD)
+### 2026-10-19 · Staff engineer · #107 Chapter 1 pages 1-1, 1-3, 1-4, 1-5, 1-6 and the chapter's end (PR #176)
 - **Pages (`pages/c1/p1.ts`, `p3.ts`–`p6.ts`)**, registered in play order: the slice is now 0-1 → 0-4 → 1-1 → 1-6.
   - 1-1 「月亮線，出發！」: the map pushed onto the sleeping backpacker wakes him (his line, Mocha's translation) and he tucks his backpack in. Two straps (bible § 4.2's three touchables), the `sway` tab, 廣播姊姊's ride lines as the intro.
   - 1-3 「嗶！閘門」: the engine fixture's layout plus the robot's perch; the 淘氣 is 嗶！ while Mocha rides the robot.
