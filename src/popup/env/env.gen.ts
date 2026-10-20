@@ -137,7 +137,7 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c2/xinyi-car": {
       "file": "backdrops/c2/xinyi-car",
-      "bytes": 157820,
+      "bytes": 148242,
       "chapter": 2,
       "grade": [1, 1, 1],
       "box": {
@@ -146,11 +146,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "9bb0664e08c359dd"
+      "source": "0d3af42b52bdc132"
     },
     "c2/bandshell": {
       "file": "backdrops/c2/bandshell",
-      "bytes": 157820,
+      "bytes": 175958,
       "chapter": 2,
       "grade": [1, 1, 1],
       "box": {
@@ -159,11 +159,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "9bb0664e08c359dd"
+      "source": "4a3e07f8705af4e9"
     },
     "c2/bridge": {
       "file": "backdrops/c2/bridge",
-      "bytes": 157820,
+      "bytes": 212702,
       "chapter": 2,
       "grade": [1, 1, 1],
       "box": {
@@ -172,11 +172,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "9bb0664e08c359dd"
+      "source": "188849172895c84e"
     },
     "c2/tree": {
       "file": "backdrops/c2/tree",
-      "bytes": 157820,
+      "bytes": 214902,
       "chapter": 2,
       "grade": [1, 1, 1],
       "box": {
@@ -185,11 +185,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "9bb0664e08c359dd"
+      "source": "213705086a4a5f82"
     },
     "c2/pond": {
       "file": "backdrops/c2/pond",
-      "bytes": 157820,
+      "bytes": 217484,
       "chapter": 2,
       "grade": [1, 1, 1],
       "box": {
@@ -198,11 +198,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "9bb0664e08c359dd"
+      "source": "14d4cf48f1d382b3"
     },
     "c2/painter-spread": {
       "file": "backdrops/c2/painter-spread",
-      "bytes": 157820,
+      "bytes": 215132,
       "chapter": 2,
       "grade": [1, 1, 1],
       "box": {
@@ -211,7 +211,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "9bb0664e08c359dd"
+      "source": "45074f4e5dbfbfc3"
     }
   },
   "parts": {
@@ -670,6 +670,26 @@ export const ENV_MANIFEST: EnvManifest = {
       },
       "source": "204d08f4726bed12"
     },
+    "c2/doors": {
+      "preset": "gate",
+      "box": {
+        "x": -37,
+        "y": -245,
+        "w": 82,
+        "h": 308
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c2/doors.closed",
+          "bytes": 4674
+        },
+        "open": {
+          "file": "parts/c2/doors.open",
+          "bytes": 3846
+        }
+      },
+      "source": "f5a42d9d8a2359e6"
+    },
     "c2/umbrella": {
       "preset": "pushable",
       "box": {
@@ -693,6 +713,146 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "4cbaedf70ed772a6"
+    },
+    "c2/spotlight": {
+      "preset": "wheel",
+      "box": {
+        "x": -57,
+        "y": -50,
+        "w": 117,
+        "h": 110
+      },
+      "pivot": [0, 0],
+      "states": {
+        "lawn": {
+          "file": "parts/c2/spotlight.lawn",
+          "bytes": 6180
+        },
+        "trap": {
+          "file": "parts/c2/spotlight.trap",
+          "bytes": 6132
+        },
+        "stage": {
+          "file": "parts/c2/spotlight.stage",
+          "bytes": 6024
+        },
+        "nap": {
+          "file": "parts/c2/spotlight.nap",
+          "bytes": 5954
+        }
+      },
+      "lifted": {
+        "lawn": {
+          "file": "parts/c2/spotlight.lawn.lifted",
+          "bytes": 8550
+        },
+        "trap": {
+          "file": "parts/c2/spotlight.trap.lifted",
+          "bytes": 8518
+        },
+        "stage": {
+          "file": "parts/c2/spotlight.stage.lifted",
+          "bytes": 8590
+        },
+        "nap": {
+          "file": "parts/c2/spotlight.nap.lifted",
+          "bytes": 8518
+        }
+      },
+      "source": "7d4a9a87191729d1"
+    },
+    "c2/canvas-bridge": {
+      "preset": "flap",
+      "box": {
+        "x": -17,
+        "y": -187.4,
+        "w": 109,
+        "h": 253
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c2/canvas-bridge.closed",
+          "bytes": 3392
+        },
+        "open": {
+          "file": "parts/c2/canvas-bridge.open",
+          "bytes": 11404
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c2/canvas-bridge.closed.lifted",
+          "bytes": 9324
+        },
+        "open": {
+          "file": "parts/c2/canvas-bridge.open.lifted",
+          "bytes": 12626
+        }
+      },
+      "source": "3bf322a5f720ed0d"
+    },
+    "c2/canvas-branch": {
+      "preset": "flap",
+      "box": {
+        "x": -76,
+        "y": -204.6,
+        "w": 202,
+        "h": 306
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c2/canvas-branch.closed",
+          "bytes": 3436
+        },
+        "open": {
+          "file": "parts/c2/canvas-branch.open",
+          "bytes": 17210
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c2/canvas-branch.closed.lifted",
+          "bytes": 12386
+        },
+        "open": {
+          "file": "parts/c2/canvas-branch.open.lifted",
+          "bytes": 19856
+        }
+      },
+      "source": "4d57154f481c3816"
+    },
+    "c2/canvas-portrait": {
+      "preset": "flap",
+      "box": {
+        "x": -14,
+        "y": -109.1,
+        "w": 82,
+        "h": 175
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c2/canvas-portrait.closed",
+          "bytes": 2994
+        },
+        "open": {
+          "file": "parts/c2/canvas-portrait.open",
+          "bytes": 2840
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c2/canvas-portrait.closed.lifted",
+          "bytes": 6686
+        },
+        "open": {
+          "file": "parts/c2/canvas-portrait.open.lifted",
+          "bytes": 6434
+        }
+      },
+      "source": "17da8c8aa181bcd0"
     },
     "c2/curtain": {
       "preset": "lift",
@@ -746,43 +906,33 @@ export const ENV_MANIFEST: EnvManifest = {
       "states": {
         "west": {
           "file": "parts/c2/lily-pad.west",
-          "bytes": 15694
-        },
-        "north": {
-          "file": "parts/c2/lily-pad.north",
-          "bytes": 15694
-        },
-        "east": {
-          "file": "parts/c2/lily-pad.east",
-          "bytes": 15694
-        },
-        "south": {
-          "file": "parts/c2/lily-pad.south",
-          "bytes": 15694
+          "bytes": 16974
         }
       },
       "lifted": {
         "west": {
           "file": "parts/c2/lily-pad.west.lifted",
-          "bytes": 20502
-        },
-        "north": {
-          "file": "parts/c2/lily-pad.north.lifted",
-          "bytes": 20502
-        },
-        "east": {
-          "file": "parts/c2/lily-pad.east.lifted",
-          "bytes": 20502
-        },
-        "south": {
-          "file": "parts/c2/lily-pad.south.lifted",
-          "bytes": 20502
+          "bytes": 21376
         }
       },
-      "source": "525bf7675f30c44b"
+      "source": "3c6945cfd79f2f4a"
     }
   },
-  "cutouts": {},
+  "cutouts": {
+    "c2/mocha-portrait": {
+      "file": "cutouts/c2/mocha-portrait",
+      "bytes": 4378,
+      "chapter": 2,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": -4,
+        "y": -4,
+        "w": 110,
+        "h": 126
+      },
+      "source": "7a07ceab5ef30fc5"
+    }
+  },
   "screens": {
     "quilt": {
       "file": "screens/quilt",

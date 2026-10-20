@@ -480,7 +480,7 @@ export function origamiBird(ctx: KitCtx): string {
  * The 土地公 peeking (the per-page secret sticker): a round face with a long white beard and kind
  * eyes under the chapter's hat (GDD § 5.1: each chapter dresses him). `''` is his own red 員外帽
  * with an ochre band (the prologue); `站務帽` is chapter 1's navy station cap with a peak and a
- * foil badge (#108); `斗笠` is chapter 2's wide straw hat (#114; #115 adds his 掃把).
+ * foil badge (#108); `斗笠` is chapter 2's wide straw hat (#114) with his 掃把 on his shoulder (#115).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -496,7 +496,13 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
       + `<path d="M-9.4 -.8q4 2.6 9.4 2.6" stroke="${C.printDark}" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="0" cy="-5.6" r="1.7" fill="${ref(ctx, 'foil')}"/>`
     : `<path d="M-7 -2a7.5 7.5 0 0 1 14 0z" fill="${C.hatRed}"/><rect x="-8.5" y="-3.5" width="17" height="3" rx="1.5" fill="${C.ochre}"/>`
       + `<path d="M-9.6 -3.2q-2.4 -1 -3 1.4M9.6 -3.2q2.4 -1 3 1.4" stroke="${C.printDark}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
-  return depth(ctx, 2, face + cap, `<circle r="7.5"/>`);
+  // Chapter 2's 掃把 (#115): a bamboo broom on his shoulder, its handle up past his hat, the bristles fanned below
+  const broom = hat === '斗笠'
+    ? `<path d="M17 -18L8 9" stroke="${C.corrugatedDark}" stroke-width="1.8" stroke-linecap="round"/>`
+      + `<path d="M8 7L3 19L16 16Z" fill="${C.corrugatedLight}"/><path d="M8 8L6 18M9 8L10 17M10 8L13 16" stroke="${C.corrugatedDark}" stroke-width=".6" opacity=".8"/>`
+      + `<path d="M5 8.5L11 10" stroke="${C.hatRed}" stroke-width="1.6"/>`
+    : '';
+  return depth(ctx, 2, broom + face + cap, `<circle r="7.5"/>`);
 }
 
 /** A light attractor where it lies: a little paper star lamp. */
@@ -507,8 +513,19 @@ const lampIcon = `<path d="M0 -10l2.6 6.4l6.9 .5l-5.3 4.4l1.7 6.7l-5.9 -3.7l-5.9
  * the floor under a faint beam, so the light reads as a place he can sit in, not a thing to grab.
  * The origin is the floor point the light is aimed at.
  */
-export function spotPool(ctx: KitCtx): string {
-  return `<path d="M-6 -150L6 -150L30 6L-30 6Z" fill="${C.lamp}" opacity=".16"/>`
+export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string {
+  // The beam: from the lamp (`from`, relative to the pool; #115: 2-2's follow-spot) or straight down from above
+  const beam = from === undefined
+    ? `<path d="M-6 -150L6 -150L30 6L-30 6Z" fill="${C.lamp}" opacity=".16"/>`
+    : (() => {
+      const [fx, fy] = from;
+      const len = Math.hypot(fx, fy) || 1;
+      const [nx, ny] = [-fy / len, fx / len];
+      // Narrow at the lens, as wide as the pool where it lands (the pool is an ellipse on the floor)
+      const [a, b] = fx < 0 ? [[-26, 4], [26, 8]] : [[26, 4], [-26, 8]];
+      return `<path d="M${f1(fx + nx * 5)} ${f1(fy + ny * 5)}L${f1(fx - nx * 5)} ${f1(fy - ny * 5)}L${a[0]} ${a[1]}L${b[0]} ${b[1]}Z" fill="${C.lamp}" opacity=".18"/>`;
+    })();
+  return beam
     + softEllipse(ctx, 0, 6, 34, 10, 'lamp', 0.75, 'blur8')
     + `<ellipse cx="0" cy="6" rx="24" ry="6" fill="${C.lamp}" opacity=".62"/>`;
 }

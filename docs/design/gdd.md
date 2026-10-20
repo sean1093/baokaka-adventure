@@ -637,7 +637,7 @@ export interface PageDef {
   priorityOverride?: Partial<Record<Kind, number>>;   // page E only
   lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey }[] };
   backdrop: string;                     // baked art key
-  cutouts?: { art: string; x: number; y: number }[];   // standing cut-outs (§ 3.9 layer 2), placed by their origin (#96)
+  cutouts?: { art: string; x: number; y: number; visibleWhen?: Cond }[];   // standing cut-outs (§ 3.9 layer 2), placed by their origin (#96); shown only while `visibleWhen` holds (#115)
 }
 
 export type SolutionStep =

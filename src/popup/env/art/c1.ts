@@ -449,7 +449,7 @@ const hall: BackdropDraw = (ctx) => {
 // ——— 1-5 「便當店的電梯」 ———
 
 /** The 店員小哥 (paper style, behind the counter): a red cap, a blue apron, a friendly face. */
-function clerk(ctx: KitCtx, x: number, y: number): string {
+export function clerk(ctx: KitCtx, x: number, y: number): string {
   const outline = `<circle cx="${x}" cy="${y - 30}" r="12"/><path d="M${x - 18} ${y + 10}q0 -26 18 -28q18 2 18 28z"/>`;
   const print = `<path d="M${x - 18} ${y + 10}q0 -26 18 -28q18 2 18 28z" fill="${C.washi}"/><path d="M${x - 10} ${y - 12}h20l2 22h-24z" fill="${T.clerkApron}"/>`
     + `<circle cx="${x}" cy="${y - 30}" r="11" fill="${S.skin}"/><path d="M${x - 11} ${y - 33}q0 -11 11 -11q11 0 11 11z" fill="${T.clerkCap}"/><path d="M${x + 8} ${y - 34}h9a2 2 0 0 1 0 4h-10z" fill="${T.clerkCap}"/>`

@@ -1164,6 +1164,95 @@ export const POPUP_STATION = {
   capNavy: '#22306E',
 } as const;
 
+/**
+ * 大安森林公園 (#115; bible § 6 row 2): chapter 2's palette kit (`src/popup/env/art/c2.ts`). Two
+ * dominant hues, deep canopy green and the night's indigo, and one accent, the fireflies' lime.
+ * The canopy is layered leaf cut-outs at four depths (far is bluest and darkest, near is the
+ * greenest, its edges lit by the moon). Decorative warm colours (the 信義線 red, the sweeper's vest,
+ * the dog's tan) stay well away from the reserved marigold (bible § 4; `affordance.test.ts`).
+ */
+export const POPUP_PARK = {
+  // The canopy's four depths, its deepest shade and the moonlit rim on a near leaf
+  canopyFar: '#18343E',
+  canopyMid: '#1E4A44',
+  canopyNear: '#24584A',
+  canopyFront: '#2C6650',
+  canopyDeep: '#10262C',
+  canopyLit: '#4E8A6A',
+  // Trunks (camphor and banyan bark) and their moonlit side
+  trunk: '#4E3C42',
+  trunkDeep: '#30263A',
+  trunkLit: '#7A6460',
+  // The lawn (the floor page) and the hedges
+  lawn: '#2A5444',
+  lawnLight: '#3E6E52',
+  lawnDeep: '#1A3634',
+  hedge: '#22503E',
+  // The park's paths: grey granite pavers, their joints, the curb stone
+  paver: '#A8A2AE',
+  paverLight: '#C4BEC6',
+  paverDeep: '#6E687E',
+  curb: '#8C889C',
+  soil: '#3E3036',
+  // Water (the pond and the stream: glassine over this) and lilies
+  water: '#22406A',
+  waterDeep: '#152A50',
+  waterLight: '#5A7EA6',
+  lily: '#3A7450',
+  lilyLight: '#5C9466',
+  lotus: '#E8A8B8',
+  reed: '#46663E',
+  // The accent: firefly lime, a pinhole of it and its glow
+  firefly: '#D8F27A',
+  fireflyCore: '#F6FFD8',
+  // The park's dark-green lamp posts and their globes
+  lampPost: '#22382E',
+  lampPostLit: '#3E5A4A',
+  // The amphitheatre: its white shell (a V-fold), the shade inside it, the stage boards
+  shell: '#E8E4F0',
+  shellShade: '#ABA6C6',
+  shellDeep: '#7A7498',
+  stage: '#7E5A48',
+  stageLight: '#A07A60',
+  stageDeep: '#4E3638',
+  // Boardwalk and the little arched bridge
+  plank: '#8E6A52',
+  plankLight: '#AE8A6A',
+  plankDeep: '#5E4438',
+  // The 信義線 car: its red band, the car's cream interior, the platform's tiles
+  xinyi: '#C4443E',
+  xinyiDeep: '#8A2A30',
+  stationTile: '#C9CCC2',
+  stationTileDeep: '#8E948E',
+  // The cast (paper style): the jogger, the sweeper, the commuter, the painter and his parasol
+  joggerTop: '#D8607A',
+  joggerDeep: '#A23E5C',
+  joggerPants: '#2E3462',
+  sweeperVest: '#D86A3E',
+  sweeperShirt: '#5A7AA0',
+  commuterCoat: '#4A5470',
+  commuterShirt: '#D8DCE8',
+  painterSmock: '#6E8EB8',
+  painterSmockDeep: '#4A6890',
+  parasol: '#C84E4A',
+  parasolCream: '#F2E6CE',
+  canvas: '#F2EAD8',
+  canvasShade: '#D2C6AE',
+  // Origami creatures: the dog (a shiba's tan), the turtle, the squirrel (grey back, rust belly), the egret
+  dog: '#C08458',
+  dogDeep: '#8A5A3E',
+  dogCream: '#F0E2CC',
+  turtle: '#5C6C44',
+  turtleLight: '#8A9A5C',
+  turtleDeep: '#3C4630',
+  squirrel: '#7E6E66',
+  squirrelDeep: '#54484A',
+  squirrelBelly: '#B06446',
+  egret: '#F2F0F8',
+  egretShade: '#BEBAD8',
+  egretDeep: '#8E88B0',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 

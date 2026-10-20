@@ -9,7 +9,7 @@ import { partLocked, stepGrowth } from '../core/step';
 import type { SimEvent } from '../core/events';
 import { nodePos } from '../core/graph';
 import { mochaNode, perchHidesMocha } from '../core/mocha';
-import type { CreatureDef, Id, PageDef, PerchDef, SimState } from '../core/types';
+import type { CreatureDef, CutoutDef, Id, PageDef, PerchDef, SimState } from '../core/types';
 import { SpriteGrade, chapterGradeKey, spriteBox, spriteHead } from '../sprites';
 import type { TalkLine } from '../content/script';
 import {
@@ -37,7 +37,8 @@ import { GhostHand, HintHalo, LinkThread } from './affordance/Hints';
 import { NO_AFFORDANCE, wearsMarigold, type AffordanceFlags, type PartLook } from './affordance/look';
 import { treasureOnPage } from './photo/treasureArt';
 import { dressOf, ledgeStyleOf, ownsPost } from './art/dress';
-import { dressedLedge, foregroundCard } from './art/ledges';
+import { dressedLedge, foregroundCard, styledRamp } from './art/ledges';
+import { Fireflies } from './Fireflies';
 import { attractorArt, chapterSky, spine, perchMark, perchPost, rail, ramp, spotPool, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
@@ -161,18 +162,17 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       // A spread is a centrefold (GDD § 2.9, #103): the same 390 × 560 space, with the spine's crease down its middle
       + (def.spread ? spine(ctx) : '');
     // Standing cut-outs the page places (GDD § 3.9 layer 2), then the track pits from the walk graph
-    const cutouts = (def.cutouts ?? []).map((c) => {
-      const img = cutoutBitmap(c.art);
-      return img ? `<g data-cutout="${c.art}" transform="translate(${c.x} ${c.y})">${image(img.url, img.box)}</g>` : '';
-    }).join('') + stage.carriages.map(trackPit).join('');
+    const cutouts = (def.cutouts ?? []).filter((c) => c.visibleWhen === undefined).map(cutoutSvg).join('') + stage.carriages.map(trackPit).join('');
     // The ledges in the page's material and the perch furniture its backdrop doesn't draw itself (#108, `art/dress.ts`)
-    const floor = stage.slopes.map((s) => ramp(ctx, s, theme)).join('')
+    const floor = stage.slopes.map((s) => styledRamp(ctx, s, ledgeStyleOf(def, Math.max(s.from[1], s.to[1])), theme)).join('')
       + stage.runs.map((run) => dressedLedge(ctx, run, (y) => ledgeStyleOf(def, y), theme, dressOf(def).ledgeSplit)).join('')
       + stage.posts.filter((p) => !ownsPost(def, p.perch)).sort((a, b) => a.foot - b.foot).map((p) => `<g data-post="${p.perch}">${perchPost(ctx, p)}</g>`).join('');
     const card = dressOf(def).foreground;
     const slot = card === null ? null : foregroundSlot(def);
     const foreground = slot === null ? '' : `<g data-foreground="${card ?? 'plant'}" transform="translate(${slot.x} ${slot.foot})">${foregroundCard(ctx, card ?? 'plant')}</g>`;
-    const crossing = stage.crossings.map((c) => ({ c, rail: rail(ctx, theme, c.part !== undefined), ramp: c.from[1] === c.to[1] ? '' : ramp(ctx, c, theme) }));
+    // A backdrop whose art is the obstacle (2-1's gap, 2-6's stream) shows no rail (#115)
+    const railed = dressOf(def).crossing !== 'none';
+    const crossing = stage.crossings.map((c) => ({ c, rail: railed ? rail(ctx, theme, c.part !== undefined) : '', ramp: c.from[1] === c.to[1] ? '' : ramp(ctx, c, theme) }));
     return { backdrop, cutouts, floor, foreground, crossing };
   }, [ctx, def, stage, theme]);
 
@@ -254,9 +254,11 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
             <ArtG html={rampSvg} />
           </g>
         )}
-        <g data-anim="" transform={`translate(${c.rail[0]} ${c.rail[1]}) scale(1 ${r2(sy)})`}>
-          <ArtG html={railSvg} />
-        </g>
+        {railSvg && (
+          <g data-anim="" transform={`translate(${c.rail[0]} ${c.rail[1]}) scale(1 ${r2(sy)})`}>
+            <ArtG html={railSvg} />
+          </g>
+        )}
       </g>
     );
   });
@@ -271,7 +273,10 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     if (p === undefined) return null;
     // A spotlight's light is a pool on the floor; a held item sits in its creature's paws (#114)
     const look = a.kind === 'light' && a.nodeBy !== undefined ? 'pool' : a.heldBy !== undefined && state.dropped?.[a.id] === undefined ? 'held' : undefined;
-    return <AttractorItem key={a.id} ctx={ctx} id={a.id} kind={a.kind} x={p[0]} y={p[1]} look={look} treasure={a.goal && def.spread ? def.chapter : undefined} />;
+    // A spotlight's beam comes from the part that aims it (its centre)
+    const lampPart = look === 'pool' ? def.parts.find((pt) => pt.id === a.nodeBy?.part) : undefined;
+    const from: Pt | undefined = lampPart?.center === undefined ? undefined : [lampPart.center[0] - p[0], lampPart.center[1] - p[1]];
+    return <AttractorItem key={a.id} ctx={ctx} id={a.id} kind={a.kind} x={p[0]} y={p[1]} look={look} from={from} treasure={a.goal && def.spread ? def.chapter : undefined} />;
   });
   // A tap on a perch he can't get to (GDD § 2.3): its paw shakes "not connected" while he looks at it and says 「喵？」 (#183)
   const nope = events.find((e) => e.type === 'mochaNope')?.id;
@@ -462,6 +467,10 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       <Layer id="backdrop" html={statics.backdrop} />
       <Layer id="cutouts">
         <ArtG html={statics.cutouts} />
+        {/* Cut-outs that appear with a state (#115: 2-6's portrait of Mocha once all three flaps are open) */}
+        {(def.cutouts ?? []).filter((c) => c.visibleWhen !== undefined && holds(def, state, c.visibleWhen)).map((c) => (
+          <ArtG key={c.art} html={cutoutSvg(c)} />
+        ))}
         {tudigongShown && <TudigongItem ctx={ctx} x={tdg.x} y={tdg.y} hat={tdg.hat} />}
       </Layer>
       <Layer id="parts-mid">
@@ -480,7 +489,11 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {partEls('near')}
         {attractors}
       </Layer>
-      <Layer id="creatures">{creatures}</Layer>
+      <Layer id="creatures">
+        {/* A park page's fireflies drift over it (#115), the page's smallest creatures */}
+        {(dressOf(def).fireflies ?? 0) > 0 && <Fireflies ctx={ctx} count={dressOf(def).fireflies!} seed={def.index * 31 + def.chapter} reduced={reduced} />}
+        {creatures}
+      </Layer>
       <Layer id="actors">
         {/* The characters in their chapter's half grade (#96: a baked variant of each frame) */}
         <SpriteGrade.Provider value={chapterGradeKey(def.chapter)}>
@@ -546,6 +559,12 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   );
 }
 
+/** A placed cut-out's baked bitmap (nothing while it has none). */
+function cutoutSvg(c: CutoutDef): string {
+  const img = cutoutBitmap(c.art);
+  return img ? `<g data-cutout="${c.art}" transform="translate(${c.x} ${c.y})">${image(img.url, img.box)}</g>` : '';
+}
+
 /** A hit shape's bounding box. */
 const hitBox = (h: Hit) => ('r' in h ? { x: h.cx - h.r, y: h.cy - h.r, w: 2 * h.r, h: 2 * h.r } : h);
 
@@ -565,11 +584,11 @@ function PartBadge({ hit, kind }: { hit: Hit; kind: 'locked' | 'done' }) {
   return <ArtG html={html} />;
 }
 
-function AttractorItem({ ctx, id, kind, x, y, treasure, look }: { ctx: KitCtx; id: string; kind: PageDef['attractors'][number]['kind']; x: number; y: number; treasure?: number; look?: 'pool' | 'held' }) {
+function AttractorItem({ ctx, id, kind, x, y, treasure, look, from }: { ctx: KitCtx; id: string; kind: PageDef['attractors'][number]['kind']; x: number; y: number; treasure?: number; look?: 'pool' | 'held'; from?: Pt }) {
   // A spread's goal is the chapter treasure (GDD § 2.9, #103), drawn as itself in its cup of light
   const html = useMemo(
-    () => (look === 'pool' ? spotPool(ctx) : treasure === undefined ? attractorArt(ctx, kind) : treasureOnPage(ctx, treasure)),
-    [ctx, kind, treasure, look],
+    () => (look === 'pool' ? spotPool(ctx, from) : treasure === undefined ? attractorArt(ctx, kind) : treasureOnPage(ctx, treasure)),
+    [ctx, kind, treasure, look, from?.[0], from?.[1]],
   );
   // Shinies hover a little above the ledge, in their cup of light; a pool of light lies on the floor;
   // a held item is up in its creature's paws, a little smaller

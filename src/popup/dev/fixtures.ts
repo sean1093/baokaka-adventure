@@ -372,7 +372,7 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: '1-6 「台鐵便當」 as it opens (#107): the centrefold — the concourse and its exit gate on the left, the platform and the bento cart (its lid shut) on the right. Nothing shiny in sight, so Baokaka crawled to Mocha on the station clock and cuddles; the cart\'s slider under the floor.',
     expect: { mode: 'cuddling' },
   },
-  // ——— Chapter 2 「會揮手的公園」 (#114): placeholder art until #115 ———
+  // ——— Chapter 2 「會揮手的公園」 (#114; its art: #115) ———
   {
     name: 'c2p1-start',
     page: 'c2p1',

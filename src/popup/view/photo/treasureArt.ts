@@ -4,9 +4,9 @@ import { albumChapter } from '../../content/album';
 
 /**
  * The chapter treasures as the spread and the photo draw them (GDD § 2.9, § 4.2; #103), flat SVG
- * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1) is drawn; the other
- * chapters' treasures are a foil token with the treasure's first character until their chapters'
- * art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
+ * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1) and 畫筆 (chapter 2,
+ * #115) are drawn; the other chapters' treasures are a foil token with the treasure's first
+ * character until their chapters' art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
  * never marigold (reserved for touchables). The caller's defs must hold `foil`.
  */
 
@@ -28,6 +28,25 @@ function drumstick(ctx: KitCtx): string {
     + `</g>`;
 }
 
+/**
+ * 畫筆 (chapter 2, #115): a fat child's paintbrush, its handle red lacquer with a cream tip, a foil
+ * ferrule, the bristles dipped in the park's green with a drop on its point; laid at a slant.
+ */
+function paintbrush(ctx: KitCtx): string {
+  return `<g transform="rotate(-34)">`
+    + `<ellipse cx="0" cy="13" rx="19" ry="3.2" fill="${C.shadow}" opacity=".28"/>`
+    // The handle: lacquered red, a cream end, a lit edge
+    + `<path d="M-2 -3.2H17Q21 -3.2 21 0Q21 3.2 17 3.2H-2Z" fill="${C.hatRed}"/><path d="M15 -3.2h2q4 0 4 3.2q0 3.2 -4 3.2h-2z" fill="${C.bone}"/>`
+    + `<path d="M0 -2H16" stroke="${C.peonyLight}" stroke-width="1" opacity=".8"/>`
+    // The foil ferrule with its crimp lines
+    + `<rect x="-9" y="-4.2" width="8" height="8.4" rx="1" fill="${ref(ctx, 'foil')}"/><path d="M-6.6 -4.2v8.4M-3.4 -4.2v8.4" stroke="${C.goldDeep}" stroke-width=".7"/>`
+    // The bristles, dipped in green, a drop on the point
+    + `<path d="M-9 -4.2Q-17 -4.6 -22 0Q-17 4.6 -9 4.2Z" fill="${C.bone}"/><path d="M-14 -3.6Q-19 -2.4 -22 0Q-19 2.4 -14 3.6Z" fill="${C.quiltLeaf}"/>`
+    + `<path d="M-11 -2.6L-19 -.6M-11 0H-20M-11 2.6L-19 .6" stroke="${C.kraftDark}" stroke-width=".5" opacity=".6"/>`
+    + `<circle cx="-24" cy="2.6" r="1.8" fill="${C.quiltLeaf}"/>`
+    + `</g>`;
+}
+
 /** A treasure not drawn yet: a foil token with its first character. */
 function token(ctx: KitCtx, name: string): string {
   return `<ellipse cx="1" cy="17" rx="15" ry="3" fill="${C.shadow}" opacity=".28"/>`
@@ -37,7 +56,9 @@ function token(ctx: KitCtx, name: string): string {
 
 /** The chapter's treasure, centred on (0, 0). */
 export function treasureArt(ctx: KitCtx, chapter: number): string {
-  return chapter === 1 ? drumstick(ctx) : token(ctx, albumChapter(chapter).treasure);
+  if (chapter === 1) return drumstick(ctx);
+  if (chapter === 2) return paintbrush(ctx);
+  return token(ctx, albumChapter(chapter).treasure);
 }
 
 /** The treasure where it lies on the spread: in its cup of foil light, with two glints (like the bead). */
