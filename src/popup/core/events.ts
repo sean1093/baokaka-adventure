@@ -47,8 +47,9 @@ void _complete;
  *   part: he glares, § 2.6). Nothing moves.
  * - `learn`: the page's `learns` fired (§ 3.2): `word` and/or `growth` is learned (the game layer
  *   plays the learn lines and saves it). Emitted once per page.
+ * - `hugNobody`: 抱抱 with no carrier in reach (§ 2.4, #120): he raises his arms, and Mocha purrs.
  */
-export const UI_EVENT_TYPES = ['bark', 'mochaNope', 'mochaPuff', 'mochaStare', 'jam', 'locked', 'learn'] as const;
+export const UI_EVENT_TYPES = ['bark', 'mochaNope', 'mochaPuff', 'mochaStare', 'jam', 'locked', 'learn', 'hugNobody'] as const;
 export type UiEventType = (typeof UI_EVENT_TYPES)[number];
 
 const SIM_EVENT_SET: ReadonlySet<string> = new Set(EVENT_TYPES);

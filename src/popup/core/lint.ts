@@ -43,10 +43,14 @@ import { inReach, WORDS } from './words';
  * | `L03-initial-not-in-states` | error | 3: `initial` isn't one of the (compiled) states; a creature's `initial` isn't a position |
  * | `L03-bad-states` | error | 3: duplicate states; a pushable whose states aren't `onPerch`/`falling`/`landed`; a tab/slider outside 2–4 stops or a wheel/section outside 2–8 |
  * | `L03-invalid-input` | error | 3: `input` isn't allowed for the preset (`PRESETS[preset].inputs`) |
- * | `L03-preset-field` | error | 3: a pushable without `fall`, a carrier without a `route` |
+ * | `L03-preset-field` | error | 3: a pushable without `fall`, a carrier without a `route` (or one under two nodes); a `route` on a non-carrier, a `counterweight` on a non-lift |
+ * | `L03-carrier-start` | error | 3: a carrier starts mid-carry (`carrying@k`): it must start `idle` or `done` (#120) |
+ * | `L03-carrier-driven` | error | 3: a carrier moved by anything but 抱抱 (a reaction, a perch `set` or `onPart`, a `landSets`): its state is where he is (#120) |
+ * | `L03-counterweight` | error | 3: a counterweighted lift no perch weighs (`onPart`), or whose `initial` isn't the state Mocha's start puts it in (#120) |
  * | `L04-attach-missing-state` | error | 4: a node attached to a part lacks a position for one of its states |
  * | `L04-gate-node-moves` | error | 4: a node attached to a gate has different positions (a doorway stays put, D-42) |
  * | `L05-vanishing-ground` | error | 5: a node an edge leads to leaves the 390 × 560 page in some state, or rides a pushable |
+ * | `L05-carrier-route` | error | 5: a carrier's route steps between two nodes no baby edge joins, or through a height-2 node (it would set him down where he can't be, #120) |
  * | `L06-dropping-baby` | error | 6: a node Baokaka can stand on is attached to a pushable or a carrier |
  * | `L07-pushable-unpushed` | error | 7: no perch `push`es a pushable |
  * | `L07-pushable-reaction` | error | 7: a pushable's reaction goes anywhere but back `onPerch` |
@@ -259,6 +263,7 @@ class Linter {
     this.checkIds();
     this.checkNodesAndEdges();
     this.checkParts();
+    this.checkMovers();
     this.checkPerches();
     this.checkAttractors();
     this.checkCreatures();
@@ -516,6 +521,56 @@ class Linter {
         if (this.attractors.get(p.attractor)!.kind !== 'light') this.error('L01-wrong-kind', [p.id, p.attractor], `${where} owns attractor '${p.attractor}', which isn't a light`);
       }
       if (p.preset === 'pushable' && !pushed.has(p.id)) this.error('L07-pushable-unpushed', [p.id], `no perch pushes pushable '${p.id}'`);
+    }
+  }
+
+  // ——— Carriers and counterweights (#120) ———
+
+  private checkMovers(): void {
+    const nodes = new Map(this.list(this.def.nodes).map((n) => [n.id, n]));
+    const perches = this.list(this.def.perches);
+    const babyEdge = (a: Id, b: Id) =>
+      this.list(this.def.edges).some((e) => BABY_KINDS.has(e.kind) && ((e.a === a && e.b === b) || (e.a === b && e.b === a)));
+    for (const info of this.parts.values()) {
+      const p = info.def;
+      const where = `part '${p.id}'`;
+      if (p.route !== undefined && p.preset !== 'carrier') this.error('L03-preset-field', [p.id], `${where} has a \`route\` but is a ${p.preset}, not a carrier`);
+      if (p.counterweight !== undefined && p.preset !== 'lift') this.error('L03-preset-field', [p.id], `${where} has a \`counterweight\` but is a ${p.preset}, not a lift`);
+
+      if (p.preset === 'carrier' && p.route !== undefined && p.route.length > 0) {
+        const route = p.route;
+        if (route.length < 2) this.error('L03-preset-field', [p.id], `carrier '${p.id}' has a one-node route: it must walk somewhere`);
+        const initial = p.initial ?? 'idle';
+        if (initial !== 'idle' && initial !== 'done') this.error('L03-carrier-start', [p.id], `carrier '${p.id}' starts in '${initial}'; it must start idle or done`);
+        for (let k = 1; k < route.length; k++) {
+          if (nodes.has(route[k - 1]) && nodes.has(route[k]) && !babyEdge(route[k - 1], route[k])) {
+            this.error('L05-carrier-route', [p.id, route[k - 1], route[k]], `carrier '${p.id}' steps from '${route[k - 1]}' to '${route[k]}', which no baby edge joins`);
+          }
+        }
+        for (const n of route) {
+          if (nodes.get(n)?.height === 2) this.error('L05-carrier-route', [p.id, n], `carrier '${p.id}' walks through '${n}', a height-2 node he can't be set down on`);
+        }
+        const drivers = [
+          ...(p.react !== undefined && p.react.length > 0 ? [`its own reaction`] : []),
+          ...perches.filter((x) => x.set?.part === p.id || x.onPart === p.id).map((x) => `perch '${x.id}'`),
+          ...this.list(this.def.parts).filter((x) => x.fall?.landSets?.part === p.id).map((x) => `pushable '${x.id}'`),
+        ];
+        if (drivers.length > 0) this.error('L03-carrier-driven', [p.id], `carrier '${p.id}' is moved by ${drivers.join(', ')}; only 抱抱 moves a carrier`);
+      }
+
+      const weight = p.preset === 'lift' ? p.counterweight : undefined;
+      if (weight !== undefined) {
+        this.partState(info, weight.on, `${where} counterweight`, p.id);
+        this.partState(info, weight.off, `${where} counterweight`, p.id);
+        const weighing = perches.filter((x) => x.onPart === p.id).map((x) => x.id);
+        if (weighing.length === 0) this.error('L03-counterweight', [p.id], `lift '${p.id}' has a counterweight but no perch sits on it (\`onPart\`)`);
+        const start = this.def.mocha?.start ?? null;
+        const expected = start !== null && weighing.includes(start) ? weight.on : weight.off;
+        const initial = p.initial ?? info.states?.[0];
+        if (initial !== undefined && initial !== expected) {
+          this.error('L03-counterweight', [p.id], `lift '${p.id}' starts '${initial}', but Mocha ${expected === weight.on ? 'starts on it' : "doesn't start on it"}, so it is '${expected}'`);
+        }
+      }
     }
   }
 

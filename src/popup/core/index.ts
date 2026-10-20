@@ -19,7 +19,8 @@
  * the cascade, rides, counters, `matchPredicate`), `words.ts`, `creatures.ts`, `replay.ts` and the
  * full `events.ts` from #84; `solver.ts` (`solve`, `candidateInputs`, `solverKey`, `nextAction`)
  * from #85; `lint.ts` (`lintPage`, GDD § 3.6) from #86; `hint.ts` (the hint source: the solver from
- * the current state, the stored-solution fallback, 重來 + step 1) from #100.
+ * the current state, the stored-solution fallback, 重來 + step 1) from #100; `carrier.ts` (抱抱, carriers)
+ * and `loopAttach` from #120.
  */
 export * from './types';
 export * from './cond';
@@ -36,4 +37,5 @@ export * from './replay';
 export * from './solver';
 export * from './hint';
 export * from './lint';
-export { definePage } from './define';
+export { definePage, loopAttach } from './define';
+export * from './carrier';

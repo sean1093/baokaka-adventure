@@ -305,11 +305,10 @@ describe('saying a word (step, § 3.3 phases 1 and 5)', () => {
     expect(step(def, taught, say('beep')).state.parts.gate).toBe('open');
   });
 
-  // TODO(#120): 抱抱 — an idle carrier on an adjacent node picks him up (`carried`) and walks its route.
-  test.skip('抱抱 lets an adjacent idle carrier pick him up (#120)', () => {
+  test('抱抱 lets an adjacent idle carrier pick him up (#120; the rules in m3.test.ts)', () => {
     const def = page({ ...line('ABC'), parts: [part('auntie', 'carrier', 100, 0, { route: ['B', 'C'] })] });
     const s = step(def, initialState(def), say('hug')).state;
-    expect(s.baby.mode).toBe('carried');
+    expect(s.baby).toMatchObject({ mode: 'carried', node: 'B', carriedBy: { id: 'auntie', k: 0 } });
   });
 
   // TODO(#128): 一起 — linked mode for the rest of the page; Mocha hops down to his node.
@@ -319,9 +318,9 @@ describe('saying a word (step, § 3.3 phases 1 and 5)', () => {
     expect(s.baby.linked).toBe(true);
   });
 
-  test('抱抱 and 一起 are stubs for now: the event, no effect', () => {
+  test('抱抱 with no carrier: the event and hugNobody (arms up, Mocha purrs); 一起 is a stub for now', () => {
     const def = page({ ...line('AB') });
-    expect(step(def, initialState(def), say('hug')).events).toEqual([{ type: 'hug', id: 'A', at: [0, 0] }]);
+    expect(step(def, initialState(def), say('hug')).events).toEqual([{ type: 'hug', id: 'A', at: [0, 0] }, { type: 'hugNobody' }]);
     expect(step(def, initialState(def), say('together')).state.baby.linked).toBe(false);
   });
 });
