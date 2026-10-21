@@ -22,7 +22,8 @@ import { themeOf } from './placeholders';
 export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'carBodyXinyi' | 'granite' | 'shopFloor' | 'balcony' | 'parkPath' | 'boardwalk' | 'stage'
   | 'carBodySongshan' | 'campusPath' | 'lakeside' | 'gallery' | 'libraryFloor' | 'desk' | 'bookPage'
   | 'neonStreet' | 'arcadeShelf' | 'karaokeStage'
-  | 'marketLane' | 'stallFloor' | 'stallShelf' | 'stallCounter';
+  | 'marketLane' | 'stallFloor' | 'stallShelf' | 'stallCounter'
+  | 'carBodyWenhu' | 'terminalFloor' | 'deckBoards' | 'bridgeFloor' | 'catwalk';
 
 /** The near-corner foreground card. */
 export type ForegroundCard = 'plant' | 'blocks' | 'luggage' | 'shrub' | 'azalea';
@@ -103,6 +104,16 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c5/massage-chairs': { ledge: [{ below: 400, style: 'stallShelf' }, { below: 999, style: 'stallFloor' }], ownPosts: ['sign', 'box1', 'box2', 'seat'], foreground: null, crossing: 'none' },
   // Inside the stall behind its counter (the inner ledge's face is the counter), the lane in front
   'c5/scallion-spread': { ledge: [{ below: 450, style: 'stallCounter' }, { below: 999, style: 'marketLane' }], ownPosts: ['lantern', 'sign', 'trays'], foreground: null, crossing: 'none' },
+  // 松山機場 (#124): the 文湖線 car's body, then the station's terrazzo platform past the doors
+  'c6/front-car': { ledge: 'carBodyWenhu', ledgeSplit: { x: 306, style: 'terminalFloor' }, ownPosts: ['dash', 'strap'], foreground: null, crossing: 'none' },
+  // The hall's floor either side of the carousel (the belt is the way across: no rail)
+  'c6/baggage-hall': { ledge: 'terminalFloor', ownPosts: ['island', 'button', 'caseB'], foreground: null, crossing: 'none' },
+  'c6/observation-deck': { ledge: 'deckBoards', ownPosts: ['bench', 'rail'], foreground: null },
+  // The lounge's floor, then the jet bridge's tunnel floor; the A321's sill (the plank is the way across)
+  'c6/jet-bridge': { ledge: 'terminalFloor', ledgeSplit: { x: 118, style: 'bridgeFloor' }, ownPosts: ['roof', 'bridgeTop'], foreground: null, crossing: 'none', trackPit: false },
+  'c6/tower-catwalk': { ledge: 'catwalk', ownPosts: ['antenna', 'crate'], foreground: null },
+  // The customs hall's floor: the queue, and under the officer's counter (the belt is the way across)
+  'c6/customs-spread': { ledge: 'terminalFloor', ownPosts: ['rope', 'hood', 'counter'], foreground: null, crossing: 'none' },
 };
 
 const NONE: StageDress = {};

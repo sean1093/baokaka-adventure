@@ -74,7 +74,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [121](https://github.com/sean1093/baokaka-adventure/issues/121) | Chapter 5 pages: 「夜市抱抱」 士林夜市 — full specs, then data for 5-1…5-6, solver-green | content, m3 | #120, #118 | done (#195) |
 | [122](https://github.com/sean1093/baokaka-adventure/issues/122) | Chapter 5 art: 士林夜市 pop-up pages, parts, creatures, 土地公 (鴨舌帽) and the 蔥 photo | art, content, m3 | #121, #119 | done (#196) |
 | [123](https://github.com/sean1093/baokaka-adventure/issues/123) | Chapter 6 pages: 「飛機睡著的時候」 松山機場 — full specs, then data for 6-1…6-6, solver-green | content, m3 | #120, #121 | done (#198) |
-| [124](https://github.com/sean1093/baokaka-adventure/issues/124) | Chapter 6 art: 松山機場 pop-up pages, parts, creatures, 土地公 (機場背心) and the 印章 photo | art, content, m3 | #123, #122 | todo |
+| [124](https://github.com/sean1093/baokaka-adventure/issues/124) | Chapter 6 art: 松山機場 pop-up pages, parts, creatures, 土地公 (機場背心) and the 印章 photo | art, content, m3 | #123, #122 | done (#199) |
 | [125](https://github.com/sean1093/baokaka-adventure/issues/125) | Chapter 7 pages: 「纜車上的月亮」 貓空 (動物園 → 纜車 → 茶園) — full specs, then data for 7-1…7-6, solver-green | content, m3 | #120, #123 | todo |
 | [126](https://github.com/sean1093/baokaka-adventure/issues/126) | Chapter 7 art: 貓空 (動物園 → 纜車 → 茶園) pop-up pages, parts, creatures, 土地公 (叢林帽) and the 芹菜 photo | art, content, m3 | #125, #124 | todo |
 | **M4 · Chapters 8–10 + ending** | | | | |

@@ -351,6 +351,23 @@ describe('sources', () => {
     expect(M.parts['c5/chicken-boss']?.states.away).toBeDefined();
   });
 
+  test('chapter 6 (#124): every art key resolves to its own art — no live placeholder, no placeholder stage', () => {
+    const c6 = PAGES.filter((p) => p.chapter === 6);
+    expect(c6.map((p) => p.id)).toEqual(['c6p1', 'c6p2', 'c6p3', 'c6p4', 'c6p5', 'c6p6']);
+    for (const b of backdropSources(c6)) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+    for (const p of c6) {
+      expect(pageArt(p, M).placeholders, p.id).toEqual([]);
+      for (const part of p.parts) expect(isPlaceholder(part.art), `${p.id} ${part.art}`).toBe(false);
+      for (const c of p.creatures) expect(hasCreatureArt(c.art), `${p.id} ${c.art}`).toBe(true);
+    }
+    // The cabin-crew 姊姊 is baked per look (D-85); the loops' belts are one drawing each
+    expect(Object.keys(M.parts['c6/sleepy-crew']?.states ?? {})).toEqual(expect.arrayContaining(['idle', 'carrying', 'back', 'done']));
+    for (const state of ['1', '2', '3']) expect(partImage('c6/carousel-belt', state)?.url, state).toBe(partImage('c6/carousel-belt', '0')?.url);
+  });
+
   test('4-3\'s shadow (the 淘氣\'s art) shows only while Mocha hides behind the lit second sign (#119)', () => {
     const src = CUTOUT_SOURCES['c4/mocha-shadow'];
     expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c4p3', touchable: () => false, expected: [], where: 'shadow' })).toEqual([]);

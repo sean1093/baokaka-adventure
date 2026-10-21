@@ -1,4 +1,4 @@
-import { POPUP, POPUP_CHAPTER_CLOCK, POPUP_FOIL, POPUP_NEON, POPUP_STAGE, characterGrade, mixHex, multiplyHex, worldGrade, type PopupChapterSky, type Rgb } from '../../art/palette';
+import { POPUP, POPUP_AIRPORT, POPUP_CHAPTER_CLOCK, POPUP_FOIL, POPUP_NEON, POPUP_STAGE, characterGrade, mixHex, multiplyHex, worldGrade, type PopupChapterSky, type Rgb } from '../../art/palette';
 
 /**
  * The chapter grade (popup art bible § 3.3 colour clock; art direction § 3.2 `gradeTokens(time)`;
@@ -48,6 +48,8 @@ const NEVER_GRADED: readonly string[] = [
   // Lights: lamps, lit vellum windows, neon, the moon, pinhole stars, lamp shades
   POPUP.lamp, POPUP.lampHot, POPUP.lampAmber, POPUP.windowTop, POPUP.windowMid, POPUP.neonPink, POPUP.neonCyan,
   POPUP_NEON.neonViolet, POPUP_NEON.neonRed,
+  // The airfield's lights (#124): taxi amber, wing-tip red and green, the taxiways' blue, runway white
+  POPUP_AIRPORT.taxiAmber, POPUP_AIRPORT.wingRed, POPUP_AIRPORT.wingGreen, POPUP_AIRPORT.taxiBlue, POPUP_AIRPORT.runwayWhite,
   POPUP.moon, POPUP.moonRim, POPUP.pinhole, POPUP.bulb, POPUP_STAGE.lampShade,
   // Foil (it catches the light) and brass
   POPUP.gold, POPUP.goldLight, POPUP.goldDeep, POPUP.foilShine, POPUP.brassShine,

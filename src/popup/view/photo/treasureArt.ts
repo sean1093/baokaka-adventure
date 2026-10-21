@@ -1,11 +1,11 @@
-import { POPUP as C, POPUP_CAMPUS as K, POPUP_MARKET as M } from '../../../art/palette';
+import { POPUP as C, POPUP_AIRPORT as A, POPUP_CAMPUS as K, POPUP_MARKET as M } from '../../../art/palette';
 import { ref, softEllipse, sparkle, type KitCtx } from '../../art';
 import { albumChapter } from '../../content/album';
 
 /**
  * The chapter treasures as the spread and the photo draw them (GDD § 2.9, § 4.2; #103), flat SVG
  * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1), 畫筆 (chapter 2,
- * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119) and 蔥 (chapter 5, #122) are drawn; the other chapters' treasures are a foil token with the treasure's first
+ * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119), 蔥 (chapter 5, #122) and 印章 (chapter 6, #124) are drawn; the other chapters' treasures are a foil token with the treasure's first
  * character until their chapters' art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
  * never marigold (reserved for touchables). The caller's defs must hold `foil`.
  */
@@ -108,6 +108,26 @@ function scallion(ctx: KitCtx): string {
     + `</g>` + sparkle(ctx, 18, -16, 4);
 }
 
+/**
+ * 印章 (chapter 6, #124; 有印象, a good memory): the customs officer's passport stamp, which literally
+ * reuses the seal style (bible § 6 row 6) — a turned wooden handle with a foil collar over a red
+ * seal base, standing beside a fresh imprint: a red ring with a little plane and 松山 in it.
+ */
+function passportStamp(ctx: KitCtx): string {
+  const plane = 'M0 -6q1 0 1 2v2.4l5 3v1.4l-5 -1.4v3l1.6 1.2v1l-2.6 -.8l-2.6 .8v-1l1.6 -1.2v-3l-5 1.4v-1.4l5 -3v-2.4q0 -2 1 -2z';
+  return `<ellipse cx="2" cy="17" rx="20" ry="3" fill="${C.shadow}" opacity=".28"/>`
+    // The imprint, left, a little tilted
+    + `<g transform="translate(-9 8) rotate(-12)"><circle r="10" fill="none" stroke="${C.seal}" stroke-width="1.6" opacity=".85"/><circle r="7.4" fill="none" stroke="${C.seal}" stroke-width=".7" opacity=".85"/>`
+    + `<path d="${plane}" fill="${C.seal}" opacity=".85" transform="scale(.7) rotate(-45)"/>`
+    + `<text data-art-text="" y="9.4" text-anchor="middle" font-family="'Noto Serif TC', serif" font-weight="900" font-size="3.6" fill="${C.seal}" opacity=".85">松山</text></g>`
+    // The stamp, right: red base, foil collar, wooden handle with its knob
+    + `<g transform="translate(9 0)"><rect x="-9" y="6" width="18" height="9" rx="2" fill="${C.seal}"/><path d="M-9 13h18" stroke="${C.sealDark}" stroke-width="1.6"/>`
+    + `<rect x="-6" y="3" width="12" height="4" rx="1" fill="${ref(ctx, 'foil')}"/>`
+    + `<path d="M-3.6 3V-8Q-3.6 -12 0 -12Q3.6 -12 3.6 -8V3Z" fill="${A.counterLight}"/><circle cy="-14" r="5" fill="${A.counter}"/>`
+    + `<path d="M-2 -15.6q2 -2 4 -1M-2 -9v10" stroke="${C.cutRim}" stroke-width=".8" fill="none" opacity=".5"/></g>`
+    + sparkle(ctx, 18, -14, 4);
+}
+
 /** A treasure not drawn yet: a foil token with its first character. */
 function token(ctx: KitCtx, name: string): string {
   return `<ellipse cx="1" cy="17" rx="15" ry="3" fill="${C.shadow}" opacity=".28"/>`
@@ -122,6 +142,7 @@ export function treasureArt(ctx: KitCtx, chapter: number): string {
   if (chapter === 3) return book(ctx);
   if (chapter === 4) return microphone(ctx);
   if (chapter === 5) return scallion(ctx);
+  if (chapter === 6) return passportStamp(ctx);
   return token(ctx, albumChapter(chapter).treasure);
 }
 

@@ -44,3 +44,18 @@ export function CarriageView({ def, prev, state, carriage: c, ctx, ms, reduced, 
     </g>
   );
 }
+
+/**
+ * What rides a loop's slot (#124: 6-2's suitcases on the carousel, 6-6's tray on the X-ray belt):
+ * its drawing (`riderArt`) at the node, sliding exactly as the node does, so a baby riding it lerps
+ * with it. A loop's own bitmap is its belt, the same in every state.
+ */
+export function RiderView({ def, prev, state, node, html, ms, reduced, preview = null }: { def: PageDef; prev: SimState; state: SimState; node: string; html: string; ms: number; reduced: boolean; preview?: PartPreview | null }) {
+  const at = drawnNodePos(def, prev, state, node, ms, reduced, preview);
+  if (at === undefined) return null;
+  return (
+    <g data-rider={node} data-anim="" transform={`translate(${r2(at[0])} ${r2(at[1])})`}>
+      <ArtG html={html} />
+    </g>
+  );
+}

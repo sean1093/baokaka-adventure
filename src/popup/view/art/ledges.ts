@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
+import { POPUP as C, POPUP_AIRPORT as A, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
 import { depth, f1, ref, seeded, softEllipse, type KitCtx } from '../../art';
 import { PAGE_W, towardVp } from '../geometry';
 import { LEDGE_DEPTH, type LedgeRun, type Slope } from '../stage';
@@ -540,6 +540,63 @@ function stallCounter(ctx: KitCtx, run: LedgeRun): string {
   return depth(ctx, 4, body, boxOutline(b));
 }
 
+/**
+ * The terminal's floor (#124): a polished terrazzo slab on top, a white panel in front with a runway-
+ * blue stripe and the floor lights' warm reflections.
+ */
+function terminalFloor(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let glints = '';
+  for (let x = b.x0 + 16, i = 0; x < b.x1 - 10; x += 44, i++) glints += `<rect x="${f1(x)}" y="${b.y + 30}" width="${f1(Math.min(14, b.x1 - x - 4))}" height="2" rx="1" fill="${C.lamp}" opacity=".3"/>`;
+  const body = (b.side ? `<path d="${b.side}" fill="${A.whiteDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(mixHex(A.whiteShade, A.whiteDeep, 0.35), A.runwayDeep, 0.22)}"/>`
+    + `<rect x="${b.x0}" y="${b.y + 12}" width="${b.x1 - b.x0}" height="7" fill="${A.runway}"/>` + glints
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="5" fill="${A.terrazzoDeep}"/>`
+    + `<path d="${b.top}" fill="${mixHex(A.terrazzo, A.runwayDeep, 0.15)}"/><path d="${topJoints(b, 24)}" stroke="${A.terrazzoDeep}" stroke-width=".7" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The observation deck's boards (#124): composite planks on top, a steel fascia with a row of little blue lights in front. */
+function deckBoards(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let lights = '';
+  for (let x = b.x0 + 10; x < b.x1 - 4; x += 20) lights += `M${f1(x - 1.6)} ${b.y + 22}a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0z`;
+  const body = (b.side ? `<path d="${b.side}" fill="${A.deckDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(A.steelDeep, A.deckDeep, 0.5)}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10" fill="${A.deck}"/><path d="M${b.x0} ${b.y + 10}H${b.x1}" stroke="${C.shadow}" stroke-width="1.6" opacity=".4"/>`
+    + `<path d="${lights}" fill="${A.taxiBlue}"/><path d="M${b.x0} ${b.y + 34}H${b.x1}" stroke="${A.steel}" stroke-width="1" opacity=".4"/>`
+    + `<path d="${b.top}" fill="${A.deckLight}"/><path d="M${b.ax} ${f1((b.ay + b.y) / 2)}H${b.bx}" stroke="${A.deckDeep}" stroke-width=".8" opacity=".6"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The jet bridge's floor (#124): grey-blue carpet on top, the tunnel's corrugated steel skin in front. */
+function bridgeFloor(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let flutes = '';
+  for (let x = b.x0 + 3; x < b.x1; x += 6) flutes += `M${f1(x)} ${b.y + 8}v${b.t - 8}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${A.steelDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${A.steel}"/><path d="${flutes}" stroke="${A.steelDeep}" stroke-width="2" opacity=".45"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="8" fill="${A.steelLight}"/><path d="M${b.x0} ${b.y + 8}H${b.x1}" stroke="${C.shadow}" stroke-width="1.4" opacity=".35"/>`
+    + `<path d="${b.top}" fill="${mixHex(A.crew, A.steel, 0.4)}"/>` + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The control tower's catwalk (#124): steel grating on top, its open grating face in front with a white safety stripe. */
+function catwalk(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let grate = '';
+  for (let x = b.x0 + 2; x < b.x1; x += 5) grate += `M${f1(x)} ${b.y + 12}v${b.t - 16}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${A.grate}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(A.runwayDeep, C.shadow, 0.3)}"/><path d="${grate}" stroke="${A.grate}" stroke-width="1.6"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="8" fill="${A.steel}"/><rect x="${b.x0}" y="${b.y + 8}" width="${b.x1 - b.x0}" height="3" fill="${A.white}" opacity=".8"/>`
+    + `<rect x="${b.x0}" y="${b.y + b.t - 5}" width="${b.x1 - b.x0}" height="5" fill="${A.steelDeep}"/>`
+    + `<path d="${b.top}" fill="${A.grate}"/><path d="${topJoints(b, 5)}" stroke="${mixHex(A.runwayDeep, C.shadow, 0.3)}" stroke-width="1.2" opacity=".7"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
 /** A ledge in its page's material (`dress.ts`): the dressed styles here, brick and rug from the placeholder stage. */
 export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme: StageTheme): string {
   if (run.single) {
@@ -551,6 +608,7 @@ export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme
     if (style === 'neonStreet') return neonStreet(ctx, run);
     if (style === 'marketLane') return marketLane(ctx, run);
     if (style === 'stallFloor' || style === 'stallShelf' || style === 'stallCounter') return styledLedge(ctx, { ...run, single: false }, style, theme);
+    if (style === 'terminalFloor' || style === 'deckBoards' || style === 'bridgeFloor' || style === 'catwalk' || style === 'carBodyWenhu') return styledLedge(ctx, { ...run, single: false }, style, theme);
     return plainLedge(ctx, run, theme);
   }
   switch (style) {
@@ -566,6 +624,16 @@ export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme
       return stallShelf(ctx, run);
     case 'stallCounter':
       return stallCounter(ctx, run);
+    case 'carBodyWenhu':
+      return carBody(ctx, run, A.wenhu, A.wenhuDeep);
+    case 'terminalFloor':
+      return terminalFloor(ctx, run);
+    case 'deckBoards':
+      return deckBoards(ctx, run);
+    case 'bridgeFloor':
+      return bridgeFloor(ctx, run);
+    case 'catwalk':
+      return catwalk(ctx, run);
     case 'arcadeShelf':
       return arcadeShelf(ctx, run);
     case 'karaokeStage':

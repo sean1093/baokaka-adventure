@@ -41,13 +41,14 @@ import { dressedLedge, foregroundCard, styledRamp } from './art/ledges';
 import { Fireflies } from './Fireflies';
 import { attractorArt, chapterSky, decoyArt, spine, perchMark, perchPost, rail, ramp, spotPool, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
+import { riderArt } from './art/airport';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
 import { NO_GESTURE, hitCenter, minHit, rideHome, shiftHit, targetsOf, type GestureFlags } from './gestures';
 import { clamp01, drawnNodePos, easeInOut, lerpPt, offpagePoint, partProgress, stepPose } from './interp';
 import { PRESET_Z, type LayerId } from './layers';
 import { ArtG, r2, tweened } from './parts/common';
 import { moverPoint } from './parts/MoverView';
-import { CarriageView, MOVERS, partView, type MoverProps, type PartViewProps } from './parts';
+import { CarriageView, MOVERS, RiderView, partView, type MoverProps, type PartViewProps } from './parts';
 import { foregroundSlot, stageOf } from './stage';
 import { SayRing } from './words/SayFx';
 import './hud/stickers.css';
@@ -212,6 +213,11 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
 
   // ——— Parts, split around the ledges by depth ———
   const riders = useMemo(() => new Set(def.nodes.filter((n) => n.attach).map((n) => n.attach!.part)), [def]);
+  // What rides a loop's slots (#124: suitcases, a tray), drawn at their nodes over the belt
+  const slotRiders = useMemo(() => def.parts.filter((p) => p.preset === 'loop').flatMap((p) => def.nodes.filter((n) => n.attach?.part === p.id).flatMap((n) => {
+    const art = riderArt(p.art, n.id);
+    return art === null ? [] : [{ node: n.id, html: art(ctx) }];
+  })), [def, ctx]);
   const lookOf = (part: PageDef['parts'][number]): PartLook | undefined => {
     const marigold = wearsMarigold(part);
     const input = targets.some((tg) => tg.kind === 'part' && tg.id === part.id);
@@ -518,6 +524,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
           <CarriageView key={c.part} def={def} prev={prev} state={state} carriage={c} ctx={ctx} ms={ms} reduced={reduced} preview={preview} />
         ))}
         {partEls('mid')}
+        {slotRiders.map((r) => (
+          <RiderView key={r.node} def={def} prev={prev} state={state} node={r.node} html={r.html} ms={ms} reduced={reduced} preview={preview} />
+        ))}
       </Layer>
       <Layer id="floor">
         <ArtG html={statics.floor} />

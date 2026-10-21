@@ -6,6 +6,7 @@ import { backpacker, origamiPigeon } from './creatures';
 import { commuter, egret, jogger, painter, shiba, squirrel, sweeper, turtle } from './park';
 import { origamiBird, placeholderBackdrop } from './placeholders';
 import { crowdLegs, pachinkoUncle, passengers, strayDog } from './market';
+import { nightHerons } from './airport';
 import { busker, dancers, karaokeKing } from './ximen';
 
 /**
@@ -57,6 +58,8 @@ const CREATURES: Readonly<Record<string, CreatureArt>> = {
   'c5/crowd-legs': crowdLegs,
   'c5/pachinko-uncle': pachinkoUncle,
   'c5/stray-dog': strayDog,
+  // 松山機場 (#124, `airport.ts`): the night herons roosting on 6-4's gangplank
+  'c6/night-birds': nightHerons,
 };
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';

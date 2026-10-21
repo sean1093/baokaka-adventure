@@ -22,7 +22,7 @@ import { chalk, face, figure, limb, ticks, type Pt } from './ximen';
  */
 
 /** A die-cut piece: its outline and its print. */
-interface Cut {
+export interface Cut {
   readonly outline: string;
   readonly print: string;
 }
@@ -73,7 +73,7 @@ const SHOULDER_F: Pt = [6, -52];
 export const HEAD: Pt = [1, -65];
 const HEAD_R = 9.4;
 
-const circle = (x: number, y: number, r: number) => `M${f1(x - r)} ${f1(y)}a${f1(r)} ${f1(r)} 0 1 0 ${f1(2 * r)} 0a${f1(r)} ${f1(r)} 0 1 0 ${f1(-2 * r)} 0Z`;
+export const circle = (x: number, y: number, r: number) => `M${f1(x - r)} ${f1(y)}a${f1(r)} ${f1(r)} 0 1 0 ${f1(2 * r)} 0a${f1(r)} ${f1(r)} 0 1 0 ${f1(-2 * r)} 0Z`;
 const rot = (p: Pt, deg: number, o: Pt = [0, -29]): Pt => {
   const a = (deg * Math.PI) / 180;
   const [x, y] = [p[0] - o[0], p[1] - o[1]];
@@ -220,16 +220,16 @@ const VENDOR: Look = {
 // ——— Poses ———
 
 /** Standing, arms open toward +x ("come here"). */
-const OPEN: Pose = { footB: [-6, 0], footF: [6, 0], elbowB: [4, -46], handB: [14, -50], elbowF: [14, -44], handF: [22, -50], eyes: 'happy', mouth: 'open' };
+export const OPEN: Pose = { footB: [-6, 0], footF: [6, 0], elbowB: [4, -46], handB: [14, -50], elbowF: [14, -44], handF: [22, -50], eyes: 'happy', mouth: 'open' };
 /** Holding him at her hip toward +x: the near hand under his seat, the far arm round his back. */
-const HOLD: Pose = { footB: [-5, 0], footF: [7, 0], elbowB: [2, -40], handB: [16, -38], elbowF: [14, -40], handF: [20, -30], eyes: 'happy', mouth: 'smile' };
+export const HOLD: Pose = { footB: [-5, 0], footF: [7, 0], elbowB: [2, -40], handB: [16, -38], elbowF: [14, -40], handF: [20, -30], eyes: 'happy', mouth: 'smile' };
 /** Holding him on her −x side (a carry back). */
-const HOLD_BACK: Pose = { footB: [-7, 0], footF: [5, 0], elbowB: [-14, -40], handB: [-20, -30], elbowF: [-2, -40], handF: [-16, -38], eyes: 'happy', mouth: 'open', lean: -6 };
+export const HOLD_BACK: Pose = { footB: [-7, 0], footF: [5, 0], elbowB: [-14, -40], handB: [-20, -30], elbowF: [-2, -40], handF: [-16, -38], eyes: 'happy', mouth: 'open', lean: -6 };
 /** Waving with the near hand. */
-const WAVE: Pose = { footB: [-5, 0], footF: [5, 0], elbowB: [-9, -40], handB: [-10, -28], elbowF: [15, -58], handF: [17, -72], eyes: 'happy', mouth: 'open' };
+export const WAVE: Pose = { footB: [-5, 0], footF: [5, 0], elbowB: [-9, -40], handB: [-10, -28], elbowF: [15, -58], handF: [17, -72], eyes: 'happy', mouth: 'open' };
 
 /** A shadow and the die-cut figure, the figure's art scaled by `k`. */
-function stand(ctx: KitCtx, cut: Cut, k: number, flip = false, shadowW = 20): string {
+export function stand(ctx: KitCtx, cut: Cut, k: number, flip = false, shadowW = 20): string {
   const s = scaled(cut, k, flip);
   return softEllipse(ctx, 0, 1, shadowW * k * 0.6, 3.4, 'shadow', 0.42) + figure(s.outline, s.print);
 }
@@ -247,7 +247,7 @@ function marketBag(x: number, y: number): Cut {
   };
 }
 
-const join = (...cuts: Cut[]): Cut => ({ outline: cuts.map((c) => c.outline).join(''), print: cuts.map((c) => c.print).join('') });
+export const join = (...cuts: Cut[]): Cut => ({ outline: cuts.map((c) => c.outline).join(''), print: cuts.map((c) => c.print).join('') });
 
 /**
  * The 夜市阿姨 (5-3; a carrier, 144 tall): a perm, a floral blouse, 藍白拖, the 茄芷袋 on her arm.

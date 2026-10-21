@@ -1494,6 +1494,87 @@ export const POPUP_MARKET = {
   tunnel: '#14121E',
 } as const;
 
+/**
+ * Chapter 6's palette kit (松山機場, 02:50; popup art bible § 6 row 6, #124): **runway blue** and
+ * **white** dominant (the night apron and the terminal's white card, the sleeping planes' white
+ * fuselages), **taxi-light amber** and **wing-tip red** the accent (with the taxiways' blue edge
+ * lights and the green centre line: real airport lights, so they glow, never graded). The signature
+ * materials are the terminal's glassine glass and silver foil. Planes are sharp origami folds
+ * (faceted fuselages in three tones with a crease line), and carry no airline's livery (GDD § 6
+ * risk 11). Every warm decoration here (the amber, the kraft carousel, the crew's scarf) is held
+ * ≥ ΔE 12 from marigold by `affordance.test.ts`.
+ */
+export const POPUP_AIRPORT = {
+  // Runway blue: the apron and the runway at night, the signs' ground
+  runway: '#1E2E66',
+  runwayLight: '#30437E',
+  runwayDeep: '#121C46',
+  // The tarmac's asphalt card (a bluer grey than the night market's lane), its painted lines
+  tarmac: '#283050',
+  tarmacLight: '#3A4468',
+  tarmacDeep: '#181E36',
+  paint: '#D8DCE8',
+  // The terminal's white card and its shade under the night
+  white: '#E4E6EE',
+  whiteShade: '#B4BAD0',
+  whiteDeep: '#7E86A6',
+  // Glassine terminal glass: its tint over the night and its deep
+  glass: '#33508E',
+  glassDeep: '#1E3264',
+  glassLight: '#6E8CC8',
+  // Steel and aluminium: the jet bridge, the carousel's frame, the X-ray machine
+  steel: '#8A94B2',
+  steelLight: '#BCC6DE',
+  steelDeep: '#525C7E',
+  // The lights (never graded): taxi amber, wing-tip red and green, the taxiways' blue, runway white
+  taxiAmber: '#F2A65A',
+  wingRed: '#E2484A',
+  wingGreen: '#5ED69A',
+  taxiBlue: '#6FA8FF',
+  runwayWhite: '#F6F1E2',
+  // The planes: white fuselage facets, the belly's shade, an unbranded blue tail, the 貨機's grey
+  fuselage: '#EEF0F6',
+  fuselageShade: '#C4CADC',
+  fuselageDeep: '#8C94B0',
+  tail: '#3E5CA8',
+  tailDeep: '#2A4080',
+  cargo: '#A4A6B6',
+  cargoDeep: '#6E7088',
+  engine: '#5A6282',
+  // The 文湖線: its brown band (the line's colour, deepened so it never reads marigold), the car's cream
+  wenhu: '#8E5A36',
+  wenhuDeep: '#5E3A22',
+  carWall: '#DCD8CC',
+  carWallShade: '#ADA9A2',
+  // The baggage carousel: kraft-card plates, black rubber, the hall's floor
+  rubber: '#2A2832',
+  rubberLight: '#46444F',
+  terrazzo: '#B8B8C8',
+  terrazzoDeep: '#7E7E96',
+  // The observation deck's boards and the tower's catwalk grating
+  deck: '#5A5468',
+  deckLight: '#7A738A',
+  deckDeep: '#3A3548',
+  grate: '#4C5470',
+  // The control tower's cab glass (a green-blue tint) and its lit consoles
+  towerGlass: '#2E5E6E',
+  towerGlassLight: '#5E9AA6',
+  // Customs: the officer's counter (dark wood), the X-ray machine's cream, the ink pad
+  counter: '#5E4434',
+  counterLight: '#7E5E48',
+  counterDeep: '#3A2A22',
+  xray: '#C8CCD8',
+  xrayDeep: '#8A90A6',
+  inkPad: '#3A2A4A',
+  // The cast: the cabin crew's navy uniform and red scarf (no airline's), night herons
+  crew: '#2E3C72',
+  crewDeep: '#1E2850',
+  scarf: '#C8464E',
+  heron: '#8C93A8',
+  heronDeep: '#565C74',
+  heronCap: '#1E2232',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 
