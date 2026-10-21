@@ -516,7 +516,8 @@ export function origamiBird(ctx: KitCtx): string {
  * fortune-teller's round dark glasses in gold wire under his red 員外帽 (#118, #119); `鴨舌帽` is chapter 5's
  * night-market duck-bill cap, worn peak forward (#121); `機場背心` is chapter 6's apron crew's safety
  * vest, under his red 員外帽 (#123); `叢林帽` is chapter 7's khaki jungle hat (a zookeeper's pith
- * helmet, its brim all round and a leaf-green band; #125).
+ * helmet, its brim all round and a leaf-green band; #125); `毛巾` is chapter 8's folded white bath towel on
+ * his head, the way the hot-spring 阿伯 wear it (#129).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -526,7 +527,11 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
     + `<circle cx="-4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/><circle cx="4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/>`;
   // Chapter 5's 鴨舌帽 (#121; #122): a night-market duck-bill cap worn peak forward — a two-tone crown
   // (a cream front panel, a vermilion back), a button on top, a long dark peak jutting out
-  const cap = hat === '叢林帽'
+  const cap = hat === '毛巾'
+    // Chapter 8's 毛巾 (#129): a white bath towel folded flat on his head, a blue stripe at its end
+    ? `<path d="M-8.6 -2.6Q-9 -9.4 0 -9.6Q9 -9.4 8.6 -2.6Z" fill="${C.standeeCard}"/><path d="M-9.4 -5.4H9.4V-2.4H-9.4Z" fill="${C.washi}"/>`
+      + `<path d="M5.6 -5.4V-2.4" stroke="${C.wordBeep}" stroke-width="1.4"/><path d="M-6 -8q3 -1.4 6 -1.2" stroke="${C.cutRim}" stroke-width=".8" fill="none" opacity=".7"/>`
+    : hat === '叢林帽'
     // Chapter 7's 叢林帽 (#125): a khaki pith helmet — a domed crown, a brim all round, a leaf-green band
     ? `<path d="M-12.6 -2.2Q0 1.4 12.6 -2.2Q11 -.4 0 .4Q-11 -.4 -12.6 -2.2Z" fill="${C.corrugatedDark}"/>`
       + `<path d="M-8.4 -2.6q0 -8.6 8.4 -8.6q8.4 0 8.4 8.6z" fill="${C.corrugatedLight}"/><path d="M-8.4 -3.4h16.8v1.6h-16.8z" fill="${C.quiltLeaf}"/>`
@@ -598,7 +603,8 @@ export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string 
  * origin on the water), `c3/bell` the brass 傅鐘 (origin at its crown), `c3/glasses` reading glasses
  * (origin at the bridge); `c5/phone` 5-1's glowing phone and `c5/griddle` 5-6's shining griddle (#121,
  * drawn in the market kit by #122); `c7/panda-sign` 7-1's lit panda sign over the platform (#125; drawn in the
- * chapter's kit by #126); any other key a cold silver glint. Drawn in the campus kit by #117.
+ * chapter's kit by #126); `c8/stained-glass` 8-1's stained-glass window in the hot-spring car (#129, a
+ * placeholder until #130); any other key a cold silver glint. Drawn in the campus kit by #117.
  */
 export function decoyArt(ctx: KitCtx, key?: string): string {
   const glint = (x: number, y: number, r: number) => sparkle(ctx, x, y, r);
@@ -689,6 +695,17 @@ export function decoyArt(ctx: KitCtx, key?: string): string {
           + `<rect x="-16" y="7" width="32" height="5" fill="${MK.keeperGreen}"/>`
           + `<text data-art-text="" x="0" y="11.4" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="4.6" fill="${C.washi}">熊貓館</text>`, `<path d="${box}"/>`)
         + glint(17, -15, 3.8) + glint(-17, 12, 3);
+    }
+    case 'c8/stained-glass': {
+      // 8-1's stained-glass window in the hot-spring car (#129; a placeholder until #130): an arched
+      // window of coloured glassine panes in a dark frame, lamplight glittering through it. Within ±18 units
+      const arch = 'M-14 14V-4Q-14 -18 0 -18Q14 -18 14 -4V14Z';
+      return softEllipse(ctx, 0, 0, 26, 22, 'lamp', 0.18, 'blur8')
+        + depth(ctx, 3, `<path d="${arch}" fill="${C.printDark}"/><path d="M-11 12V-4Q-11 -15 0 -15Q11 -15 11 -4V12Z" fill="${C.glassine}"/>`
+          + `<path d="M-11 0H11V12H-11Z" fill="${C.washiCeladon}" opacity=".85"/><path d="M-11 -4Q-11 -15 0 -15V0H-11Z" fill="${C.washiPink}" opacity=".85"/>`
+          + `<path d="M0 -15Q11 -15 11 -4V0H0Z" fill="${C.printLilac}" opacity=".85"/><circle cx="0" cy="0" r="4" fill="${C.lamp}"/>`
+          + `<path d="M0 -15V12M-11 0H11" stroke="${C.printDark}" stroke-width="1.6"/>`, `<path d="${arch}"/>`)
+        + glint(15, -14, 3.8) + glint(-15, 10, 3);
     }
     default:
       return softEllipse(ctx, 0, 0, 16, 16, 'lamp', 0.16, 'blur8') + `<circle r="7" fill="${C.glassine}" stroke="${C.moonRim}" stroke-width="1.2"/>`

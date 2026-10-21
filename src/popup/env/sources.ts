@@ -10,6 +10,7 @@ import { C4_BACKDROPS, C4_CUTOUTS, C4_PARTS } from './art/c4';
 import { C5_BACKDROPS, C5_PARTS } from './art/c5';
 import { C6_BACKDROPS, C6_PARTS } from './art/c6';
 import { C7_BACKDROPS, C7_CUTOUTS, C7_PARTS } from './art/c7';
+import { C8_PARTS } from './art/c8';
 import { SCREEN_ART, type ScreenSource } from './art/screens';
 import type { EnvBox } from './manifest';
 
@@ -67,6 +68,7 @@ export const PART_SOURCES: Readonly<Record<string, PartSource>> = {
   ...C5_PARTS,
   ...C6_PARTS,
   ...C7_PARTS,
+  ...C8_PARTS,
 };
 
 /** Standing cut-outs by key (e.g. 'c1/lamp-post'). */

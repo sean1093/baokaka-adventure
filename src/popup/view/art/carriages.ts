@@ -91,12 +91,28 @@ function clawCart(ctx: KitCtx, w: number, linked: boolean): string {
     + (linked ? brad(ctx, cx, -80, 4.5, true) : '');
 }
 
+/**
+ * 8-6's abacus rods (#129; a placeholder until the chapter's art, #130): the block of dark wooden
+ * beads on a rod that Baokaka climbs onto — three beads side by side under the deck, the rod
+ * through them. The rod's slider is pulled by its handle at the bottom of the page.
+ */
+function abacusBeads(ctx: KitCtx, w: number, linked: boolean): string {
+  const bead = (x: number) => `M${f1(x - 8)} 9L${f1(x)} 1L${f1(x + 8)} 9L${f1(x)} 17Z`;
+  const beads = [w / 2 - 16, w / 2, w / 2 + 16].map(bead).join('');
+  return `<path d="M${-12} 9H${w + 12}" stroke="${C.woodDeep}" stroke-width="2.4" stroke-linecap="round"/>`
+    // Flat (no stacked shadow): three of these move on the spread, inside its animated-node budget
+    + `<path d="${beads}" fill="${C.woodDeep}"/><path d="M${f1(w / 2 - 22)} 6H${f1(w / 2 + 22)}" stroke="${C.wood}" stroke-width="1.4" opacity=".8"/>`
+    + (linked ? brad(ctx, w / 2, 9, 3.5, true) : '');
+}
+
 const CARRIAGES: Readonly<Record<string, CarriageArt>> = {
   'c1/train-blue': trainBlue,
   'c1/bento-cart': bentoCart,
   'c4/claw-cart': clawCart,
   // 6-4's telescoping jet-bridge section (#124, `airport.ts`)
   'c6/bridge-extend': bridgeSection,
+  // 8-6's abacus rods (#129)
+  'c8/abacus-rod': abacusBeads,
 };
 
 /** The carriage drawing for a part art key (the placeholder carriage when it has none). */

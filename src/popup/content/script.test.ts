@@ -68,7 +68,8 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
     expect(endLines(5)).toEqual(['c5p6.end.1', 'c5p6.end.2']);
     expect(endLines(6)).toEqual(['c6p6.end.1']);
     expect(endLines(7)).toEqual(['c7p6.end.1']);
-    expect(endLines(8)).toEqual([]);
+    expect(endLines(8)).toEqual(['c8p6.end.1']);
+    expect(endLines(9)).toEqual([]);
     expect(SOON_LINES.map((k) => SCRIPT[k].who)).toEqual(['nar']);
     expect(hasNextChapter(1)).toBe(true);
     expect(hasNextChapter(10)).toBe(false);

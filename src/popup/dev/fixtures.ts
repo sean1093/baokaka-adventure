@@ -144,6 +144,10 @@ const ON_SPREAD_C6: NavState = { base: { kind: 'page', id: 'c6p6', run: 0 }, lay
 const AT_SPREAD_C7 = (['c7p1', 'c7p2', 'c7p3', 'c7p4', 'c7p5'] as const).reduce((s, id) => completePage(s, id, { moves: 4 }), C6_DONE);
 const C7_DONE = keepPhoto(completePage(AT_SPREAD_C7, 'c7p6', { moves: 4 }), 7, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 19, 30) });
 const ON_SPREAD_C7: NavState = { base: { kind: 'page', id: 'c7p6', run: 0 }, layer: null };
+// Chapter 8 (#129): every page before 8-6 done, then 8-6 with its photo
+const AT_SPREAD_C8 = (['c8p1', 'c8p2', 'c8p3', 'c8p4', 'c8p5'] as const).reduce((s, id) => completePage(s, id, { moves: 4 }), C7_DONE);
+const C8_DONE = keepPhoto(completePage(AT_SPREAD_C8, 'c8p6', { moves: 5 }), 8, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 20, 0) });
+const ON_SPREAD_C8: NavState = { base: { kind: 'page', id: 'c8p6', run: 0 }, layer: null };
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -290,11 +294,25 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'Chapter 7\'s end (GDD § 5.2 7-6 end; #125): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——芹菜。」 Live, the tap fills the 抓周 tray\'s seventh slot.',
   },
   {
-    name: 'chapter-soon-c8',
-    page: 'c7p6',
+    name: 'spread-shell-c8',
+    page: 'c8p6',
     steps: [],
-    screen: { nav: ON_SPREAD_C7, save: C7_DONE, soonCard: 8 },
-    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 8 since #125): chapter 7 done, the chapter turn drops chapter 8\'s card over the book on the quilt — 第八章, 「熱呼呼的煙」, 04:00, 新北投 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
+    screen: { nav: ON_SPREAD_C8, save: AT_SPREAD_C8 },
+    note: '8-6 in the game shell (#129): play it live — slide the abacus\'s rods into a staircase (he climbs), 咻—— the steam off the counter, Mocha onto the bell (the 番台\'s window opens: 「歡迎光臨！大人五十，囡仔免錢。」), the photo moment with the 算盤, the album page, the chapter-end line, the tray\'s eighth coin, the sticker card, chapter 9\'s card with 「未完待續」, then the 目錄 (`check:play` scenario `photo-spread-c8`).',
+  },
+  {
+    name: 'chapter-end-c8',
+    page: 'c8p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C8, save: C8_DONE, endLinesOf: 8 },
+    note: 'Chapter 8\'s end (GDD § 5.2 8-6 end; #129): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——算盤。」 Live, the tap fills the 抓周 tray\'s eighth slot.',
+  },
+  {
+    name: 'chapter-soon-c9',
+    page: 'c8p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C8, save: C8_DONE, soonCard: 9 },
+    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 9 since #129): chapter 8 done, the chapter turn drops chapter 9\'s card over the book on the quilt — 第九章, 「河的盡頭是海」, 04:40, 淡水 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
   },
   {
     name: 'album-c1-retake',
@@ -1221,6 +1239,169 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     page: 'c7p6',
     steps: [{ mocha: 'basket' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'hug' }, { wait: 'settle' }, { mocha: 'post' }, { wait: 'goal' }],
     note: '7-6: set down by the fence, Mocha onto the fence post lifted its latch, the gate swung open (the 土地公\'s little shrine in the corner), and Baokaka climbed the last step to the 芹菜 — 「這個！」 (in the game the photo moment frames this).',
+    expect: { event: 'grab' },
+  },
+  // ——— Chapter 8 「熱呼呼的煙」 (#129; its art #130) ———
+  {
+    name: 'c8p1-start',
+    page: 'c8p1',
+    steps: [{ wait: 'settle' }],
+    note: '8-1 「新北投支線」 (#129): the 新北投 branch line\'s hot-spring car. Baokaka climbed onto the middle seat under the stained-glass window (a decoy) and reaches for it 「要！要！」; his cushion keeps the dent. A 泡湯阿伯 dozes by his big wooden bath bucket in the aisle. Mocha on the luggage rack over the left bench; a paw print on the far rack.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c8p1-bucket',
+    page: 'c8p1',
+    steps: [{ mocha: 'rack2' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }],
+    note: '8-1: Mocha up on the far luggage rack past the bucket, and 不要！ to the window turned Baokaka round: he climbed down to the dozing 阿伯 and reaches for Mocha over the bucket (the 土地公 in his 毛巾 beside Mocha on the rack).',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c8p1-uncle',
+    page: 'c8p1',
+    steps: [{ mocha: 'rack2' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'hug' }, { wait: 1 }],
+    show: { talk: ['c8p1.uncle.1'] },
+    note: '8-1: 抱抱 — the 泡湯阿伯 wakes (「嗯……要去泡湯喔？阿伯抱你過去。」) and lifts him over the bucket.',
+    expect: { mode: 'carried' },
+  },
+  {
+    name: 'c8p2-start',
+    page: 'c8p2',
+    steps: [{ wait: 2 }],
+    note: '8-2 「地熱谷」 (#129): the steaming green pool of Thermal Valley. Baokaka cuddles Mocha on the boardwalk\'s lamp. Two vents in the pool, each with a valve on the front rim: the far one is on (its paper cloud floats high in the steam), the near one off (its cloud sits on the vent). A paw print on the rock by the far vent.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c8p2-steam',
+    page: 'c8p2',
+    steps: [{ wait: 2 }, { mocha: 'rockB' }],
+    note: '8-2: a tap on the rock by the far vent while its steam is on — Mocha\'s fur puffs up: 「不要。」 (C7).',
+    expect: { event: 'mochaPuff' },
+  },
+  {
+    name: 'c8p2-rock',
+    page: 'c8p2',
+    steps: [{ set: 'valveB', to: 'off' }, { mocha: 'rockB' }, { wait: 'settle' }, { set: 'valveA', to: 'on' }, { wait: 'settle' }],
+    note: '8-2: the far vent turned off (its cloud sank; the 土地公 in his 毛巾 soaks in its pool), Mocha jumped onto its rock, and the near vent turned on: its cloud rose level with the boardwalk and Baokaka crawled onto it, reaching for Mocha.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c8p2-across',
+    page: 'c8p2',
+    steps: [{ set: 'valveB', to: 'off' }, { mocha: 'rockB' }, { wait: 'settle' }, { set: 'valveA', to: 'on' }, { wait: 'settle' }, { set: 'valveB', to: 'on' }, { wait: 2 }],
+    note: '8-2: the far vent back on — the steam came up under Mocha (he stays, fur on end) and lifted the far cloud: Baokaka climbed onto it beside him and sees the bead on the rocks.',
+  },
+  {
+    name: 'c8p3-start',
+    page: 'c8p3',
+    steps: [{ wait: 2 }],
+    note: '8-3 「呼呼」 (#129): the bath\'s boardwalk, a cloud of steam over it half way along. Baokaka cuddles Mocha on the bench\'s back; the 溫泉阿嬤 sits at the bench\'s end in her sun hat with a hot-spring egg. A paw print on the rock past the steam.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c8p3-learn',
+    page: 'c8p3',
+    steps: [{ mocha: 'rock' }, { wait: 1 }],
+    show: { words: { card: 'whoosh' } },
+    note: 'Learning 咻—— (GDD § 5.4, #129): Mocha past the steam drew Baokaka to its edge; the 溫泉阿嬤 blew on her egg (「蛋很燙，呼呼再吃。」) and he copied her: the card 「咻——：吹動輕的東西」 is taped over the dimmed page.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'c8p3-whoosh',
+    page: 'c8p3',
+    steps: [{ mocha: 'rock' }, { wait: 'settle' }, { say: 'whoosh' }],
+    note: '8-3: 咻—— — he blows the way he faces, and the steam over the boardwalk clears; the bead shows at its end.',
+    expect: { mode: 'saying', event: 'whoosh' },
+  },
+  {
+    name: 'c8p3-hat',
+    page: 'c8p3',
+    steps: [{ mocha: 'rock' }, { wait: 'settle' }, { mocha: 'bench' }, { wait: 'settle' }, { say: 'whoosh' }],
+    show: { talk: ['c8p3.granny.1'] },
+    note: '8-3\'s 淘氣: Mocha back on the bench, Baokaka crawled back to him facing the 阿嬤 — 咻—— blew her sun hat off: 「哎唷！我的帽子！」',
+  },
+  {
+    name: 'c8p4-start',
+    page: 'c8p4',
+    steps: [{ wait: 2 }],
+    note: '8-4 「北投圖書館」 (#129): the wooden library, two floors. Baokaka cuddles Mocha on the bookcase by the door downstairs; the book lift\'s tray waits at the bottom of its belt, the pinwheel sits in the window box outside the shut window (bottom left), and a paw print on the balcony rail upstairs.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c8p4-facing',
+    page: 'c8p4',
+    steps: [{ mocha: 'rail' }, { wait: 'settle' }, { tap: 'window' }],
+    note: '8-4: Mocha up on the balcony rail: Baokaka climbed onto the book tray and reaches up and left for him — facing the pinwheel; the window is open (the 土地公 in his 毛巾 on the balcony).',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c8p4-riding',
+    page: 'c8p4',
+    steps: [{ mocha: 'rail' }, { wait: 'settle' }, { tap: 'window' }, { say: 'whoosh' }],
+    note: '8-4: 咻—— through the open window — the pinwheel spins a quarter turn, and the belt carries the tray (and him) a slot up.',
+    expect: { event: 'ride' },
+  },
+  {
+    name: 'c8p5-start',
+    page: 'c8p5',
+    steps: [{ wait: 2 }],
+    note: '8-5 「大浴池」 (#129): the old bathhouse\'s big bath, full, two wooden tubs floating side by side in the middle. Baokaka cuddles Mocha on the stack of bath stools by the near deck; the tap on the wall; the 店員小哥\'s shop counter across the bath (a paw print), the 土地公 soaking in the far corner.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c8p5-clerk',
+    page: 'c8p5',
+    steps: [{ set: 'tap', to: 'low' }, { mocha: 'counter' }, { wait: 1 }],
+    show: { talk: ['c8p5.clerk.1', 'c8p5.clerk.2', 'c8p5.clerk.3'] },
+    note: '8-5: the bath drained (the tubs sit on the bottom), Mocha hopped across the stepping stone to the shop counter — the 店員小哥\'s cameo: 「叮咚～歡迎光臨！」「……澡堂也是你們的？」「我們是連鎖的。」',
+  },
+  {
+    name: 'c8p5-tub',
+    page: 'c8p5',
+    steps: [{ set: 'tap', to: 'low' }, { mocha: 'counter' }, { wait: 'settle' }, { set: 'tap', to: 'mid' }, { wait: 'settle' }, { set: 'tap', to: 'high' }, { wait: 'settle' }],
+    note: '8-5: half full, the near tub came to the deck and he climbed in; full, it drifted out beside the far tub and he crawled across into it — reaching for Mocha until the far tub drifts to the far step.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c8p5-empty',
+    page: 'c8p5',
+    steps: [{ set: 'tap', to: 'low' }, { mocha: 'counter' }, { wait: 'settle' }, { set: 'tap', to: 'high' }],
+    show: { talk: ['c8p5.mocha.1'] },
+    note: '8-5\'s 淘氣: filled straight from empty, Mocha\'s tub (the paw print on its side) floats out to him with nobody in it: 「……我不坐。」',
+  },
+  {
+    name: 'c8p6-spread',
+    page: 'c8p6',
+    steps: [{ wait: 'settle' }],
+    note: '8-6 「澡堂的算盤」 as it opens (#129): the centrefold — the old bathhouse\'s front hall, a giant abacus leaning on the 番台\'s high counter, steam off the hot-water urn, the 算盤 glinting behind the cashier\'s shut window. Baokaka reaches for it from the foot of the abacus; the three rods\' handles at the bottom. Mocha on the stack of wooden buckets.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c8p6-stairs',
+    page: 'c8p6',
+    steps: [{ set: 'rodLow', to: '0' }, { set: 'rodMid', to: '1' }, { set: 'rodTop', to: '2' }, { wait: 'settle' }],
+    note: '8-6: the rods slid into a staircase — bottom left, middle in the middle, top right — and he climbed it to the top rod, facing the counter, where the steam is in his way.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c8p6-bell',
+    page: 'c8p6',
+    steps: [{ set: 'rodLow', to: '0' }, { set: 'rodMid', to: '1' }, { set: 'rodTop', to: '2' }, { wait: 'settle' }, { say: 'whoosh' }, { mocha: 'bell' }, { wait: 1 }],
+    show: { talk: ['c8p6.cashier.1', 'c8p6.cashier.2'] },
+    note: '8-6: 咻—— blew the steam off the counter (the 土地公 on the urn), Mocha jumped onto the bell — it rang, and the cashier opened her window: 「歡迎光臨！大人五十，囡仔免錢。」「……貓呢？」',
+  },
+  {
+    name: 'c8p6-one',
+    page: 'c8p6',
+    steps: [{ wait: 'settle' }, { set: 'rodLow', to: '1' }],
+    show: { talk: ['c8p6.mocha.1'] },
+    note: '8-6\'s 淘氣: 「1」 on the abacus — one bead on the bottom rod, none on the others: 「一。……一歲，生日快樂。」',
+  },
+  {
+    name: 'c8p6-abacus',
+    page: 'c8p6',
+    steps: [{ set: 'rodLow', to: '0' }, { set: 'rodMid', to: '1' }, { set: 'rodTop', to: '2' }, { wait: 'settle' }, { say: 'whoosh' }, { mocha: 'bell' }, { wait: 'goal' }],
+    note: '8-6: through the 番台\'s window to the 算盤 — 「這個！」 (in the game the photo moment frames this).',
     expect: { event: 'grab' },
   },
   {

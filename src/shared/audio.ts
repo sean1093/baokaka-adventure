@@ -431,7 +431,7 @@ export function voiceVoices(syllables: number, pitch = 1): Voice[] {
 // downloaded and nothing drifts. The RPG has a theme per place; 翻翻台北 has a music box per
 // chapter (GDD § 2.12: "one 8–16 bar loop per chapter in a pentatonic key").
 
-export type Track = 'field' | 'night' | 'battle' | 'boss' | 'ending' | 'chapter0' | 'chapter1' | 'chapter2' | 'chapter3' | 'chapter4' | 'chapter5' | 'chapter6' | 'chapter7';
+export type Track = 'field' | 'night' | 'battle' | 'boss' | 'ending' | 'chapter0' | 'chapter1' | 'chapter2' | 'chapter3' | 'chapter4' | 'chapter5' | 'chapter6' | 'chapter7' | 'chapter8';
 
 /** 宮商角徵羽 across three octaves, as semitone offsets from the root. */
 export const PENTATONIC = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24];
@@ -592,11 +592,25 @@ export const TRACKS: Readonly<Record<Track, TrackSpec>> = {
     peak: 0.05,
     box: true,
   },
+  // 第八章 北投 (#129): steam rising off the hot springs — little phrases that float up and hang
+  // there — then the slow sway of a bath and a contented sigh back down, 8 bars in E♭, unhurried
+  chapter8: {
+    root: 311.13,
+    step: 0.42,
+    melody: [
+      0, -1, 2, 4, -1, -1, 5, -1, 4, -1, 2, 4, 6, -1, -1, -1,
+      5, -1, 4, 2, -1, 4, 2, -1, 1, -1, 2, -1, 0, -1, -1, -1,
+    ],
+    bass: [0, 2, 3, 1, 3, 2, 1, 0],
+    wave: 'sine',
+    peak: 0.05,
+    box: true,
+  },
 };
 
-/** 翻翻台北's music box for a chapter, or null where its loop isn't written yet (chapters 8–10 bring theirs). */
+/** 翻翻台北's music box for a chapter, or null where its loop isn't written yet (chapters 9–10 bring theirs). */
 export function chapterTrack(chapter: number): Track | null {
-  const tracks: readonly Track[] = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5', 'chapter6', 'chapter7'];
+  const tracks: readonly Track[] = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5', 'chapter6', 'chapter7', 'chapter8'];
   return tracks[chapter] ?? null;
 }
 
