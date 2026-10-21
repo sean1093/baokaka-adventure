@@ -1671,6 +1671,84 @@ export const POPUP_MAOKONG = {
   brownSugar: '#6A3A22',
 } as const;
 
+/**
+ * Chapter 8's palette kit (北投, 04:00; popup art bible § 6 row 8, #130): **cedar brown** and **teal
+ * water** dominant (the old bathhouses' and the library's wood; the hot springs' green-blue water),
+ * **steam white** the accent (vellum steam rising everywhere, the chapter's signature with the
+ * wood-grain card). The hot-spring lanterns are lights (`POPUP.lamp` / `lampAmber`, never graded).
+ * Every warm decoration (the cedar, the brick, the sulphur, the brass urn, the straw hat, the
+ * abacus's beads) is held ≥ ΔE 12 from marigold by `affordance.test.ts`.
+ */
+export const POPUP_BEITOU = {
+  // Cedar: the bathhouses' and the library's wood-grain card, its lit face, its grain, its shade
+  cedar: '#6A4A3A',
+  cedarLight: '#8C6650',
+  cedarLit: '#A9826A',
+  cedarDeep: '#422C24',
+  grain: '#2E1E1A',
+  // Pale hinoki: bath stools, tubs, buckets, the boardwalk's worn tops
+  hinoki: '#B08E6E',
+  hinokiLight: '#CCAE8C',
+  hinokiDeep: '#7E6048',
+  // Teal water: the hot spring's green-blue (青磺), its light and its depth
+  teal: '#3E7E7A',
+  tealLight: '#6EAAA2',
+  tealLit: '#A2CEC4',
+  tealDeep: '#24504E',
+  // Steam white (vellum) and its lilac fold
+  steam: '#F2EEF8',
+  steamDeep: '#C8C0DE',
+  // 地熱谷's rocks: grey-violet stone streaked with sulphur (a desaturated ochre, never marigold)
+  rock: '#5E5A6E',
+  rockLight: '#807C92',
+  rockDeep: '#3A3648',
+  sulphur: '#A8A070',
+  sulphurDeep: '#7A7450',
+  // The night hills over 北投 (大屯山, 紗帽山) and the trees of 北投公園
+  hillFar: '#3E4478',
+  hill: '#2C3460',
+  hillNear: '#1E2842',
+  leaf: '#2E5446',
+  leafLight: '#4E7A5E',
+  leafDeep: '#1A3430',
+  // The library's green roof and its timber balconies; the museum's red brick
+  roofGreen: '#4E7A5A',
+  roofGreenDeep: '#30503E',
+  brick: '#8A4A3E',
+  brickDeep: '#5E3028',
+  // Tiles: the bath's pale mosaic, its grout; the tiled roofs' slate
+  tile: '#B8D2D0',
+  tileShade: '#86A8A8',
+  grout: '#5E7C80',
+  slate: '#3A3E56',
+  slateLight: '#5A5E7A',
+  // The 新北投支線 hot-spring car: cream walls, a teal band, the seats' cedar and their washi-pink cushions
+  carWall: '#E4DCCC',
+  carWallShade: '#B4AA9A',
+  carBand: '#2E6A68',
+  // The bathhouse: indigo noren, the 番台's lacquer, brass (the urn), the bell's steel, a red lantern
+  noren: '#2E3E6A',
+  norenDeep: '#1E2A4C',
+  lacquer: '#6A2A2A',
+  lacquerDeep: '#441A1C',
+  brass: '#9A8858',
+  brassDeep: '#6A5A3A',
+  steel: '#9AA0B8',
+  steelDeep: '#5E6480',
+  // The abacus: ebony beads, a rosewood frame
+  ebony: '#2E2228',
+  ebonyLit: '#5A4650',
+  // The cast: the 阿伯's towel stripe, the 阿嬤's straw hat and her flowered blouse, the cashier's apron
+  towelStripe: '#3A6AA4',
+  straw: '#C4A878',
+  strawDeep: '#94784E',
+  blouse: '#8E5A7E',
+  blouseDeep: '#64405A',
+  apron: '#3E5A7A',
+  // A hot-spring egg's shell
+  egg: '#E8D8BE',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 

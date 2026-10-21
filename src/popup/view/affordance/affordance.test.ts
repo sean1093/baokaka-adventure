@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
-import { POPUP, POPUP_AIRPORT, POPUP_CAMPUS, POPUP_MAOKONG, POPUP_MARKET, POPUP_NEON, POPUP_PARK, POPUP_STAGE } from '../../../art/palette';
+import { POPUP, POPUP_AIRPORT, POPUP_BEITOU, POPUP_CAMPUS, POPUP_MAOKONG, POPUP_MARKET, POPUP_NEON, POPUP_PARK, POPUP_STAGE } from '../../../art/palette';
 import {
   MARIGOLD_DELTA_E,
   PART_PRESETS,
@@ -106,6 +106,8 @@ describe('ΔE (CIE76) and the reserved marigold', () => {
       ...Object.fromEntries(Object.entries(POPUP_AIRPORT).map(([k, v]) => [`airport.${k}`, v])),
       // Chapter 7's kit (#126): the gondola amber, the tea, the clay teapot, the bamboo, the straw, the bear's muzzle
       ...Object.fromEntries(Object.entries(POPUP_MAOKONG).map(([k, v]) => [`maokong.${k}`, v])),
+      // Chapter 8's kit (#130): the cedar, the brick, the sulphur, the brass urn, the straw hat
+      ...Object.fromEntries(Object.entries(POPUP_BEITOU).map(([k, v]) => [`beitou.${k}`, v])),
     } as Record<string, unknown>;
     const near = Object.entries(named)
       .filter(([, v]) => typeof v === 'string' && isNearMarigold(v))

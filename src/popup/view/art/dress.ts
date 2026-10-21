@@ -24,7 +24,8 @@ export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'car
   | 'neonStreet' | 'arcadeShelf' | 'karaokeStage'
   | 'marketLane' | 'stallFloor' | 'stallShelf' | 'stallCounter'
   | 'carBodyWenhu' | 'terminalFloor' | 'deckBoards' | 'bridgeFloor' | 'catwalk'
-  | 'zooPlatform' | 'zooPlaza' | 'gondolaDeck' | 'teaTerrace' | 'teaDeck' | 'chahai' | 'cabinBench' | 'cabinRack' | 'cabinGlass' | 'gardenPath' | 'gardenPathJar' | 'gardenTerrace';
+  | 'zooPlatform' | 'zooPlaza' | 'gondolaDeck' | 'teaTerrace' | 'teaDeck' | 'chahai' | 'cabinBench' | 'cabinRack' | 'cabinGlass' | 'gardenPath' | 'gardenPathJar' | 'gardenTerrace'
+  | 'carSeat' | 'carBodyBeitou' | 'valleyBoardwalk' | 'valleyRock' | 'bathBoardwalk' | 'libraryLoft' | 'libraryStacks' | 'bathDeck' | 'bathStep' | 'hallFloor' | 'bantaiCounter';
 
 /** The near-corner foreground card. */
 export type ForegroundCard = 'plant' | 'blocks' | 'luggage' | 'shrub' | 'azalea';
@@ -127,6 +128,18 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c7/giant-teapot': { ledge: [{ below: 470, style: 'teaDeck' }, { below: 999, style: 'chahai' }], ownPosts: ['tray', 'tins'], foreground: null, crossing: 'none' },
   // The garden's path, its terraces up to the celery bed (the bear is the way up)
   'c7/celery-garden': { ledge: [{ below: 470, style: 'gardenTerrace' }, { below: 999, style: 'gardenPathJar' }], ownPosts: ['scarecrow', 'basket', 'post'], foreground: null, crossing: 'none' },
+  // 北投 (#130): the hot-spring car's benches over its cedar floor (the racks are the backdrop's)
+  'c8/hot-spring-train': { ledge: [{ below: 470, style: 'carSeat' }, { below: 999, style: 'carBodyBeitou' }], ownPosts: ['rack1', 'rack2'], foreground: null },
+  // 地熱谷: the far rocks above the boardwalk (the paper clouds are the way across: no rail)
+  'c8/thermal-valley': { ledge: [{ below: 420, style: 'valleyRock' }, { below: 999, style: 'valleyBoardwalk' }], ownPosts: ['lamp', 'rockB'], foreground: null, crossing: 'none' },
+  // The bath's boardwalk (the steam is the obstacle: no rail)
+  'c8/bath-boardwalk': { ledge: 'bathBoardwalk', ownPosts: ['bench', 'rock'], foreground: null, crossing: 'none' },
+  // The library's reading room upstairs, its stacks downstairs (the book lift is the way up)
+  'c8/library': { ledge: [{ below: 330, style: 'libraryLoft' }, { below: 999, style: 'libraryStacks' }], ownPosts: ['bookcase', 'rail'], foreground: null, crossing: 'none' },
+  // The bath's tiled deck, the stone step on its far side (the tubs are the way across)
+  'c8/big-bath': { ledge: [{ below: 450, style: 'bathDeck' }, { below: 999, style: 'bathStep' }], ownPosts: ['stools', 'stone', 'counter'], foreground: null, crossing: 'none' },
+  // The 番台's counter over the hall's floor (the abacus's rods are the way up; the backdrop draws its frame: no track pit)
+  'c8/bathhouse-hall': { ledge: [{ below: 420, style: 'bantaiCounter' }, { below: 999, style: 'hallFloor' }], ownPosts: ['buckets', 'bell'], foreground: null, crossing: 'none', trackPit: false },
 };
 
 const NONE: StageDress = {};

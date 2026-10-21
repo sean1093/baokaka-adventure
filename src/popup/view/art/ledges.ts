@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_AIRPORT as A, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MAOKONG as G, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
+import { POPUP as C, POPUP_AIRPORT as A, POPUP_BEITOU as BE, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MAOKONG as G, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
 import { depth, f1, ref, seeded, softEllipse, type KitCtx } from '../../art';
 import { PAGE_W, towardVp } from '../geometry';
 import { LEDGE_DEPTH, type LedgeRun, type Slope } from '../stage';
@@ -829,6 +829,202 @@ function terraceStep(ctx: KitCtx, slope: Pick<Slope, 'from' | 'to'>): string {
   return depth(ctx, 4, `<path d="${d}" fill="${G.stone}"/><path d="M${f1(mx - 12)} ${f1((lo[1] + hi[1]) / 2 + 0.6)}H${f1(mx + 12)}" stroke="${G.stoneLight}" stroke-width="1.6"/>`, `<path d="${d}"/>`);
 }
 
+// ——— 北投 (#130) ———
+
+/** Grain lines along a board face from x0 to x1 between y0 and y1 (wood-grain card, the chapter's signature). */
+function grainLines(x0: number, x1: number, y0: number, y1: number, seed: number, every = 4.5): string {
+  const r = seeded(seed);
+  let d = '';
+  for (let y = y0 + 2 + r() * 2; y < y1 - 1; y += every * (0.7 + r() * 0.6)) d += `M${f1(x0)} ${f1(y)}q${f1((x1 - x0) * 0.3)} ${f1((r() - 0.5) * 2.4)} ${f1((x1 - x0) * 0.5)} 0t${f1((x1 - x0) * 0.5)} 0`;
+  return d;
+}
+
+/** Vertical board joints on a face, every `w`, from y0 to y1. */
+function boardJoints(x0: number, x1: number, y0: number, y1: number, w: number): string {
+  let d = '';
+  for (let x = x0 + w; x < x1 - 2; x += w) d += `M${f1(x)} ${y0}V${y1}`;
+  return d;
+}
+
+/**
+ * 8-1's benches in the hot-spring car (#130): a slatted cedar seat on top (its cushion is a part), a
+ * cedar apron in front with a brass trim rail and the heater's dark grille under it.
+ */
+function carSeat(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let slats = '';
+  for (let y = b.ay + 2; y < b.y; y += 3) slats += `M${f1(b.x0)} ${f1(y)}H${f1(b.x1)}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.cedarDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${BE.cedar}"/>`
+    + `<path d="${grainLines(b.x0, b.x1, b.y + 4, b.y + 30, Math.round(b.x0 + b.y))}" stroke="${BE.grain}" stroke-width=".6" fill="none" opacity=".4"/>`
+    + `<rect x="${b.x0}" y="${b.y + 30}" width="${b.x1 - b.x0}" height="${b.t - 30}" fill="${mixHex(BE.cedarDeep, C.shadow, 0.3)}"/>`
+    + `<path d="${boardJoints(b.x0, b.x1, b.y + 34, b.y + b.t - 2, 5)}" stroke="${BE.cedar}" stroke-width="1.6" opacity=".6"/>`
+    + `<path d="M${b.x0} ${b.y + 30}H${b.x1}" stroke="${BE.brass}" stroke-width="2"/>`
+    + `<path d="${b.top}" fill="${BE.cedarLight}"/><path d="${slats}" stroke="${BE.cedarDeep}" stroke-width=".7" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 8-1's car floor (#130): worn cedar boards on top, the car's cream shell in front with its teal band and the underframe. */
+function carBodyBeitou(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${mixHex(BE.carWallShade, BE.hill, 0.5)}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(BE.carWall, BE.hill, 0.42)}"/>`
+    + `<rect x="${b.x0}" y="${b.y + 14}" width="${b.x1 - b.x0}" height="10" fill="${BE.carBand}"/><rect x="${b.x0}" y="${b.y + 25}" width="${b.x1 - b.x0}" height="2.4" fill="${BE.cedarLight}"/>`
+    + `<rect x="${b.x0}" y="${b.y + b.t - 10}" width="${b.x1 - b.x0}" height="10" fill="${mixHex(BE.steelDeep, C.shadow, 0.3)}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="5" fill="${BE.cedar}"/>`
+    + `<path d="${b.top}" fill="${mixHex(BE.cedarLight, BE.hinoki, 0.4)}"/><path d="${topJoints(b, 10)}" stroke="${BE.cedarDeep}" stroke-width=".7" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.5);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 8-2's boardwalk over the hot pool (#130): weathered hinoki boards, a cedar fascia, its posts going down into the steam. */
+function valleyBoardwalk(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let posts = '';
+  for (let x = b.x0 + 10; x < b.x1 - 4; x += 34) posts += `<rect x="${f1(x)}" y="${b.y + 12}" width="7" height="${b.t - 12}" fill="${BE.cedarDeep}"/>`;
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.cedarDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y + 12}" width="${b.x1 - b.x0}" height="${b.t - 12}" fill="${mixHex(BE.tealDeep, C.shadow, 0.3)}" opacity=".6"/>` + posts
+    + `<path d="M${b.x0} ${b.y + 30}L${b.x1} ${b.y + 20}" stroke="${BE.cedarDeep}" stroke-width="3"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="12" fill="${BE.cedar}"/><path d="${grainLines(b.x0, b.x1, b.y, b.y + 12, Math.round(b.x0 * 3 + b.y), 3.4)}" stroke="${BE.grain}" stroke-width=".6" fill="none" opacity=".4"/>`
+    + `<path d="M${b.x0} ${b.y + 12}H${b.x1}" stroke="${C.shadow}" stroke-width="1.6" opacity=".35"/>`
+    + `<path d="${b.top}" fill="${BE.hinoki}"/><path d="${topJoints(b, 8)}" stroke="${BE.hinokiDeep}" stroke-width=".8" opacity=".6"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 8-2's far rocks (#130): grey-violet stone crusted with sulphur on top, a cracked rock face in front. */
+function valleyRock(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const r = seeded(Math.round(b.x0 * 5 + b.y));
+  let cracks = '';
+  for (let x = b.x0 + 6; x < b.x1 - 4; x += 12 + r() * 14) cracks += `M${f1(x)} ${b.y + 4}l${f1(-3 + r() * 6)} ${f1(10 + r() * 8)}l${f1(-3 + r() * 6)} ${f1(8 + r() * 10)}`;
+  let crust = '';
+  for (let x = b.x0 + 4; x < b.x1 - 4; x += 9 + r() * 10) crust += `M${f1(x)} ${f1(b.y - 2 - r() * 6)}h${f1(3 + r() * 5)}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.rockDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${BE.rock}"/>`
+    + `<rect x="${b.x0}" y="${b.y + 30}" width="${b.x1 - b.x0}" height="${b.t - 30}" fill="${BE.rockDeep}"/>`
+    + `<path d="${cracks}" stroke="${BE.rockDeep}" stroke-width="1.2" fill="none" opacity=".8"/>`
+    + `<path d="M${b.x0 + 8} ${b.y + 6}q4 10 0 20M${b.x1 - 20} ${b.y + 4}q5 8 2 18" stroke="${BE.sulphur}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/>`
+    + `<path d="${b.top}" fill="${BE.rockLight}"/><path d="${crust}" stroke="${BE.sulphur}" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>`
+    + rim(b.x0, b.x1, b.y, 0.45);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 8-3's boardwalk along the bath (#130): cedar boards on top, a fascia with its posts, the water lapping at its foot. */
+function bathBoardwalk(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let posts = '';
+  for (let x = b.x0 + 14; x < b.x1 - 6; x += 40) posts += `M${f1(x)} ${b.y + 12}V${b.y + b.t}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.cedarDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(BE.cedarDeep, C.shadow, 0.25)}"/>`
+    + `<path d="${posts}" stroke="${BE.cedar}" stroke-width="6"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="12" fill="${ref(ctx, 'boardC')}"/>`
+    + `<path d="${grainLines(b.x0, b.x1, b.y, b.y + 12, Math.round(b.x0 * 7 + b.y), 3.4)}" stroke="${BE.grain}" stroke-width=".6" fill="none" opacity=".4"/>`
+    + `<path d="M${b.x0} ${b.y + 12}H${b.x1}" stroke="${C.shadow}" stroke-width="1.6" opacity=".35"/>`
+    + `<path d="${b.top}" fill="${BE.cedarLit}"/><path d="${topJoints(b, 9)}" stroke="${BE.cedarDeep}" stroke-width=".8" opacity=".6"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b)) + `<defs><linearGradient id="${ctx.id('boardC')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${BE.cedarLight}"/><stop offset="1" stop-color="${BE.cedar}"/></linearGradient></defs>`;
+}
+
+/** 8-4's reading room floor (#130): polished hinoki boards on top, the floor's cedar beam in front with a row of little downlights under it. */
+function libraryLoft(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let lights = '';
+  for (let x = b.x0 + 16; x < b.x1 - 8; x += 32) lights += `<rect x="${f1(x - 4)}" y="${b.y + b.t - 5}" width="8" height="2.6" rx="1.3" fill="${C.lampHot}"/>`;
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.cedarDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${BE.cedar}"/>`
+    + `<path d="${grainLines(b.x0, b.x1, b.y + 6, b.y + b.t - 6, Math.round(b.x0 + b.y * 3), 5)}" stroke="${BE.grain}" stroke-width=".6" fill="none" opacity=".4"/>`
+    + `<rect x="${b.x0}" y="${b.y + b.t - 8}" width="${b.x1 - b.x0}" height="8" fill="${BE.cedarDeep}"/>` + lights
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="5" fill="${BE.hinokiDeep}"/>`
+    + `<path d="${b.top}" fill="${BE.hinokiLight}"/><path d="${topJoints(b, 8)}" stroke="${BE.hinokiDeep}" stroke-width=".7" opacity=".55"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 8-4's ground floor (#130): polished boards on top, and in front a low bookcase of the stacks — cloth spines on two shelves. */
+function libraryStacks(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const r = seeded(Math.round(b.x0 * 11 + b.y));
+  const cols = [BE.roofGreen, BE.lacquer, BE.noren, BE.hinokiDeep, BE.tealDeep, BE.slateLight];
+  let books = '';
+  for (const [y0, y1] of [[b.y + 8, b.y + 26], [b.y + 30, b.y + 48]] as const) {
+    for (let x = b.x0 + 3; x < b.x1 - 3;) {
+      const w = 3 + r() * 3;
+      const h = (y1 - y0) * (0.72 + r() * 0.28);
+      books += `<rect x="${f1(x)}" y="${f1(y1 - h)}" width="${f1(w)}" height="${f1(h)}" fill="${cols[Math.floor(r() * cols.length)]}"/>`;
+      x += w + 0.5;
+    }
+  }
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.cedarDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(BE.cedarDeep, C.shadow, 0.35)}"/>` + books
+    + `<path d="M${b.x0} ${b.y + 27}H${b.x1}M${b.x0} ${b.y + 49}H${b.x1}" stroke="${BE.cedar}" stroke-width="3"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="6" fill="${BE.cedar}"/>`
+    + `<path d="${b.top}" fill="${mixHex(BE.hinoki, BE.cedarLight, 0.4)}"/><path d="${topJoints(b, 9)}" stroke="${BE.hinokiDeep}" stroke-width=".7" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.5);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** Small square tiles over a face (the bath's mosaic): grout lines every `t`. */
+function tileGrid(x0: number, x1: number, y0: number, y1: number, t: number): string {
+  let d = '';
+  for (let y = y0 + t; y < y1; y += t) d += `M${f1(x0)} ${f1(y)}H${f1(x1)}`;
+  for (let x = x0 + t; x < x1; x += t) d += `M${f1(x)} ${f1(y0)}V${f1(y1)}`;
+  return d;
+}
+
+/** 8-5's tiled deck round the bath (#130): pale mosaic on top and down its face, a teal band at its foot. */
+function bathDeck(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.tileShade}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(BE.tile, BE.hill, 0.38)}"/>`
+    + `<path d="${tileGrid(b.x0, b.x1, b.y, b.y + b.t - 10, 8)}" stroke="${BE.grout}" stroke-width=".6" opacity=".55"/>`
+    + `<rect x="${b.x0}" y="${b.y + b.t - 10}" width="${b.x1 - b.x0}" height="10" fill="${BE.tealDeep}"/>`
+    + `<path d="${b.top}" fill="${mixHex(BE.tile, BE.hill, 0.2)}"/><path d="${topJoints(b, 8)}" stroke="${BE.grout}" stroke-width=".6" opacity=".4"/>`
+    + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 8-5's stone step on the bath's far side (#130): a slab of grey stone, its lit edge, a wet sheen. */
+function bathStep(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.rock}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${BE.rockLight}"/>`
+    + `<rect x="${b.x0}" y="${b.y + 28}" width="${b.x1 - b.x0}" height="${b.t - 28}" fill="${BE.rock}"/>`
+    + `<path d="M${b.x0 + 6} ${b.y + 14}H${b.x1 - 10}M${b.x0 + 14} ${b.y + 36}H${b.x1 - 6}" stroke="${BE.rockDeep}" stroke-width="1" opacity=".6"/>`
+    + `<path d="M${b.x0 + 4} ${b.y + 6}l8 30" stroke="${BE.tealLit}" stroke-width="1.6" opacity=".35"/>`
+    + `<path d="${b.top}" fill="${mixHex(BE.rockLight, C.cutRim, 0.15)}"/>` + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 8-6's hall floor (#130): polished hinoki boards on top, the raised floor's dark lacquered edge (上がり框) and cedar face in front. */
+function hallFloor(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.cedarDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${BE.cedar}"/>`
+    + `<path d="${grainLines(b.x0, b.x1, b.y + 10, b.y + b.t - 2, Math.round(b.x0 + b.y * 7), 5)}" stroke="${BE.grain}" stroke-width=".6" fill="none" opacity=".4"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="9" fill="${BE.lacquerDeep}"/><path d="M${b.x0} ${b.y + 1.2}H${b.x1}" stroke="${BE.lacquer}" stroke-width="1.4"/>`
+    + `<path d="${b.top}" fill="${BE.hinokiLight}"/><path d="${topJoints(b, 10)}" stroke="${BE.hinokiDeep}" stroke-width=".7" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 8-6's 番台 counter (#130): a lacquered top, cedar panels in front framed in lacquer. */
+function bantaiCounter(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let panels = '';
+  for (let x = b.x0 + 6; x < b.x1 - 20; x += 36) panels += `M${f1(x)} ${b.y + 14}h28v${b.t - 22}h-28z`;
+  const body = (b.side ? `<path d="${b.side}" fill="${BE.lacquerDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${BE.lacquerDeep}"/>`
+    + `<path d="${panels}" fill="${BE.cedar}"/><path d="${panels}" fill="none" stroke="${BE.cedarLit}" stroke-width=".8" opacity=".5" transform="translate(-.6 -.6)"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="9" fill="${BE.lacquer}"/>`
+    + `<path d="${b.top}" fill="${mixHex(BE.lacquer, BE.cedarLight, 0.35)}"/>` + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** Chapter 8's ledge styles (#130): a single node is a short box of the same material; climbs need no ramp (the boxes are the steps). */
+const CHAPTER8_STYLES: ReadonlySet<LedgeStyle> = new Set<LedgeStyle>(['carSeat', 'carBodyBeitou', 'valleyBoardwalk', 'valleyRock', 'bathBoardwalk', 'libraryLoft', 'libraryStacks', 'bathDeck', 'bathStep', 'hallFloor', 'bantaiCounter']);
+
 /** A ledge in its page's material (`dress.ts`): the dressed styles here, brick and rug from the placeholder stage. */
 /** Chapter 7's ledge styles (#126): a single node is a short box of the same material. */
 const CHAPTER7_STYLES: ReadonlySet<LedgeStyle> = new Set<LedgeStyle>(['zooPlatform', 'zooPlaza', 'gondolaDeck', 'teaTerrace', 'teaDeck', 'chahai', 'cabinBench', 'cabinRack', 'cabinGlass', 'gardenPath', 'gardenPathJar', 'gardenTerrace']);
@@ -844,10 +1040,32 @@ export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme
     if (style === 'marketLane') return marketLane(ctx, run);
     if (style === 'stallFloor' || style === 'stallShelf' || style === 'stallCounter') return styledLedge(ctx, { ...run, single: false }, style, theme);
     if (style === 'terminalFloor' || style === 'deckBoards' || style === 'bridgeFloor' || style === 'catwalk' || style === 'carBodyWenhu') return styledLedge(ctx, { ...run, single: false }, style, theme);
-    if (CHAPTER7_STYLES.has(style)) return styledLedge(ctx, { ...run, single: false }, style, theme);
+    if (CHAPTER7_STYLES.has(style) || CHAPTER8_STYLES.has(style)) return styledLedge(ctx, { ...run, single: false }, style, theme);
     return plainLedge(ctx, run, theme);
   }
   switch (style) {
+    case 'carSeat':
+      return carSeat(ctx, run);
+    case 'carBodyBeitou':
+      return carBodyBeitou(ctx, run);
+    case 'valleyBoardwalk':
+      return valleyBoardwalk(ctx, run);
+    case 'valleyRock':
+      return valleyRock(ctx, run);
+    case 'bathBoardwalk':
+      return bathBoardwalk(ctx, run);
+    case 'libraryLoft':
+      return libraryLoft(ctx, run);
+    case 'libraryStacks':
+      return libraryStacks(ctx, run);
+    case 'bathDeck':
+      return bathDeck(ctx, run);
+    case 'bathStep':
+      return bathStep(ctx, run);
+    case 'hallFloor':
+      return hallFloor(ctx, run);
+    case 'bantaiCounter':
+      return bantaiCounter(ctx, run);
     case 'zooPlatform':
       return zooPlatform(ctx, run);
     case 'zooPlaza':
@@ -959,6 +1177,8 @@ export function styledRamp(ctx: KitCtx, slope: Pick<Slope, 'from' | 'to'>, style
   if (style === 'teaTerrace') return terraceStep(ctx, slope);
   if (style === 'cabinBench' || style === 'cabinRack' || style === 'cabinGlass') return '';
   if (style === 'gardenPath' || style === 'gardenPathJar' || style === 'gardenTerrace') return '';
+  // 北投 (#130): the benches, decks and steps are their own boxes
+  if (CHAPTER8_STYLES.has(style)) return '';
   if (style !== 'parkPath' && style !== 'boardwalk') return plainRamp(ctx, slope, theme);
   const [[ax, ay], [bx, by]] = [slope.from, slope.to];
   const t = 12;

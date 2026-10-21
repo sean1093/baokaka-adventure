@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_NEON as N, POPUP_STATION as T } from '../../../art/palette';
+import { POPUP as C, POPUP_BEITOU as B, POPUP_NEON as N, POPUP_STATION as T } from '../../../art/palette';
 import { brad, depth, f1, ref, type KitCtx } from '../../art';
 import { LEDGE_DEPTH } from '../stage';
 import { bridgeSection } from './airport';
@@ -92,16 +92,17 @@ function clawCart(ctx: KitCtx, w: number, linked: boolean): string {
 }
 
 /**
- * 8-6's abacus rods (#129; a placeholder until the chapter's art, #130): the block of dark wooden
- * beads on a rod that Baokaka climbs onto — three beads side by side under the deck, the rod
- * through them. The rod's slider is pulled by its handle at the bottom of the page.
+ * 8-6's abacus rods (#129; drawn in the chapter's kit by #130): the block of ebony beads on a brass
+ * rod that Baokaka climbs onto — three faceted beads side by side under the deck, each with its lit
+ * upper face, the rod through them. The rod's slider is pulled by its handle at the bottom of the page.
  */
 function abacusBeads(ctx: KitCtx, w: number, linked: boolean): string {
-  const bead = (x: number) => `M${f1(x - 8)} 9L${f1(x)} 1L${f1(x + 8)} 9L${f1(x)} 17Z`;
-  const beads = [w / 2 - 16, w / 2, w / 2 + 16].map(bead).join('');
-  return `<path d="M${-12} 9H${w + 12}" stroke="${C.woodDeep}" stroke-width="2.4" stroke-linecap="round"/>`
-    // Flat (no stacked shadow): three of these move on the spread, inside its animated-node budget
-    + `<path d="${beads}" fill="${C.woodDeep}"/><path d="M${f1(w / 2 - 22)} 6H${f1(w / 2 + 22)}" stroke="${C.wood}" stroke-width="1.4" opacity=".8"/>`
+  const xs = [w / 2 - 17, w / 2, w / 2 + 17];
+  // Each bead a rounded double cone seen from the side: its body, its lit upper facet
+  const bead = (x: number) => `M${f1(x - 9)} 9Q${f1(x - 7)} 1 ${f1(x)} 0Q${f1(x + 7)} 1 ${f1(x + 9)} 9Q${f1(x + 7)} 17 ${f1(x)} 18Q${f1(x - 7)} 17 ${f1(x - 9)} 9Z`;
+  const lit = (x: number) => `M${f1(x - 7.4)} 8Q${f1(x - 5.6)} 2 ${f1(x)} 1.4Q${f1(x + 5.6)} 2 ${f1(x + 7.4)} 8Z`;
+  // Flat (no stacked shadow): three of these move on the spread, inside its animated-node budget
+  return `<path d="${xs.map(bead).join('')}" fill="${B.ebony}"/><path d="${xs.map(lit).join('')}" fill="${B.ebonyLit}"/>`
     + (linked ? brad(ctx, w / 2, 9, 3.5, true) : '');
 }
 
