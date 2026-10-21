@@ -125,6 +125,16 @@ export interface PartDef {
   hit: { x: number; y: number; w: number; h: number } | { cx: number; cy: number; r: number };
   /** C4 */
   lockedByCat?: boolean;
+  /**
+   * Coupled sections (GDD § 2.1, #127: 10-3's 101): a turn of this part — by the player, a
+   * reaction or 咻—— — turns each part listed here the same number of steps the same way. One hop
+   * only: a part turned by its coupling drives nothing further, so coupling alone can't loop. A
+   * coupled part that is locked (Mocha sits on it, `lockedWhen`) or can't enter the state
+   * (`stateWhen`) holds still and this one turns alone (D-91). `wheel`, `section`, `loop` and
+   * `blowable` parts only, all with the same number of states (lint). List it on both parts for
+   * a mutual coupling.
+   */
+  coupled?: Id[];
   /** whole part can't move */
   lockedWhen?: Cond;
   /** a state can only be entered while its cond holds; drags snap to the furthest allowed stop */

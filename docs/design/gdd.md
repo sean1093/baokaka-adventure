@@ -587,6 +587,7 @@ export interface PartDef {
   center?: [number, number]; radius?: number;                 // rotary parts
   hit: { x: number; y: number; w: number; h: number } | { cx: number; cy: number; r: number };
   lockedByCat?: boolean;            // C4
+  coupled?: Id[];                   // wheel/section/loop/blowable: its turns turn these the same way, one hop (10-3; #127, D-91)
   lockedWhen?: Cond;                // whole part can't move
   stateWhen?: Record<string, Cond>; // a state can only be entered while its cond holds; drags snap to the furthest allowed stop
   react?: Reaction[];

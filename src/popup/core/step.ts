@@ -19,7 +19,7 @@ import { inReach, sayNo, wordAvailable, wordEvent } from './words';
  * 1. **Input.** `set` (player-driven parts only; refused with `locked` when `lockedWhen` holds or
  *    Mocha sits on a `lockedByCat` part; walks stop by stop toward `to` and stops before the first
  *    stop whose `stateWhen` fails, emitting `jam`), `tap` (the preset's tap rule, same locks and
- *    jams), `mocha` / `pet` (`mocha.ts`), `say` (Baokaka enters `saying`; the word resolves in
+ *    jams; a turn also turns the part's `coupled` parts, one hop, `turn`), `mocha` / `pet` (`mocha.ts`), `say` (Baokaka enters `saying`; the word resolves in
  *    phase 5), `floor` (linked mode, #128: ignored for now).
  * 2. **Cascade** of phase 1's events (`cascade`): FIFO; each § 3.2 event triggers, per part and
  *    per creature, its first matching reaction (conditions read the state before that event's
@@ -107,6 +107,32 @@ function enter(state: SimState, part: PartDef, to: string, events: SimEvent[]): 
   return withPartState(state, part.id, to);
 }
 
+/**
+ * Turns `part` from `from` to `to` (`enter`), then its `coupled` parts (GDD § 2.1, #127, D-91):
+ * each turns the same number of steps the same way, in list order, unless it is locked (`lockedWhen`,
+ * Mocha on it) or can't enter that state (`stateWhen`): then it holds still and the clutch slips.
+ * One hop: a coupled turn drives nothing further (it is a plain `enter`), so coupling never loops
+ * by itself; its `partEnter` still cascades like any other, under `MAX_CASCADE`.
+ */
+function turn(def: PageDef, state: SimState, part: PartDef, from: string, to: string, events: SimEvent[]): SimState {
+  let s = enter(state, part, to, events);
+  if (part.coupled === undefined || part.coupled.length === 0) return s;
+  const states = compilePart(part).states;
+  const n = states.length;
+  const delta = (((states.indexOf(to) - states.indexOf(from)) % n) + n) % n;
+  if (delta === 0) return s;
+  for (const id of part.coupled) {
+    const other = findPart(def, id);
+    const current = partState(s, id);
+    if (other === undefined || current === undefined || id === part.id) continue;
+    const theirs = compilePart(other).states;
+    const next = theirs[(theirs.indexOf(current) + delta) % theirs.length];
+    if (next === current || partLocked(def, s, id) || !allowed(def, s, other, next)) continue;
+    s = enter(s, other, next, events);
+  }
+  return s;
+}
+
 // ——— Cascade (phase 2, and the mini-cascades after phases 3 and 5) ———
 
 /** The event's origin: its `at`, else where its subject (perch, node, part, creature) is. */
@@ -169,7 +195,8 @@ function collect(def: PageDef, state: SimState, ev: SimEvent): Transition[] {
  * part's state (respecting `lockedWhen` and `stateWhen`) queues `partEnter`; a `partEnter` queues
  * the part's `emit` events for that state, from the part's origin with the event's default radius.
  * `setFlag` sets a flag whenever its reaction fires. Blowables advance on 咻—— and winged creatures
- * toggle on 飛機！ unless they have their own reaction. UI events pass through to the log.
+ * toggle on 飛機！ unless they have their own reaction. A part turned here turns its `coupled`
+ * parts too (`turn`). UI events pass through to the log.
  *
  * Throws `CascadeOverflowError` (naming the page and the parts that kept changing) after
  * `MAX_CASCADE` § 3.2 events.
@@ -210,7 +237,7 @@ export function cascade(def: PageDef, state: SimState, events: readonly SimEvent
       if (to === null || to === current) continue;
       if (t.part.lockedWhen !== undefined && evalCond(def, s, t.part.lockedWhen)) continue;
       if (!allowed(def, s, t.part, to)) continue;
-      s = enter(s, t.part, to, queue);
+      s = turn(def, s, t.part, current, to, queue);
     }
   }
   return { state: s, events: log };
@@ -247,7 +274,7 @@ function inputSet(def: PageDef, state: SimState, id: Id, to: string, events: Sim
   let k = states.indexOf(current);
   while (k !== target && allowed(def, state, part, states[k + dir])) k += dir;
   let s = state;
-  if (states[k] !== current) s = enter(s, part, states[k], events);
+  if (states[k] !== current) s = turn(def, s, part, current, states[k], events);
   if (k !== target) events.push({ type: 'jam', id, state: states[k] });
   return s;
 }
@@ -267,7 +294,7 @@ function inputTap(def: PageDef, state: SimState, id: Id, events: SimEvent[]): Si
     events.push({ type: 'jam', id, state: current });
     return state;
   }
-  return enter(state, part, to, events);
+  return turn(def, state, part, current, to, events);
 }
 
 /**

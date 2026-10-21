@@ -165,7 +165,13 @@ const rows: Row[] = [
   // § 2.5 reachHigh
   { rule: '2.5 reachHigh: a height-1 shiny grabbed from the adjacent node', def: page({ nodes: [n('A', 0), n('B', 100), n('H', 200, -60, 1)], edges: [e('A', 'B'), e('B', 'H', { kind: 'jump' })], attractors: [att('bead', 'shiny', 'H', { height: 1, goal: true })], baby: { start: 'A', facing: 'r', growth: 2 } }),
     opts: { reachHigh: true }, target: 'bead', mode: 'grabbing', node: 'B' },
-  { rule: '2.5 reachHigh off (the default switch): he reaches instead', def: page({ nodes: [n('A', 0), n('B', 100), n('H', 200, -60, 1)], edges: [e('A', 'B'), e('B', 'H', { kind: 'jump' })], attractors: [att('bead', 'shiny', 'H', { height: 1 })], baby: { start: 'B', facing: 'r', growth: 2 } }),
+  { rule: '2.5 reachHigh on by default since M4 (#127): grabbed from the adjacent node', def: page({ nodes: [n('A', 0), n('B', 100), n('H', 200, -60, 1)], edges: [e('A', 'B'), e('B', 'H', { kind: 'jump' })], attractors: [att('bead', 'shiny', 'H', { height: 1 })], baby: { start: 'B', facing: 'r', growth: 2 } }),
+    target: 'bead', mode: 'grabbing', node: 'B' },
+  { rule: '2.5 reachHigh switched off: he reaches instead', def: page({ nodes: [n('A', 0), n('B', 100), n('H', 200, -60, 1)], edges: [e('A', 'B'), e('B', 'H', { kind: 'jump' })], attractors: [att('bead', 'shiny', 'H', { height: 1 })], baby: { start: 'B', facing: 'r', growth: 2 } }),
+    opts: { reachHigh: false }, target: 'bead', mode: 'reaching', node: 'B' },
+  { rule: '2.5 reachHigh only for height 1: a height-0 attractor next door is still unreachable', def: page({ nodes: [n('A', 0), n('B', 100), n('H', 200, -60, 0)], edges: [e('A', 'B'), e('B', 'H', { kind: 'jump' })], attractors: [att('bead', 'shiny', 'H')], baby: { start: 'B', facing: 'r', growth: 2 } }),
+    target: 'bead', mode: 'reaching', node: 'B' },
+  { rule: '2.5 reachHigh needs the edge open: a closed `when` keeps it out of reach', def: page({ nodes: [n('A', 0), n('B', 100), n('H', 200, -60, 1)], edges: [e('A', 'B'), e('B', 'H', { kind: 'jump', when: { flag: 'never' } })], attractors: [att('bead', 'shiny', 'H', { height: 1 })], baby: { start: 'B', facing: 'r', growth: 2 } }),
     target: 'bead', mode: 'reaching', node: 'B' },
   { rule: '2.5 reachHigh needs growth 2', def: page({ nodes: [n('A', 0), n('B', 100), n('H', 200, -60, 1)], edges: [e('A', 'B'), e('B', 'H', { kind: 'jump' })], attractors: [att('bead', 'shiny', 'H', { height: 1 })], baby: { start: 'B', facing: 'r', growth: 1 } }),
     opts: { reachHigh: true }, target: 'bead', mode: 'reaching', node: 'B' },
@@ -230,7 +236,7 @@ describe('arrival effects and page state', () => {
     expect(BARK_TEXT).toMatchObject({ want: '要！', meow: '喵喵！', milk: 'ㄋㄟㄋㄟ', pretty: '好看！', wantWant: '要！要！' });
     expect(CHOOSE_BARK).toEqual({ shiny: 'want', mocha: 'meow', snack: 'milk', light: 'pretty' });
     expect([LOOK_TICKS, REACH_BARK_EVERY, CRY_RADIUS]).toEqual([2, 4, 220]);
-    expect(REACH_HIGH_ENABLED).toBe(false);
+    expect(REACH_HIGH_ENABLED).toBe(true);
   });
 
   test('growth: options, then the page, then crawl', () => {

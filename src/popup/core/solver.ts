@@ -1,4 +1,4 @@
-import { attractorNode, rankCandidates, visibleTie } from './baby';
+import { adjacentNodes, attractorNode, rankCandidates, REACH_HIGH_ENABLED, visibleTie } from './baby';
 import { holds } from './cond';
 import { walkGraph } from './graph';
 import { mochaNode, mochaSettled, catPath } from './mocha';
@@ -315,15 +315,20 @@ export function tudigongVisible(def: PageDef, state: SimState): boolean {
 
 /**
  * The decoys (of `decoys`, default the page's) whose node Baokaka could walk to in `state`, at his
- * growth there, with that node: GDD § 2.2.1 says a decoy's node is unreachable by design.
+ * growth there, with that node: GDD § 2.2.1 says a decoy's node is unreachable by design. From
+ * 扶著站 (growth 2, `REACH_HIGH_ENABLED`) a height-1 decoy next to a node he can walk to counts
+ * too: he would stand at it with the decoy at his fingertips (§ 2.5 reachHigh, #127).
  */
 export function reachableDecoys(def: PageDef, state: SimState, decoys = def.attractors.filter((a) => a.decoy === true)): [Id, Id][] {
   if (decoys.length === 0) return [];
-  const reach = walkGraph(def, state, { who: 'baby', growth: stepGrowth(def, state) }).reachSet(state.baby.node);
+  const growth = stepGrowth(def, state);
+  const reach = walkGraph(def, state, { who: 'baby', growth }).reachSet(state.baby.node);
+  const high = REACH_HIGH_ENABLED && growth >= 2;
   const out: [Id, Id][] = [];
   for (const a of decoys) {
     const node = attractorNode(def, state, a);
-    if (node !== null && reach.has(node)) out.push([a.id, node]);
+    if (node === null) continue;
+    if (reach.has(node) || (high && a.height === 1 && adjacentNodes(def, state, node).some((x) => reach.has(x)))) out.push([a.id, node]);
   }
   return out;
 }
