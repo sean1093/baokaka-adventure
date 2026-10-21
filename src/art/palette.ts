@@ -1749,6 +1749,84 @@ export const POPUP_BEITOU = {
   egg: '#E8D8BE',
 } as const;
 
+/**
+ * Chapter 9's kit (淡水・漁人碼頭・淡江大橋, 04:40; popup bible § 6 row 9, #132): violet and sea teal
+ * dominant, the first-light peach the accent. The dawn arrives: right-facing facets take the peach,
+ * left ones stay violet (bible § 3.3). Every colour stays ≥ ΔE 12 from marigold (`affordance.test.ts`).
+ */
+export const POPUP_TAMSUI = {
+  // Violet: the dawn's dominant, the hills, the shade side of everything
+  violet: '#4A3A7A',
+  violetLight: '#6A5A9E',
+  violetDeep: '#2E2456',
+  // First-light peach (the accent): the lit facets, the glow over the river mouth, its reflection
+  peach: '#E6A89A',
+  peachLight: '#F4CBBC',
+  peachDeep: '#B8787A',
+  rose: '#C88AB8',
+  // Sea teal: the glassine river and sea, its light and its depth
+  sea: '#3E7A88',
+  seaLight: '#6EA2AE',
+  seaLit: '#A8CED2',
+  seaDeep: '#22465A',
+  // The tidal flat's mud (漁人碼頭 at low tide), wet and dry
+  mud: '#5C5066',
+  mudLight: '#7C6E84',
+  mudWet: '#433E5E',
+  // 觀音山 and the far shore (八里) in layers
+  hillFar: '#4A447E',
+  hill: '#363266',
+  hillNear: '#24224A',
+  // 淡江大橋: white concrete catching the dawn, its shade, its steel cables, the grey deck
+  pylon: '#DCD6E8',
+  pylonPeach: '#F0CFC6',
+  pylonShade: '#8E88AE',
+  pylonDeep: '#5C5682',
+  cable: '#E6E2F0',
+  deck: '#6C6690',
+  deckDeep: '#46406A',
+  // 淡水老街: red brick, the arcades' plaster, granite paving, old wood
+  brick: '#8E4A46',
+  brickLight: '#AE6A60',
+  brickDeep: '#5C2E30',
+  plaster: '#D8CCC8',
+  plasterShade: '#A898A4',
+  granite: '#6E6A84',
+  graniteLight: '#8E8AA2',
+  wood: '#7A5A4C',
+  woodLight: '#9C7C66',
+  woodDeep: '#4A3434',
+  // Rope, nets, canvas
+  rope: '#C8B496',
+  ropeDeep: '#8E7C66',
+  canvas: '#E8E0D8',
+  // Boats: the ferry's white and teal, the fishing boat's blue hull and red trim, a lifebuoy's red
+  hullWhite: '#ECE8F2',
+  hullTeal: '#2E7A80',
+  hullBlue: '#2E4E86',
+  hullBlueDeep: '#1E3462',
+  trimRed: '#B8443E',
+  trimRedDeep: '#7E2A2E',
+  // Steel railings and posts
+  steel: '#A4A6C0',
+  steelDeep: '#5E6284',
+  // The ice-cream kiosk's awning stripes, the 鐵蛋 shop's black eggs and its paper bag
+  candy: '#D88AA0',
+  candyDeep: '#A85A78',
+  egg: '#2E2630',
+  // The cast: gulls' white and grey, their bills and feet; sparrows' brown
+  gull: '#F0ECF6',
+  gullGrey: '#A6A4C0',
+  gullWing: '#6E6C8E',
+  gullBill: '#D07E5A',
+  sparrow: '#8E6650',
+  sparrowDeep: '#5C4034',
+  sparrowBelly: '#DCD0C6',
+  // The 聽診器's tubing (dark rubber) and its silver chest piece
+  tube: '#3A3446',
+  tubeLit: '#6A6280',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 
