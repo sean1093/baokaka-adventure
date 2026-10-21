@@ -19,8 +19,9 @@ import { inReach, sayNo, wordAvailable, wordEvent } from './words';
  * 1. **Input.** `set` (player-driven parts only; refused with `locked` when `lockedWhen` holds or
  *    Mocha sits on a `lockedByCat` part; walks stop by stop toward `to` and stops before the first
  *    stop whose `stateWhen` fails, emitting `jam`), `tap` (the preset's tap rule, same locks and
- *    jams; a turn also turns the part's `coupled` parts, one hop, `turn`), `mocha` / `pet` (`mocha.ts`), `say` (Baokaka enters `saying`; the word resolves in
- *    phase 5), `floor` (linked mode, #128: ignored for now).
+ *    jams; a turn also turns the part's `coupled` parts, one hop, `turn`), `mocha` / `pet`
+ *    (`mocha.ts`), `say` (Baokaka enters `saying`; the word resolves in phase 5), `floor`
+ *    (linked mode, #128: ignored for now).
  * 2. **Cascade** of phase 1's events (`cascade`): FIFO; each § 3.2 event triggers, per part and
  *    per creature, its first matching reaction (conditions read the state before that event's
  *    transitions); a part entering a state queues `partEnter` and its `emit` events. More than

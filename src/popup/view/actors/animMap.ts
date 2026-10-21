@@ -173,11 +173,11 @@ export const CRUISE_AT = [0, 1 / 2] as const;
  * Whether his target is a height-1 attractor on another node than his: he has it by reachHigh
  * (GDD § 2.5), standing at the node next to it, so the grab is drawn standing (`high`).
  */
-export function reachedHigh(def: Pick<PageDef, 'attractors' | 'parts' | 'creatures'>, state: SimState): boolean {
+export function reachedHigh(def: PageDef, state: SimState): boolean {
   const id = state.baby.target;
   const a = id === null ? undefined : def.attractors.find((x) => x.id === id);
   if (a === undefined || a.height !== 1) return false;
-  const at = attractorNode(def as PageDef, state, a);
+  const at = attractorNode(def, state, a);
   return at !== null && at !== state.baby.node;
 }
 
