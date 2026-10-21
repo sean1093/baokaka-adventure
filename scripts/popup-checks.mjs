@@ -51,8 +51,11 @@ export const MIN_HIT_PX = 48;
 /** The viewport whose book scale the authored hit areas must clear 48 px at (bible § 2.1, § 4.2). */
 export const REFERENCE_VIEWPORT = '390x844';
 export const MAX_FLASH_HZ = 3;
-/** Talk clear: an overlap thinner than this (CSS px) is a card's anti-aliased edge, not cover. */
-export const TALK_SLACK = 1.5;
+/**
+ * Talk clear: an overlap no thicker than this (CSS px) is a card's edge, not cover: `layoutTalk`
+ * places the card's box, and the drawn card bows up to 3 units past it with its die-cut shadow.
+ */
+export const TALK_SLACK = 4;
 
 /**
  * Known gaps. `selector` matches the waived elements (and everything inside them); `rules` are
@@ -325,7 +328,7 @@ function coveredMarks() {
  * What the beat's text cards cover (see "Talk clear" above), in the page: each subtitle card
  * (`[data-subtitle-card]`, its label tab included) and the narration strip against the thought
  * bubble's cloud (`[data-bubble-cloud]`) and Baokaka's frame, cut at his feet as `layoutTalk` cuts it.
- * Overlaps under `TALK_SLACK` px on either side are anti-aliasing, not cover.
+ * Overlaps no thicker than `TALK_SLACK` px are a card's bowed edge, not cover.
  */
 function talkCover(slack) {
   if (document.querySelector('[aria-modal="true"]')) return { cards: 0, over: [], unmarked: false };
