@@ -698,21 +698,23 @@ export const bubbleText = (t: string, x: number, y: number, size: number, fill: 
  * What goes inside the thought bubble's cloud (GDD § 2.2.6, bible § 5), centred on the origin of
  * a 92 × 46 cloud: the target's icon; while reaching, the icon and 「要！」 (red serif; the view
  * pulses it); 「？」 while looking; tears while crying; a note while watching; a heart while
- * cuddling, eating, grabbing or done.
+ * cuddling, eating, grabbing or done. `tucked` (#197): for the small cloud a beat folds it into.
  */
-export function thoughtContent(ctx: KitCtx, show: BubbleShow): string {
+export function thoughtContent(ctx: KitCtx, show: BubbleShow, tucked = false): string {
   switch (show.kind) {
     case 'want': {
       // A chapter treasure is drawn as itself (about 40 units across: halved to the icons' 22)
       const icon = show.treasure !== undefined ? `<g transform="scale(.56)" data-bubble-treasure="${show.treasure}">${treasureArt(ctx, show.treasure)}</g>`
         : show.decoy !== undefined ? `<g transform="scale(.7)" data-bubble-decoy="${show.decoy}">${decoyArt(ctx, show.decoy || undefined)}</g>`
         : bubbleIcon(ctx, show.target);
+      // Tucked (#197): the icon alone, in a cloud the size of a 60 × 40 one (his reaching pose says 「要！」)
+      if (tucked) return icon;
       return show.reach
         ? `<g transform="${translate(-22, 0)}">${icon}</g><g data-reach="">${bubbleText('要！', 13, 0, 22, C.sealInk)}</g>`
         : `<g transform="scale(1.25)">${icon}</g>`;
     }
     case 'text':
-      return bubbleText(show.text, 0, 0, 26, C.ink);
+      return bubbleText(show.text, 0, 0, tucked ? 22 : 26, C.ink);
     case 'cry':
       // Three falling tears (shape, not colour: drops with a highlight)
       return [[-14, -8], [-2, -2], [10, -9]].map(([x, y]) => `<path d="M${x} ${y}q5 9 0 13q-5 -4 0 -13z" fill="${C.moonRim}" stroke="${C.printLilacDeep}" stroke-width="1"/><circle cx="${x - 1.2}" cy="${y + 7}" r="1.1" fill="${C.cutRim}"/>`).join('');

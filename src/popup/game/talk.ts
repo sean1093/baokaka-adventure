@@ -45,6 +45,17 @@ export function advance(q: TalkQueue): TalkQueue {
   return { beats, serial: beats.length > 0 ? q.serial + 1 : q.serial };
 }
 
+/**
+ * The beat on the page is too much for it (#197: three lines at 375 × 667 would cover his thought
+ * bubble): its first `n` lines stay up, the rest become the next beat. Only when `beat` is still the
+ * one on the page; the serial stays, so the lines already up do not replay their entrance.
+ */
+export function splitBeat(q: TalkQueue, beat: readonly TalkLine[], n: number): TalkQueue {
+  const [first, ...rest] = q.beats;
+  if (first !== beat || n < 1 || n >= first.length) return q;
+  return { beats: [first.slice(0, n), first.slice(n), ...rest], serial: q.serial };
+}
+
 /** The beat on the page, or null. */
 export const currentBeat = (q: TalkQueue): readonly TalkLine[] | null => q.beats[0] ?? null;
 

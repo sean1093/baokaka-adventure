@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useLayoutEffect, useMemo, type ReactNode } from 'react';
 import { POPUP } from '../../art/palette';
 import { useSvgIds } from '../../art/useSvgIds';
 import { useReducedMotion } from '../../components/motion';
@@ -108,7 +108,13 @@ export interface PageViewProps {
   /** The barks on the page (#98; `PagePlayer` keeps them a few ticks); defaults to this tick's */
   readonly barks?: readonly BarkShow[];
   /** The subtitle beat on the page (#98, `game/talk.ts`) and the tap that advances it */
-  readonly talk?: { readonly beat: readonly TalkLine[] | null; readonly serial: number; readonly onAdvance?: () => void };
+  readonly talk?: {
+    readonly beat: readonly TalkLine[] | null;
+    readonly serial: number;
+    readonly onAdvance?: () => void;
+    /** The beat is too much for the page (#197): only its first `fit` lines lay out clean; the queue splits it there */
+    readonly onCrowded?: (beat: readonly TalkLine[], fit: number) => void;
+  };
   /** 大字 (#104): the bubbles' text grows by this much (1 or 1.25) */
   readonly textScale?: number;
   /** Low power (bible § 9.3, #104): the grab's sparkle burst at half its rays and glints */
@@ -468,6 +474,11 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       marks: targets.filter((tg) => tg.kind === 'perch' || tg.key === hinted?.key).map((tg) => hitBox(tg.hit)),
     });
   }, [k, state, def, bAnim.sprite, mAnim.sprite, mochaFacing, mochaHidden, showKey(show), barks, beat, hinted?.key]);
+  // A beat too big for the page (#197) is split before it is painted: the rest follow on the next tap
+  const onCrowded = talk?.onCrowded;
+  useLayoutEffect(() => {
+    if (beat !== null && said.fit < beat.length) onCrowded?.(beat, said.fit);
+  }, [beat, said.fit, onCrowded]);
   const babyOff: Pt = babyPose && babyEnd ? [babyPose.x - babyEnd[0], babyPose.y - babyEnd[1]] : [0, 0];
   const mochaOff: Pt = mochaPose && mochaEnd ? [mochaPose.x - mochaEnd[0], mochaPose.y - mochaEnd[1]] : [0, 0];
   const was = still ? show : bubbleShow(def, prev);

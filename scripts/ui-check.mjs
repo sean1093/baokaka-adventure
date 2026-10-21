@@ -15,7 +15,8 @@
  *      animation keeps one transform and never blinks) and the effects are only still fades.
  *   6. 翻翻台北 (#92, `scripts/popup-checks.mjs`): over every PageLab visual QA fixture, at both
  *      viewports, text ≥ 20 px (24 px with 大字) at ≥ 7:1, hit areas ≥ 48×48, nothing but fades
- *      under reduced motion, and no flashing above 3 Hz (GDD § 1.3 R5/R6, § 2.11).
+ *      under reduced motion, no flashing above 3 Hz (GDD § 1.3 R5/R6, § 2.11), and no subtitle
+ *      over Baokaka's thought bubble or him (#197).
  *
  *   node scripts/ui-check.mjs [--serve] [--url <base>] [--popup]     (npm run check:ui)
  *

@@ -101,8 +101,9 @@ function spotlightArt(ctx: KitCtx, w: number, h: number): string {
 export function ThoughtBubble({ ctx, show, was, appeared, placed, head, offset, k, reduced, still, spotlight = false }: ThoughtProps) {
   const key = showKey(show);
   const wasKey = showKey(was);
-  const now = useMemo(() => thoughtContent(ctx, JSON.parse(key) as BubbleShow), [ctx, key]);
-  const old = useMemo(() => (wasKey === '' ? '' : thoughtContent(ctx, JSON.parse(wasKey) as BubbleShow)), [ctx, wasKey]);
+  const { tucked } = placed;
+  const now = useMemo(() => thoughtContent(ctx, JSON.parse(key) as BubbleShow, tucked), [ctx, key, tucked]);
+  const old = useMemo(() => (wasKey === '' ? '' : thoughtContent(ctx, JSON.parse(wasKey) as BubbleShow, tucked)), [ctx, wasKey, tucked]);
   const cloud = useMemo(() => cloudCard(placed.w, placed.h), [placed.w, placed.h]);
   const spot = useMemo(() => (spotlight ? spotlightArt(ctx, placed.w, placed.h) : ''), [ctx, spotlight, placed.w, placed.h]);
   const [cx, cy] = placed.c;
@@ -113,7 +114,7 @@ export function ThoughtBubble({ ctx, show, was, appeared, placed, head, offset, 
   const pulse = show.kind === 'want' && show.reach && !reduced && !still;
   const inClass = changed ? (reduced ? 'tb-fade-in tb-late' : 'tb-inflate tb-late') : undefined;
   return (
-    <g data-bubble={show.kind} data-anim="" transform={`translate(${r2(offset[0])} ${r2(offset[1])})`}>
+    <g data-bubble={show.kind} data-bubble-tucked={tucked ? '' : undefined} data-anim="" transform={`translate(${r2(offset[0])} ${r2(offset[1])})`}>
       {/* The wobble turns the spring and the cloud about his head; keyed so a change replays it */}
       <g transform={`translate(${r2(head[0])} ${r2(head[1])})`}>
         <g key={changed && !reduced ? `w:${key}` : 'w'} className={changed && !reduced ? 'tb-wobble' : undefined}>
@@ -126,7 +127,9 @@ export function ThoughtBubble({ ctx, show, was, appeared, placed, head, offset, 
                     <ArtG html={spot} className={reduced || still ? undefined : 'tb-spot'} />
                   </g>
                 )}
-                <ArtG html={cloud} />
+                <g data-bubble-cloud="">
+                  <ArtG html={cloud} />
+                </g>
                 {changed && old && <ArtG key={`o:${wasKey}`} html={old} className={reduced ? 'tb-fade-out' : 'tb-pop'} />}
                 <g key={`n:${key}`} className={inClass}>
                   <g className={pulse ? 'tb-pulse' : undefined}>
@@ -296,16 +299,20 @@ function SubtitleArt({ sub, f, k }: { sub: PlacedSub; f: number; k: number }) {
   // The part of the tab that hangs inside the card: the text sits below it
   const inside = label === null ? 0 : LABEL_H * k - top;
   const springTo = from === null ? null : springEnd(card, from);
+  const spring = useMemo(() => (from && springTo ? talkSpring(from, springTo, k) : ''), [from?.[0], from?.[1], springTo?.[0], springTo?.[1], k]);
   const art = useMemo(() => {
-    const spring = from && springTo ? talkSpring(from, springTo, k) : '';
     const tab = label === null ? '' : labelTab(card.x + 10, box.y, (textEm(label) * TALK_FONT + 24) * k, LABEL_H * k, SPEAKER_INK[sub.line.who]);
-    return spring + speechCard(card, 12 * k) + tab;
-  }, [box, label, from?.[0], from?.[1], k, sub.line.who]);
+    return speechCard(card, 12 * k) + tab;
+  }, [box, label, k, sub.line.who]);
   const lh = f * 1.32;
   const textTop = card.y + inside + (card.h - inside - rows.length * lh) / 2;
   return (
     <>
-      <ArtG html={art} />
+      {spring && <ArtG html={spring} />}
+      {/* The card and its tab (what `check:ui` keeps off his thought bubble and him, #197) */}
+      <g data-subtitle-card="">
+        <ArtG html={art} />
+      </g>
       {label !== null && (
         // A halo in the tab's own ink keeps the name ≥ 7:1 wherever its glyphs overhang the tab (#108: lighter page art)
         <text x={r2(card.x + 10 + 12 * k)} y={r2(box.y + (LABEL_H * k) / 2 + f * 0.36)} fontFamily={SERIF} fontWeight={900} fontSize={r2(f)} fill={C.sealGlyph} stroke={SPEAKER_INK[sub.line.who]} strokeWidth={r2(3 * k)} paintOrder="stroke" strokeLinejoin="round">

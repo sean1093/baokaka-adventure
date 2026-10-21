@@ -20,6 +20,10 @@
  *                  the paw (or the L2 ghost hand tapping it; a subtitle, which any tap clears, is
  *                  allowed and counted), and most points of a halo show the halo, its own target, a
  *                  paw, the ghost hand or a subtitle.
+ *   Talk clear   no subtitle card or narration strip covers Baokaka's thought bubble or Baokaka himself
+ *                  (#197: at 375×667 a three-line beat hid his 「要！」 cloud). `layoutTalk` lays the
+ *                  beat out to keep them clear and splits a beat too big for the page; this checks
+ *                  what is drawn.
  *   Reduced motion under `prefers-reduced-motion: reduce`, with the fixture live, no running CSS or
  *                  Web Animations animation changes anything but opacity (fades are allowed).
  *   Flashing       with the fixture live and motion on, no animation flashes above 3 Hz (opacity or
@@ -47,6 +51,11 @@ export const MIN_HIT_PX = 48;
 /** The viewport whose book scale the authored hit areas must clear 48 px at (bible § 2.1, § 4.2). */
 export const REFERENCE_VIEWPORT = '390x844';
 export const MAX_FLASH_HZ = 3;
+/**
+ * Talk clear: an overlap no thicker than this (CSS px) is a card's edge, not cover: `layoutTalk`
+ * places the card's box, and the drawn card bows up to 3 units past it with its die-cut shadow.
+ */
+export const TALK_SLACK = 4;
 
 /**
  * Known gaps. `selector` matches the waived elements (and everything inside them); `rules` are
@@ -315,6 +324,59 @@ function coveredMarks() {
   return { checked, under, talk };
 }
 
+/**
+ * What the beat's text cards cover (see "Talk clear" above), in the page: each subtitle card
+ * (`[data-subtitle-card]`, its label tab included) and the narration strip against the thought
+ * bubble's cloud (`[data-bubble-cloud]`) and Baokaka's frame, cut at his feet as `layoutTalk` cuts it.
+ * Overlaps no thicker than `TALK_SLACK` px are a card's bowed edge, not cover.
+ */
+function talkCover(slack) {
+  if (document.querySelector('[aria-modal="true"]')) return { cards: 0, over: [], unmarked: false };
+  const rect = (el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.left, y: r.top, w: r.width, h: r.height };
+  };
+  const cover = (a, b) => {
+    const w = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+    const h = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+    return w > slack && h > slack ? `${Math.round(w)}×${Math.round(h)}px` : null;
+  };
+  const over = [];
+  let cards = 0;
+  let unmarked = false;
+  for (const svg of document.querySelectorAll('svg[data-page]')) {
+    const talk = svg.querySelector('[data-talk]');
+    if (!talk) continue;
+    const mine = [...talk.querySelectorAll('[data-subtitle-card], [data-narration]')];
+    // Every subtitle draws its card in a marked group, or this check would see nothing
+    if (talk.querySelectorAll('[data-subtitle]').length !== talk.querySelectorAll('[data-subtitle-card]').length) unmarked = true;
+    cards += mine.length;
+    const cloud = svg.querySelector('[data-bubble-cloud]');
+    const actor = svg.querySelector('[data-actor="baby"]');
+    const frame = actor?.querySelector('[data-sprite] > g > :is(image, rect)');
+    let baby = null;
+    if (actor && frame) {
+      baby = rect(frame);
+      // His frame's padding under the feet is shadow, not him (`spriteBox` cuts it 4 units down)
+      const m = actor.getScreenCTM();
+      if (m) {
+        const feet = new DOMPoint(0, 4).matrixTransform(m).y;
+        baby.h = Math.max(0, Math.min(baby.y + baby.h, feet) - baby.y);
+      }
+    }
+    for (const card of mine) {
+      const who = card.closest('[data-subtitle]')?.getAttribute('data-subtitle') ?? 'narration';
+      const text = (card.closest('[data-subtitle]') ?? card).textContent.trim().slice(0, 10);
+      const r = rect(card);
+      const onCloud = cloud ? cover(r, rect(cloud)) : null;
+      if (onCloud) over.push(`${who} 「${text}」 over his thought bubble (${onCloud})`);
+      const onBaby = baby ? cover(r, baby) : null;
+      if (onBaby) over.push(`${who} 「${text}」 over Baokaka (${onBaby})`);
+    }
+  }
+  return { cards, over, unmarked };
+}
+
 /** Hides every text run (fill, stroke, colour, shadow) so a screenshot shows only what is behind it. */
 function hideText() {
   const style = document.createElement('style');
@@ -457,6 +519,7 @@ export async function checkPopup(browser, base, viewports, report) {
       await openPopupFixture(page, base, name);
       await page.waitForTimeout(300);
       const marks = await page.evaluate(coveredMarks);
+      const talk = await page.evaluate(talkCover, TALK_SLACK);
       const { texts, hits, art, hitless } = await page.evaluate(collect, {
         waivers: WAIVERS.map(({ selector, rules, issue }) => ({ selector, rules, issue })),
         artText: ART_TEXT,
@@ -500,6 +563,9 @@ export async function checkPopup(browser, base, viewports, report) {
       if (marks.under.length === 0) {
         if (marks.checked > 0) pass(report, `${label}: ${marks.checked} perch paws / hint halos in sight${marks.talk > 0 ? ` (${marks.talk} under a subtitle, which any tap clears)` : ''}`);
       } else report.fail(`${label} hidden marks: ${marks.under.join('; ')}`);
+      if (talk.unmarked) report.fail(`${label} talk clear: a subtitle drew no [data-subtitle-card] (the check cannot see it)`);
+      else if (talk.over.length > 0) report.fail(`${label} talk clear: ${talk.over.join('; ')}`);
+      else if (talk.cards > 0) pass(report, `${label}: ${talk.cards} subtitle cards clear of his thought bubble and him`);
       if (viewport.name === REFERENCE_VIEWPORT) {
         const grown = hits.filter((h) => h.grown && !h.waived && !h.covered).map((h) => `"${h.label}"`);
         if (grown.length === 0) pass(report, `${label}: every page hit shape is ≥ ${MIN_HIT_PX} px after the book scale (none grown)`);
