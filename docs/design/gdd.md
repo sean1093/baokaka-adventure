@@ -1290,14 +1290,16 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 
 #### Chapter 8 「熱呼呼的煙」 (北投, 04:00) · treasure 算盤 · word 咻——
 
+**Specified in full** (the § 4.3 format, node/edge sketches, the solver's numbers): [`docs/design/pages/c8.md`](pages/c8.md) (#129, D-93). The rows below are the outline, updated where the full spec changed it.
+
 | Page | Title | Key mechanic → aha | 淘氣 | Diff |
 |---|---|---|---|---|
-| 8-1 | 新北投支線 | The themed car: climb the seats, 抱抱, and 不要！ a shiny window. | Climb onto every seat | 3 |
-| 8-2 | 地熱谷 | Steam-vent valves (**wheels**) lift paper clouds as **lifts**. Steam perches block Mocha while the vents are on (C7). | Make Mocha's fur puff three times | 3 |
-| 8-3 | 呼呼 | **Learn 咻——**: 溫泉阿嬤 blows on a hot egg (「呼呼再吃」), and he copies. 咻—— clears a steam cloud (**blowable**) that hides the bead path. | Blow the 溫泉阿嬤's hat off | 2 |
-| 8-4 | 北投圖書館 | A balcony pinwheel (**blowable**, 4 states) drives a book-lift belt. Facing matters: he must face the pinwheel. Climb. | Spin the pinwheel 8 times | 4 |
-| 8-5 | 大浴池 | A water-level **wheel** (drain/fill) moves floating wooden tubs as platforms. Mocha can cross only when the pool is drained. Sequence it. | Float Mocha's empty tub across | 4 |
-| 8-6 | 澡堂的算盤 (spread) | A giant abacus: bead rows are **sliders** that you slide into a **staircase** (climb). 咻—— the steam off the counter. Mocha rings the bell. | Spell "1" on the abacus (his birthday) | 5 |
+| 8-1 | 新北投支線 | The themed car: climb the seats, Mocha onto the far luggage rack and 不要！ the shiny stained-glass window (he comes to a dozing 泡湯阿伯's bath bucket), 抱抱 the 阿伯 (he lifts him over it). | Climb onto every seat (each cushion keeps his dent) | 3 |
+| 8-2 | 地熱谷 | Steam-vent valves (**wheels**) lift paper clouds as **lifts**. The steam perch by the far vent blocks Mocha while it's on (C7): off for Mocha, on again to lift Baokaka's cloud beside him. | Make Mocha's fur puff three times (the steam comes on under him) | 3 |
+| 8-3 | 呼呼 | **Learn 咻——**: 溫泉阿嬤 blows on a hot egg (「呼呼再吃」), and he copies. 咻—— clears a steam cloud (**blowable**) that hides the bead path. | Blow the 溫泉阿嬤's hat off (bring him back facing her) | 2 |
+| 8-4 | 北投圖書館 | A pinwheel (**blowable**, 4 states) in the window box drives the book lift's belt (`coupled`); open the window for the wind. Facing matters: Mocha on the balcony rail turns him to face the pinwheel. Climb. | Spin the pinwheel 8 times | 4 |
+| 8-5 | 大浴池 | The bath's tap (a **wheel**: drained / half / full) sets the water; two floating wooden tubs (**lifts**) drift with it. Mocha crosses the stepping stone only when drained, to the 店員小哥's shop counter (the cameo). Sequence it: half, full, half again. | Float Mocha's empty tub across to him | 4 |
+| 8-6 | 澡堂的算盤 (spread) | A giant abacus: bead rows are **sliders** that you slide into a **staircase** (climb). 咻—— the steam off the counter (it keeps Mocha off the bell, C7). Mocha rings the bell: the 番台's window opens on the 算盤. | Spell "1" on the abacus (his birthday) | 5 |
 
 #### Chapter 9 「河的盡頭是海」 (淡水・漁人碼頭・淡江大橋, 04:40) · treasure 聽診器 · growth 扶著站
 
@@ -1367,7 +1369,7 @@ Unlocked by collecting all 65 土地公 stickers. It's a gentle sunrise page on 
 
 The chapter card shows: 第N章｜title｜HH:MM｜下一站 (≤ 8 chars). The lines below play over the card or the first page. They are all skippable with a tap.
 
-**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines. #118 adds chapter 4's (`c4.intro.N`, `c4p4.clerk.N`, `c4p4.claw.N`, `c4p6.king.N`, `c4p6.end.1`); its card plays all three intro lines. #121 adds chapter 5's (`c5.intro.N`, `c5p2.clerk.N`, `c5p3.boss.N`, `c5p4.uncle.1`, `c5p6.vendor.N`, `c5p6.end.N`); its card plays all three intro lines, and its two end lines are one beat. #123 adds chapter 6's (`c6.intro.N`, `c6p1.crew.1`, `c6p2.clerk.N`, `c6p5.tower.N`, `c6p6.xray.1`, `c6p6.end.1`); its card plays all three intro lines.
+**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines. #118 adds chapter 4's (`c4.intro.N`, `c4p4.clerk.N`, `c4p4.claw.N`, `c4p6.king.N`, `c4p6.end.1`); its card plays all three intro lines. #121 adds chapter 5's (`c5.intro.N`, `c5p2.clerk.N`, `c5p3.boss.N`, `c5p4.uncle.1`, `c5p6.vendor.N`, `c5p6.end.N`); its card plays all three intro lines, and its two end lines are one beat. #123 adds chapter 6's (`c6.intro.N`, `c6p1.crew.1`, `c6p2.clerk.N`, `c6p5.tower.N`, `c6p6.xray.1`, `c6p6.end.1`); its card plays all three intro lines. #125 adds chapter 7's (`c7.intro.N`, `c7p1.keeper.1`, `c7p2.clerk.N`, `c7p3.farmer.1`, `c7p4.mocha.1`, `c7p5.mocha.1`, `c7p6.bear.N`, `c7p6.end.1`); #129 adds chapter 8's (`c8.intro.N`, `c8p1.uncle.1`, `c8p2.mocha.1`, `c8p3.granny.1`, `c8p5.clerk.N`, `c8p5.mocha.1`, `c8p6.cashier.N`, `c8p6.mocha.1`, `c8p6.end.1`); each card plays all three intro lines.
 
 **P · 序章「度晬前一晚」 00:00** (card, then 0-1)
 
@@ -1510,7 +1512,12 @@ nar：地熱谷，冒著白白的煙。
 mocha：「有水。熱水。兩個我都不要。」
 ```
 
-**8-6 end:** `nar：找到了！抓周寶物——算盤。`
+- **8-1 泡湯阿伯** (抱抱: he lifts him over his bath bucket; #129): `npc(泡湯阿伯)：「嗯……要去泡湯喔？阿伯抱你過去。」`
+- **8-2** (the steam comes on under Mocha a third time, the 淘氣; #129): `mocha：「……毛都炸開了。不要看。」`
+- **8-3 溫泉阿嬤** (咻—— blows her hat off, the 淘氣; #129): `npc(溫泉阿嬤)：「哎唷！我的帽子！」` (her learn line is § 5.4's)
+- **8-5 店員小哥** (Mocha hops onto his bathhouse shop's counter; #129): `clerk：「叮咚～歡迎光臨！」`, `mocha：「……澡堂也是你們的？」`, `clerk：「我們是連鎖的。」`; his empty tub floats out to him (the 淘氣): `mocha：「……我不坐。」`
+- **8-6 番台阿嬤** (the bell rung, she opens her window; #129): `npc(番台阿嬤)：「歡迎光臨！大人五十，囡仔免錢。」`, `mocha：「……貓呢？」`; 「1」 on the abacus (the 淘氣): `mocha：「一。……一歲，生日快樂。」`
+- **8-6 end:** `nar：找到了！抓周寶物——算盤。`
 
 **Ch9 「河的盡頭是海」 04:40 · 下一站 淡水**
 

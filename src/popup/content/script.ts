@@ -224,6 +224,29 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c10p6.end.2': { who: 'mocha', text: '他說：『一起過生日。』' },
   'c10p6.end.3': { who: 'nar', text: '太陽，從山的後面出來了。' },
   'c10p6.end.4': { who: 'pa', text: '本列車直達：寶咖咖的家。' },
+  // § 5.2 Ch8 「熱呼呼的煙」 04:00 (the chapter card)
+  'c8.intro.1': { who: 'pa', text: '新北投站，到了。' },
+  'c8.intro.2': { who: 'nar', text: '地熱谷，冒著白白的煙。' },
+  'c8.intro.3': { who: 'mocha', text: '有水。熱水。兩個我都不要。' },
+  // 8-1: the 泡湯阿伯 wakes to 抱抱 and lifts him over his bath bucket
+  'c8p1.uncle.1': { who: 'npc', label: '泡湯阿伯', text: '嗯……要去泡湯喔？阿伯抱你過去。' },
+  // 8-2: the steam comes up under Mocha a third time (the 淘氣)
+  'c8p2.mocha.1': { who: 'mocha', text: '……毛都炸開了。不要看。' },
+  // 8-3: 咻—— blows the 溫泉阿嬤's sun hat off (the 淘氣)
+  'c8p3.granny.1': { who: 'npc', label: '溫泉阿嬤', text: '哎唷！我的帽子！' },
+  // § 5.3 店員小哥's chapter 8 cameo (8-5: Mocha hops onto his bathhouse shop's counter)
+  'c8p5.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c8p5.clerk.2': { who: 'mocha', text: '……澡堂也是你們的？' },
+  'c8p5.clerk.3': { who: 'clerk', text: '我們是連鎖的。' },
+  // 8-5: his tub floats out to him empty (the 淘氣)
+  'c8p5.mocha.1': { who: 'mocha', text: '……我不坐。' },
+  // 8-6: the bell rung, the 番台's cashier opens her window
+  'c8p6.cashier.1': { who: 'npc', label: '番台阿嬤', text: '歡迎光臨！大人五十，囡仔免錢。' },
+  'c8p6.cashier.2': { who: 'mocha', text: '……貓呢？' },
+  // 8-6: 「1」 on the abacus (the 淘氣)
+  'c8p6.mocha.1': { who: 'mocha', text: '一。……一歲，生日快樂。' },
+  // § 5.2 8-6 end
+  'c8p6.end.1': { who: 'nar', text: '找到了！抓周寶物——算盤。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },
