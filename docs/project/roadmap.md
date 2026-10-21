@@ -79,7 +79,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [126](https://github.com/sean1093/baokaka-adventure/issues/126) | Chapter 7 art: 貓空 (動物園 → 纜車 → 茶園) pop-up pages, parts, creatures, 土地公 (叢林帽) and the 芹菜 photo | art, content, m3 | #125, #124 | done (#202) |
 | **M4 · Chapters 8–10 + ending** | | | | |
 | [127](https://github.com/sean1093/baokaka-adventure/issues/127) | M4 engine I: blowable preset with facing cone and 咻——, growth 扶著站 (cruise + reachHigh), coupled wheels | engine, art, m4 | #120 | done (#203) |
-| [128](https://github.com/sean1093/baokaka-adventure/issues/128) | M4 engine II: linked mode (一起), first steps (walk) and the lonely creature 咻咻 | engine, ui, m4 | #127 | in progress |
+| [128](https://github.com/sean1093/baokaka-adventure/issues/128) | M4 engine II: linked mode (一起), first steps (walk) and the lonely creature 咻咻 | engine, ui, m4 | #127 | done (#204) |
 | [129](https://github.com/sean1093/baokaka-adventure/issues/129) | Chapter 8 pages: 「熱呼呼的煙」 北投 — full specs, then data for 8-1…8-6, solver-green | content, m4 | #127, #125 | todo |
 | [130](https://github.com/sean1093/baokaka-adventure/issues/130) | Chapter 8 art: 北投 pop-up pages, parts, creatures, 土地公 (頭上一條毛巾) and the 算盤 photo | art, content, m4 | #129, #126 | todo |
 | [131](https://github.com/sean1093/baokaka-adventure/issues/131) | Chapter 9 pages: 「河的盡頭是海」 淡水・漁人碼頭・淡江大橋 — full specs, then data for 9-1…9-6, solver-green | content, m4 | #127, #129 | todo |
