@@ -93,7 +93,7 @@ describe('art registry fallback', () => {
   });
 
   test('chapter 6\'s cast and riders (#124): own art, no filters, never marigold', async () => {
-    const { riderArt } = await import('./airport');
+    const { riderArt } = await import('./riders');
     const ctx = kitCtx('t');
     expect(creatureArt('c6/night-birds')).not.toBe(origamiBird);
     const drawn = ['roost', 'sky'].map((pos) => creatureArt('c6/night-birds')(ctx, pos));
@@ -106,6 +106,29 @@ describe('art registry fallback', () => {
     for (const svg of drawn) {
       expect(svg).not.toMatch(/\bfilter=/);
       expect(lintMarkup(svg, { page: 'c6', touchable: () => false, expected: [], where: 'c6' })).toEqual([]);
+    }
+    expect(new Set(drawn).size).toBe(drawn.length);
+  });
+
+  test('chapter 7\'s cast and riders (#126): own art, no filters, never marigold; riders from the shared module', async () => {
+    const { riderArt } = await import('./riders');
+    const ctx = kitCtx('t');
+    const drawn: string[] = [];
+    for (const [key, positions] of [['c7/night-heron', ['path', 'sky']], ['c7/pangolin', ['asleep', 'curled']], ['c7/tea-farmer', ['step', 'up']], ['c7/sleeping-bear', ['bed']]] as const) {
+      expect(creatureArt(key), key).not.toBe(origamiBird);
+      for (const pos of positions) drawn.push(creatureArt(key)(ctx, pos));
+    }
+    // Awake (the carrier), the sleeping bear's creature draws nothing off the page
+    expect(creatureArt('c7/sleeping-bear')(ctx, 'up')).toBe('');
+    for (const [key, node] of [['c7/bullwheel', 'A'], ['c7/bullwheel', 'shop'], ['c6/carousel-belt', 'S']] as const) {
+      const art = riderArt(key, node);
+      expect(art, `${key} ${node}`).not.toBeNull();
+      drawn.push(art!(ctx));
+    }
+    expect(riderArt('c7/bullwheel', 'nope')).toBeNull();
+    for (const svg of drawn) {
+      expect(svg).not.toMatch(/\bfilter=/);
+      expect(lintMarkup(svg, { page: 'c7', touchable: () => false, expected: [], where: 'c7' })).toEqual([]);
     }
     expect(new Set(drawn).size).toBe(drawn.length);
   });

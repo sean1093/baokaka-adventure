@@ -71,6 +71,8 @@ export default definePage({
     // The bead on the luggage rack, seen once the lamp is on
     { id: 'bead', kind: 'shiny', node: 'K', goal: true, visibleWhen: { part: 'lamp', in: ['on'] } },
   ],
+  // The glass floor turns into a mirror while the reading lamp is on (#126: pure art)
+  cutouts: [{ art: 'c7/glass-mirror', x: 0, y: 0, visibleWhen: { part: 'lamp', in: ['on'] } }],
   baby: { start: 'L', facing: 'r' },
   mocha: { start: 'basket' },
   mischief: { text: '把雲全部吹開，讓摩卡往下看', when: { type: 'partEnter', when: ALL_OPEN } },

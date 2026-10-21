@@ -41,7 +41,7 @@ import { dressedLedge, foregroundCard, styledRamp } from './art/ledges';
 import { Fireflies } from './Fireflies';
 import { attractorArt, chapterSky, decoyArt, spine, perchMark, perchPost, rail, ramp, spotPool, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
-import { riderArt } from './art/airport';
+import { riderArt } from './art/riders';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
 import { NO_GESTURE, hitCenter, minHit, rideHome, shiftHit, targetsOf, type GestureFlags } from './gestures';
 import { clamp01, drawnNodePos, easeInOut, lerpPt, offpagePoint, partProgress, stepPose } from './interp';

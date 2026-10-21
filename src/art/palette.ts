@@ -1575,6 +1575,96 @@ export const POPUP_AIRPORT = {
   heronCap: '#1E2232',
 } as const;
 
+/**
+ * Chapter 7's palette kit (貓空, 03:30; popup art bible § 6 row 7, #126): **tea green** and **mist
+ * lilac** dominant (the tea terraces' clipped rows climbing the hills, the mist lying in the
+ * valleys as layered vellum), **gondola amber** the accent (the 貓空纜車's cabins lit warm on their
+ * cable over the night hills: a light, never graded). The signature material is vellum mist in
+ * three layers; the moon is bigger here (bible § 6). Terraces are stepped box folds of clipped tea
+ * over stone walls. Every warm decoration (the tea, the clay teapot, the bamboo, the keeper's khaki,
+ * the farmer's straw hat, 黑糖's muzzle) is held ≥ ΔE 12 from marigold by `affordance.test.ts`.
+ */
+export const POPUP_MAOKONG = {
+  // Tea green: the clipped tea bushes in rows, their lit tops, the dark between the rows
+  tea: '#2E5A4A',
+  teaLight: '#4C7E62',
+  teaLit: '#73A27A',
+  teaDeep: '#1A3830',
+  // The night hills (木柵's ridges behind 貓空), far to near
+  hillFar: '#3C4878',
+  hill: '#283A5C',
+  hillNear: '#1C2E42',
+  // Mist lilac: the vellum mist lying in the valleys, its deeper fold
+  mist: '#CEC4E6',
+  mistDeep: '#9C90C4',
+  // Gondola amber (a light, never graded): the cabins' windows and the stations' lamps
+  gondolaAmber: '#F4B66A',
+  // The gondola cabins: white card, a tea-green band (no operator's livery), the cable's steel
+  cabin: '#E6E4DE',
+  cabinShade: '#B4B2B8',
+  cabinBand: '#3E8270',
+  cable: '#262A40',
+  steel: '#8C92AC',
+  steelLight: '#C0C6DA',
+  steelDeep: '#545A78',
+  // Stone: the terraces' retaining walls and the station's concrete
+  stone: '#6C6680',
+  stoneLight: '#8E88A2',
+  stoneDeep: '#46405A',
+  concrete: '#A8A6B6',
+  concreteDeep: '#77758A',
+  // Earth: the tea rows' soil, the garden's paths
+  soil: '#5A4436',
+  soilDeep: '#3A2A24',
+  path: '#7E6A58',
+  // Wood: the tea house's deck and tables, the tea shed's planks
+  wood: '#7A5236',
+  woodLight: '#9A6E4A',
+  woodDeep: '#4E3424',
+  // Bamboo: the garden's fence, the trellis, the baskets
+  bamboo: '#A8A464',
+  bambooDeep: '#6E6A3A',
+  // Tea in the cup (oolong, deep amber-brown) and its light
+  brew: '#8E5A2E',
+  brewLight: '#B47A40',
+  // Porcelain: white teacups, a celadon glaze, a blue-and-white band
+  porcelain: '#EEF0F2',
+  porcelainShade: '#C2C8D2',
+  celadon: '#9EC4B0',
+  blueWhite: '#3A5A9A',
+  // The giant teapot: purple clay (紫砂)
+  clay: '#6E3C3A',
+  clayLight: '#8E5448',
+  clayDeep: '#42222A',
+  // 黑糖, the Formosan black bear: black fur, its sheen, the cream V on his chest, a tan muzzle
+  bear: '#1E1C26',
+  bearSheen: '#3A3848',
+  bearMoon: '#EDE4C8',
+  bearMuzzle: '#B08A68',
+  // The zoo: the panda's white and black, the pangolin's scales, the keeper's khaki and green
+  panda: '#F2F0EA',
+  pangolin: '#8A6448',
+  pangolinDeep: '#5E4230',
+  khaki: '#8A7E56',
+  khakiDeep: '#5E5638',
+  keeperGreen: '#3E6A4E',
+  // The tea farmer: indigo work clothes, the straw 斗笠
+  farmerBlue: '#3A5482',
+  farmerBlueDeep: '#26385E',
+  straw: '#C8B07A',
+  strawDeep: '#9A8456',
+  // The garden: celery green, cabbage, the rain jar's glaze
+  celery: '#7AB86A',
+  celeryLight: '#B4DC8E',
+  celeryDeep: '#4A8A4A',
+  cabbage: '#8CB49A',
+  jar: '#5A4A5E',
+  jarDeep: '#3A3042',
+  // 黑糖珍奶: milk tea, the brown-sugar stripes, the pearls
+  milkTea: '#C49A72',
+  brownSugar: '#6A3A22',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 

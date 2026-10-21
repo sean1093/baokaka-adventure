@@ -83,6 +83,8 @@ export default definePage({
   creatures: [],
   // Among the tea tins on the terrace, seen from up there
   attractors: [{ id: 'bead', kind: 'shiny', node: 'R2', goal: true, visibleWhen: ON_TERRACE }],
+  // The giant teapot as its wheel tilts it (#126: pure art, one cut-out per tilt)
+  cutouts: ['0', '1', '2'].map((k) => ({ art: `c7/teapot-${k}`, x: 0, y: 0, visibleWhen: { part: 'teapot', in: [k] } })),
   baby: { start: 'LB', facing: 'l' },
   mocha: { start: 'tray' },
   // The pool filled with Mocha watching from the tray: 「……」

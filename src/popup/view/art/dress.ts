@@ -23,7 +23,8 @@ export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'car
   | 'carBodySongshan' | 'campusPath' | 'lakeside' | 'gallery' | 'libraryFloor' | 'desk' | 'bookPage'
   | 'neonStreet' | 'arcadeShelf' | 'karaokeStage'
   | 'marketLane' | 'stallFloor' | 'stallShelf' | 'stallCounter'
-  | 'carBodyWenhu' | 'terminalFloor' | 'deckBoards' | 'bridgeFloor' | 'catwalk';
+  | 'carBodyWenhu' | 'terminalFloor' | 'deckBoards' | 'bridgeFloor' | 'catwalk'
+  | 'zooPlatform' | 'zooPlaza' | 'gondolaDeck' | 'teaTerrace' | 'teaDeck' | 'chahai' | 'cabinBench' | 'cabinRack' | 'cabinGlass' | 'gardenPath' | 'gardenPathJar' | 'gardenTerrace';
 
 /** The near-corner foreground card. */
 export type ForegroundCard = 'plant' | 'blocks' | 'luggage' | 'shrub' | 'azalea';
@@ -114,6 +115,18 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c6/tower-catwalk': { ledge: 'catwalk', ownPosts: ['antenna', 'crate'], foreground: null },
   // The customs hall's floor: the queue, and under the officer's counter (the belt is the way across)
   'c6/customs-spread': { ledge: 'terminalFloor', ownPosts: ['rope', 'hood', 'counter'], foreground: null, crossing: 'none' },
+  // 貓空 (#126): 動物園 station's elevated platform, then the zoo's plaza down the stairs
+  'c7/zoo-station': { ledge: [{ below: 450, style: 'zooPlatform' }, { below: 999, style: 'zooPlaza' }], ownPosts: ['bench', 'lamp'], foreground: null },
+  // The gondola stations' decks (the cable is the way up: no rail)
+  'c7/gondola-station': { ledge: 'gondolaDeck', ownPosts: ['booth'], foreground: null, crossing: 'none' },
+  // The tea terraces: stepped box folds of clipped tea over stone walls
+  'c7/tea-terraces': { ledge: [{ below: 470, style: 'teaTerrace' }, { below: 999, style: 'gardenPath' }], ownPosts: ['bench', 'stool', 'shed'], foreground: null },
+  // Inside the 水晶車廂: the benches either end, the rack, the glass floor (the seat is the way up: no rail)
+  'c7/crystal-cabin': { ledge: [{ below: 400, style: 'cabinRack' }, { below: 430, style: 'cabinBench' }, { below: 999, style: 'cabinGlass' }], ownPosts: ['basket'], foreground: null, crossing: 'none' },
+  // The tea house's deck either side of the pool (the cups are the way across)
+  'c7/giant-teapot': { ledge: [{ below: 470, style: 'teaDeck' }, { below: 999, style: 'chahai' }], ownPosts: ['tray', 'tins'], foreground: null, crossing: 'none' },
+  // The garden's path, its terraces up to the celery bed (the bear is the way up)
+  'c7/celery-garden': { ledge: [{ below: 470, style: 'gardenTerrace' }, { below: 999, style: 'gardenPathJar' }], ownPosts: ['scarecrow', 'basket', 'post'], foreground: null, crossing: 'none' },
 };
 
 const NONE: StageDress = {};

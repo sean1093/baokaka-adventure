@@ -527,7 +527,7 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c7/zoo-station": {
       "file": "backdrops/c7/zoo-station",
-      "bytes": 143244,
+      "bytes": 184488,
       "chapter": 7,
       "grade": [1.127, 1.079, 1.063],
       "box": {
@@ -536,11 +536,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "dca3749e64385608"
+      "source": "6aedd87aa8c903a5"
     },
     "c7/gondola-station": {
       "file": "backdrops/c7/gondola-station",
-      "bytes": 143244,
+      "bytes": 197856,
       "chapter": 7,
       "grade": [1.127, 1.079, 1.063],
       "box": {
@@ -549,11 +549,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "dca3749e64385608"
+      "source": "083314dcfffaf7bf"
     },
     "c7/tea-terraces": {
       "file": "backdrops/c7/tea-terraces",
-      "bytes": 143244,
+      "bytes": 202400,
       "chapter": 7,
       "grade": [1.127, 1.079, 1.063],
       "box": {
@@ -562,11 +562,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "dca3749e64385608"
+      "source": "5635b79bda40651e"
     },
     "c7/crystal-cabin": {
       "file": "backdrops/c7/crystal-cabin",
-      "bytes": 143244,
+      "bytes": 207638,
       "chapter": 7,
       "grade": [1.127, 1.079, 1.063],
       "box": {
@@ -575,11 +575,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "dca3749e64385608"
+      "source": "c38a14b8978ef2aa"
     },
     "c7/giant-teapot": {
       "file": "backdrops/c7/giant-teapot",
-      "bytes": 143244,
+      "bytes": 194864,
       "chapter": 7,
       "grade": [1.127, 1.079, 1.063],
       "box": {
@@ -588,11 +588,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "dca3749e64385608"
+      "source": "aa1a2e6631e73d49"
     },
     "c7/celery-garden": {
       "file": "backdrops/c7/celery-garden",
-      "bytes": 143244,
+      "bytes": 217054,
       "chapter": 7,
       "grade": [1.127, 1.079, 1.063],
       "box": {
@@ -601,7 +601,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "dca3749e64385608"
+      "source": "ab3f50c5bab81e32"
     }
   },
   "parts": {
@@ -2834,7 +2834,7 @@ export const ENV_MANIFEST: EnvManifest = {
       "states": {
         "closed": {
           "file": "parts/c7/cloud.closed",
-          "bytes": 2804
+          "bytes": 3098
         },
         "open": {
           "file": "parts/c7/cloud.open",
@@ -2844,38 +2844,248 @@ export const ENV_MANIFEST: EnvManifest = {
       "lifted": {
         "closed": {
           "file": "parts/c7/cloud.closed.lifted",
-          "bytes": 3922
+          "bytes": 3892
         },
         "open": {
           "file": "parts/c7/cloud.open.lifted",
           "bytes": 3470
         }
       },
-      "source": "4a0df8eb83e9b3c3"
+      "source": "b79c3175fb1e68f2"
     },
     "c7/tea-pool": {
       "preset": "lift",
       "box": {
-        "x": -40,
-        "y": -31,
-        "w": 215,
-        "h": 81
+        "x": -35,
+        "y": -37,
+        "w": 210,
+        "h": 135
       },
       "states": {
         "low": {
           "file": "parts/c7/tea-pool.low",
-          "bytes": 8042
+          "bytes": 9320
         },
         "mid": {
           "file": "parts/c7/tea-pool.mid",
-          "bytes": 7280
+          "bytes": 9304
         },
         "high": {
           "file": "parts/c7/tea-pool.high",
-          "bytes": 7280
+          "bytes": 9356
         }
       },
-      "source": "1d9a14e6fbc84dc0"
+      "source": "8d19b6b53a4f072b"
+    },
+    "c7/teapot": {
+      "preset": "wheel",
+      "box": {
+        "x": -67,
+        "y": -60,
+        "w": 135,
+        "h": 128
+      },
+      "pivot": [0, 0],
+      "states": {
+        "0": {
+          "file": "parts/c7/teapot.0",
+          "bytes": 11270
+        }
+      },
+      "lifted": {
+        "0": {
+          "file": "parts/c7/teapot.0.lifted",
+          "bytes": 12698
+        }
+      },
+      "source": "99aa6f3f9d9a010b"
+    },
+    "c7/bullwheel": {
+      "preset": "loop",
+      "box": {
+        "x": -97,
+        "y": -51,
+        "w": 195,
+        "h": 97
+      },
+      "states": {
+        "0": {
+          "file": "parts/c7/bullwheel.0",
+          "bytes": 8114
+        }
+      },
+      "source": "3475ed46548dfe1a"
+    },
+    "c7/turnstile": {
+      "preset": "gate",
+      "box": {
+        "x": -31,
+        "y": -35,
+        "w": 82,
+        "h": 85
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c7/turnstile.closed",
+          "bytes": 4466
+        },
+        "open": {
+          "file": "parts/c7/turnstile.open",
+          "bytes": 4184
+        }
+      },
+      "source": "704ba78e5e3d6d1f"
+    },
+    "c7/folding-seat": {
+      "preset": "flap",
+      "box": {
+        "x": -17,
+        "y": -67.4,
+        "w": 89,
+        "h": 133
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c7/folding-seat.closed",
+          "bytes": 2646
+        },
+        "open": {
+          "file": "parts/c7/folding-seat.open",
+          "bytes": 4548
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c7/folding-seat.closed.lifted",
+          "bytes": 5836
+        },
+        "open": {
+          "file": "parts/c7/folding-seat.open.lifted",
+          "bytes": 5856
+        }
+      },
+      "source": "69feaaddf37f68de"
+    },
+    "c7/cabin-lamp": {
+      "preset": "light",
+      "box": {
+        "x": -63,
+        "y": -37,
+        "w": 122,
+        "h": 144
+      },
+      "states": {
+        "off": {
+          "file": "parts/c7/cabin-lamp.off",
+          "bytes": 2084
+        },
+        "on": {
+          "file": "parts/c7/cabin-lamp.on",
+          "bytes": 11838
+        }
+      },
+      "source": "8794a7e13e462a54"
+    },
+    "c7/fence-latch": {
+      "preset": "button",
+      "box": {
+        "x": -38,
+        "y": -24,
+        "w": 59,
+        "h": 47
+      },
+      "states": {
+        "up": {
+          "file": "parts/c7/fence-latch.up",
+          "bytes": 1482
+        },
+        "down": {
+          "file": "parts/c7/fence-latch.down",
+          "bytes": 2304
+        }
+      },
+      "source": "eaf87c0caa815bae"
+    },
+    "c7/fence-gate": {
+      "preset": "gate",
+      "box": {
+        "x": -35,
+        "y": -15,
+        "w": 68,
+        "h": 61
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c7/fence-gate.closed",
+          "bytes": 4608
+        },
+        "open": {
+          "file": "parts/c7/fence-gate.open",
+          "bytes": 1002
+        }
+      },
+      "source": "cacdfcb772a0023a"
+    },
+    "c7/zookeeper": {
+      "preset": "carrier",
+      "box": {
+        "x": -57,
+        "y": -162,
+        "w": 116,
+        "h": 179
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c7/zookeeper.idle",
+          "bytes": 8068
+        },
+        "carrying": {
+          "file": "parts/c7/zookeeper.carrying",
+          "bytes": 7946
+        },
+        "back": {
+          "file": "parts/c7/zookeeper.back",
+          "bytes": 7984
+        },
+        "done": {
+          "file": "parts/c7/zookeeper.done",
+          "bytes": 7936
+        }
+      },
+      "source": "1f5cc00d7f66026f"
+    },
+    "c7/black-bear": {
+      "preset": "carrier",
+      "box": {
+        "x": -83,
+        "y": -156,
+        "w": 178,
+        "h": 204
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c7/black-bear.idle",
+          "bytes": 9476
+        },
+        "away": {
+          "file": "parts/c7/black-bear.away",
+          "bytes": 804
+        },
+        "carrying": {
+          "file": "parts/c7/black-bear.carrying",
+          "bytes": 9182
+        },
+        "back": {
+          "file": "parts/c7/black-bear.back",
+          "bytes": 9408
+        },
+        "done": {
+          "file": "parts/c7/black-bear.done",
+          "bytes": 7890
+        }
+      },
+      "source": "5564912fe5f8eb65"
     }
   },
   "cutouts": {
@@ -2920,16 +3130,68 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c7/cable": {
       "file": "cutouts/c7/cable",
-      "bytes": 11788,
+      "bytes": 9420,
       "chapter": 7,
       "grade": [1.127, 1.079, 1.063],
       "box": {
-        "x": 60,
-        "y": 160,
-        "w": 300,
+        "x": 80,
+        "y": 170,
+        "w": 290,
+        "h": 280
+      },
+      "source": "32ebedf16e212245"
+    },
+    "c7/glass-mirror": {
+      "file": "cutouts/c7/glass-mirror",
+      "bytes": 8712,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": -40,
+        "y": 360,
+        "w": 470,
         "h": 300
       },
-      "source": "3a4f4d6030533286"
+      "source": "cf723e79a4674344"
+    },
+    "c7/teapot-0": {
+      "file": "cutouts/c7/teapot-0",
+      "bytes": 23914,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": 120,
+        "y": 236,
+        "w": 190,
+        "h": 270
+      },
+      "source": "81982ba526559e1e"
+    },
+    "c7/teapot-1": {
+      "file": "cutouts/c7/teapot-1",
+      "bytes": 24196,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": 120,
+        "y": 236,
+        "w": 190,
+        "h": 270
+      },
+      "source": "83cde695dcad4540"
+    },
+    "c7/teapot-2": {
+      "file": "cutouts/c7/teapot-2",
+      "bytes": 24476,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": 120,
+        "y": 236,
+        "w": 190,
+        "h": 270
+      },
+      "source": "4c1cd316ca97c5b5"
     }
   },
   "screens": {
