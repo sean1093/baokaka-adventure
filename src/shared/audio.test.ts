@@ -163,7 +163,7 @@ describe('cues', () => {
 });
 
 describe('the music box', () => {
-  it('chapters 0–6 have their loops: 8–16 bars, pentatonic, bass on every bar', () => {
+  it('chapters 0–7 have their loops: 8–16 bars, pentatonic, bass on every bar', () => {
     expect(chapterTrack(0)).toBe('chapter0');
     expect(chapterTrack(1)).toBe('chapter1');
     expect(chapterTrack(2)).toBe('chapter2');
@@ -171,8 +171,9 @@ describe('the music box', () => {
     expect(chapterTrack(4)).toBe('chapter4');
     expect(chapterTrack(5)).toBe('chapter5');
     expect(chapterTrack(6)).toBe('chapter6');
-    expect(chapterTrack(7)).toBeNull();
-    for (const t of ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5', 'chapter6'] as const) {
+    expect(chapterTrack(7)).toBe('chapter7');
+    expect(chapterTrack(8)).toBeNull();
+    for (const t of ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5', 'chapter6', 'chapter7'] as const) {
       const spec = TRACKS[t];
       const bars = spec.melody.length / BAR;
       expect(Number.isInteger(bars)).toBe(true);
