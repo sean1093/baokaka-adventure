@@ -517,7 +517,8 @@ export function origamiBird(ctx: KitCtx): string {
  * night-market duck-bill cap, worn peak forward (#121); `機場背心` is chapter 6's apron crew's safety
  * vest, under his red 員外帽 (#123); `叢林帽` is chapter 7's khaki jungle hat (a zookeeper's pith
  * helmet, its brim all round and a leaf-green band; #125); `毛巾` is chapter 8's folded white bath towel on
- * his head, the way the hot-spring 阿伯 wear it (#129).
+ * his head, the way the hot-spring 阿伯 wear it (#129); `船長帽` is chapter 9's white captain's cap with a
+ * navy peak and a gold anchor badge (#131).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -527,7 +528,11 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
     + `<circle cx="-4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/><circle cx="4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/>`;
   // Chapter 5's 鴨舌帽 (#121; #122): a night-market duck-bill cap worn peak forward — a two-tone crown
   // (a cream front panel, a vermilion back), a button on top, a long dark peak jutting out
-  const cap = hat === '毛巾'
+  const cap = hat === '船長帽'
+    // Chapter 9's 船長帽 (#131): a white captain's cap, a navy band and peak, a gold anchor badge
+    ? `<path d="M-8.4 -3.4q-1 -6.6 8.4 -7q9.4 .4 8.4 7z" fill="${C.standeeCard}"/><path d="M-8.6 -4.4h17.2v2.2h-17.2z" fill="${C.nightCardDeep}"/>`
+      + `<path d="M3 -2.4q7 -.6 10.6 1.8l-10.6 .6z" fill="${C.printDark}"/><path d="M0 -8.4v3M-1.6 -6.8h3.2M-1.8 -5.6q1.8 1.6 3.6 0" stroke="${C.gold}" stroke-width=".9" fill="none" stroke-linecap="round"/>`
+    : hat === '毛巾'
     // Chapter 8's 毛巾 (#129): a white bath towel folded flat on his head, a blue stripe at its end
     ? `<path d="M-8.6 -2.6Q-9 -9.4 0 -9.6Q9 -9.4 8.6 -2.6Z" fill="${C.standeeCard}"/><path d="M-9.4 -5.4H9.4V-2.4H-9.4Z" fill="${C.washi}"/>`
       + `<path d="M5.6 -5.4V-2.4" stroke="${C.wordBeep}" stroke-width="1.4"/><path d="M-6 -8q3 -1.4 6 -1.2" stroke="${C.cutRim}" stroke-width=".8" fill="none" opacity=".7"/>`
@@ -604,7 +609,8 @@ export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string 
  * (origin at the bridge); `c5/phone` 5-1's glowing phone and `c5/griddle` 5-6's shining griddle (#121,
  * drawn in the market kit by #122); `c7/panda-sign` 7-1's lit panda sign over the platform (#125; drawn in the
  * chapter's kit by #126); `c8/stained-glass` 8-1's stained-glass window in the hot-spring car (#129;
- * drawn in the chapter's kit by #130); any other key a cold silver glint. Drawn in the campus kit by #117.
+ * drawn in the chapter's kit by #130); `c9/lucky-cat` 9-2's 招財貓 in the 阿給 shop's window (#131, a
+ * placeholder until #132); any other key a cold silver glint. Drawn in the campus kit by #117.
  */
 export function decoyArt(ctx: KitCtx, key?: string): string {
   const glint = (x: number, y: number, r: number) => sparkle(ctx, x, y, r);
@@ -709,6 +715,17 @@ export function decoyArt(ctx: KitCtx, key?: string): string {
           + `<path d="M-4 4q-2 -3 0 -6t0 -5M2 4q-2 -3 0 -6" stroke="${C.washi}" stroke-width="1.2" fill="none" stroke-linecap="round"/>`
           + `<path d="M0 -15V12M-11 0H11M-11 6H11" stroke="${BT.cedarDeep}" stroke-width="1.2"/>`
           + `<path d="${inner}" fill="${C.glassine}" opacity=".18"/><path d="M-9 10L-2 -12" stroke="${C.cutRim}" stroke-width="1.4" opacity=".5"/>`, `<path d="${arch}"/>`)
+        + glint(15, -14, 3.8) + glint(-15, 10, 3);
+    }
+    case 'c9/lucky-cat': {
+      // 9-2's 招財貓 in the 阿給 shop's window (#131; a placeholder until #132): a white beckoning cat,
+      // its paw up, a gold coin on its chest, glinting in the shop's lamp. Within ±18 units
+      const body = 'M-10 14Q-12 2 -8 -4Q-11 -12 -7 -16L-3 -11Q0 -12 3 -11L7 -16Q11 -12 8 -4Q12 2 10 14Z';
+      return softEllipse(ctx, 0, 2, 24, 20, 'lamp', 0.2, 'blur8')
+        + depth(ctx, 3, `<path d="${body}" fill="${C.standeeCard}"/><path d="M8 -2Q14 -6 13 -14Q10 -15 9 -10" fill="${C.standeeCard}"/>`
+          + `<path d="M-3.6 -7q1 -1 2 0M1.6 -7q1 -1 2 0" stroke="${C.ink}" stroke-width=".9" fill="none" stroke-linecap="round"/>`
+          + `<path d="M-7 -1.6H7" stroke="${C.hatRed}" stroke-width="1.8"/><circle cx="0" cy="5" r="4" fill="${C.gold}"/>`
+          + `<path d="M-1.6 5h3.2" stroke="${C.goldDeep}" stroke-width=".8"/>`, `<path d="${body}"/>`)
         + glint(15, -14, 3.8) + glint(-15, 10, 3);
     }
     default:

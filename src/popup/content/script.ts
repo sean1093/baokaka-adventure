@@ -247,6 +247,35 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c8p6.mocha.1': { who: 'mocha', text: '一。……一歲，生日快樂。' },
   // § 5.2 8-6 end
   'c8p6.end.1': { who: 'nar', text: '找到了！抓周寶物——算盤。' },
+  // § 5.2 Ch9 「河的盡頭是海」 04:40 (the chapter card)
+  'c9.intro.1': { who: 'pa', text: '終點站，淡水。' },
+  'c9.intro.2': { who: 'nar', text: '天空，開始有一點點亮了。' },
+  'c9.intro.3': { who: 'mocha', text: '快點。阿嬤五點半起床。' },
+  // § 5.3 背包客 #3 (9-2: waved up off the lane, he asks again) and Mocha's translation
+  'c9p2.pack.1': { who: 'pack', text: 'Excuse me… where is 101?' },
+  'c9p2.pack.2': { who: 'mocha', text: '你從淡水走過去？……加油。' },
+  // 9-2: the 鐵蛋 阿婆 wakes to 抱抱 and lifts him onto her counter
+  'c9p2.granny.1': { who: 'npc', label: '鐵蛋阿婆', text: '來，阿婆抱你看鐵蛋。' },
+  // 9-3: Mocha sits on the ferry's horn (the 淘氣)
+  'c9p3.horn.1': { who: 'mocha', text: '……不是我按的。' },
+  // § 5.3 店員小哥's chapter 9 cameo (9-4: Mocha hops onto his ice-cream kiosk)
+  'c9p4.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c9p4.clerk.2': { who: 'mocha', text: '……碼頭也是你們的？' },
+  'c9p4.clerk.3': { who: 'clerk', text: '我們是連鎖的。' },
+  // § 5.2 9-5 meeting 咻咻 (on reaching the tower's base; each line holds the world)
+  'c9p5.shushu.1': { who: 'nar', text: '橋塔旁邊，一朵小雲在繞圈圈。' },
+  'c9p5.shushu.2': { who: 'shushu', text: '咻咻想飛出去……飛不出去。' },
+  'c9p5.shushu.3': { who: 'mocha', text: '台北是盆地。四邊都是山。' },
+  'c9p5.shushu.4': { who: 'shushu', text: '大家都說：颱風，快走！' },
+  'c9p5.shushu.5': { who: 'shushu', text: '咻咻……也一歲了。' },
+  'c9p5.shushu.6': { who: 'baby', text: '一起！' },
+  'c9p5.shushu.7': { who: 'shushu', text: '……不要！' },
+  'c9p5.shushu.8': { who: 'nar', text: '小雲哭著，往101飛走了。' },
+  'c9p5.shushu.9': { who: 'mocha', text: '……追。' },
+  // 9-5: 生日快樂's opening on the cables (the 淘氣)
+  'c9p5.mocha.1': { who: 'mocha', text: '生日快樂……明天才是啦。' },
+  // § 5.2 9-6 end
+  'c9p6.end.1': { who: 'nar', text: '找到了！抓周寶物——聽診器。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

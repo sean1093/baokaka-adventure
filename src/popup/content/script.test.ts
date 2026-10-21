@@ -69,7 +69,8 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
     expect(endLines(6)).toEqual(['c6p6.end.1']);
     expect(endLines(7)).toEqual(['c7p6.end.1']);
     expect(endLines(8)).toEqual(['c8p6.end.1']);
-    expect(endLines(9)).toEqual([]);
+    expect(endLines(9)).toEqual(['c9p6.end.1']);
+    expect(endLines(10)).toEqual([]);
     expect(SOON_LINES.map((k) => SCRIPT[k].who)).toEqual(['nar']);
     expect(hasNextChapter(1)).toBe(true);
     expect(hasNextChapter(10)).toBe(false);
@@ -87,7 +88,7 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
       expect(SCRIPT[`${prefix}.${n + 1}`]).toBeUndefined();
     }
     // Baokaka says only his words (§ 5.1)
-    const vocabulary = ['要！', '不要！', '抱抱', 'ㄋㄟㄋㄟ', '喵喵', '哇！', '這個！', '好吃！', '好看！', '掰掰', '一起', 'ㄅㄚ！', '嗶！', '飛機！', '咻——', '……哇。', '掰掰！', '抱抱！', '飛……飛機！', '咻——！', '……一起。', '抱抱。', '一起。'];
+    const vocabulary = ['要！', '不要！', '抱抱', 'ㄋㄟㄋㄟ', '喵喵', '哇！', '這個！', '好吃！', '好看！', '掰掰', '一起', 'ㄅㄚ！', '嗶！', '飛機！', '咻——', '……哇。', '掰掰！', '抱抱！', '飛……飛機！', '咻——！', '……一起。', '抱抱。', '一起。', '一起！'];
     for (const [key, line] of Object.entries(SCRIPT)) if (line.who === 'baby') expect(vocabulary, key).toContain(line.text);
   });
 

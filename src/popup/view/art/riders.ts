@@ -2,6 +2,7 @@ import type { KitCtx } from '../../art';
 import { AIRPORT_RIDERS } from './airport';
 import { BEITOU_RIDERS } from './beitou';
 import { MAOKONG_RIDERS } from './gondola';
+import { TAMSUI_RIDERS } from './tamsui';
 
 /**
  * What rides a loop's slots (#124, D-87; shared since #126): a suitcase on 6-2's carousel, the tray
@@ -21,6 +22,8 @@ const RIDERS: Readonly<Record<string, RiderArt>> = {
   ...MAOKONG_RIDERS,
   // 北投 (#130, `beitou.ts`): 8-4's book tray
   ...BEITOU_RIDERS,
+  // 淡水 (#131, `tamsui.ts`; a placeholder until #132): 9-6's net basket on the derrick
+  ...TAMSUI_RIDERS,
 };
 
 /** The rider drawn on loop `key`'s node `node`, or null. */

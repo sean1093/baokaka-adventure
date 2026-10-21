@@ -6,7 +6,7 @@ import { completePage, earnSticker, freshSave, RPG_FAREWELL } from '../../game/p
 import { registry } from '../../pages';
 import { BottomBar } from '../hud/BottomBar';
 import { TopHud, runWidth } from '../hud/TopHud';
-import { ChapterBoard } from '../hud/ChapterBoard';
+import { ChapterBoard, titleSize } from '../hud/ChapterBoard';
 import { Contents, ROUTE, STATIONS, chapterComplete, collected, pageIdOf, routeLength } from './Contents';
 import { Cover } from './Cover';
 import { Settings } from './Settings';
@@ -95,6 +95,14 @@ describe('TopHud', () => {
     expect(long).toMatch(/textLength="230"/);
     expect(runWidth('台北', 20)).toBe(40);
     expect(runWidth('00:20', 20)).toBe(60);
+  });
+});
+
+describe('the chapter card\'s title (#131)', () => {
+  test('22 px up to six characters; 6\'s and 10\'s longer titles shrink to clear the time chip', () => {
+    for (const c of CHAPTERS) if ([...c.title].length <= 6) expect(titleSize(c.title), c.title).toBe(22);
+    expect(titleSize('飛機睡著的時候')).toBe(20);
+    expect(titleSize('離天空最近的地方')).toBe(17);
   });
 });
 
