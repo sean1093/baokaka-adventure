@@ -92,6 +92,24 @@ describe('art registry fallback', () => {
     }
   });
 
+  test('chapter 6\'s cast and riders (#124): own art, no filters, never marigold', async () => {
+    const { riderArt } = await import('./airport');
+    const ctx = kitCtx('t');
+    expect(creatureArt('c6/night-birds')).not.toBe(origamiBird);
+    const drawn = ['roost', 'sky'].map((pos) => creatureArt('c6/night-birds')(ctx, pos));
+    for (const [key, node] of [['c6/carousel-belt', 'S'], ['c6/carousel-belt', 'caseB'], ['c6/xray-belt', 'T']] as const) {
+      const art = riderArt(key, node);
+      expect(art, `${key} ${node}`).not.toBeNull();
+      drawn.push(art!(ctx));
+    }
+    expect(riderArt('c6/carousel-belt', 'nope')).toBeNull();
+    for (const svg of drawn) {
+      expect(svg).not.toMatch(/\bfilter=/);
+      expect(lintMarkup(svg, { page: 'c6', touchable: () => false, expected: [], where: 'c6' })).toEqual([]);
+    }
+    expect(new Set(drawn).size).toBe(drawn.length);
+  });
+
   test('each missing key is logged once (per kind) in dev', () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     partArt('x/one', 'flap');

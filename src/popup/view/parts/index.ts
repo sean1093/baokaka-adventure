@@ -43,4 +43,4 @@ export const MOVERS: ReadonlySet<PartPreset> = new Set<PartPreset>(['lift', 'pus
 
 export type { PartViewProps } from './common';
 export type { MoverProps } from './MoverView';
-export { CarriageView } from './CarriageView';
+export { CarriageView, RiderView } from './CarriageView';

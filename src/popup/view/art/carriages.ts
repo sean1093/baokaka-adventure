@@ -1,6 +1,7 @@
 import { POPUP as C, POPUP_NEON as N, POPUP_STATION as T } from '../../../art/palette';
 import { brad, depth, f1, ref, type KitCtx } from '../../art';
 import { LEDGE_DEPTH } from '../stage';
+import { bridgeSection } from './airport';
 import { carriage } from './placeholders';
 
 /**
@@ -94,6 +95,8 @@ const CARRIAGES: Readonly<Record<string, CarriageArt>> = {
   'c1/train-blue': trainBlue,
   'c1/bento-cart': bentoCart,
   'c4/claw-cart': clawCart,
+  // 6-4's telescoping jet-bridge section (#124, `airport.ts`)
+  'c6/bridge-extend': bridgeSection,
 };
 
 /** The carriage drawing for a part art key (the placeholder carriage when it has none). */

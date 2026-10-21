@@ -1012,6 +1012,12 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     expect: { mode: 'reaching' },
   },
   {
+    name: 'c6p5-runway',
+    page: 'c6p5',
+    steps: [{ say: 'plane' }, { mocha: 'crate' }, { wait: 'settle' }, { set: 'searchlight', to: 'far' }, { wait: 'settle' }, { say: 'wow' }, { wait: 1 }],
+    note: '6-5 (#124): from the catwalk\'s far end his 哇！ reached the runway lights\' switch box — the whole runway far below lights up, white and amber edge lights converging on the dark, green across the threshold, the approach lights running in — and the bead glints by the door.',
+  },
+  {
     name: 'c6p6-spread',
     page: 'c6p6',
     steps: [{ wait: 2 }],
