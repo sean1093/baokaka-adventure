@@ -105,23 +105,20 @@ describe('the chapter card\'s title (#131)', () => {
     expect(titleSize('離天空最近的地方')).toBe(17);
   });
 
-  test('大字 (#132): no title under 24 px; one too long to sit beside the time chip lifts the chip onto the card\'s top edge', () => {
-    for (const vw of [390, 375]) {
-      const s = boardScale(1.25, vw);
+  test('#132: no title under 20 px (24 with 大字); one too long to sit beside the time chip lifts the chip onto the card\'s top edge', () => {
+    for (const [s, min] of [[1, 20], [boardScale(1.25, 390), 24], [boardScale(1.25, 375), 24]] as const) {
       for (const c of CHAPTERS) {
         const { px, chipUp } = titleLayout(c.title, s);
         const n = [...c.title].length;
-        expect(px, c.title).toBeGreaterThanOrEqual(24);
+        expect(px, c.title).toBeGreaterThanOrEqual(min);
         // Beside the chip the title fits its room; lifted, the whole row
         expect(n * (px + 1), c.title).toBeLessThanOrEqual(s * (chipUp ? 230 : 148));
-        expect(chipUp, c.title).toBe(n > 6);
+        expect(chipUp, `${c.title} at ${s}`).toBe(s > 1 ? n > 6 : n > 7);
       }
     }
-    // Without 大字 the chip stays on the row (the title shrinks instead)
-    for (const c of CHAPTERS) expect(titleLayout(c.title, 1)).toEqual({ px: titleSize(c.title), chipUp: false });
     const big = html(createElement(ChapterBoard, { chapter: 10, scale: boardScale(1.25, 390) }));
     expect(big).toContain('data-chip-up');
-    expect(html(createElement(ChapterBoard, { chapter: 10 }))).not.toContain('data-chip-up');
+    expect(html(createElement(ChapterBoard, { chapter: 6 }))).not.toContain('data-chip-up');
   });
 });
 

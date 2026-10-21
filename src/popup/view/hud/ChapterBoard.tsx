@@ -61,18 +61,18 @@ export function titleSize(title: string): number {
 
 /**
  * The title row at the board's scale `s` (#132): the title's size in CSS px and whether the time chip
- * moves up off the row. Without 大字 the title shrinks to its room beside the chip (`titleSize`).
- * With 大字 no word may be under 24 px, so a seven- or eight-character title (6's, 10's) can't fit
- * beside the chip: the chip is lifted onto the card's top edge (clipped on like a luggage tag) and
- * the title takes the whole row at the size the row allows (≥ 24 px).
+ * moves up off the row. The title shrinks to its room beside the chip (`titleSize`), but never under
+ * the smallest a word may be (R5: 20 px, 24 with 大字); a title that can't fit beside the chip at that
+ * size (10's eight characters; 6's seven with 大字) lifts the chip onto the card's top edge (clipped on
+ * like a luggage tag) and takes the whole row.
  */
 export function titleLayout(title: string, s: number): { readonly px: number; readonly chipUp: boolean } {
-  if (s <= 1) return { px: titleSize(title), chipUp: false };
+  const min = s > 1 ? BIG_MIN_PX : MIN_PX;
   const n = Math.max(1, [...title].length);
-  const px = Math.max(BIG_MIN_PX, s * titleSize(title));
+  const px = Math.max(min, s * titleSize(title));
   // Each character takes its em plus the 1 px letter spacing
   if (n * (px + 1) <= s * TITLE_W) return { px, chipUp: false };
-  return { px: Math.max(BIG_MIN_PX, Math.min(s * 22, Math.floor((s * IN_W) / n) - 1)), chipUp: true };
+  return { px: Math.max(min, Math.min(s * 22, Math.floor((s * IN_W) / n) - 1)), chipUp: true };
 }
 
 /** The board's tiles: one character each (Latin digits too, as on a real board), their width shared out. */
@@ -125,7 +125,8 @@ export function boardScale(textScale: number, vw: number): number {
   return Math.max(1, Math.min(textScale, (vw - 16) / BOARD_W));
 }
 
-/** The smallest word on the board with 大字 (R5). */
+/** The smallest word on the board (R5), and with 大字. */
+const MIN_PX = 20;
 const BIG_MIN_PX = 24;
 
 export interface ChapterBoardProps {
