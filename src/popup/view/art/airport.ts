@@ -2,6 +2,7 @@ import { POPUP as C, POPUP_AIRPORT as A, mixHex } from '../../../art/palette';
 import { brad, depth, f1, ref, softEllipse, type KitCtx } from '../../art';
 import { LEDGE_DEPTH } from '../stage';
 import { HOLD, HOLD_BACK, WAVE, adult, circle, join, scaled, stand, type Cut, type Look, type Pose } from './market';
+import { C7_RIDERS } from './gondola';
 import { chalk, figure, ticks } from './ximen';
 
 /**
@@ -135,6 +136,8 @@ const RIDERS: Readonly<Record<string, RiderArt>> = {
   'c6/carousel-belt:caseB': (ctx) => suitcase(ctx, 34, 16, A.scarf, mixHex(A.scarf, C.shadow, 0.35), A.white),
   'c6/xray-belt:T': (ctx) => softEllipse(ctx, 0, 6, 26, 3, 'shadow', 0.4)
     + depth(ctx, 4, `<path d="M-24 -2H24L20 6H-20Z" fill="${A.steel}"/><path d="M-24 -2H24" stroke="${A.steelLight}" stroke-width="1.4"/><path d="M-18 2H18" stroke="${A.steelDeep}" stroke-width=".8"/>`, `<path d="M-24 -2H24L20 6H-20Z"/>`),
+  // Chapter 7's gondola cabins (#125; placeholders until #126)
+  ...C7_RIDERS,
 };
 
 /** The rider drawn on loop `key`'s node `node`, or null. */

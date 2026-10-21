@@ -485,7 +485,8 @@ export function origamiBird(ctx: KitCtx): string {
  * `藍色校工帽` is chapter 3's blue campus janitor's cap with a short peak (#116); `算命墨鏡` is chapter 4's
  * fortune-teller's round dark glasses in gold wire under his red 員外帽 (#118, #119); `鴨舌帽` is chapter 5's
  * night-market duck-bill cap, worn peak forward (#121); `機場背心` is chapter 6's apron crew's safety
- * vest, under his red 員外帽 (#123).
+ * vest, under his red 員外帽 (#123); `叢林帽` is chapter 7's khaki jungle hat (a zookeeper's pith
+ * helmet, its brim all round and a leaf-green band; #125).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -495,7 +496,12 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
     + `<circle cx="-4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/><circle cx="4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/>`;
   // Chapter 5's 鴨舌帽 (#121; #122): a night-market duck-bill cap worn peak forward — a two-tone crown
   // (a cream front panel, a vermilion back), a button on top, a long dark peak jutting out
-  const cap = hat === '鴨舌帽'
+  const cap = hat === '叢林帽'
+    // Chapter 7's 叢林帽 (#125): a khaki pith helmet — a domed crown, a brim all round, a leaf-green band
+    ? `<path d="M-12.6 -2.2Q0 1.4 12.6 -2.2Q11 -.4 0 .4Q-11 -.4 -12.6 -2.2Z" fill="${C.corrugatedDark}"/>`
+      + `<path d="M-8.4 -2.6q0 -8.6 8.4 -8.6q8.4 0 8.4 8.6z" fill="${C.corrugatedLight}"/><path d="M-8.4 -3.4h16.8v1.6h-16.8z" fill="${C.quiltLeaf}"/>`
+      + `<path d="M-4.6 -8.6q2 -1.8 4.4 -2" stroke="${C.chalk}" stroke-width=".8" fill="none" opacity=".6"/><circle cx="0" cy="-11" r="1" fill="${C.corrugatedDark}"/>`
+    : hat === '鴨舌帽'
     ? `<path d="M-7.8 -2.2q0 -7.8 7.8 -7.8q7.8 0 7.8 7.8z" fill="${C.hatRed}"/><path d="M-1.6 -9.8q5.4 .4 7.6 5.6l1.8 2h-9.4z" fill="${C.washi}"/>`
       + `<path d="M3.6 -2.6q8.4 -1.4 13.4 1.6q-5.6 2 -13.4 1.2z" fill="${C.printDark}"/><path d="M-8 -2.4h12" stroke="${C.peonyDeep}" stroke-width="1.4"/>`
       + `<circle cx="-.4" cy="-10" r="1.3" fill="${C.printDark}"/><path d="M-5 -8q1.4 -1.6 3 -2" stroke="${C.cutRim}" stroke-width=".8" fill="none" opacity=".6"/>`
@@ -561,7 +567,8 @@ export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string 
  * art key: `c3/moon` the moon's reflection on the water (a foil ellipse under glassine ripples, its
  * origin on the water), `c3/bell` the brass 傅鐘 (origin at its crown), `c3/glasses` reading glasses
  * (origin at the bridge); `c5/phone` 5-1's glowing phone and `c5/griddle` 5-6's shining griddle (#121,
- * drawn in the market kit by #122); any other key a cold silver glint. Drawn in the campus kit by #117.
+ * drawn in the market kit by #122); `c7/panda-sign` 7-1's lit panda sign over the platform (#125, a
+ * placeholder until #126); any other key a cold silver glint. Drawn in the campus kit by #117.
  */
 export function decoyArt(ctx: KitCtx, key?: string): string {
   const glint = (x: number, y: number, r: number) => sparkle(ctx, x, y, r);
@@ -636,6 +643,17 @@ export function decoyArt(ctx: KitCtx, key?: string): string {
           + `<path d="M-10 8l1 -2l1 2M-2 8l1 -2l1 2M6 8l1 -2l1 2" stroke="${C.neonCyan}" stroke-width="1" fill="none"/>`, `<ellipse rx="19" ry="7"/>`)
         + `<path d="M-8 -9q-2 -4 0 -7t0 -7M0 -10q-2 -4 0 -7t0 -7M8 -9q-2 -4 0 -7t0 -7" stroke="${C.vellum}" stroke-width="1.2" fill="none" opacity=".7" stroke-linecap="round"/>`
         + glint(-19, -10, 3.6) + glint(18, -7, 3.2);
+    }
+    case 'c7/panda-sign': {
+      // 7-1's panda sign over the platform (#125; #126 draws it in the chapter's kit): a lit lightbox
+      // in a steel frame, 「熊貓館」 over a panda in gold foil, glittering. Within ±18 units
+      const box = 'M-18 -13H18V13H-18Z';
+      return softEllipse(ctx, 0, 0, 26, 18, 'lamp', 0.16, 'blur8')
+        + depth(ctx, 3, `<path d="${box}" fill="${C.printDark}"/><rect x="-16" y="-11" width="32" height="22" fill="${C.lamp}"/>`
+          + `<circle cx="0" cy="3" r="6.4" fill="${ref(ctx, 'foil')}"/><circle cx="-5" cy="-2.6" r="2.6" fill="${C.ink}"/><circle cx="5" cy="-2.6" r="2.6" fill="${C.ink}"/>`
+          + `<ellipse cx="-2.4" cy="2.4" rx="1.6" ry="2" fill="${C.ink}"/><ellipse cx="2.4" cy="2.4" rx="1.6" ry="2" fill="${C.ink}"/><circle cx="0" cy="5.6" r="1" fill="${C.ink}"/>`
+          + `<text data-art-text="" x="0" y="-5" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="5" fill="${C.printDark}">熊貓館</text>`, `<path d="${box}"/>`)
+        + glint(17, -14, 3.8) + glint(-16, 12, 3);
     }
     default:
       return softEllipse(ctx, 0, 0, 16, 16, 'lamp', 0.16, 'blur8') + `<circle r="7" fill="${C.glassine}" stroke="${C.moonRim}" stroke-width="1.2"/>`

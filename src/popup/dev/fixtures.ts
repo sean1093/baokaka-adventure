@@ -140,6 +140,10 @@ const ON_SPREAD_C5: NavState = { base: { kind: 'page', id: 'c5p6', run: 0 }, lay
 const AT_SPREAD_C6 = (['c6p1', 'c6p2', 'c6p3', 'c6p4', 'c6p5'] as const).reduce((s, id) => completePage(s, id, { moves: 4 }), C5_DONE);
 const C6_DONE = keepPhoto(completePage(AT_SPREAD_C6, 'c6p6', { moves: 4 }), 6, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 18, 50) });
 const ON_SPREAD_C6: NavState = { base: { kind: 'page', id: 'c6p6', run: 0 }, layer: null };
+// Chapter 7 (#125): every page before 7-6 done, then 7-6 with its photo
+const AT_SPREAD_C7 = (['c7p1', 'c7p2', 'c7p3', 'c7p4', 'c7p5'] as const).reduce((s, id) => completePage(s, id, { moves: 4 }), C6_DONE);
+const C7_DONE = keepPhoto(completePage(AT_SPREAD_C7, 'c7p6', { moves: 4 }), 7, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 19, 30) });
+const ON_SPREAD_C7: NavState = { base: { kind: 'page', id: 'c7p6', run: 0 }, layer: null };
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -262,7 +266,7 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     page: 'c6p6',
     steps: [],
     screen: { nav: ON_SPREAD_C6, save: AT_SPREAD_C6 },
-    note: '6-6 in the game shell (#123): play it live — 飛機！ (the pigeons fly out of the X-ray tray), 嗶！ from the tray (the scanner wakes), the belt turned to the far end, Mocha onto the counter (he pushes the 印章 off), the photo moment with the 印章, the album page, the chapter-end line, the tray\'s sixth coin, the sticker card, chapter 7\'s card with 「未完待續」, then the 目錄 (`check:play` scenario `photo-spread-c6`).',
+    note: '6-6 in the game shell (#123): play it live — 飛機！ (the pigeons fly out of the X-ray tray), 嗶！ from the tray (the scanner wakes), the belt turned to the far end, Mocha onto the counter (he pushes the 印章 off), the photo moment with the 印章, the album page, the chapter-end line, the tray\'s sixth coin, the sticker card, chapter 7\'s card, then 7-1 (`check:play` scenario `photo-spread-c6`).',
   },
   {
     name: 'chapter-end-c6',
@@ -272,11 +276,25 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'Chapter 6\'s end (GDD § 5.2 6-6 end; #123): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——印章。」 Live, the tap fills the 抓周 tray\'s sixth slot.',
   },
   {
-    name: 'chapter-soon-c7',
-    page: 'c6p6',
+    name: 'spread-shell-c7',
+    page: 'c7p6',
     steps: [],
-    screen: { nav: ON_SPREAD_C6, save: C6_DONE, soonCard: 7 },
-    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 7 since #123): chapter 6 done, the chapter turn drops chapter 7\'s card over the book on the quilt — 第七章, 「纜車上的月亮」, 03:30, 動物園 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
+    screen: { nav: ON_SPREAD_C7, save: AT_SPREAD_C7 },
+    note: '7-6 in the game shell (#125): play it live — Mocha into the bamboo basket, 不要！ to the moon in the rain barrel (he looks round and cries: 黑糖 wakes, 「歹、歹勢，我睡在芹菜上了。」), 抱抱 the bear up the terrace walls, Mocha onto the fence post (the gate opens), the photo moment with the 芹菜, the album page, the chapter-end line, the tray\'s seventh coin, the sticker card, chapter 8\'s card with 「未完待續」, then the 目錄 (`check:play` scenario `photo-spread-c7`).',
+  },
+  {
+    name: 'chapter-end-c7',
+    page: 'c7p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C7, save: C7_DONE, endLinesOf: 7 },
+    note: 'Chapter 7\'s end (GDD § 5.2 7-6 end; #125): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——芹菜。」 Live, the tap fills the 抓周 tray\'s seventh slot.',
+  },
+  {
+    name: 'chapter-soon-c8',
+    page: 'c7p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C7, save: C7_DONE, soonCard: 8 },
+    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 8 since #125): chapter 7 done, the chapter turn drops chapter 8\'s card over the book on the quilt — 第八章, 「熱呼呼的煙」, 04:00, 新北投 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
   },
   {
     name: 'album-c1-retake',
@@ -1037,6 +1055,172 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     page: 'c6p6',
     steps: [{ say: 'plane' }, { wait: 'settle' }, { say: 'beep' }, { set: 'belt', to: '2' }, { wait: 'settle' }, { mocha: 'counter' }, { wait: 2 }],
     note: '6-6: off the belt under the counter, Mocha on the counter gave the camera his look and pushed the 印章 off; it landed beside Baokaka and he grabs it — 「這個！」 (in the game the photo moment frames this; the 土地公 in his 機場背心 on the passport-stamp poster).',
+    expect: { event: 'grab' },
+  },
+  // ——— Chapter 7 「纜車上的月亮」 (#125; its art #126) ———
+  {
+    name: 'c7p1-start',
+    page: 'c7p1',
+    steps: [{ wait: 'settle' }],
+    note: '7-1 「往動物園」 (#125): 動物園 station at the end of the 文湖線, the elevated platform. Baokaka crawled off under the zoo\'s lit panda sign at the platform\'s far end (a decoy) and reaches for it 「要！要！」. A zookeeper dozes at the top of the stairs; in the plaza below, night herons doze on the path to the zoo\'s gateway. Mocha on the bench; a paw print on the plaza\'s lamp post.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c7p1-stairs',
+    page: 'c7p1',
+    steps: [{ mocha: 'lamp' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }],
+    note: '7-1: Mocha jumped down onto the plaza\'s lamp post, and 不要！ to the sign turned Baokaka round: he crawled to the top of the stairs beside the dozing keeper and reaches down for Mocha.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c7p1-keeper',
+    page: 'c7p1',
+    steps: [{ mocha: 'lamp' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'hug' }, { wait: 1 }],
+    show: { talk: ['c7p1.keeper.1'] },
+    note: '7-1: 抱抱 — the night-shift keeper wakes (「嗯……小朋友迷路了？叔叔抱你下樓。」) and carries him down the station\'s stairs.',
+    expect: { mode: 'carried' },
+  },
+  {
+    name: 'c7p1-herons',
+    page: 'c7p1',
+    steps: [{ mocha: 'lamp' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'hug' }, { wait: 'settle' }, { say: 'plane' }],
+    note: '7-1: down in the plaza the bead glints in the zoo\'s gateway; 飛機！ lifts the night herons off the path (the 土地公 in his 叢林帽 on the gateway\'s arch).',
+    expect: { mode: 'saying', event: 'sky' },
+  },
+  {
+    name: 'c7p2-start',
+    page: 'c7p2',
+    steps: [{ wait: 'settle' }],
+    note: '7-2 「纜車站」 (#125): the 貓空纜車\'s 動物園 station. The cable runs up over the zoo to the top station; the glass-floored 水晶車廂 waits at the bottom station and Baokaka has climbed into it (nearer the bead), reaching up for the bead past the top station\'s turnstile. The 店員小哥\'s shop cabin hangs at the top. The bullwheel\'s crank (bottom left); Mocha on the ticket booth.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c7p2-glass',
+    page: 'c7p2',
+    steps: [{ wait: 'settle' }, { mocha: 'cabinA' }],
+    note: '7-2: a tap on the glass cabin\'s roof — Mocha won\'t set paw on a glass floor (C8): 「喵？」',
+    expect: { event: 'mochaNope' },
+  },
+  {
+    name: 'c7p2-clerk',
+    page: 'c7p2',
+    steps: [{ wait: 'settle' }, { set: 'cable', to: '2' }, { wait: 'settle' }, { mocha: 'cabinShop' }, { wait: 1 }],
+    show: { talk: ['c7p2.clerk.1', 'c7p2.clerk.2', 'c7p2.clerk.3'] },
+    note: '7-2: the crank turned two slots took the glass cabin (and Baokaka) up to the top station and brought the shop cabin down; Mocha jumped in — the 店員小哥\'s cameo: 「叮咚～歡迎光臨！」「……纜車也是你們的？」「行動分店。」',
+  },
+  {
+    name: 'c7p2-docked',
+    page: 'c7p2',
+    steps: [{ wait: 'settle' }, { set: 'cable', to: '2' }, { wait: 'settle' }, { mocha: 'cabinShop' }, { wait: 'settle' }, { set: 'cable', to: '0' }],
+    show: { talk: ['c7p2.clerk.4'] },
+    note: '7-2: the shop cabin docked at the top with its customer aboard, and the 店員小哥 opens the turnstile (「貓空站到了，謝謝光臨！」); Baokaka crawls through to the bead.',
+  },
+  {
+    name: 'c7p3-start',
+    page: 'c7p3',
+    steps: [{ wait: 2 }],
+    note: '7-3 「茶園階梯」 (#125): 貓空\'s tea terraces at night, a 22-unit step up to each. Baokaka cuddles Mocha on the bench on the bottom path; a tea farmer picks tea on the first step. Paw prints on the farmer\'s stool and the tea shed\'s roof.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c7p3-learn',
+    page: 'c7p3',
+    steps: [{ mocha: 'shed' }, { wait: 'settle' }, { say: 'bye' }],
+    show: { words: { card: 'climb' } },
+    note: 'Learning 爬樓梯 (GDD § 5.4, #125): Mocha up on the tea shed drew Baokaka to the foot of the first step; 掰掰 — the farmer waved back and climbed up the terrace, Baokaka watched, grunted 「嘿！」 and copied him: the card 「爬樓梯：爬上一階」 is taped over the dimmed page.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'c7p3-climb',
+    page: 'c7p3',
+    steps: [{ mocha: 'shed' }, { wait: 'settle' }, { say: 'bye' }, { wait: 1 }],
+    show: { stepAt: 190 },
+    note: '7-3: his first climb on a real terrace (D-83: the climb frames assume a 22-unit riser): the still is drawn mid-step, at the knee-over frame.',
+    expect: { mode: 'moving' },
+  },
+  {
+    name: 'c7p4-start',
+    page: 'c7p4',
+    steps: [{ wait: 'settle' }],
+    note: '7-4 「水晶車廂」 (#125): inside the glass-floored gondola, three clouds drifting under the floor. Mocha is curled in his travel basket on the left bench (he won\'t look at a glass floor); the zoo\'s floodlight shines up through the left cloud\'s gap, and Baokaka climbed down onto the glass and sits in its pool of light. The right bench\'s seat is folded up.',
+    expect: { mode: 'watching' },
+  },
+  {
+    name: 'c7p4-tea',
+    page: 'c7p4',
+    steps: [{ tap: 'cloudR' }, { wait: 'settle' }],
+    note: '7-4: the right cloud blown aside: a tea house\'s 黑糖珍奶 far below drew him to the right end of the glass, where he reaches down for it — under the cabin\'s reading lamp.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c7p4-lamp',
+    page: 'c7p4',
+    steps: [{ tap: 'cloudR' }, { wait: 'settle' }, { say: 'wow' }, { wait: 1 }],
+    note: '7-4: 哇！ — the reading lamp came on, the glass floor turned into a mirror (the ground below is gone), and the bead glints on the luggage rack; he reaches up for it, the seat still folded.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c7p4-clouds',
+    page: 'c7p4',
+    steps: [{ wait: 'settle' }, { tap: 'cloudM' }, { tap: 'cloudR' }],
+    show: { talk: ['c7p4.mocha.1'] },
+    note: '7-4\'s 淘氣: every cloud blown aside — the zoo, the tea farm\'s shrine (the 土地公) and the tea house far below; Mocha looks down over the basket\'s rim and loafs in protest: 「……我不要往下看。」',
+  },
+  {
+    name: 'c7p5-start',
+    page: 'c7p5',
+    steps: [{ wait: 2 }],
+    note: '7-5 「大茶壺」 (#125): a giant teapot pouring over a pool of tea, two teacups floating on it, the big 茶海 cup on the bottom between them, the tea tins on a terrace across. Baokaka cuddles Mocha on the tea tray by the bank. The teapot\'s wheel.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c7p5-drained',
+    page: 'c7p5',
+    steps: [{ set: 'teapot', to: '0' }, { mocha: 'tins' }, { wait: 'settle' }],
+    note: '7-5: the teapot set upright drained the pool (the 土地公 painted on its bottom); with the cups\' handles dry Mocha hopped across to the tea tins, and Baokaka reaches for him from the bank.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c7p5-cups',
+    page: 'c7p5',
+    steps: [{ set: 'teapot', to: '0' }, { mocha: 'tins' }, { wait: 'settle' }, { set: 'teapot', to: '1' }, { wait: 'settle' }],
+    note: '7-5: the teapot tilted half way: the cups float a step under the bank and a step over the big cup, and Baokaka climbed across them to the far cup — a step under the terrace until the pool is full.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c7p5-watching',
+    page: 'c7p5',
+    steps: [{ wait: 2 }, { set: 'teapot', to: '1' }, { set: 'teapot', to: '2' }],
+    show: { talk: ['c7p5.mocha.1'] },
+    note: '7-5\'s 淘氣: the pool filled again with Mocha watching from the tray: 「……」',
+  },
+  {
+    name: 'c7p6-spread',
+    page: 'c7p6',
+    steps: [{ wait: 'settle' }],
+    note: '7-6 「菜園的芹菜」 as it opens (#125): the centrefold — a vegetable garden on the hill, the bottom path (left page) and two tall terrace walls up to the bamboo fence and the celery bed (right page), where 黑糖 the black bear sleeps. Baokaka reaches for the moon in the rain barrel at the wall\'s foot. Mocha on the scarecrow\'s hat.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c7p6-awake',
+    page: 'c7p6',
+    steps: [{ mocha: 'basket' }, { wait: 'settle' }, { say: 'no' }, { wait: 3 }],
+    show: { talk: ['c7p6.bear.1', 'c7p6.bear.2'] },
+    note: '7-6: Mocha in the bamboo basket and 不要！ to the moon: nothing left to want, Baokaka cried — and 黑糖 woke: 「歹、歹勢，我睡在芹菜上了。」「……熊也會說歹勢。」 The 芹菜 shows on its bed.',
+    expect: { event: 'cry' },
+  },
+  {
+    name: 'c7p6-carried',
+    page: 'c7p6',
+    steps: [{ mocha: 'basket' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'hug' }, { wait: 2 }],
+    note: '7-6: 抱抱 — 黑糖 carries him up the tall terrace walls.',
+    expect: { mode: 'carried' },
+  },
+  {
+    name: 'c7p6-celery',
+    page: 'c7p6',
+    steps: [{ mocha: 'basket' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'hug' }, { wait: 'settle' }, { mocha: 'post' }, { wait: 'goal' }],
+    note: '7-6: set down by the fence, Mocha onto the fence post lifted its latch, the gate swung open (the 土地公\'s little shrine in the corner), and Baokaka climbed the last step to the 芹菜 — 「這個！」 (in the game the photo moment frames this).',
     expect: { event: 'grab' },
   },
   {

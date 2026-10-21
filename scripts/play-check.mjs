@@ -24,8 +24,9 @@
  * chapter-end lines, the tray's first coin, the sticker card, chapter 2's card, into 2-1); since #114
  * `photo-spread-c2` plays 2-6 the same way into chapter 3's card and 3-1 (#116), `photo-spread-c3`
  * plays 3-6 into chapter 4's card and 4-1 (#118), `photo-spread-c4` plays 4-6 into chapter 5's card
- * and 5-1 (#121), `photo-spread-c5` plays 5-6 into chapter 6's card and 6-1 (#123), and
- * `photo-spread-c6` plays 6-6 through chapter 7's 「未完待續」 card to the 目錄.
+ * and 5-1 (#121), `photo-spread-c5` plays 5-6 into chapter 6's card and 6-1 (#123),
+ * `photo-spread-c6` plays 6-6 into chapter 7's card and 7-1 (#125), and `photo-spread-c7` plays 7-6
+ * through chapter 8's 「未完待續」 card to the 目錄.
  * A `drag` through more than two points follows them in turn (1-4's turntable is turned on its rim).
  * `{ heard: [cues] }` checks the shell played those sounds (#105; the dev build lists them in
  * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
@@ -621,6 +622,108 @@ const SCENARIOS = {
     { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
     { tapEl: '[data-shutter]', paused: true },
   ],
+  // Chapter 7 「纜車上的月亮」 (#125). 7-1 「往動物園」: 廣播姊姊's line, Mocha down onto the plaza's
+  // lamp post, 不要！ to the panda sign (he crawls to the top of the stairs), 抱抱 the keeper (he
+  // carries him down), 飛機！ (the herons lift off the path)
+  c7p1: [
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [286, 380] },
+    { settle: 1500 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 2500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    { settle: 2000 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="plane"]', paused: true },
+  ],
+  // 7-2 「纜車站」: two turns of the bullwheel take the glass cabin (and him) up and bring the shop
+  // cabin down, Mocha jumps in (the 店員小哥's cameo), two more turns dock it at the top: the 店員小哥
+  // opens the turnstile
+  c7p2: [
+    { wait: 'reaching' },
+    { tap: [236, 524] },
+    { settle: 600 },
+    { tap: [236, 524] },
+    { settle: 2000 },
+    { wait: 'reaching' },
+    { tap: [150, 426] },
+    { expect: '[data-subtitle]', timeout: 6_000 },
+    { readTalk: true },
+    { tap: [236, 524] },
+    { settle: 600 },
+    { tap: [236, 524] },
+    { settle: 1200 },
+    { readTalk: true },
+  ],
+  // 7-3 「茶園階梯」: Mocha up to the tea shed, 掰掰 the farmer (he climbs up the terrace; Baokaka
+  // learns 爬樓梯: the beat and its card), then up the terraces to the bead
+  c7p3: [
+    { wait: 'cuddling' },
+    { tap: [344, 340] },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="bye"]', paused: true },
+    { settle: 1200 },
+    // The farmer's line, the learn beat and its card (on a small phone a tap on the beat may read the card away too)
+    { readTalk: true },
+    { tapEl: '[data-word-card]', paused: true, optional: true },
+  ],
+  // 7-4 「水晶車廂」: the right cloud aside (the 珍奶 draws him to the right end of the glass), 哇！ the
+  // reading lamp (the bead on the rack), the seat tapped down
+  c7p4: [
+    { wait: 'watching' },
+    { tap: [286, 528] },
+    { settle: 2500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="wow"]', paused: true },
+    { settle: 1200 },
+    { readTalk: true },
+    { tap: [330, 434] },
+  ],
+  // 7-5 「大茶壺」: the teapot set upright (the pool drains), Mocha across the dry cups to the tea tins,
+  // the teapot tilted half way (he climbs across the cups), then pouring (his cup lifts him to the terrace)
+  c7p5: [
+    { wait: 'cuddling' },
+    { tap: [204, 300] },
+    { settle: 600 },
+    { tap: [352, 352] },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tap: [204, 300] },
+    { settle: 3000 },
+    { wait: 'reaching' },
+    { tap: [204, 300] },
+  ],
+  // 7-6 「菜園的芹菜」: Mocha into the bamboo basket, 不要！ to the moon in the barrel (he cries: 黑糖
+  // wakes), 抱抱 the bear up the walls, Mocha onto the fence post (the gate opens), the photo moment,
+  // 咔嚓, the grab
+  c7p6: [
+    { wait: 'reaching' },
+    { tap: [118, 446] },
+    { settle: 1500 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 3000 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    { settle: 3000 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [356, 334] },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+  ],
   // A tap anywhere reads the lines on (#183): 1-1's opening announcements, cleared by a tap on the
   // sway tab — which must not move it — then the map's punchline cleared by a tap on empty floor
   'talk-anywhere-c1p1': [
@@ -908,7 +1011,7 @@ const SCENARIOS = {
   ],
   // Chapter 6's spread (#123) in the game shell: 6-6 played up to Mocha on the counter (in the frame);
   // 咔嚓, the album, 放進相簿, the end line, the tray's sixth coin, the sticker card, chapter 7's card
-  // with 「未完待續」, the 目錄
+  // (since #125), into 7-1
   'photo-spread-c6': [
     { wait: 'reaching' },
     { tapEl: '[data-actor="baby"]' },
@@ -935,7 +1038,38 @@ const SCENARIOS = {
     { tapEl: '[data-end-next]' },
     { expect: '[data-tray-fill="6"]', timeout: 3_000 },
     { expect: '[data-sticker-card]', timeout: 5_000 },
-    { expect: '[data-chapter-board="7"][data-card-soon]', timeout: 8_000 },
+    // Chapter 7 is built (#125): its card, 廣播姊姊 first, then 7-1 opens
+    { expect: '[data-chapter-board="7"]', absent: '[data-card-soon]', timeout: 8_000 },
+    { expect: '[data-card-talk] [data-card-line="pa"]', timeout: 6_000 },
+    { tapEl: '[data-card-next]' },
+  ],
+  // Chapter 7's spread (#125) in the game shell: 7-6 played up to Mocha on the fence post (in the
+  // frame); 咔嚓, the album, 放進相簿, the end line, the tray's seventh coin, the sticker card, chapter
+  // 8's card with 「未完待續」, the 目錄
+  'photo-spread-c7': [
+    { wait: 'reaching' },
+    { tap: [118, 446] },
+    { settle: 1500 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 3000 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    { settle: 3000 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tap: [356, 334] },
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+    { expect: '[data-screen="album"] [data-album-note="mocha"]', timeout: 10_000 },
+    { tapEl: '[data-button="keep"]' },
+    { expect: '[data-end-layer] [data-card-line="nar"]', timeout: 5_000 },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-tray-fill="7"]', timeout: 3_000 },
+    { expect: '[data-sticker-card]', timeout: 5_000 },
+    { expect: '[data-chapter-board="8"][data-card-soon]', timeout: 8_000 },
     { expect: '[data-card-talk] [data-card-line="nar"]', timeout: 6_000 },
     { tapEl: '[data-card-next]' },
   ],
@@ -967,7 +1101,7 @@ const SCENARIOS = {
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-popup-page="c7p1"]', 'photo-spread-c7': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
 const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
 
@@ -981,6 +1115,7 @@ const SCENARIO_URLS = {
   'photo-spread-c4': '#/pagelab?fixture=spread-shell-c4',
   'photo-spread-c5': '#/pagelab?fixture=spread-shell-c5',
   'photo-spread-c6': '#/pagelab?fixture=spread-shell-c6',
+  'photo-spread-c7': '#/pagelab?fixture=spread-shell-c7',
   'prologue-card': '#/',
   'album-flip': '#/pagelab?fixture=album-multi',
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',
@@ -1064,7 +1199,9 @@ async function run(page, base, id, kind, viewport, shots) {
     } else if (stepDef.settle) {
       await page.waitForTimeout(stepDef.settle);
     } else if (stepDef.tapEl) {
-      // Tap an element where it is drawn (a character, a subtitle, an overlay button)
+      // Tap an element where it is drawn (a character, a subtitle, an overlay button); an `optional`
+      // one only if it is there (a word card a tap on its beat may already have read away)
+      if (stepDef.optional && !(await page.waitForSelector(stepDef.tapEl, { timeout: 1_500 }).catch(() => null))) continue;
       const el = await page.waitForSelector(stepDef.tapEl, { timeout: 15_000 });
       await page.waitForTimeout(400);
       if (stepDef.paused) {

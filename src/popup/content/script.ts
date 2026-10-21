@@ -185,6 +185,29 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c6p6.xray.1': { who: 'mocha', text: 'X光說：寶寶一個，奶瓶一支。' },
   // § 5.2 6-6 end
   'c6p6.end.1': { who: 'nar', text: '找到了！抓周寶物——印章。' },
+  // § 5.2 Ch7 「纜車上的月亮」 03:30 (the chapter card)
+  'c7.intro.1': { who: 'pa', text: '動物園站，到了。請轉乘纜車。' },
+  'c7.intro.2': { who: 'nar', text: '纜車一格一格，往山上爬。' },
+  'c7.intro.3': { who: 'mocha', text: '貓喜歡高的地方。不是這種高。' },
+  // 7-1: the night-shift zookeeper wakes to 抱抱 and carries him down the station's stairs
+  'c7p1.keeper.1': { who: 'npc', label: '保育員', text: '嗯……小朋友迷路了？叔叔抱你下樓。' },
+  // § 5.3 店員小哥's chapter 7 cameo (7-2: Mocha jumps into his gondola shop)
+  'c7p2.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c7p2.clerk.2': { who: 'mocha', text: '……纜車也是你們的？' },
+  'c7p2.clerk.3': { who: 'clerk', text: '行動分店。' },
+  'c7p2.clerk.4': { who: 'clerk', text: '貓空站到了，謝謝光臨！' },
+  // 7-3: the tea farmer waves back to 掰掰 and climbs up a terrace (he watches, and learns 爬樓梯)
+  'c7p3.farmer.1': { who: 'npc', label: '採茶阿伯', text: '掰掰～阿伯上去採茶囉！' },
+  // 7-4: every cloud blown aside, Mocha on the bench looks down through the glass (the 淘氣)
+  'c7p4.mocha.1': { who: 'mocha', text: '……我不要往下看。' },
+  // 7-5: the pool filled with Mocha watching from the tea tray (the 淘氣)
+  'c7p5.mocha.1': { who: 'mocha', text: '……' },
+  // § 5.2 7-6 黑糖: the cry wakes him; hugged twice, he hums
+  'c7p6.bear.1': { who: 'npc', label: '黑糖', text: '歹、歹勢，我睡在芹菜上了。' },
+  'c7p6.bear.2': { who: 'mocha', text: '……熊也會說歹勢。' },
+  'c7p6.bear.3': { who: 'npc', label: '黑糖', text: '嗯～嗯嗯～♪' },
+  // § 5.2 7-6 end
+  'c7p6.end.1': { who: 'nar', text: '找到了！抓周寶物——芹菜。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

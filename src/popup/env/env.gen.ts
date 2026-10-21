@@ -524,6 +524,84 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "3d5b3c83206c3520"
+    },
+    "c7/zoo-station": {
+      "file": "backdrops/c7/zoo-station",
+      "bytes": 143244,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "dca3749e64385608"
+    },
+    "c7/gondola-station": {
+      "file": "backdrops/c7/gondola-station",
+      "bytes": 143244,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "dca3749e64385608"
+    },
+    "c7/tea-terraces": {
+      "file": "backdrops/c7/tea-terraces",
+      "bytes": 143244,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "dca3749e64385608"
+    },
+    "c7/crystal-cabin": {
+      "file": "backdrops/c7/crystal-cabin",
+      "bytes": 143244,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "dca3749e64385608"
+    },
+    "c7/giant-teapot": {
+      "file": "backdrops/c7/giant-teapot",
+      "bytes": 143244,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "dca3749e64385608"
+    },
+    "c7/celery-garden": {
+      "file": "backdrops/c7/celery-garden",
+      "bytes": 143244,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "dca3749e64385608"
     }
   },
   "parts": {
@@ -2743,6 +2821,61 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "0c1e6fca5fa088f0"
+    },
+    "c7/cloud": {
+      "preset": "flap",
+      "box": {
+        "x": -14,
+        "y": -7,
+        "w": 78,
+        "h": 69
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c7/cloud.closed",
+          "bytes": 2804
+        },
+        "open": {
+          "file": "parts/c7/cloud.open",
+          "bytes": 2872
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c7/cloud.closed.lifted",
+          "bytes": 3922
+        },
+        "open": {
+          "file": "parts/c7/cloud.open.lifted",
+          "bytes": 3470
+        }
+      },
+      "source": "4a0df8eb83e9b3c3"
+    },
+    "c7/tea-pool": {
+      "preset": "lift",
+      "box": {
+        "x": -40,
+        "y": -31,
+        "w": 215,
+        "h": 81
+      },
+      "states": {
+        "low": {
+          "file": "parts/c7/tea-pool.low",
+          "bytes": 8042
+        },
+        "mid": {
+          "file": "parts/c7/tea-pool.mid",
+          "bytes": 7280
+        },
+        "high": {
+          "file": "parts/c7/tea-pool.high",
+          "bytes": 7280
+        }
+      },
+      "source": "1d9a14e6fbc84dc0"
     }
   },
   "cutouts": {
@@ -2784,6 +2917,19 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 256
       },
       "source": "e88d2fc2061d0fdb"
+    },
+    "c7/cable": {
+      "file": "cutouts/c7/cable",
+      "bytes": 11788,
+      "chapter": 7,
+      "grade": [1.127, 1.079, 1.063],
+      "box": {
+        "x": 60,
+        "y": 160,
+        "w": 300,
+        "h": 300
+      },
+      "source": "3a4f4d6030533286"
     }
   },
   "screens": {
