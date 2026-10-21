@@ -1303,14 +1303,16 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 
 #### Chapter 9 「河的盡頭是海」 (淡水・漁人碼頭・淡江大橋, 04:40) · treasure 聽診器 · growth 扶著站
 
+**Specified in full** (the § 4.3 format, node/edge sketches, the solver's numbers): [`docs/design/pages/c9.md`](pages/c9.md) (#131, D-95). The rows below are the outline, updated where the full spec changed it.
+
 | Page | Title | Key mechanic → aha | 淘氣 | Diff |
 |---|---|---|---|---|
-| 9-1 | 往淡水 | The car comes above ground at dawn. 咻—— the curtain, climb, then 飛機！. | Blow the curtain 5 times | 3 |
-| 9-2 | 淡水老街 | Shop shutters (**flaps**) of 阿給/鐵蛋 shops change visibility. Climb, and 抱抱 a shopkeeper. The 背包客 asks again (#3). | Open every shutter at once | 4 |
-| 9-3 | 渡輪 | **Learn 扶著站**: on the ferry he grabs the railing and **stands** (a story beat). **Cruise** edges and `reachHigh` unlock; grab the bead from the high bench. | Make the ferry horn honk with Mocha on the horn | 3 |
-| 9-4 | 漁人碼頭 | A sun-dial **wheel** sets the tide (water level), revealing stepping stones. Cruise along the boardwalk rail; the 情人橋 is in the backdrop. | Set the sun to sunset and back 3 times | 4 |
-| 9-5 | 淡江大橋 | The single tower's cables are **props** you tap like harp strings; the right three-note order lowers a maintenance **lift**. 咻咻 circles the tower (story beat, §5.2 ch9) and flees toward 101. 飛機！ sends the gulls. | Play the 生日快樂 opening notes | 4 |
-| 9-6 | 碼頭的聽診器 (spread) | The 聽診器 hangs on a fishing-boat mast. 咻—— fills the sail (the boat is a **loop** stop), then cruise the deck rail and reachHigh to grab it. | Blow the sail until the boat does a full circle | 5 |
+| 9-1 | 往淡水 | The car comes above ground at dawn. Mocha along the racks turns him to the window: 咻—— the blind up, climb, then 飛機！ the sparrows off the sill. | Blow the blind up and down 5 times | 3 |
+| 9-2 | 淡水老街 | Shop shutters (**flaps**) of the 阿給/鐵蛋 shops change visibility: down on the 阿給 shop's glinting 招財貓 (a decoy), up on the 鐵蛋 counter's bead. Climb, 掰掰 the 背包客 (he asks again, #3), and 抱抱 the 鐵蛋阿婆 onto her counter. | Both shutters up at once | 4 |
+| 9-3 | 渡輪 | 嗶！ the pier's gate. **Learn 扶著站**: on the ferry he grabs the railing under Mocha and **stands** (a story beat). **Cruise** past the rope and `reachHigh` the bead off the high bench. | Make the ferry horn honk with Mocha on the horn | 2 |
+| 9-4 | 漁人碼頭 | A sun-dial **wheel** sets the tide: dawn reveals Mocha's stepping stones to the 店員小哥's kiosk (the cameo), noon floats the dinghy to the boardwalk, sunset drifts it across. Cruise along the boardwalk rail; reachHigh the bollard; the 情人橋 is in the backdrop. | Set the sun to sunset and back 3 times | 4 |
+| 9-5 | 淡江大橋 | The single tower's cables are **props** you tap like harp strings; 生日快樂's first three notes lower a maintenance **lift**. 飛機！ sends the gulls off the cables first. 咻咻 circles the tower (story beat, §5.2 ch9) and flees toward 101. | Finish 生日快樂's first line on the cables | 4 |
+| 9-6 | 碼頭的聽診器 (spread) | The 聽診器 hangs on a fishing-boat mast. 咻—— fills the sail (`coupled` to the derrick's **loop**: the net basket swings from the quay to the deck), then 飛機！ the gulls, cruise the deck rail and reachHigh to grab it. | Ride the basket the whole circle round | 5 |
 
 #### Chapter 10 「離天空最近的地方」 (台北101, 05:10) · treasure 金鎖片 · word 一起 · growth 第一步
 
@@ -1369,7 +1371,7 @@ Unlocked by collecting all 65 土地公 stickers. It's a gentle sunrise page on 
 
 The chapter card shows: 第N章｜title｜HH:MM｜下一站 (≤ 8 chars). The lines below play over the card or the first page. They are all skippable with a tap.
 
-**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines. #118 adds chapter 4's (`c4.intro.N`, `c4p4.clerk.N`, `c4p4.claw.N`, `c4p6.king.N`, `c4p6.end.1`); its card plays all three intro lines. #121 adds chapter 5's (`c5.intro.N`, `c5p2.clerk.N`, `c5p3.boss.N`, `c5p4.uncle.1`, `c5p6.vendor.N`, `c5p6.end.N`); its card plays all three intro lines, and its two end lines are one beat. #123 adds chapter 6's (`c6.intro.N`, `c6p1.crew.1`, `c6p2.clerk.N`, `c6p5.tower.N`, `c6p6.xray.1`, `c6p6.end.1`); its card plays all three intro lines. #125 adds chapter 7's (`c7.intro.N`, `c7p1.keeper.1`, `c7p2.clerk.N`, `c7p3.farmer.1`, `c7p4.mocha.1`, `c7p5.mocha.1`, `c7p6.bear.N`, `c7p6.end.1`); #129 adds chapter 8's (`c8.intro.N`, `c8p1.uncle.1`, `c8p2.mocha.1`, `c8p3.granny.1`, `c8p5.clerk.N`, `c8p5.mocha.1`, `c8p6.cashier.N`, `c8p6.mocha.1`, `c8p6.end.1`); each card plays all three intro lines.
+**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines. #118 adds chapter 4's (`c4.intro.N`, `c4p4.clerk.N`, `c4p4.claw.N`, `c4p6.king.N`, `c4p6.end.1`); its card plays all three intro lines. #121 adds chapter 5's (`c5.intro.N`, `c5p2.clerk.N`, `c5p3.boss.N`, `c5p4.uncle.1`, `c5p6.vendor.N`, `c5p6.end.N`); its card plays all three intro lines, and its two end lines are one beat. #123 adds chapter 6's (`c6.intro.N`, `c6p1.crew.1`, `c6p2.clerk.N`, `c6p5.tower.N`, `c6p6.xray.1`, `c6p6.end.1`); its card plays all three intro lines. #125 adds chapter 7's (`c7.intro.N`, `c7p1.keeper.1`, `c7p2.clerk.N`, `c7p3.farmer.1`, `c7p4.mocha.1`, `c7p5.mocha.1`, `c7p6.bear.N`, `c7p6.end.1`); #129 adds chapter 8's (`c8.intro.N`, `c8p1.uncle.1`, `c8p2.mocha.1`, `c8p3.granny.1`, `c8p5.clerk.N`, `c8p5.mocha.1`, `c8p6.cashier.N`, `c8p6.mocha.1`, `c8p6.end.1`); #131 adds chapter 9's (`c9.intro.N`, `c9p2.pack.N`, `c9p2.granny.1`, `c9p3.horn.1`, `c9p4.clerk.N`, `c9p5.shushu.1–9`, `c9p5.mocha.1`, `c9p6.end.1`); each card plays all three intro lines.
 
 **P · 序章「度晬前一晚」 00:00** (card, then 0-1)
 
@@ -1527,7 +1529,13 @@ nar：天空，開始有一點點亮了。
 mocha：「快點。阿嬤五點半起床。」
 ```
 
-**9-5 meeting 咻咻** (on reaching the tower base)
+- **9-2 背包客** (掰掰: he gets up off the lane; #131): `pack：「Excuse me… where is 101?」`, `mocha：「你從淡水走過去？……加油。」`
+- **9-2 鐵蛋阿婆** (抱抱: she lifts him onto her counter; #131): `npc(鐵蛋阿婆)：「來，阿婆抱你看鐵蛋。」`
+- **9-3** (Mocha on the ferry's horn, the 淘氣; #131): `mocha：「……不是我按的。」`
+- **9-4 店員小哥** (Mocha hops onto his ice-cream kiosk on the far pier; #131): `clerk：「叮咚～歡迎光臨！」`, `mocha：「……碼頭也是你們的？」`, `clerk：「我們是連鎖的。」`
+- **9-5** (生日快樂's first line on the cables, the 淘氣; #131): `mocha：「生日快樂……明天才是啦。」`
+
+**9-5 meeting 咻咻** (on reaching the tower base; each line holds the world, #131)
 
 ```
 nar：橋塔旁邊，一朵小雲在繞圈圈。
