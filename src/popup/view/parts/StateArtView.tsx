@@ -58,7 +58,7 @@ export const LightView = StateArtView;
  * state. What rides the slots is drawn by the page (`riderArt`).
  */
 export function LoopView(props: PartViewProps) {
-  const { part, ctx, from, to, ms, reduced, look = {} } = props;
+  const { part, ctx, from, to, ms, reduced, preview, look = {} } = props;
   const baked = partBitmap(part.art, to);
   const touchable = part.input !== undefined && part.input !== 'none';
   const hb = hitBox(part);
@@ -78,7 +78,8 @@ export function LoopView(props: PartViewProps) {
   if (!baked) return <StateArtView {...props} />;
   const a = stateAt(part, from);
   const b = stateAt(part, to);
-  const rot = (a.index * 360) / Math.max(1, a.count) + lerp(0, turnDelta(a.index, b.index, b.count), from === to ? 1 : partProgress(ms, reduced));
+  // A drag holds the crank between stops (its fractional state index), else the tween to the new state
+  const rot = preview !== undefined ? (preview * 360) / Math.max(1, b.count) : (a.index * 360) / Math.max(1, a.count) + lerp(0, turnDelta(a.index, b.index, b.count), from === to ? 1 : partProgress(ms, reduced));
   return (
     <g data-part={part.id} data-preset={part.preset}>
       <g transform={`translate(${r2(hb.cx)} ${r2(hb.cy)})`}>
