@@ -368,6 +368,29 @@ describe('sources', () => {
     for (const state of ['1', '2', '3']) expect(partImage('c6/carousel-belt', state)?.url, state).toBe(partImage('c6/carousel-belt', '0')?.url);
   });
 
+  test('chapter 7 (#126): every art key resolves to its own art — no live placeholder, no placeholder stage', () => {
+    const c7 = PAGES.filter((p) => p.chapter === 7);
+    expect(c7.map((p) => p.id)).toEqual(['c7p1', 'c7p2', 'c7p3', 'c7p4', 'c7p5', 'c7p6']);
+    for (const b of backdropSources(c7)) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+    for (const p of c7) {
+      expect(pageArt(p, M).placeholders, p.id).toEqual([]);
+      for (const part of p.parts) expect(isPlaceholder(part.art), `${p.id} ${part.art}`).toBe(false);
+      for (const c of p.creatures) expect(hasCreatureArt(c.art), `${p.id} ${c.art}`).toBe(true);
+    }
+    // The carriers are baked per look (D-85), 黑糖 with his `away` look while he sleeps; the loop's drive and the teapot's cradle are one drawing each
+    expect(Object.keys(M.parts['c7/zookeeper']?.states ?? {})).toEqual(expect.arrayContaining(['idle', 'carrying', 'back', 'done']));
+    expect(Object.keys(M.parts['c7/black-bear']?.states ?? {})).toEqual(expect.arrayContaining(['idle', 'away', 'carrying', 'back', 'done']));
+    for (const state of ['1', '2', '3']) expect(partImage('c7/bullwheel', state)?.url, state).toBe(partImage('c7/bullwheel', '0')?.url);
+    // 7-4's mirror and 7-5's teapot are cut-outs shown with a part's state (pure art)
+    for (const key of ['c7/glass-mirror', 'c7/teapot-0', 'c7/teapot-1', 'c7/teapot-2', 'c7/cable']) {
+      expect(M.cutouts[key], key).toBeDefined();
+      expect(lintMarkup(CUTOUT_SOURCES[key].draw(kitCtx('t', { filters: true })), { page: 'c7', touchable: () => false, expected: [], where: key }), key).toEqual([]);
+    }
+  });
+
   test('4-3\'s shadow (the 淘氣\'s art) shows only while Mocha hides behind the lit second sign (#119)', () => {
     const src = CUTOUT_SOURCES['c4/mocha-shadow'];
     expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c4p3', touchable: () => false, expected: [], where: 'shadow' })).toEqual([]);

@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_CHAPTER_CLOCK, POPUP_STAGE as S, POPUP_STATION as T, mixHex, type PopupChapterSky } from '../../../art/palette';
+import { POPUP as C, POPUP_CHAPTER_CLOCK, POPUP_MAOKONG as MK, POPUP_STAGE as S, POPUP_STATION as T, mixHex, type PopupChapterSky } from '../../../art/palette';
 import type { Kind, PageDef } from '../../core/types';
 import { PRESET_DEFS, brad, depth, f1, kitDefs, pageBlock, paw, pinholes, ref, scallopBand, seeded, skyline, softEllipse, sparkle, translate, type DefName, type KitCtx } from '../../art';
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorOutline, floorWiden, towardVp } from '../geometry';
@@ -567,8 +567,8 @@ export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string 
  * art key: `c3/moon` the moon's reflection on the water (a foil ellipse under glassine ripples, its
  * origin on the water), `c3/bell` the brass 傅鐘 (origin at its crown), `c3/glasses` reading glasses
  * (origin at the bridge); `c5/phone` 5-1's glowing phone and `c5/griddle` 5-6's shining griddle (#121,
- * drawn in the market kit by #122); `c7/panda-sign` 7-1's lit panda sign over the platform (#125, a
- * placeholder until #126); any other key a cold silver glint. Drawn in the campus kit by #117.
+ * drawn in the market kit by #122); `c7/panda-sign` 7-1's lit panda sign over the platform (#125; drawn in the
+ * chapter's kit by #126); any other key a cold silver glint. Drawn in the campus kit by #117.
  */
 export function decoyArt(ctx: KitCtx, key?: string): string {
   const glint = (x: number, y: number, r: number) => sparkle(ctx, x, y, r);
@@ -645,15 +645,20 @@ export function decoyArt(ctx: KitCtx, key?: string): string {
         + glint(-19, -10, 3.6) + glint(18, -7, 3.2);
     }
     case 'c7/panda-sign': {
-      // 7-1's panda sign over the platform (#125; #126 draws it in the chapter's kit): a lit lightbox
-      // in a steel frame, 「熊貓館」 over a panda in gold foil, glittering. Within ±18 units
-      const box = 'M-18 -13H18V13H-18Z';
-      return softEllipse(ctx, 0, 0, 26, 18, 'lamp', 0.16, 'blur8')
-        + depth(ctx, 3, `<path d="${box}" fill="${C.printDark}"/><rect x="-16" y="-11" width="32" height="22" fill="${C.lamp}"/>`
-          + `<circle cx="0" cy="3" r="6.4" fill="${ref(ctx, 'foil')}"/><circle cx="-5" cy="-2.6" r="2.6" fill="${C.ink}"/><circle cx="5" cy="-2.6" r="2.6" fill="${C.ink}"/>`
-          + `<ellipse cx="-2.4" cy="2.4" rx="1.6" ry="2" fill="${C.ink}"/><ellipse cx="2.4" cy="2.4" rx="1.6" ry="2" fill="${C.ink}"/><circle cx="0" cy="5.6" r="1" fill="${C.ink}"/>`
-          + `<text data-art-text="" x="0" y="-5" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="5" fill="${C.printDark}">熊貓館</text>`, `<path d="${box}"/>`)
-        + glint(17, -14, 3.8) + glint(-16, 12, 3);
+      // 7-1's panda sign over the platform (#125; drawn in the chapter's kit by #126): the zoo's lit
+      // lightbox in a green steel frame — a panda's face (white card, black ear and eye patches, a
+      // bamboo sprig) over 「熊貓館」 — glittering. Within ±18 units (it sits in his bubble)
+      const box = 'M-18 -14H18V14H-18Z';
+      return softEllipse(ctx, 0, 0, 28, 20, 'lamp', 0.18, 'blur8')
+        + depth(ctx, 3, `<path d="${box}" fill="${MK.keeperGreen}"/><rect x="-16" y="-12" width="32" height="24" rx="1.4" fill="${C.lamp}"/>`
+          + `<path d="M-11 -5.6a3.6 3.6 0 1 1 5 -3.2M11 -5.6a3.6 3.6 0 1 0 -5 -3.2" fill="${C.ink}"/>`
+          + `<ellipse cx="0" cy="-1" rx="9.6" ry="8.4" fill="${MK.panda}"/>`
+          + `<ellipse cx="-4" cy="-2" rx="2.6" ry="3.2" fill="${C.ink}" transform="rotate(-24 -4 -2)"/><ellipse cx="4" cy="-2" rx="2.6" ry="3.2" fill="${C.ink}" transform="rotate(24 4 -2)"/>`
+          + `<circle cx="-3.6" cy="-2.4" r=".8" fill="${C.cutRim}"/><circle cx="4.4" cy="-2.4" r=".8" fill="${C.cutRim}"/><ellipse cx="0" cy="2.4" rx="1.6" ry="1.1" fill="${C.ink}"/>`
+          + `<path d="M12 -10v16M12 -6l4 -2M12 0l-4 -2" stroke="${MK.tea}" stroke-width="1.4" stroke-linecap="round"/>`
+          + `<rect x="-16" y="7" width="32" height="5" fill="${MK.keeperGreen}"/>`
+          + `<text data-art-text="" x="0" y="11.4" text-anchor="middle" font-family="'Noto Serif TC'" font-weight="900" font-size="4.6" fill="${C.washi}">熊貓館</text>`, `<path d="${box}"/>`)
+        + glint(17, -15, 3.8) + glint(-17, 12, 3);
     }
     default:
       return softEllipse(ctx, 0, 0, 16, 16, 'lamp', 0.16, 'blur8') + `<circle r="7" fill="${C.glassine}" stroke="${C.moonRim}" stroke-width="1.2"/>`

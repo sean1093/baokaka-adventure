@@ -2,7 +2,7 @@ import { POPUP as C, POPUP_AIRPORT as A, mixHex } from '../../../art/palette';
 import { brad, depth, f1, ref, softEllipse, type KitCtx } from '../../art';
 import { LEDGE_DEPTH } from '../stage';
 import { HOLD, HOLD_BACK, WAVE, adult, circle, join, scaled, stand, type Cut, type Look, type Pose } from './market';
-import { C7_RIDERS } from './gondola';
+import type { RiderArt } from './riders';
 import { chalk, figure, ticks } from './ximen';
 
 /**
@@ -13,9 +13,9 @@ import { chalk, figure, ticks } from './ximen';
  *   rolling suitcase. She is baked per look (`env/art/c6.ts`, D-85).
  * - **The night herons** (夜鷺, 6-4's flock that roosts on the gangplank) are origami (bible § 5):
  *   hunched grey birds with black caps, the night birds of Taipei's rivers and airfields. Live.
- * - **The riders**: what rides a loop's slots (`riderArt`): 6-2's suitcases on the carousel and
- *   6-6's grey tray on the X-ray belt; and the carriage 6-4's tab telescopes (`bridgeSection`). Live,
- *   flat fills (they move: no filters, GDD § 3.9).
+ * - **The riders**: what rides a loop's slots (`AIRPORT_RIDERS`, served by `riderArt` in `riders.ts`):
+ *   6-2's suitcases on the carousel and 6-6's grey tray on the X-ray belt; and the carriage 6-4's tab
+ *   telescopes (`bridgeSection`). Live, flat fills (they move: no filters, GDD § 3.9).
  */
 
 // ——— The cabin-crew 姊姊 ———
@@ -114,13 +114,6 @@ export function nightHerons(ctx: KitCtx, pos = 'roost'): string {
 
 // ——— Riders and the bridge's section ———
 
-/**
- * A rider on a loop's slot, its origin where the rider's node is (the top it carries Baokaka or
- * Mocha on). 6-2: `S` his suitcase (a big blue hard case lying flat, its handle and a luggage tag),
- * `caseB` Mocha's (a smaller red soft bag, 16 higher: its node is its top); 6-6: `T` the grey
- * X-ray tray.
- */
-export type RiderArt = (ctx: KitCtx) => string;
 
 function suitcase(ctx: KitCtx, w: number, h: number, fill: string, deep: string, tag: string): string {
   const body = `M${-w / 2} ${h}V3q0 -3 3 -3h${w - 6}q3 0 3 3V${h}z`;
@@ -131,17 +124,18 @@ function suitcase(ctx: KitCtx, w: number, h: number, fill: string, deep: string,
       + `<path d="M${w / 2 - 6} 4l5 7h-6z" fill="${tag}"/>`, `<path d="${body}"/>`);
 }
 
-const RIDERS: Readonly<Record<string, RiderArt>> = {
+/**
+ * Chapter 6's riders by `'<loop art key>:<node id>'` (served by `riderArt`, `riders.ts`), each drawn
+ * with its origin where the rider's node is (the top it carries Baokaka or Mocha on). 6-2: `S` his
+ * suitcase (a big blue hard case lying flat, its handle and a luggage tag), `caseB` Mocha's (a
+ * smaller red soft bag, 16 higher: its node is its top); 6-6: `T` the grey X-ray tray.
+ */
+export const AIRPORT_RIDERS: Readonly<Record<string, RiderArt>> = {
   'c6/carousel-belt:S': (ctx) => suitcase(ctx, 44, 14, A.tail, A.tailDeep, C.washi),
   'c6/carousel-belt:caseB': (ctx) => suitcase(ctx, 34, 16, A.scarf, mixHex(A.scarf, C.shadow, 0.35), A.white),
   'c6/xray-belt:T': (ctx) => softEllipse(ctx, 0, 6, 26, 3, 'shadow', 0.4)
     + depth(ctx, 4, `<path d="M-24 -2H24L20 6H-20Z" fill="${A.steel}"/><path d="M-24 -2H24" stroke="${A.steelLight}" stroke-width="1.4"/><path d="M-18 2H18" stroke="${A.steelDeep}" stroke-width=".8"/>`, `<path d="M-24 -2H24L20 6H-20Z"/>`),
-  // Chapter 7's gondola cabins (#125; placeholders until #126)
-  ...C7_RIDERS,
 };
-
-/** The rider drawn on loop `key`'s node `node`, or null. */
-export const riderArt = (key: string, node: string): RiderArt | null => RIDERS[`${key}:${node}`] ?? null;
 
 /**
  * 6-4's telescoping section (the carriage the `extend` tab moves): a slimmer steel tunnel sliding out

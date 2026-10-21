@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_AIRPORT as A, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
+import { POPUP as C, POPUP_AIRPORT as A, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MAOKONG as G, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, mixHex } from '../../../art/palette';
 import { depth, f1, ref, seeded, softEllipse, type KitCtx } from '../../art';
 import { PAGE_W, towardVp } from '../geometry';
 import { LEDGE_DEPTH, type LedgeRun, type Slope } from '../stage';
@@ -597,7 +597,242 @@ function catwalk(ctx: KitCtx, run: LedgeRun): string {
   return depth(ctx, 4, body, boxOutline(b));
 }
 
+// ——— 貓空 (#126) ———
+
+/** A row of clipped tea along a ledge's top (x0–x1 at y): rounded bushes with moonlit crowns, one path per tone. */
+function teaHedge(x0: number, x1: number, y: number, seed: number, h = 9): string {
+  const r = seeded(seed);
+  let body = `M${f1(x0)} ${f1(y + 4)}`;
+  let lit = '';
+  for (let x = x0; x < x1;) {
+    const w = Math.min(x1 - x, 10 + r() * 6);
+    const hh = h * (0.75 + r() * 0.35);
+    body += `q${f1(w / 2)} ${f1(-hh * 1.5)} ${f1(w)} 0`;
+    lit += `M${f1(x + w * 0.2)} ${f1(y + 4 - hh * 0.55)}q${f1(w * 0.3)} ${f1(-hh * 0.35)} ${f1(w * 0.6)} 0`;
+    x += w;
+  }
+  body += `V${f1(y + 8)}H${f1(x0)}Z`;
+  return `<path d="${body}" fill="${G.tea}"/><path d="${lit}" stroke="${G.teaLit}" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".8"/>`;
+}
+
+/** Ashlar joints on a stone face from y0 to y1 (staggered courses). */
+function stoneCourses(x0: number, x1: number, y0: number, y1: number, seed: number, course = 11): string {
+  const r = seeded(seed);
+  let d = '';
+  for (let y = y0, i = 0; y < y1 - 2; y += course, i++) {
+    if (y > y0) d += `M${f1(x0)} ${f1(y)}H${f1(x1)}`;
+    for (let x = x0 + (i % 2 ? 9 : 0) + r() * 6; x < x1 - 4; x += 15 + r() * 10) d += `M${f1(x)} ${f1(y)}v${f1(Math.min(course, y1 - y))}`;
+  }
+  return d;
+}
+
+/**
+ * 7-1's elevated platform (動物園 station, #126): pale concrete on top with the ochre tactile strip
+ * along its edge (decorative yellow is never marigold), a steel fascia in front with the 文湖線's
+ * brown band and a row of little downlights glowing under it.
+ */
+function zooPlatform(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let lights = '';
+  for (let x = b.x0 + 14; x < b.x1 - 6; x += 28) lights += `<rect x="${f1(x - 5)}" y="${b.y + b.t - 6}" width="10" height="3" rx="1.5" fill="${C.lampHot}"/>`;
+  const body = (b.side ? `<path d="${b.side}" fill="${G.concreteDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(G.steelDeep, G.hillNear, 0.3)}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10" fill="${G.concrete}"/><path d="M${b.x0} ${b.y + 10}H${b.x1}" stroke="${C.shadow}" stroke-width="1.6" opacity=".35"/>`
+    + `<rect x="${b.x0}" y="${b.y + 16}" width="${b.x1 - b.x0}" height="8" fill="${A.wenhu}"/><rect x="${b.x0}" y="${b.y + 24}" width="${b.x1 - b.x0}" height="2" fill="${A.wenhuDeep}"/>`
+    + lights
+    + `<path d="${b.top}" fill="${mixHex(G.concrete, G.stoneLight, 0.4)}"/>`
+    + `<path d="M${f1(b.x0)} ${b.y - 3}H${b.x1}" stroke="${C.ochre}" stroke-width="3" opacity=".8"/><path d="M${f1(b.x0)} ${b.y - 3}H${b.x1}" stroke="${C.ochreDark}" stroke-width="3" stroke-dasharray="1 3" opacity=".6"/>`
+    + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The zoo's entrance plaza (#126): warm brick pavers on top, a low stone planter wall in front with ferns spilling over. */
+function zooPlaza(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const r = seeded(Math.round(b.x0 * 3 + b.y));
+  let ferns = '';
+  for (let x = b.x0 + 6; x < b.x1 - 4; x += 9 + r() * 8) ferns += `M${f1(x)} ${b.y + 14}q${f1(-3 + r() * 6)} ${f1(8 + r() * 6)} ${f1(-5 + r() * 10)} ${f1(14 + r() * 6)}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${G.stoneDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${ref(ctx, 'stoneG')}"/>`
+    + `<path d="${stoneCourses(b.x0, b.x1, b.y + 12, b.y + b.t, Math.round(b.x0) + 7)}" stroke="${G.stoneDeep}" stroke-width=".9" opacity=".7"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="12" fill="${mixHex(G.path, G.stone, 0.4)}"/><path d="M${b.x0} ${b.y + 12}H${b.x1}" stroke="${C.shadow}" stroke-width="1.6" opacity=".35"/>`
+    + `<path d="${ferns}" stroke="${G.teaLight}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".9"/>`
+    + `<path d="${b.top}" fill="${mixHex(G.path, G.stoneLight, 0.3)}"/><path d="${topJoints(b, 10)}" stroke="${G.soilDeep}" stroke-width=".7" opacity=".45"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The gondola stations' boarding decks (#126): chequer steel plate on top, a steel girder in front with a ochre-and-dark safety stripe and its lamps. */
+function gondolaDeck(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let stripe = '';
+  for (let x = b.x0; x < b.x1; x += 12) stripe += `M${f1(x)} ${b.y + 14}l6 0l-6 7h-6z`;
+  let rivets = '';
+  for (let x = b.x0 + 8; x < b.x1; x += 16) rivets += `M${f1(x - 1)} ${b.y + 34}h2v2h-2z`;
+  const body = (b.side ? `<path d="${b.side}" fill="${G.steelDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${G.steelDeep}"/><path d="${rivets}" fill="${G.steel}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="12" fill="${G.steel}"/><path d="M${b.x0} ${b.y + 1}H${b.x1}" stroke="${G.steelLight}" stroke-width="1"/>`
+    + `<rect x="${b.x0}" y="${b.y + 14}" width="${b.x1 - b.x0}" height="7" fill="${C.printDark}"/><path d="${stripe}" fill="${C.ochre}" opacity=".85"/>`
+    + `<path d="${b.top}" fill="${mixHex(G.steel, G.steelLight, 0.3)}"/><path d="${topJoints(b, 6)}" stroke="${G.steelDeep}" stroke-width=".6" opacity=".4"/>`
+    + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/**
+ * A tea terrace (#126; bible § 6 row 7: "terraces as stepped box folds"): a clipped row of tea on top,
+ * the dark soil between the rows, a dry-stone retaining wall in front.
+ */
+function teaTerrace(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const seed = Math.round(b.x0 * 7 + b.y);
+  const body = (b.side ? `<path d="${b.side}" fill="${G.stoneDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${ref(ctx, 'stoneG')}"/>`
+    + `<path d="${stoneCourses(b.x0, b.x1, b.y + 10, b.y + b.t, seed, 10)}" stroke="${G.stoneDeep}" stroke-width="1" opacity=".75"/>`
+    + `<path d="${stoneCourses(b.x0, b.x1, b.y + 10, b.y + b.t, seed, 10)}" stroke="${G.stoneLight}" stroke-width=".6" opacity=".4" transform="translate(-.8 -.8)"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10" fill="${G.soilDeep}"/>`
+    + `<path d="${b.top}" fill="${G.soil}"/><path d="${topJoints(b, 14)}" stroke="${G.soilDeep}" stroke-width="1" opacity=".5"/>`
+    + teaHedge(b.x0 + 1, b.x1 - 1, b.ay + 4, seed, 7)
+    + rim(b.x0, b.x1, b.y, 0.45);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The tea house's deck (#126): weathered boards on top, a dark timber fascia in front with a hanging lantern's glow. */
+function teaDeck(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let boards = '';
+  for (let y = b.y + 14; y < b.y + b.t; y += 9) boards += `M${b.x0} ${y}H${b.x1}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${G.woodDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(G.woodDeep, C.shadow, 0.25)}"/><path d="${boards}" stroke="${G.woodDeep}" stroke-width="1.2" opacity=".8"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10" fill="${G.wood}"/><path d="M${b.x0} ${b.y + 10}H${b.x1}" stroke="${C.shadow}" stroke-width="1.6" opacity=".4"/>`
+    + `<path d="${b.top}" fill="${G.woodLight}"/><path d="${topJoints(b, 9)}" stroke="${G.woodDeep}" stroke-width=".8" opacity=".55"/>`
+    + rim(b.x0, b.x1, b.y, 0.55);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/**
+ * Inside the 水晶車廂 (#126): its benches (`cabinBench`, a padded seat over a steel base) and its
+ * glass floor (`cabinGlass`: a glassine slab in a thin steel frame — the night shows through it).
+ */
+function cabinBench(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${G.steelDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y + 8}" width="${b.x1 - b.x0}" height="${b.t - 8}" fill="${ref(ctx, 'steelV')}"/>`
+    + `<path d="M${b.x0} ${b.y + 30}H${b.x1}" stroke="${G.steelDeep}" stroke-width="1" opacity=".6"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10" rx="3" fill="${G.cabinBand}"/><path d="M${b.x0 + 3} ${b.y + 1.4}H${b.x1 - 3}" stroke="${G.teaLit}" stroke-width="1.2" opacity=".6"/>`
+    + `<path d="${b.top}" fill="${mixHex(G.cabinBand, G.teaLit, 0.3)}"/>` + rim(b.x0, b.x1, b.y, 0.5);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** The luggage rack over the right bench: a steel shelf of rods on brackets. */
+function cabinRack(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let rods = '';
+  for (let x = b.x0 + 4; x < b.x1; x += 6) rods += `M${f1(x)} ${b.y}v10`;
+  const body = (b.side ? `<path d="${b.side}" fill="${G.steelDeep}"/>` : '')
+    + `<path d="M${b.x0 + 6} ${b.y + 10}L${b.x0 + 18} ${b.y + 34}M${b.x1 - 6} ${b.y + 10}L${b.x1 - 18} ${b.y + 34}" stroke="${G.steelDeep}" stroke-width="3"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10" fill="${G.steelDeep}"/><path d="${rods}" stroke="${G.steelLight}" stroke-width="1.6"/>`
+    + `<path d="${b.top}" fill="${G.steel}"/>` + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, `${b.side ? `<path d="${b.side}"/>` : ''}<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10"/><path d="${b.top}"/>`);
+}
+
+function cabinGlass(_ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let mull = '';
+  for (let x = b.x0 + 38; x < b.x1 - 10; x += 38) mull += `M${f1(x)} ${b.y}v${b.t}`;
+  const body = `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${A.glass}" opacity=".18"/>`
+    + `<path d="M${f1(b.x0 + 20)} ${b.y + b.t}L${f1(b.x0 + 46)} ${b.y}H${f1(b.x0 + 56)}L${f1(b.x0 + 30)} ${b.y + b.t}ZM${f1(b.x1 - 70)} ${b.y + b.t}L${f1(b.x1 - 50)} ${b.y}H${f1(b.x1 - 44)}L${f1(b.x1 - 64)} ${b.y + b.t}Z" fill="${C.glassine}" opacity=".12"/>`
+    + `<path d="${mull}" stroke="${G.steel}" stroke-width="2" opacity=".7"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="4" fill="${G.steel}"/><rect x="${b.x0}" y="${b.y + b.t - 4}" width="${b.x1 - b.x0}" height="4" fill="${G.steelDeep}"/>`
+    + `<path d="${b.top}" fill="${C.glassine}" opacity=".3"/><path d="${b.top}" fill="none" stroke="${G.steelLight}" stroke-width="1" opacity=".6"/>`
+    + rim(b.x0, b.x1, b.y, 0.7);
+  // Glass: no stacked shadow of its own (vellum and glassine take only a soft one, bible § 3.1)
+  return body;
+}
+
+/** The vegetable garden (#126): its earth path (`gardenPath`, packed soil, a grass verge in front) and its terraces (`gardenTerrace`, a stone wall under a bed of greens). */
+function gardenPath(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const r = seeded(Math.round(b.x0 * 11 + b.y));
+  let grass = '';
+  for (let x = b.x0 + 2; x < b.x1 - 2; x += 3 + r() * 4) grass += `M${f1(x)} ${b.y + 12}l${f1(-1 + r() * 2)} ${f1(-4 - r() * 5)}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${G.soilDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${G.soilDeep}"/>`
+    + `<rect x="${b.x0}" y="${b.y + 8}" width="${b.x1 - b.x0}" height="${b.t - 8}" fill="${mixHex(G.tea, G.soilDeep, 0.55)}"/>`
+    + `<path d="${grass}" stroke="${G.teaLight}" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="8" fill="${G.soil}"/>`
+    + `<path d="${b.top}" fill="${G.path}"/><path d="${topJoints(b, 17)}" stroke="${G.soil}" stroke-width="1" opacity=".5"/>`
+    + rim(b.x0, b.x1, b.y, 0.45);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 7-6's path with the glazed rain jar at its right end, in front of the wall's foot (its water at y + 36). */
+function gardenPathJar(ctx: KitCtx, run: LedgeRun): string {
+  const cx = run.x1 - 10, top = run.y + 36;
+  const jar = `M${cx - 20} ${top}Q${cx - 30} ${top + 24} ${cx - 16} ${top + 42}H${cx + 16}Q${cx + 30} ${top + 24} ${cx + 20} ${top}Z`;
+  return gardenPath(ctx, run) + softEllipse(ctx, cx, top + 44, 26, 4, 'shadow', 0.45)
+    + depth(ctx, 4, `<path d="${jar}" fill="${G.jar}"/><path d="M${cx + 4} ${top}Q${cx + 26} ${top + 24} ${cx + 12} ${top + 42}H${cx + 16}Q${cx + 30} ${top + 24} ${cx + 20} ${top}Z" fill="${G.jarDeep}"/>`
+      + `<path d="M${cx - 16} ${top + 6}Q${cx - 22} ${top + 22} ${cx - 12} ${top + 36}" stroke="${C.cutRim}" stroke-width="1.6" fill="none" opacity=".35"/>`
+      + `<ellipse cx="${cx}" cy="${top}" rx="22" ry="5" fill="${G.jarDeep}"/><ellipse cx="${cx}" cy="${top + 0.6}" rx="18" ry="3.6" fill="${mixHex(G.hillNear, C.shadow, 0.3)}"/>`
+      + `<path d="M${cx - 20} ${top + 12}H${cx + 22}" stroke="${G.mistDeep}" stroke-width="1" opacity=".4"/>`, `<path d="${jar}"/>`);
+}
+
+function gardenTerrace(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const seed = Math.round(b.x0 * 13 + b.y);
+  const body = (b.side ? `<path d="${b.side}" fill="${G.stoneDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${ref(ctx, 'stoneG')}"/>`
+    + `<path d="${stoneCourses(b.x0, b.x1, b.y + 6, b.y + b.t, seed, 13)}" stroke="${G.stoneDeep}" stroke-width="1.1" opacity=".8"/>`
+    + `<path d="${stoneCourses(b.x0, b.x1, b.y + 6, b.y + b.t, seed, 13)}" stroke="${G.stoneLight}" stroke-width=".6" opacity=".4" transform="translate(-.8 -.8)"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="6" fill="${G.soilDeep}"/>`
+    + `<path d="${b.top}" fill="${G.soil}"/>` + rim(b.x0, b.x1, b.y, 0.45);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 7-1's stairs down from the platform (#126): concrete treads between steel stringers, a handrail on the far side. */
+function stationStairs(ctx: KitCtx, slope: Pick<Slope, 'from' | 'to'>): string {
+  const [[ax, ay], [bx, by]] = [slope.from, slope.to];
+  const n = Math.max(3, Math.round(Math.abs(by - ay) / 9));
+  let treads = '';
+  let lit = '';
+  for (let i = 0; i < n; i++) {
+    const x0 = ax + ((bx - ax) * i) / n, y0 = ay + ((by - ay) * i) / n;
+    const x1 = ax + ((bx - ax) * (i + 1)) / n;
+    treads += `M${f1(Math.min(x0, x1) - 10)} ${f1(y0)}H${f1(Math.max(x0, x1) + 10)}V${f1(y0 + 9)}H${f1(Math.min(x0, x1) - 10)}Z`;
+    lit += `M${f1(Math.min(x0, x1) - 10)} ${f1(y0 + 0.6)}H${f1(Math.max(x0, x1) + 10)}`;
+  }
+  const rail = `M${f1(ax - 4)} ${f1(ay - 26)}L${f1(bx - 4)} ${f1(by - 26)}`;
+  return `<path d="${rail}M${f1(ax - 4)} ${f1(ay - 26)}V${ay}M${f1((ax + bx) / 2 - 4)} ${f1((ay + by) / 2 - 26)}V${f1((ay + by) / 2)}M${f1(bx - 4)} ${f1(by - 26)}V${by}" stroke="${G.steel}" stroke-width="2" fill="none"/>`
+    + depth(ctx, 4, `<path d="M${f1(ax - 10)} ${ay}L${f1(bx + 10)} ${by}V${by + 10}L${f1(ax - 10)} ${ay + 12}Z" fill="${G.steelDeep}"/><path d="${treads}" fill="${G.concrete}"/>`
+      + `<path d="${lit}" stroke="${C.ochre}" stroke-width="1.4" opacity=".7"/>`, `<path d="${treads}"/>`);
+}
+
+/**
+ * 7-5's big 茶海 cup on the pool's bottom (#126; a single node, his stepping stone at half): a wide
+ * porcelain pitcher with a lip spout, a blue-and-white band, tea in it.
+ */
+function chahai(ctx: KitCtx, run: LedgeRun): string {
+  const cx = (run.x0 + run.x1) / 2, y = run.y;
+  const body = `M${f1(cx - 28)} ${y - 4}H${f1(cx + 28)}Q${f1(cx + 30)} ${y + 36} ${f1(cx + 18)} ${y + 48}H${f1(cx - 18)}Q${f1(cx - 30)} ${y + 36} ${f1(cx - 28)} ${y - 4}Z`;
+  return depth(ctx, 4, `<path d="M${f1(cx - 28)} ${y - 4}l-9 -4l2 6z" fill="${G.porcelainShade}"/><path d="${body}" fill="${G.porcelain}"/>`
+    + `<path d="M${f1(cx + 6)} ${y - 4}H${f1(cx + 28)}Q${f1(cx + 30)} ${y + 36} ${f1(cx + 18)} ${y + 48}H${f1(cx + 2)}Q${f1(cx + 14)} ${y + 30} ${f1(cx + 6)} ${y - 4}Z" fill="${G.porcelainShade}" opacity=".7"/>`
+    + `<path d="M${f1(cx - 28.6)} ${y + 12}H${f1(cx + 28.6)}" stroke="${G.blueWhite}" stroke-width="4"/><path d="M${f1(cx - 27)} ${y + 18}H${f1(cx + 27)}" stroke="${G.blueWhite}" stroke-width=".9"/>`
+    + `<ellipse cx="${f1(cx)}" cy="${y - 4}" rx="28" ry="5" fill="${G.porcelainShade}"/><ellipse cx="${f1(cx)}" cy="${y - 3.4}" rx="25" ry="3.8" fill="${G.brew}"/>`
+    + `<path d="M${f1(cx - 22)} ${y + 2}Q${f1(cx - 26)} ${y + 26} ${f1(cx - 14)} ${y + 42}" stroke="${C.cutRim}" stroke-width="1.6" fill="none" opacity=".5"/>`, `<path d="${body}"/>`);
+}
+
+/** A tea terrace's stone step up (#126; one 22-unit riser, D-58): a slab of stone with tea at its sides. */
+function terraceStep(ctx: KitCtx, slope: Pick<Slope, 'from' | 'to'>): string {
+  const [[ax, ay], [bx, by]] = [slope.from, slope.to];
+  const [lo, hi] = ay > by ? [[ax, ay], [bx, by]] : [[bx, by], [ax, ay]];
+  const mx = (lo[0] + hi[0]) / 2;
+  const d = `M${f1(mx - 12)} ${f1((lo[1] + hi[1]) / 2)}H${f1(mx + 12)}V${f1(lo[1] + 2)}H${f1(mx - 12)}Z`;
+  return depth(ctx, 4, `<path d="${d}" fill="${G.stone}"/><path d="M${f1(mx - 12)} ${f1((lo[1] + hi[1]) / 2 + 0.6)}H${f1(mx + 12)}" stroke="${G.stoneLight}" stroke-width="1.6"/>`, `<path d="${d}"/>`);
+}
+
 /** A ledge in its page's material (`dress.ts`): the dressed styles here, brick and rug from the placeholder stage. */
+/** Chapter 7's ledge styles (#126): a single node is a short box of the same material. */
+const CHAPTER7_STYLES: ReadonlySet<LedgeStyle> = new Set<LedgeStyle>(['zooPlatform', 'zooPlaza', 'gondolaDeck', 'teaTerrace', 'teaDeck', 'chahai', 'cabinBench', 'cabinRack', 'cabinGlass', 'gardenPath', 'gardenPathJar', 'gardenTerrace']);
+
 export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme: StageTheme): string {
   if (run.single) {
     if (style === 'playmat' || style === 'crib') return pillow(ctx, (run.x0 + run.x1) / 2, run.y);
@@ -609,9 +844,34 @@ export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme
     if (style === 'marketLane') return marketLane(ctx, run);
     if (style === 'stallFloor' || style === 'stallShelf' || style === 'stallCounter') return styledLedge(ctx, { ...run, single: false }, style, theme);
     if (style === 'terminalFloor' || style === 'deckBoards' || style === 'bridgeFloor' || style === 'catwalk' || style === 'carBodyWenhu') return styledLedge(ctx, { ...run, single: false }, style, theme);
+    if (CHAPTER7_STYLES.has(style)) return styledLedge(ctx, { ...run, single: false }, style, theme);
     return plainLedge(ctx, run, theme);
   }
   switch (style) {
+    case 'zooPlatform':
+      return zooPlatform(ctx, run);
+    case 'zooPlaza':
+      return zooPlaza(ctx, run);
+    case 'gondolaDeck':
+      return gondolaDeck(ctx, run);
+    case 'teaTerrace':
+      return teaTerrace(ctx, run);
+    case 'teaDeck':
+      return teaDeck(ctx, run);
+    case 'chahai':
+      return chahai(ctx, run);
+    case 'cabinBench':
+      return cabinBench(ctx, run);
+    case 'cabinRack':
+      return cabinRack(ctx, run);
+    case 'cabinGlass':
+      return cabinGlass(ctx, run);
+    case 'gardenPath':
+      return gardenPath(ctx, run);
+    case 'gardenTerrace':
+      return gardenTerrace(ctx, run);
+    case 'gardenPathJar':
+      return gardenPathJar(ctx, run);
     case 'carBodySongshan':
       return carBody(ctx, run, K.songshan, K.songshanDeep);
     case 'neonStreet':
@@ -694,6 +954,11 @@ export function dressedLedge(ctx: KitCtx, run: LedgeRun, styleOf: (y: number) =>
 /** A ramp in its page's material: plank ramps on the park's paths and boardwalks (#115), else the plain card. */
 export function styledRamp(ctx: KitCtx, slope: Pick<Slope, 'from' | 'to'>, style: LedgeStyle, theme: StageTheme): string {
   if (style === 'lakeside') return stoneSteps(ctx, slope);
+  // 貓空 (#126): the station's stairs, a terrace's stone step; a garden terrace's wall is its box (no ramp)
+  if (style === 'zooPlaza' || style === 'zooPlatform') return stationStairs(ctx, slope);
+  if (style === 'teaTerrace') return terraceStep(ctx, slope);
+  if (style === 'cabinBench' || style === 'cabinRack' || style === 'cabinGlass') return '';
+  if (style === 'gardenPath' || style === 'gardenPathJar' || style === 'gardenTerrace') return '';
   if (style !== 'parkPath' && style !== 'boardwalk') return plainRamp(ctx, slope, theme);
   const [[ax, ay], [bx, by]] = [slope.from, slope.to];
   const t = 12;

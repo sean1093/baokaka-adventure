@@ -1,11 +1,11 @@
-import { POPUP as C, POPUP_AIRPORT as A, POPUP_CAMPUS as K, POPUP_MARKET as M } from '../../../art/palette';
-import { ref, softEllipse, sparkle, type KitCtx } from '../../art';
+import { POPUP as C, POPUP_AIRPORT as A, POPUP_CAMPUS as K, POPUP_MAOKONG as G, POPUP_MARKET as M } from '../../../art/palette';
+import { f1, ref, softEllipse, sparkle, type KitCtx } from '../../art';
 import { albumChapter } from '../../content/album';
 
 /**
  * The chapter treasures as the spread and the photo draw them (GDD § 2.9, § 4.2; #103), flat SVG
  * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1), 畫筆 (chapter 2,
- * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119), 蔥 (chapter 5, #122) and 印章 (chapter 6, #124) are drawn; the other chapters' treasures are a foil token with the treasure's first
+ * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119), 蔥 (chapter 5, #122), 印章 (chapter 6, #124) and 芹菜 (chapter 7, #126) are drawn; the other chapters' treasures are a foil token with the treasure's first
  * character until their chapters' art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
  * never marigold (reserved for touchables). The caller's defs must hold `foil`.
  */
@@ -128,6 +128,28 @@ function passportStamp(ctx: KitCtx): string {
     + sparkle(ctx, 18, -14, 4);
 }
 
+/**
+ * 芹菜 (chapter 7, #126; 勤勞, hard-working): a bunch of fresh celery laid at a slant — pale ribbed
+ * stalks greening toward their tops, a spray of bright leaves, the cut ends below, tied with a foil
+ * band; a little dew sparkles on it.
+ */
+function celery(ctx: KitCtx): string {
+  const stalk = (dy: number, len: number, bend: number) => `M-20 ${dy}Q${f1(len * 0.4)} ${f1(dy - 2)} ${f1(len)} ${f1(dy - 8 + bend)}`;
+  const leaf = (x: number, y: number, a: number, s: number) => `<path transform="translate(${x} ${y}) rotate(${a}) scale(${s})" d="M0 0q4 -6 2 -12q5 2 6 7q3 -4 7 -3q-2 5 -6 7q4 1 6 5q-6 1 -10 -2q0 5 -5 6q0 -5 0 -8z"/>`;
+  return `<g transform="rotate(-24)">`
+    + `<ellipse cx="0" cy="13" rx="23" ry="3" fill="${C.shadow}" opacity=".28"/>`
+    // The leaves first (behind the stalks' tops), then the stalks, the cut ends, the foil band
+    + `<g fill="${G.celery}">${leaf(14, -8, -20, 0.9)}${leaf(20, -2, 10, 1)}${leaf(16, 4, 30, 0.8)}${leaf(24, -10, -40, 0.7)}</g>`
+    + `<g fill="${G.celeryDeep}" opacity=".6">${leaf(18, -4, 0, 0.5)}${leaf(22, 2, 40, 0.45)}</g>`
+    + `<path d="${stalk(2, 18, 0)}" stroke="${G.celeryDeep}" stroke-width="6" fill="none" stroke-linecap="round"/>`
+    + `<path d="${stalk(7, 20, 3)}" stroke="${G.celery}" stroke-width="6" fill="none" stroke-linecap="round"/>`
+    + `<path d="${stalk(12, 16, 6)}" stroke="${G.celeryLight}" stroke-width="5.4" fill="none" stroke-linecap="round"/>`
+    + `<path d="M-14 1H8M-14 6H10M-14 11H8" stroke="${G.celeryLight}" stroke-width=".8" opacity=".8"/>`
+    + `<path d="M-22 1v12" stroke="${G.porcelainShade}" stroke-width="3" stroke-linecap="round"/>`
+    + `<rect x="-11" y="-1" width="6" height="16" rx="1.4" fill="${ref(ctx, 'foil')}"/><path d="M-9.6 .4v13" stroke="${C.foilShine}" stroke-width=".9"/>`
+    + `</g>` + sparkle(ctx, 16, -18, 4);
+}
+
 /** A treasure not drawn yet: a foil token with its first character. */
 function token(ctx: KitCtx, name: string): string {
   return `<ellipse cx="1" cy="17" rx="15" ry="3" fill="${C.shadow}" opacity=".28"/>`
@@ -143,6 +165,7 @@ export function treasureArt(ctx: KitCtx, chapter: number): string {
   if (chapter === 4) return microphone(ctx);
   if (chapter === 5) return scallion(ctx);
   if (chapter === 6) return passportStamp(ctx);
+  if (chapter === 7) return celery(ctx);
   return token(ctx, albumChapter(chapter).treasure);
 }
 
