@@ -1316,14 +1316,16 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 
 #### Chapter 10 「離天空最近的地方」 (台北101, 05:10) · treasure 金鎖片 · word 一起 · growth 第一步
 
+**Specified in full** (the § 4.3 format, node/edge sketches, the solver's numbers): [`docs/design/pages/c10.md`](pages/c10.md) (#133, D-97). The rows below are the outline, updated where the full spec changed it.
+
 | Page | Title | Key mechanic → aha | 淘氣 | Diff |
 |---|---|---|---|---|
-| 10-1 | 信義線 | An all-words medley, gentle and celebratory. He says 「ㄅㄚ！」 at the 101 view. | Use every word once | 3 |
-| 10-2 | 37秒電梯 | Callback to 1-5: Mocha operates a **lift**, and an altitude **wheel** prop counts up. 抱抱 the 清潔阿伯. | Ride the elevator with Mocha alone 3 times | 3 |
-| 10-3 | 八節 | 101's sections as three stacked **wheels**, coupled: turning one turns its neighbour. Mocha locks one section (lockedByCat) so the ledges align for a climb path. The hardest pure puzzle. | Align every section so the 101 "smiles" | 5 |
-| 10-4 | 阻尼球 | The tuned-mass-damper pendulum (**slider** `left` / `centre` / `right`, also **blowable**): ride the damper sphere across the atrium. Mocha's weight lets it reach the far side. | Swing it 5 times with him on it | 4 |
-| 10-5 | 咻咻的派對 | **Learn 一起.** 咻咻's sad party made of blown-away things. 咻咻 cries rain: puddles make every perch `wet`, so Mocha can't move. Nothing works; say 不要！ to everything, and **both babies cry**. He says 「一起」, and linked mode starts: tap floor nodes, Mocha walks **through the puddles for him** (C7 suspended), and Baokaka follows. | Lead them around 咻咻 in a full circle | 4 |
-| 10-6 | 離天空最近的地方 (spread) | **First steps.** The observation-deck railing ends one node short of 咻咻. Cruise to the rail's end and say 一起: Mocha waits on the other side, `walk` unlocks, and he takes three wobbly steps. Say 抱抱 to 咻咻 (a `lonely` creature), and it calms: the 金鎖片 drops. **Photo of the first steps.** | 「抱抱咻咻兩次」 (a gift: it fires on any second 抱抱, so nearly everyone earns it) | 3 |
+| 10-1 | 信義線 | A gentle medley on the ride: Mocha down the train, 嗶！ the door between the cars, 掰掰 a sleeping commuter's legs out of the aisle, 咻—— the balloons off the front window. He says 「ㄅㄚ！」 at the 101 view. | Say 哇！ to 101 in the window | 3 |
+| 10-2 | 37秒電梯 | Callback to 1-5: Mocha operates a **lift**, and an altitude dial counts up. The 店員小哥 at 89F. 抱抱 the 清潔阿伯 across the open floor he can't walk yet. | Ride the elevator with Mocha alone 3 times | 3 |
+| 10-3 | 八節 | 101's sections as three stacked sections, coupled: the middle one's crank turns its neighbours too. Mocha holds one end section, then the other (lockedByCat), so the ledges align for a climb path. The hardest pure puzzle. | Turn all three sections to the same side so the 101 "smiles" | 5 |
+| 10-4 | 阻尼球 | The tuned-mass-damper pendulum (a **blowable**: `left` / `centre` / `right`): ride the damper sphere across the atrium. Mocha's weight lets it reach the far side. | Swing it 5 times with him on it | 4 |
+| 10-5 | 咻咻的派對 | **Learn 一起.** 咻咻's sad party made of blown-away things. 咻咻 cries rain: puddles make every perch `wet`, so Mocha can't move. Nothing works; say 不要！ to Mocha, the only thing he wants, and **both babies cry**. He says 「一起」, and linked mode starts: tap floor nodes, Mocha walks **through the puddles for him** (C7 suspended), and Baokaka follows. | Lead them round 咻咻's table: all four corners | 4 |
+| 10-6 | 離天空最近的地方 (spread) | **First steps.** The observation-deck railing ends short of 咻咻. Cruise to the rail's end and say 一起: Mocha waits on the other side, `walk` unlocks, and he takes three wobbly steps. Say 抱抱 to 咻咻 (a `lonely` creature), and it calms: the 金鎖片 drops. **Photo of the first steps.** | 「抱抱咻咻兩次」 (a gift: it fires on any second 抱抱, so nearly everyone earns it) | 3 |
 
 #### Page E 「抓周」 (家, 10:00): the interactive ending
 
@@ -1562,6 +1564,24 @@ baby：「ㄅㄚ！」
 mocha：「對，101。咻咻在最上面。」
 ```
 
+(The card plays the first two lines; 10-1 plays the last two as the balloons float off the train's front window and 101 is in it, #133.)
+
+- **10-1** (哇！ with 101 in the window, the 淘氣; #133): `mocha：「……他在跟101打招呼。」`
+- **10-2** (the first ride up with him; #133): `nar：三十七秒，從五樓到八十九樓。` Then the **店員小哥** at 89F (§ 5.3, chapter 10's cameo): `clerk：「叮咚～歡迎光臨！」`, `mocha：「……101也是你們的？」`, `clerk：「我們在101也有分店。」`
+- **10-2 清潔阿伯** (抱抱: he carries him across the open floor to the window; #133): `npc(清潔阿伯)：「來，阿伯抱你去窗邊看。」`
+- **10-3** (all three sections turned the same side, the 淘氣; #133): `mocha：「……整棟歪一邊。101在笑。」`
+- **10-4** (five swings with him on the damper, the 淘氣; #133): `mocha：「……我暈了。他沒有。」`
+
+**10-5 咻咻's party** (the page opens on it; #133)
+
+```
+nar：頂樓上，有一個小小的派對。
+shushu：「這些……都是咻咻吹來的。」
+shushu：「可是，沒有人來。」
+```
+
+Hugged (he has the bead): `shushu：「……你們，來了？」`, `nar：小雲放下珠珠，飄到更高的地方。` Led round its table (the 淘氣): `mocha：「繞一圈。……蠟燭都亮了。」` The learn beat is § 5.4's 一起.
+
 **10-6 first steps** (as the rail ends; the simulation is paused for the beat)
 
 ```
@@ -1583,7 +1603,7 @@ pa：「本列車直達：寶咖咖的家。」
 
 (Mocha's translation is, for the only time, short and exact. This is the bible's payoff.)
 
-**For engineers (#128).** The lines are in `content/script.ts` as `c10p6.steps.1–6`, `c10p6.hug.1–4` and `c10p6.end.1–4`. A page holds the world for a line by marking it `pause` in `lines.onEvent` (`PagePlayer` pauses while it is up); `toy-steps` plays the beat as 10-6 might: the first two lines when Mocha waits across (`lead`), then 「一步。」「兩步。」「三步。」 on each wobbly step (`babyEnter`), each held, and the hug lines when he has the 金鎖片 back.
+**For engineers (#128, #133).** #133 adds chapter 10's other lines (`c10.intro.1–4`, `c10p1.mocha.1`, `c10p2.ride.1`, `c10p2.clerk.1–3`, `c10p2.uncle.1`, `c10p3.mocha.1`, `c10p4.mocha.1`, `c10p5.party.1–3`, `c10p5.hug.1–2`, `c10p5.mocha.1`); the card plays `c10.intro.1–2`, and the chapter end is `c10p6.end.1–4`. The lines are in `content/script.ts` as `c10p6.steps.1–6`, `c10p6.hug.1–4` and `c10p6.end.1–4`. A page holds the world for a line by marking it `pause` in `lines.onEvent` (`PagePlayer` pauses while it is up); `toy-steps` plays the beat as 10-6 might: the first two lines when Mocha waits across (`lead`), then 「一步。」「兩步。」「三步。」 on each wobbly step (`babyEnter`), each held, and the hug lines when he has the 金鎖片 back.
 
 ### 5.3 Recurring lines
 
