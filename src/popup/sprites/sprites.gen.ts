@@ -2,7 +2,7 @@
 import type { SpriteDef, SpriteManifest } from './manifest';
 
 /** Every sprite id: `<char>.<pose>` for gameplay poses, the artist's names for stills. */
-export const SPRITE_IDS = ["baokaka.crawl","baokaka.sit","baokaka.clap","baokaka.reach","baokaka.hold","baokaka.eat","baokaka.point","baokaka.wave","baokaka.hug","baokaka.cry","baokaka.refuse","baokaka.wonder","baokaka.sleep","baokaka.pull","baokaka.wobble","baokaka.walk","baokaka.bounce","baokaka.zhuazhou","baokaka.look","baokaka.watch","baokaka.giggle","baokaka.touchwatch","baokaka.carried","baokaka.climb","mocha.walk","mocha.sit","mocha.loaf","mocha.sleep","mocha.jump","mocha.perch","mocha.squeeze","mocha.push","mocha.lure","mocha.stretch","mocha.puff","mocha.rub","mocha.glare","mocha.purr","mocha.inbox","mocha.album","baokaka-stand","mocha-sit","baokaka-head-neutral","baokaka-head-happy","baokaka-head-laugh","baokaka-head-teary","baokaka-head-surprised","baokaka-head-cry","mocha-head-content","mocha-head-smug","mocha-head-happy","mocha-head-surprised"] as const;
+export const SPRITE_IDS = ["baokaka.crawl","baokaka.sit","baokaka.clap","baokaka.reach","baokaka.hold","baokaka.eat","baokaka.point","baokaka.wave","baokaka.hug","baokaka.cry","baokaka.refuse","baokaka.wonder","baokaka.sleep","baokaka.pull","baokaka.wobble","baokaka.walk","baokaka.bounce","baokaka.zhuazhou","baokaka.look","baokaka.watch","baokaka.giggle","baokaka.touchwatch","baokaka.carried","baokaka.climb","baokaka.cruise","mocha.walk","mocha.sit","mocha.loaf","mocha.sleep","mocha.jump","mocha.perch","mocha.squeeze","mocha.push","mocha.lure","mocha.stretch","mocha.puff","mocha.rub","mocha.glare","mocha.purr","mocha.inbox","mocha.album","baokaka-stand","mocha-sit","baokaka-head-neutral","baokaka-head-happy","baokaka-head-laugh","baokaka-head-teary","baokaka-head-surprised","baokaka-head-cry","mocha-head-content","mocha-head-smug","mocha-head-happy","mocha-head-surprised"] as const;
 export type SpriteId = (typeof SPRITE_IDS)[number];
 
 export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Record<SpriteId, SpriteDef>> } = {
@@ -1418,6 +1418,33 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
           "source": "9af0c6cff0f8d72f"
         }
       }
+    },
+    "baokaka.cruise": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "扶著橫著走",
+      "size": [68, 128],
+      "anchor": [32.52, 110.67],
+      "head": [26.88, 6],
+      "foot": [22.67, 53],
+      "mapScale": 1,
+      "group": 9,
+      "noMirror": false,
+      "files": ["poses/baokaka-cruise-0", "poses/baokaka-cruise-1"],
+      "bytes": [
+        [8432, 14744],
+        [7998, 13306]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "b1eb7597b5dd8828"
     },
     "mocha.walk": {
       "kind": "pose",

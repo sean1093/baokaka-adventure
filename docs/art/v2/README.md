@@ -212,7 +212,7 @@ Hence the bitmap pass.
 | `poses-baokaka.png`, `poses-mocha.png` | Labelled pose sheets. Every frame shown is the baked bitmap. |
 | `poses-cycles.png` | Contact sheet of the three cycles. Each row shows frames 1–8, then frame 1 again (green box) so the loop seam is visible, an onion skin of the last frame over the first, and the numeric loop check. |
 | `preview-baokaka-crawl.gif`, `preview-baokaka-walk.gif`, `preview-mocha-walk.gif` | Animated previews of the cycles. |
-| `baked/poses/<char>-<pose>-<i>@2x.webp` / `@3x.webp` | 40 poses and 77 frames (Baokaka 24 poses / 50 frames, Mocha 16 / 27). About 550 KB total @2x and 710 KB @3x. |
+| `baked/poses/<char>-<pose>-<i>@2x.webp` / `@3x.webp` | 41 poses and 79 frames (Baokaka 25 poses / 52 frames, Mocha 16 / 27). About 550 KB total @2x and 710 KB @3x. |
 | `baked/poses-src.json` | A hash of each pose's drawing. `bake_poses.py` re-renders only the poses whose hash changed (see Rebuild). |
 | `baked/poses.json` | Manifest, per pose: Chinese label, `frames`, `keyframes`, `loop`, `fps`, `size_pt`, `anchor_pt` (the foot point, measured from the top-left), file names, byte count, plus the loop-check results. |
 
@@ -247,7 +247,7 @@ Hence the bitmap pass.
 | eat | `eat` |
 | cuddle | `hug` |
 | say | `point` (mouth open) |
-| stand-cruise | `pull` / `wobble` |
+| stand-cruise | `pull` / `wobble` (2) / `cruise` (2: the sidestep along a rail, #127) |
 | walk | `walk` (8) |
 | Mocha sit / loaf / hop (3) / land / push (2) | `sit` / `loaf` / `jump` (3) / `jump` frame 3 / `push` (2) |
 | Mocha eye-contact | `push` frame 1 (looks at the camera) |
@@ -264,7 +264,7 @@ Hence the bitmap pass.
 | Mocha purr | `purr` (the loaf with the `purr` head: eyes closed) |
 | Mocha in-box | `inbox` (head, shoulders and front paws over the rim; cut flat at the anchor, which is the middle of the rim) |
 
-The last ten rows were added in #141 (D-58). Every GDD frame is drawn except stand-cruise's fourth (`pull` + `wobble` are 3 of 4).
+The last ten rows were added in #141 (D-58). #127 (D-91) drew stand-cruise's sidestep, `cruise`, so every GDD frame is drawn.
 
 **Climb.** The step is the page's art, not the frame's. A climb edge moves the anchor up the step while the frames play, so each frame stands on its own point:
 - frame 1 kneels on the lower floor (the anchor) with his hands on a step top about 22 pt (240 units) up;
@@ -272,6 +272,8 @@ The last ten rows were added in #141 (D-58). Every GDD frame is drawn except sta
 - frame 3 is on all fours on top (the anchor), the far foot trailing back over the edge.
 
 He does not stand on the step: climbing a step (growth 1) comes before standing (growth 2).
+
+**Cruise (#127).** Standing, both hands on a rail at chest height (`RAIL` = 540 units, ≈ 50 pt) ahead of him; the rail is the page's art, not the frame's. Frame 1 reaches the near foot out along the rail with the weight still back; frame 2 closes the far foot up under him. A cruise edge plays them over the step (`CRUISE_AT`). A bead grabbed by reachHigh from the node next to it shows `pull` (up on his feet, hands up on the ledge).
 
 **Engineers' note (#95, D-57).** The game maps its modes onto these poses in `src/popup/view/actors/animMap.ts`. `#/pagelab?section=sprites` lists every GDD § 3.9 frame as ✓ / ✗ / later, so you can see what is left. Cycles are 8 frames; the GDD table now says so. Since #141 (D-58) no M1 row is ✗ and no fallback is left.
 

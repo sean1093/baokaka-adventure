@@ -65,6 +65,8 @@ export const POSE_CONFIG: Readonly<Record<string, PoseConfig>> = {
   'baokaka.bounce': { group: 'ui', mode: 'loop' },
   'baokaka.pull': { group: 9, easel: true },
   'baokaka.wobble': { group: 9, mode: 'loop', easel: true },
+  // stand-cruise's sidestep along a rail (#127): a cruise edge's step, from 9-3
+  'baokaka.cruise': { group: 9, easel: true },
   'baokaka.walk': { group: 10, easel: true },
   'baokaka.zhuazhou': { group: 'ui' },
   // #141's frames. look, watch, touch-watch and the 2-frame reach show from the prologue on, so

@@ -1,3 +1,4 @@
+import { attractorNode } from '../../core/baby';
 import type { SimEvent } from '../../core/events';
 import type { BabyMode, EdgeKind, Growth, Id, PageDef, SimState, Word } from '../../core/types';
 import type { SpriteId } from '../../sprites';
@@ -19,8 +20,10 @@ import type { SpriteId } from '../../sprites';
  *   the stiff lean per touch), purr → `purr`, in-box → `inbox` (head and paws, cut flat at the rim,
  *   drawn at the box perch in front of the box art).
  * - **Fallbacks** stand in for frames not drawn yet; each one is logged once in dev
- *   (`noteFrameFallback`). Since #141 none is left for the GDD's rows (stand-cruise has 3 of its
- *   4 frames: `pull` + `wobble`, a later row).
+ *   (`noteFrameFallback`). Since #141 none is left for the GDD's rows; #127 drew stand-cruise's
+ *   sidestep (`cruise`, 2), so with `pull` and `wobble` (2) every GDD frame is drawn.
+ * - **扶著站 (#127):** a `cruise` edge steps with `cruise` (reach out along the rail, close up);
+ *   a bead grabbed from the node next to it (reachHigh) is grabbed standing, `pull`.
  * - **Growth guard** (bible § 5): art never shows a pose he can't do yet. Standing poses need the
  *   growth stage that allows them (cruise 2, walk 3); otherwise he crawls.
  */
@@ -76,6 +79,7 @@ export const GROWTH_NEEDS: Readonly<Partial<Record<SpriteId, Growth>>> = {
   'baokaka.climb': 1,
   'baokaka.pull': 2,
   'baokaka.wobble': 2,
+  'baokaka.cruise': 2,
   'baokaka.walk': 3,
 };
 
@@ -129,13 +133,15 @@ export interface BabyAnimInput {
   readonly watching?: boolean;
   /** The word he is saying (`saying` mode), when known */
   readonly word?: Word | null;
+  /** He grabs a height-1 attractor from the node next to it (GDD § 2.5 reachHigh, `reachedHigh`) */
+  readonly high?: boolean;
 }
 
 /** Modes a ride doesn't interrupt: they have their own, stronger pose. */
 const RIDE_KEEPS: ReadonlySet<BabyMode> = new Set(['crying', 'saying', 'eating', 'grabbing', 'done']);
 
 /** 寶咖咖's animation this tick. */
-export function babyAnim({ mode, edge, riding = false, growth, watching = false, word = null }: BabyAnimInput): ActorAnim {
+export function babyAnim({ mode, edge, riding = false, growth, watching = false, word = null, high = false }: BabyAnimInput): ActorAnim {
   let anim: ActorAnim;
   if (watching) {
     anim = hold('baokaka.touchwatch', 'touchWatch');
@@ -146,6 +152,9 @@ export function babyAnim({ mode, edge, riding = false, growth, watching = false,
   } else if (mode === 'saying' && word !== null && WORD_POSE[word] !== undefined) {
     const sprite = WORD_POSE[word]!;
     anim = sprite === 'baokaka.wave' || sprite === 'baokaka.refuse' ? clock(sprite, 'say') : hold(sprite, 'say');
+  } else if (high && mode === 'grabbing') {
+    // reachHigh: standing up, hands up on the high ledge (the pull-to-stand frame)
+    anim = hold('baokaka.pull', 'grab');
   } else if ((mode === 'moving' || mode === 'linked') && edge === null) {
     // Between steps (a held still, a tick he didn't step): the cycle's key frame
     anim = hold('baokaka.crawl', 'crawl');
@@ -157,12 +166,26 @@ export function babyAnim({ mode, edge, riding = false, growth, watching = false,
 
 /** The climb's pull-up → knee-over → up split of a climb step (Art v2 § 5, `climb`). */
 export const CLIMB_AT = [0, 1 / 3, 2 / 3] as const;
+/** The cruise's reach-out → close-up split of a cruise step (Art v2 § 5, `cruise`, #127). */
+export const CRUISE_AT = [0, 1 / 2] as const;
+
+/**
+ * Whether his target is a height-1 attractor on another node than his: he has it by reachHigh
+ * (GDD § 2.5), standing at the node next to it, so the grab is drawn standing (`high`).
+ */
+export function reachedHigh(def: Pick<PageDef, 'attractors' | 'parts' | 'creatures'>, state: SimState): boolean {
+  const id = state.baby.target;
+  const a = id === null ? undefined : def.attractors.find((x) => x.id === id);
+  if (a === undefined || a.height !== 1) return false;
+  const at = attractorNode(def as PageDef, state, a);
+  return at !== null && at !== state.baby.node;
+}
 
 /** The step along one edge, by the edge's kind. */
 function moveAnim(edge: EdgeKind): ActorAnim {
   switch (edge) {
     case 'cruise':
-      return clock('baokaka.wobble', 'standCruise');
+      return { sprite: 'baokaka.cruise', play: { kind: 'step', at: CRUISE_AT }, gdd: 'standCruise' };
     case 'walk':
       return { sprite: 'baokaka.walk', play: { kind: 'stride' }, gdd: 'walk' };
     case 'climb':
@@ -347,7 +370,7 @@ export const FRAME_REPORT: readonly FrameNeed[] = [
   { char: 'baokaka', id: 'touchWatch', label: 'touch-watch head turn', frames: 1, when: 'M1', delivered: [d('baokaka.touchwatch', 0)] },
   { char: 'baokaka', id: 'carried', label: 'carried', frames: 1, when: 'later', delivered: [d('baokaka.carried', 0)] },
   { char: 'baokaka', id: 'climb', label: 'climb', frames: 3, when: 'later', delivered: [d('baokaka.climb', 0, 1, 2)] },
-  { char: 'baokaka', id: 'standCruise', label: 'stand-cruise', frames: 4, when: 'later', delivered: [d('baokaka.pull', 0), d('baokaka.wobble', 0, 1)] },
+  { char: 'baokaka', id: 'standCruise', label: 'stand-cruise', frames: 4, when: 'later', delivered: [d('baokaka.pull', 0), d('baokaka.wobble', 0, 1), d('baokaka.cruise', 0, 1)] },
   { char: 'baokaka', id: 'walk', label: 'walk (wobbly)', frames: 8, when: 'later', delivered: [d('baokaka.walk', 0, 1, 2, 3, 4, 5, 6, 7)] },
   { char: 'mocha', id: 'sit', label: 'sit', frames: 1, when: 'M1', delivered: [d('mocha.sit', 0)] },
   { char: 'mocha', id: 'loaf', label: 'loaf', frames: 1, when: 'M1', delivered: [d('mocha.loaf', 0)] },

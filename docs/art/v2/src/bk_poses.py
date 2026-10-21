@@ -589,6 +589,28 @@ def P_climb(k):
     return p
 
 
+RAIL = 540    # the rail a cruise edge runs along (≈ 50 pt up): the page draws it, not the frame
+
+
+def P_cruise(k):
+    """stand-cruise's sidestep (#127): standing, both hands on a rail at chest
+    height ahead of him, stepping along it.  1 the near foot reaches out along
+    the rail, weight still back; 2 the far foot closes up, weight over it.
+    With `pull` (pulling up to stand) and `wobble` (2) it makes stand-cruise's 4+."""
+    if k == 0:
+        hip = (8, -ANK - 286)
+        legs = {"n": dict(ik=(112, -ANK - 4), bend=1, fa=100), "f": dict(ik=(-58, -ANK), bend=1, fa=88)}
+        torso_a, head = 10, dict(expr="say", rot=-4, look=(8, 2), dx=6)
+    else:
+        hip = (18, -ANK - 304)
+        legs = {"n": dict(ik=(56, -ANK), bend=1, fa=90), "f": dict(ik=(6, -ANK - 18), bend=1, fa=84)}
+        torso_a, head = 6, dict(expr="happy", rot=-8, look=(6, 0), dx=4)
+    return dict(hip=hip, torso=torso_a, legs=legs, shadow_w=190, shadow_x=10,
+                arms={"n": dict(ik=(196, -RAIL), bend=1, hand="grab", ha=-70),
+                      "f": dict(ik=(232, -RAIL - 8), bend=1, hand="grab", ha=-70)},
+                head=head, order=["arm_f", "leg_f", "torso", "leg_n", "head", "arm_n"])
+
+
 POSES = {
     # name: (builder(k) or builder, frames, label, keyframes)
     "crawl": (crawl, 8, "爬行循環", [0, 2, 4, 6]),
@@ -616,6 +638,8 @@ POSES = {
     "touchwatch": (lambda k: P_touchwatch(), 1, "抬頭看手指", None),
     "carried": (lambda k: P_carried(), 1, "被抱起來", None),
     "climb": (P_climb, 3, "爬上台階", None),
+    # #127: stand-cruise's sidestep along a rail (with pull + wobble, stand-cruise is complete)
+    "cruise": (P_cruise, 2, "扶著橫著走", None),
 }
 
 
