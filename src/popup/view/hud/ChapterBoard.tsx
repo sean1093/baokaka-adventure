@@ -51,6 +51,14 @@ export function landmarkSize(landmark: string): number {
   return Math.min(36, Math.floor((IN_W - 46) / Math.max(1, textEm(landmark) + 0.12 * [...landmark].length)));
 }
 
+/** Room for the title left of the time chip: six characters at 22 px (6's 「飛機睡著的時候」 has seven, 10's 「離天空最近的地方」 eight). */
+const TITLE_W = 148;
+
+/** The title's font size: 22 px, smaller only when a long title would run under the time chip (#131). */
+export function titleSize(title: string): number {
+  return Math.min(22, Math.floor(TITLE_W / Math.max(1, [...title].length)) - 1);
+}
+
 /** The board's tiles: one character each (Latin digits too, as on a real board), their width shared out. */
 export function flapTiles(next: string): { readonly chars: readonly string[]; readonly w: number } {
   const chars = [...next];
@@ -144,7 +152,7 @@ export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1, n
         <span className="cb-spine" style={{ left: u(CARD.x), top: u(CARD.y), width: u(SPINE_W - 5), height: u(CARD.h), fontFamily: SERIF, color: C.sealGlyph }}>
           <span className="cb-run">{name}</span>
         </span>
-        <span className="cb-text" style={{ left: u(IN_X), top: u(CARD.y + 12), fontFamily: SERIF, fontSize: big ? Math.max(BIG_MIN_PX, u(22)) : 22, fontWeight: 900, color: C.sealInk, letterSpacing: 1 }} data-card-title="">
+        <span className="cb-text" style={{ left: u(IN_X), top: u(CARD.y + 12), fontFamily: SERIF, fontSize: big ? Math.max(BIG_MIN_PX, u(titleSize(info.title))) : titleSize(info.title), fontWeight: 900, color: C.sealInk, letterSpacing: 1 }} data-card-title="">
           {info.title}
         </span>
         <span className="cb-chip" style={{ right: u(BOARD_W - CARD.x - CARD.w + 24), top: u(CARD.y + 12), background: C.cover, color: C.goldLight }} data-card-time="">
