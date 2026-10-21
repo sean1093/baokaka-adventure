@@ -6,7 +6,7 @@ import { completePage, earnSticker, freshSave, RPG_FAREWELL } from '../../game/p
 import { registry } from '../../pages';
 import { BottomBar } from '../hud/BottomBar';
 import { TopHud, runWidth } from '../hud/TopHud';
-import { ChapterBoard, titleSize } from '../hud/ChapterBoard';
+import { ChapterBoard, boardScale, titleLayout, titleSize } from '../hud/ChapterBoard';
 import { Contents, ROUTE, STATIONS, chapterComplete, collected, pageIdOf, routeLength } from './Contents';
 import { Cover } from './Cover';
 import { Settings } from './Settings';
@@ -103,6 +103,22 @@ describe('the chapter card\'s title (#131)', () => {
     for (const c of CHAPTERS) if ([...c.title].length <= 6) expect(titleSize(c.title), c.title).toBe(22);
     expect(titleSize('飛機睡著的時候')).toBe(20);
     expect(titleSize('離天空最近的地方')).toBe(17);
+  });
+
+  test('#132: no title under 20 px (24 with 大字); one too long to sit beside the time chip lifts the chip onto the card\'s top edge', () => {
+    for (const [s, min] of [[1, 20], [boardScale(1.25, 390), 24], [boardScale(1.25, 375), 24]] as const) {
+      for (const c of CHAPTERS) {
+        const { px, chipUp } = titleLayout(c.title, s);
+        const n = [...c.title].length;
+        expect(px, c.title).toBeGreaterThanOrEqual(min);
+        // Beside the chip the title fits its room; lifted, the whole row
+        expect(n * (px + 1), c.title).toBeLessThanOrEqual(s * (chipUp ? 230 : 148));
+        expect(chipUp, `${c.title} at ${s}`).toBe(s > 1 ? n > 6 : n > 7);
+      }
+    }
+    const big = html(createElement(ChapterBoard, { chapter: 10, scale: boardScale(1.25, 390) }));
+    expect(big).toContain('data-chip-up');
+    expect(html(createElement(ChapterBoard, { chapter: 6 }))).not.toContain('data-chip-up');
   });
 });
 

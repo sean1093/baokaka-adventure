@@ -59,6 +59,22 @@ export function titleSize(title: string): number {
   return Math.min(22, Math.floor(TITLE_W / Math.max(1, [...title].length)) - 1);
 }
 
+/**
+ * The title row at the board's scale `s` (#132): the title's size in CSS px and whether the time chip
+ * moves up off the row. The title shrinks to its room beside the chip (`titleSize`), but never under
+ * the smallest a word may be (R5: 20 px, 24 with 大字); a title that can't fit beside the chip at that
+ * size (10's eight characters; 6's seven with 大字) lifts the chip onto the card's top edge (clipped on
+ * like a luggage tag) and takes the whole row.
+ */
+export function titleLayout(title: string, s: number): { readonly px: number; readonly chipUp: boolean } {
+  const min = s > 1 ? BIG_MIN_PX : MIN_PX;
+  const n = Math.max(1, [...title].length);
+  const px = Math.max(min, s * titleSize(title));
+  // Each character takes its em plus the 1 px letter spacing
+  if (n * (px + 1) <= s * TITLE_W) return { px, chipUp: false };
+  return { px: Math.max(min, Math.min(s * 22, Math.floor((s * IN_W) / n) - 1)), chipUp: true };
+}
+
 /** The board's tiles: one character each (Latin digits too, as on a real board), their width shared out. */
 export function flapTiles(next: string): { readonly chars: readonly string[]; readonly w: number } {
   const chars = [...next];
@@ -109,7 +125,8 @@ export function boardScale(textScale: number, vw: number): number {
   return Math.max(1, Math.min(textScale, (vw - 16) / BOARD_W));
 }
 
-/** The smallest word on the board with 大字 (R5). */
+/** The smallest word on the board (R5), and with 大字. */
+const MIN_PX = 20;
 const BIG_MIN_PX = 24;
 
 export interface ChapterBoardProps {
@@ -137,6 +154,9 @@ export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1, n
   const nextText = next ?? info.next;
   const tiles = flapTiles(nextText);
   const lm = landmarkSize(info.landmark);
+  const title = titleLayout(info.title, s);
+  // The chip's top: on the title row, or lifted to straddle the card's top edge (大字, a long title)
+  const chipTop = title.chipUp ? CARD.y - 22 : CARD.y + 12;
   return (
     <div
       className="cb-card"
@@ -152,10 +172,10 @@ export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1, n
         <span className="cb-spine" style={{ left: u(CARD.x), top: u(CARD.y), width: u(SPINE_W - 5), height: u(CARD.h), fontFamily: SERIF, color: C.sealGlyph }}>
           <span className="cb-run">{name}</span>
         </span>
-        <span className="cb-text" style={{ left: u(IN_X), top: u(CARD.y + 12), fontFamily: SERIF, fontSize: big ? Math.max(BIG_MIN_PX, u(titleSize(info.title))) : titleSize(info.title), fontWeight: 900, color: C.sealInk, letterSpacing: 1 }} data-card-title="">
+        <span className="cb-text" style={{ left: u(IN_X), top: u(CARD.y + 12), fontFamily: SERIF, fontSize: title.px, fontWeight: 900, color: C.sealInk, letterSpacing: 1 }} data-card-title="">
           {info.title}
         </span>
-        <span className="cb-chip" style={{ right: u(BOARD_W - CARD.x - CARD.w + 24), top: u(CARD.y + 12), background: C.cover, color: C.goldLight }} data-card-time="">
+        <span className="cb-chip" style={{ right: u(BOARD_W - CARD.x - CARD.w + 24), top: u(chipTop), background: C.cover, color: C.goldLight, boxShadow: title.chipUp ? `0 1.5px 0 ${C.coverDark}, 0 3px 6px ${C.shadow}66` : undefined }} data-card-time="" data-chip-up={title.chipUp ? '' : undefined}>
           <span className="cb-run">{info.time}</span>
         </span>
         <span className="cb-text" style={{ left: u(IN_X - 2), top: u(CARD.y + 52), fontFamily: SERIF, fontSize: u(lm), lineHeight: `${u(50)}px`, fontWeight: 900, color: C.ink, letterSpacing: 2 }} data-card-landmark="">

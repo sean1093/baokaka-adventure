@@ -609,8 +609,8 @@ export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string 
  * (origin at the bridge); `c5/phone` 5-1's glowing phone and `c5/griddle` 5-6's shining griddle (#121,
  * drawn in the market kit by #122); `c7/panda-sign` 7-1's lit panda sign over the platform (#125; drawn in the
  * chapter's kit by #126); `c8/stained-glass` 8-1's stained-glass window in the hot-spring car (#129;
- * drawn in the chapter's kit by #130); `c9/lucky-cat` 9-2's 招財貓 in the 阿給 shop's window (#131, a
- * placeholder until #132); any other key a cold silver glint. Drawn in the campus kit by #117.
+ * drawn in the chapter's kit by #130); `c9/lucky-cat` 9-2's 招財貓 in the 阿給 shop's window (#131,
+ * kept by the chapter's art, #132); any other key a cold silver glint. Drawn in the campus kit by #117.
  */
 export function decoyArt(ctx: KitCtx, key?: string): string {
   const glint = (x: number, y: number, r: number) => sparkle(ctx, x, y, r);
@@ -718,7 +718,7 @@ export function decoyArt(ctx: KitCtx, key?: string): string {
         + glint(15, -14, 3.8) + glint(-15, 10, 3);
     }
     case 'c9/lucky-cat': {
-      // 9-2's 招財貓 in the 阿給 shop's window (#131; a placeholder until #132): a white beckoning cat,
+      // 9-2's 招財貓 in the 阿給 shop's window (#131; kept by the chapter's art, #132): a white beckoning cat,
       // its paw up, a gold coin on its chest, glinting in the shop's lamp. Within ±18 units
       const body = 'M-10 14Q-12 2 -8 -4Q-11 -12 -7 -16L-3 -11Q0 -12 3 -11L7 -16Q11 -12 8 -4Q12 2 10 14Z';
       return softEllipse(ctx, 0, 2, 24, 20, 'lamp', 0.2, 'blur8')

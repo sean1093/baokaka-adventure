@@ -409,6 +409,28 @@ describe('sources', () => {
     expect(Object.keys(M.parts['c8/granny-hat']?.states ?? {})).toEqual(expect.arrayContaining(['on', 'off']));
   });
 
+  test('chapter 9 (#132): every art key resolves to its own art — no live placeholder, no placeholder stage', () => {
+    const c9 = PAGES.filter((p) => p.chapter === 9);
+    expect(c9.map((p) => p.id)).toEqual(['c9p1', 'c9p2', 'c9p3', 'c9p4', 'c9p5', 'c9p6']);
+    for (const b of backdropSources(c9)) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+    for (const p of c9) {
+      expect(pageArt(p, M).placeholders, p.id).toEqual([]);
+      for (const part of p.parts) expect(isPlaceholder(part.art), `${p.id} ${part.art}`).toBe(false);
+      for (const c of p.creatures) expect(hasCreatureArt(c.art), `${p.id} ${c.art}`).toBe(true);
+    }
+    // One drawing for the sun dial, the tune's dial and the derrick (the view turns or rides them)
+    for (const state of ['noon', 'sunset']) expect(partImage('c9/sun-dial', state)?.url, state).toBe(partImage('c9/sun-dial', 'dawn')?.url);
+    for (const state of ['1', '5']) expect(partImage('c9/tune-dial', state)?.url, state).toBe(partImage('c9/tune-dial', '0')?.url);
+    for (const state of ['1', '2', '3']) expect(partImage('c9/derrick', state)?.url, state).toBe(partImage('c9/derrick', '0')?.url);
+    // The 阿婆 is baked per look (D-85); the tide warms with the sun (a bitmap per level)
+    expect(Object.keys(M.parts['c9/iron-egg-granny']?.states ?? {})).toEqual(expect.arrayContaining(['idle', 'carrying', 'back', 'done']));
+    expect(new Set(['dawn', 'noon', 'sunset'].map((s) => partImage('c9/tide', s)?.url)).size).toBe(3);
+    expect(lintMarkup(CUTOUT_SOURCES['c9/tune-plate'].draw(kitCtx('t', { filters: true })), { page: 'c9', touchable: () => false, expected: [], where: 'tune-plate' })).toEqual([]);
+  });
+
   test('4-3\'s shadow (the 淘氣\'s art) shows only while Mocha hides behind the lit second sign (#119)', () => {
     const src = CUTOUT_SOURCES['c4/mocha-shadow'];
     expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c4p3', touchable: () => false, expected: [], where: 'shadow' })).toEqual([]);

@@ -9,6 +9,7 @@ import { crowdLegs, pachinkoUncle, passengers, strayDog } from './market';
 import { nightHerons } from './airport';
 import { pangolin, sleepingBear, teaFarmer } from './maokong';
 import { eggBasket } from './beitou';
+import { gulls, sparrows } from './tamsui';
 import { busker, dancers, karaokeKing } from './ximen';
 
 /**
@@ -72,6 +73,9 @@ const CREATURES: Readonly<Record<string, CreatureArt>> = {
   'c7/sleeping-bear': sleepingBear,
   // 北投 (#130, `beitou.ts`): 8-3's 溫泉阿嬤's basket of hot-spring eggs (she sits with her hat in its part)
   'c8/hot-spring-granny': eggBasket,
+  // 淡水 (#132, `tamsui.ts`): 9-1's sparrows on the sill, the gulls on 9-5's cables and 9-6's boat (origami)
+  'c9/sparrows': sparrows,
+  'c9/gulls': gulls,
 };
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';

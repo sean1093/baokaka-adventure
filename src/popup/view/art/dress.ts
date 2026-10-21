@@ -25,7 +25,8 @@ export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'car
   | 'marketLane' | 'stallFloor' | 'stallShelf' | 'stallCounter'
   | 'carBodyWenhu' | 'terminalFloor' | 'deckBoards' | 'bridgeFloor' | 'catwalk'
   | 'zooPlatform' | 'zooPlaza' | 'gondolaDeck' | 'teaTerrace' | 'teaDeck' | 'chahai' | 'cabinBench' | 'cabinRack' | 'cabinGlass' | 'gardenPath' | 'gardenPathJar' | 'gardenTerrace'
-  | 'carSeat' | 'carBodyBeitou' | 'valleyBoardwalk' | 'valleyRock' | 'bathBoardwalk' | 'libraryLoft' | 'libraryStacks' | 'bathDeck' | 'bathStep' | 'hallFloor' | 'bantaiCounter';
+  | 'carSeat' | 'carBodyBeitou' | 'valleyBoardwalk' | 'valleyRock' | 'bathBoardwalk' | 'libraryLoft' | 'libraryStacks' | 'bathDeck' | 'bathStep' | 'hallFloor' | 'bantaiCounter'
+  | 'mrtSeat' | 'windowSill' | 'oldStreetLane' | 'arcadeStep' | 'eggCounter' | 'pierDeck' | 'ferryDeck' | 'wharfBoardwalk' | 'wharfPier' | 'bridgeWalkway' | 'towerBase' | 'quay' | 'boatDeck';
 
 /** The near-corner foreground card. */
 export type ForegroundCard = 'plant' | 'blocks' | 'luggage' | 'shrub' | 'azalea';
@@ -140,6 +141,18 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c8/big-bath': { ledge: [{ below: 450, style: 'bathDeck' }, { below: 999, style: 'bathStep' }], ownPosts: ['stools', 'stone', 'counter'], foreground: null, crossing: 'none' },
   // The 番台's counter over the hall's floor (the abacus's rods are the way up; the backdrop draws its frame: no track pit)
   'c8/bathhouse-hall': { ledge: [{ below: 420, style: 'bantaiCounter' }, { below: 999, style: 'hallFloor' }], ownPosts: ['buckets', 'bell'], foreground: null, crossing: 'none', trackPit: false },
+  // 淡水 (#132): the 淡水信義線 car — the end window's sill, the bench seats, the car's red-banded body (the racks are the backdrop's)
+  'c9/tamsui-line': { ledge: [{ below: 450, style: 'windowSill' }, { below: 470, style: 'mrtSeat' }, { below: 999, style: 'carBodyXinyi' }], ownPosts: ['rack1', 'rack2'], foreground: null },
+  // The old street's lane, the 鐵蛋 shop's arcade step and its counter (the 阿婆 is the way up)
+  'c9/old-street': { ledge: [{ below: 430, style: 'eggCounter' }, { below: 470, style: 'arcadeStep' }, { below: 999, style: 'oldStreetLane' }], ownPosts: ['lamp', 'sign'], foreground: null, crossing: 'none' },
+  // The pier's planks, then the ferry's deck past the gate
+  'c9/ferry': { ledge: 'pierDeck', ledgeSplit: { x: 170, style: 'ferryDeck' }, ownPosts: ['booth', 'rail', 'horn'], foreground: null },
+  // The boardwalk (under repair between W2 and W3), the far pier (the dinghy is the way across)
+  'c9/fishermans-wharf': { ledge: [{ below: 425, style: 'wharfBoardwalk' }, { below: 999, style: 'wharfPier' }], ownPosts: ['lamp', 'stone', 'kiosk'], foreground: null, crossing: 'none' },
+  // The bridge's walkway, the tower's base past the gap (the platform is the way across)
+  'c9/tamkang-bridge': { ledge: 'bridgeWalkway', ledgeSplit: { x: 220, style: 'towerBase' }, ownPosts: ['lamp', 'beam'], foreground: null, crossing: 'none' },
+  // The quay on the left page, the fishing boat's deck on the right (the derrick's basket is the way across)
+  'c9/fishing-harbour': { ledge: [{ below: 435, style: 'boatDeck' }, { below: 999, style: 'quay' }], ownPosts: ['lamp', 'wheelhouse'], foreground: null, crossing: 'none' },
 };
 
 const NONE: StageDress = {};

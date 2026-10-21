@@ -1,11 +1,11 @@
-import { POPUP as C, POPUP_AIRPORT as A, POPUP_BEITOU as BT, POPUP_CAMPUS as K, POPUP_MAOKONG as G, POPUP_MARKET as M } from '../../../art/palette';
+import { POPUP as C, POPUP_AIRPORT as A, POPUP_BEITOU as BT, POPUP_CAMPUS as K, POPUP_MAOKONG as G, POPUP_MARKET as M, POPUP_TAMSUI as W } from '../../../art/palette';
 import { f1, ref, softEllipse, sparkle, type KitCtx } from '../../art';
 import { albumChapter } from '../../content/album';
 
 /**
  * The chapter treasures as the spread and the photo draw them (GDD § 2.9, § 4.2; #103), flat SVG
  * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1), 畫筆 (chapter 2,
- * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119), 蔥 (chapter 5, #122), 印章 (chapter 6, #124), 芹菜 (chapter 7, #126) and 算盤 (chapter 8, #130) are drawn; the other chapters' treasures are a foil token with the treasure's first
+ * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119), 蔥 (chapter 5, #122), 印章 (chapter 6, #124), 芹菜 (chapter 7, #126), 算盤 (chapter 8, #130) and 聽診器 (chapter 9, #132) are drawn; the other chapters' treasures are a foil token with the treasure's first
  * character until their chapters' art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
  * never marigold (reserved for touchables). The caller's defs must hold `foil`.
  */
@@ -181,6 +181,24 @@ function abacus(ctx: KitCtx): string {
     + `</g>` + sparkle(ctx, 20, -16, 4);
 }
 
+/**
+ * 聽診器 (chapter 9, #132; 當醫生, to be a doctor): a stethoscope hung in a loop — the two silver ear
+ * tubes and their tips at the top, the dark rubber tube curving down and round, the foil chest piece
+ * with its pale diaphragm at the bottom; a glint. Few elements (drawn twice on 9-6: on the page and in
+ * his bubble, inside the animated budget): the ear tubes, the tube, the chest piece, its face.
+ */
+function stethoscope(ctx: KitCtx): string {
+  return `<ellipse cx="2" cy="19" rx="16" ry="2.6" fill="${C.shadow}" opacity=".28"/>`
+    // The ear tubes (a silver Y) with their round tips
+    + `<path d="M-10 -18Q-12 -6 -2 -2M10 -18Q12 -6 2 -2M-12.4 -18.4h4.8M7.6 -18.4h4.8" stroke="${W.steel}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`
+    // The rubber tube from the Y down and round to the chest piece
+    + `<path d="M0 -2Q0 8 -8 12Q-16 16 -10 20Q-2 24 8 16Q14 10 12 4" stroke="${W.tube}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`
+    + `<path d="M-1 0Q-1 7 -7 10.6" stroke="${W.tubeLit}" stroke-width="1" fill="none" stroke-linecap="round"/>`
+    // The chest piece: foil rim, a pale diaphragm
+    + `<circle cx="13" cy="1" r="6.4" fill="${ref(ctx, 'foil')}"/><circle cx="13" cy="1" r="4" fill="${C.glassine}"/>`
+    + sparkle(ctx, 19, -12, 4);
+}
+
 /** A treasure not drawn yet: a foil token with its first character. */
 function token(ctx: KitCtx, name: string): string {
   return `<ellipse cx="1" cy="17" rx="15" ry="3" fill="${C.shadow}" opacity=".28"/>`
@@ -198,6 +216,7 @@ export function treasureArt(ctx: KitCtx, chapter: number): string {
   if (chapter === 6) return passportStamp(ctx);
   if (chapter === 7) return celery(ctx);
   if (chapter === 8) return abacus(ctx);
+  if (chapter === 9) return stethoscope(ctx);
   return token(ctx, albumChapter(chapter).treasure);
 }
 

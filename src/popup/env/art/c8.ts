@@ -66,7 +66,7 @@ const pools = (ctx: KitCtx, list: readonly (readonly [number, number, number, nu
   list.map(([cx, cy, rx, ry, tone]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${ref(ctx, tone === 'moon' ? 'moonPool' : tone === 'spring' ? 'springGlow' : 'amberPool')}"/>`).join('');
 
 /** A smooth ridge line from x0 to x1 round `base`, rising up to `amp` (seeded), closed down to `floor`. */
-function ridge(x0: number, x1: number, base: number, amp: number, seed: number, floor: number, step = 46): string {
+export function ridge(x0: number, x1: number, base: number, amp: number, seed: number, floor: number, step = 46): string {
   const r = seeded(seed);
   const pts: Pt[] = [];
   for (let x = x0; x <= x1 + step; x += step * (0.7 + r() * 0.6)) pts.push([x, base - amp * (0.25 + r() * 0.75)]);
@@ -135,7 +135,7 @@ function wrongSwirl(ctx: KitCtx, x: number, y: number, s = 1): string {
 }
 
 /** Wood grain over a board from (x0, y0) to (x1, y1): long wavering lines and a knot or two. */
-function woodGrain(x0: number, y0: number, x1: number, y1: number, seed: number, vertical = false, every = 5): string {
+export function woodGrain(x0: number, y0: number, x1: number, y1: number, seed: number, vertical = false, every = 5): string {
   const r = seeded(seed);
   let d = '';
   if (vertical) {
@@ -165,7 +165,7 @@ function woodGrain(x0: number, y0: number, x1: number, y1: number, seed: number,
  * (`vertical`, a bathhouse's cladding) or horizontal (a deck, a wainscot) — each `w` wide, in a
  * tone with its grain, a dark joint and a lit edge between boards.
  */
-function planks(x0: number, y0: number, x1: number, y1: number, { vertical = true, w = 16, tone = B.cedar as string, seed = 5 } = {}): string {
+export function planks(x0: number, y0: number, x1: number, y1: number, { vertical = true, w = 16, tone = B.cedar as string, seed = 5 } = {}): string {
   const r = seeded(seed);
   let fills = '';
   let grain = '';
@@ -302,7 +302,7 @@ function mosaic(x0: number, y0: number, x1: number, y1: number, t: number, seed:
 }
 
 /** Rows of boards on the floor page converging on the vanishing point, from `top` to the page's foot. */
-function floorBoards(top: number, tone: string, every = 22): string {
+export function floorBoards(top: number, tone: string, every = 22): string {
   const [vx, vy] = VANISHING_POINT;
   let seams = '';
   let joints = '';
@@ -323,7 +323,7 @@ function floorBoards(top: number, tone: string, every = 22): string {
 }
 
 /** A pebble bank: rounded stones in two tones with lit tops, scattered between x0 and x1 at y (depth `dy`). */
-function pebbles(x0: number, x1: number, y: number, dy: number, seed: number, n = 24): string {
+export function pebbles(x0: number, x1: number, y: number, dy: number, seed: number, n = 24): string {
   const r = seeded(seed);
   let dark = '';
   let lit = '';

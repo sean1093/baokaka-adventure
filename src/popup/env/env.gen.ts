@@ -683,7 +683,7 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c9/tamsui-line": {
       "file": "backdrops/c9/tamsui-line",
-      "bytes": 122390,
+      "bytes": 102698,
       "chapter": 9,
       "grade": [1.322, 1.228, 1.129],
       "box": {
@@ -692,11 +692,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "34f6de74b613fdaa"
+      "source": "b3552fad7c872b05"
     },
     "c9/old-street": {
       "file": "backdrops/c9/old-street",
-      "bytes": 122390,
+      "bytes": 133178,
       "chapter": 9,
       "grade": [1.322, 1.228, 1.129],
       "box": {
@@ -705,11 +705,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "34f6de74b613fdaa"
+      "source": "799ead00d2751293"
     },
     "c9/ferry": {
       "file": "backdrops/c9/ferry",
-      "bytes": 122390,
+      "bytes": 128794,
       "chapter": 9,
       "grade": [1.322, 1.228, 1.129],
       "box": {
@@ -718,11 +718,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "34f6de74b613fdaa"
+      "source": "4bda3b2d099781b0"
     },
     "c9/fishermans-wharf": {
       "file": "backdrops/c9/fishermans-wharf",
-      "bytes": 122390,
+      "bytes": 134612,
       "chapter": 9,
       "grade": [1.322, 1.228, 1.129],
       "box": {
@@ -731,11 +731,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "34f6de74b613fdaa"
+      "source": "590eebf64d4ded37"
     },
     "c9/tamkang-bridge": {
       "file": "backdrops/c9/tamkang-bridge",
-      "bytes": 122390,
+      "bytes": 141268,
       "chapter": 9,
       "grade": [1.322, 1.228, 1.129],
       "box": {
@@ -744,11 +744,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "34f6de74b613fdaa"
+      "source": "78bda131cf61ef31"
     },
     "c9/fishing-harbour": {
       "file": "backdrops/c9/fishing-harbour",
-      "bytes": 122390,
+      "bytes": 136616,
       "chapter": 9,
       "grade": [1.322, 1.228, 1.129],
       "box": {
@@ -757,7 +757,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "34f6de74b613fdaa"
+      "source": "6dba7a3af1872a30"
     }
   },
   "parts": {
@@ -3601,22 +3601,22 @@ export const ENV_MANIFEST: EnvManifest = {
     "c9/window-blind": {
       "preset": "blowable",
       "box": {
-        "x": -31,
-        "y": -36,
-        "w": 68,
-        "h": 82
+        "x": -67,
+        "y": -140,
+        "w": 120,
+        "h": 172
       },
       "states": {
         "closed": {
           "file": "parts/c9/window-blind.closed",
-          "bytes": 1798
+          "bytes": 6648
         },
         "open": {
           "file": "parts/c9/window-blind.open",
-          "bytes": 1432
+          "bytes": 1630
         }
       },
-      "source": "e1a81e74ec234e8e"
+      "source": "6454d24e79ed8f0b"
     },
     "c9/shutter": {
       "preset": "flap",
@@ -3630,7 +3630,7 @@ export const ENV_MANIFEST: EnvManifest = {
       "states": {
         "closed": {
           "file": "parts/c9/shutter.closed",
-          "bytes": 2410
+          "bytes": 2512
         },
         "open": {
           "file": "parts/c9/shutter.open",
@@ -3640,138 +3640,14 @@ export const ENV_MANIFEST: EnvManifest = {
       "lifted": {
         "closed": {
           "file": "parts/c9/shutter.closed.lifted",
-          "bytes": 3646
+          "bytes": 3744
         },
         "open": {
           "file": "parts/c9/shutter.open.lifted",
           "bytes": 3480
         }
       },
-      "source": "53a46d8d08f5c478"
-    },
-    "c9/ferry-horn": {
-      "preset": "button",
-      "box": {
-        "x": -20,
-        "y": -21,
-        "w": 49,
-        "h": 37
-      },
-      "states": {
-        "up": {
-          "file": "parts/c9/ferry-horn.up",
-          "bytes": 1772
-        },
-        "down": {
-          "file": "parts/c9/ferry-horn.down",
-          "bytes": 2370
-        }
-      },
-      "source": "ea63f772b72d032b"
-    },
-    "c9/tide": {
-      "preset": "lift",
-      "box": {
-        "x": -136,
-        "y": -41,
-        "w": 271,
-        "h": 121
-      },
-      "states": {
-        "dawn": {
-          "file": "parts/c9/tide.dawn",
-          "bytes": 1742
-        },
-        "noon": {
-          "file": "parts/c9/tide.noon",
-          "bytes": 1802
-        },
-        "sunset": {
-          "file": "parts/c9/tide.sunset",
-          "bytes": 1712
-        }
-      },
-      "source": "3c36554829565e6e"
-    },
-    "c9/dinghy": {
-      "preset": "lift",
-      "box": {
-        "x": -34,
-        "y": -2,
-        "w": 77,
-        "h": 23
-      },
-      "states": {
-        "dawn": {
-          "file": "parts/c9/dinghy.dawn",
-          "bytes": 1406
-        },
-        "noon": {
-          "file": "parts/c9/dinghy.noon",
-          "bytes": 1406
-        },
-        "sunset": {
-          "file": "parts/c9/dinghy.sunset",
-          "bytes": 1406
-        }
-      },
-      "source": "350c973b74489caf"
-    },
-    "c9/sail": {
-      "preset": "blowable",
-      "box": {
-        "x": -28,
-        "y": -42,
-        "w": 57,
-        "h": 87
-      },
-      "states": {
-        "0": {
-          "file": "parts/c9/sail.0",
-          "bytes": 2188
-        },
-        "1": {
-          "file": "parts/c9/sail.1",
-          "bytes": 2142
-        },
-        "2": {
-          "file": "parts/c9/sail.2",
-          "bytes": 2188
-        },
-        "3": {
-          "file": "parts/c9/sail.3",
-          "bytes": 2232
-        }
-      },
-      "source": "c2b16c0390589493"
-    },
-    "c9/derrick": {
-      "preset": "loop",
-      "box": {
-        "x": -35,
-        "y": -36,
-        "w": 66,
-        "h": 82
-      },
-      "states": {
-        "0": {
-          "file": "parts/c9/derrick.0",
-          "bytes": 2448
-        },
-        "1": {
-          "file": "parts/c9/derrick.1",
-          "bytes": 2448
-        },
-        "2": {
-          "file": "parts/c9/derrick.2",
-          "bytes": 2448
-        },
-        "3": {
-          "file": "parts/c9/derrick.3",
-          "bytes": 2448
-        }
-      },
-      "source": "33a7bfe38161369c"
+      "source": "9fad975d5aeeddd0"
     },
     "c9/iron-egg-granny": {
       "preset": "carrier",
@@ -3801,65 +3677,257 @@ export const ENV_MANIFEST: EnvManifest = {
       },
       "source": "7d78c1ac290b8896"
     },
+    "c9/ferry-gate": {
+      "preset": "gate",
+      "box": {
+        "x": -46,
+        "y": -36,
+        "w": 85,
+        "h": 103
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c9/ferry-gate.closed",
+          "bytes": 3048
+        },
+        "open": {
+          "file": "parts/c9/ferry-gate.open",
+          "bytes": 4340
+        }
+      },
+      "source": "8e95c8f81c2e846f"
+    },
+    "c9/ferry-horn": {
+      "preset": "button",
+      "box": {
+        "x": -18,
+        "y": -32,
+        "w": 55,
+        "h": 52
+      },
+      "states": {
+        "up": {
+          "file": "parts/c9/ferry-horn.up",
+          "bytes": 1834
+        },
+        "down": {
+          "file": "parts/c9/ferry-horn.down",
+          "bytes": 2642
+        }
+      },
+      "source": "44e67e256dca1b69"
+    },
+    "c9/sun-dial": {
+      "preset": "wheel",
+      "box": {
+        "x": -53,
+        "y": -46,
+        "w": 109,
+        "h": 102
+      },
+      "pivot": [0, 0],
+      "states": {
+        "dawn": {
+          "file": "parts/c9/sun-dial.dawn",
+          "bytes": 7428
+        }
+      },
+      "lifted": {
+        "dawn": {
+          "file": "parts/c9/sun-dial.dawn.lifted",
+          "bytes": 9546
+        }
+      },
+      "source": "cfba6d9ded1c8873"
+    },
+    "c9/tide": {
+      "preset": "lift",
+      "box": {
+        "x": -211,
+        "y": -61,
+        "w": 242,
+        "h": 251
+      },
+      "states": {
+        "dawn": {
+          "file": "parts/c9/tide.dawn",
+          "bytes": 5770
+        },
+        "noon": {
+          "file": "parts/c9/tide.noon",
+          "bytes": 6566
+        },
+        "sunset": {
+          "file": "parts/c9/tide.sunset",
+          "bytes": 6984
+        }
+      },
+      "source": "108f2087dc33fd06"
+    },
+    "c9/dinghy": {
+      "preset": "lift",
+      "box": {
+        "x": -36,
+        "y": -8,
+        "w": 81,
+        "h": 32
+      },
+      "states": {
+        "dawn": {
+          "file": "parts/c9/dinghy.dawn",
+          "bytes": 2974
+        },
+        "noon": {
+          "file": "parts/c9/dinghy.noon",
+          "bytes": 2974
+        },
+        "sunset": {
+          "file": "parts/c9/dinghy.sunset",
+          "bytes": 2974
+        }
+      },
+      "source": "47122c38d793b1d0"
+    },
     "c9/cable-sol": {
       "preset": "prop",
       "box": {
-        "x": -38,
-        "y": -38,
-        "w": 76,
-        "h": 76
+        "x": -25,
+        "y": -24,
+        "w": 50,
+        "h": 48
       },
       "states": {
         "still": {
           "file": "parts/c9/cable-sol.still",
-          "bytes": 3206
+          "bytes": 2968
         },
         "hum": {
           "file": "parts/c9/cable-sol.hum",
-          "bytes": 4344
+          "bytes": 3858
         }
       },
-      "source": "d81693156efc81ea"
+      "source": "4b352c80ed9d8e0f"
     },
     "c9/cable-la": {
       "preset": "prop",
       "box": {
-        "x": -38,
-        "y": -38,
-        "w": 76,
-        "h": 76
+        "x": -25,
+        "y": -24,
+        "w": 50,
+        "h": 48
       },
       "states": {
         "still": {
           "file": "parts/c9/cable-la.still",
-          "bytes": 3004
+          "bytes": 2874
         },
         "hum": {
           "file": "parts/c9/cable-la.hum",
-          "bytes": 4224
+          "bytes": 3740
         }
       },
-      "source": "79e1c94850325bee"
+      "source": "2b3023435be11b64"
     },
     "c9/cable-do": {
       "preset": "prop",
       "box": {
-        "x": -38,
-        "y": -38,
-        "w": 76,
-        "h": 76
+        "x": -25,
+        "y": -24,
+        "w": 50,
+        "h": 48
       },
       "states": {
         "still": {
           "file": "parts/c9/cable-do.still",
-          "bytes": 3032
+          "bytes": 2900
         },
         "hum": {
           "file": "parts/c9/cable-do.hum",
-          "bytes": 4224
+          "bytes": 3790
         }
       },
-      "source": "f234555206de1f5c"
+      "source": "1075419942698cc7"
+    },
+    "c9/tune-dial": {
+      "preset": "section",
+      "box": {
+        "x": -26,
+        "y": -23,
+        "w": 58,
+        "h": 59
+      },
+      "pivot": [0, 0],
+      "states": {
+        "0": {
+          "file": "parts/c9/tune-dial.0",
+          "bytes": 4122
+        }
+      },
+      "source": "f142575a43d64791"
+    },
+    "c9/maintenance-lift": {
+      "preset": "lift",
+      "box": {
+        "x": -38,
+        "y": -180,
+        "w": 85,
+        "h": 207
+      },
+      "states": {
+        "up": {
+          "file": "parts/c9/maintenance-lift.up",
+          "bytes": 3242
+        },
+        "down": {
+          "file": "parts/c9/maintenance-lift.down",
+          "bytes": 3422
+        }
+      },
+      "source": "f77698a9e949fa45"
+    },
+    "c9/sail": {
+      "preset": "blowable",
+      "box": {
+        "x": -37,
+        "y": -46,
+        "w": 68,
+        "h": 87
+      },
+      "states": {
+        "0": {
+          "file": "parts/c9/sail.0",
+          "bytes": 2856
+        },
+        "1": {
+          "file": "parts/c9/sail.1",
+          "bytes": 3046
+        },
+        "2": {
+          "file": "parts/c9/sail.2",
+          "bytes": 2856
+        },
+        "3": {
+          "file": "parts/c9/sail.3",
+          "bytes": 3194
+        }
+      },
+      "source": "3717f0bf99bc13c6"
+    },
+    "c9/derrick": {
+      "preset": "loop",
+      "box": {
+        "x": -37,
+        "y": -38,
+        "w": 70,
+        "h": 86
+      },
+      "states": {
+        "0": {
+          "file": "parts/c9/derrick.0",
+          "bytes": 3378
+        }
+      },
+      "source": "666edd84a9b49574"
     }
   },
   "cutouts": {
@@ -3969,16 +4037,16 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c9/tune-plate": {
       "file": "cutouts/c9/tune-plate",
-      "bytes": 3596,
+      "bytes": 4568,
       "chapter": 9,
       "grade": [1.322, 1.228, 1.129],
       "box": {
         "x": 246,
-        "y": 260,
+        "y": 256,
         "w": 120,
-        "h": 60
+        "h": 66
       },
-      "source": "a1a2812de7747fd9"
+      "source": "e65710f17bc5a1f9"
     }
   },
   "screens": {
