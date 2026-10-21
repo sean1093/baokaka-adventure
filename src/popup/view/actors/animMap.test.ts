@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { replay, step, initialState } from '../../core';
 import { BABY_MODES, type EdgeKind, type Growth, type Word } from '../../core/types';
 import { pageById } from '../../pages';
+import { toyFerry } from '../../core/fixtures/m4';
 import { SPRITE_MANIFEST, spriteDef, type SpriteId } from '../../sprites';
 import {
   BABY_MODE_ANIM,
@@ -22,6 +23,8 @@ import {
   strideCycles,
   type ActorAnim,
   CLIMB_AT,
+  CRUISE_AT,
+  reachedHigh,
 } from './animMap';
 import { FADE_MS, LAND_MS, LEAN_DEG, WOBBLE_DEG, fadeSlide, standeeTilt, stepT, travelDir } from './standee';
 
@@ -75,7 +78,10 @@ describe('寶咖咖', () => {
     expect(BABY_MODE_ANIM.crying).toMatchObject({ sprite: 'baokaka.cry', play: { kind: 'clock' } });
     expect(BABY_MODE_ANIM.idle.sprite).toBe('baokaka.sit');
     expect(babyAnim({ mode: 'moving', edge: 'crawl', growth: 0 })).toMatchObject({ sprite: 'baokaka.crawl', play: { kind: 'stride' } });
-    expect(babyAnim({ mode: 'moving', edge: 'cruise', growth: 2 }).sprite).toBe('baokaka.wobble');
+    expect(babyAnim({ mode: 'moving', edge: 'cruise', growth: 2 })).toMatchObject({ sprite: 'baokaka.cruise', gdd: 'standCruise', play: { kind: 'step', at: CRUISE_AT } });
+    expect(babyAnim({ mode: 'moving', edge: 'cruise', growth: 1 }).sprite).toBe('baokaka.crawl');
+    expect(babyAnim({ mode: 'grabbing', edge: null, growth: 2, high: true })).toMatchObject({ sprite: 'baokaka.pull', gdd: 'grab' });
+    expect(babyAnim({ mode: 'grabbing', edge: null, growth: 2 }).sprite).toBe('baokaka.hold');
     expect(babyAnim({ mode: 'moving', edge: 'walk', growth: 3 })).toMatchObject({ sprite: 'baokaka.walk', play: { kind: 'stride' } });
   });
 
@@ -242,10 +248,10 @@ describe('the missing-frame report (GDD § 3.9)', () => {
     for (const r of FRAME_REPORT) if (frameStatus(r) === 'missing') expect(r.fallback, `${r.char} ${r.id}`).toBeDefined();
   });
 
-  test('no M1 gap is left (#141); of the later rows only stand-cruise is short (3 of 4)', () => {
+  test('no M1 gap is left (#141), and since #127 no later row is short either (stand-cruise: pull, wobble 2, cruise 2)', () => {
     expect(FRAME_REPORT.filter((r) => frameStatus(r) === 'missing')).toEqual([]);
     const short = FRAME_REPORT.filter((r) => r.delivered.reduce((n, x) => n + x.frames.length, 0) < r.frames).map((r) => `${r.char}.${r.id}`);
-    expect(short).toEqual(['baokaka.standCruise']);
+    expect(short).toEqual([]);
   });
 
   test('every animation the map shows names a report row (or none, for an extra)', () => {
@@ -276,5 +282,16 @@ describe('standee motion (bible § 5, § 8)', () => {
     expect(fadeSlide([0, 0], [100, 0], 0)).toEqual({ x: 90, y: 0, opacity: 0.25 });
     expect(fadeSlide([0, 0], [100, 0], FADE_MS)).toEqual({ x: 100, y: 0, opacity: 1 });
     expect(fadeSlide([95, 0], [100, 0], 0).x).toBe(95);
+  });
+});
+
+describe('reachedHigh (GDD § 2.5, #127)', () => {
+  test('true while his target is a height-1 attractor on another node: the ferry bench from the deck', () => {
+    const grown = { ...toyFerry, baby: { ...toyFerry.baby, growth: 2 as const }, learns: undefined };
+    let s = initialState(grown);
+    expect(reachedHigh(grown, s)).toBe(false);
+    for (let i = 0; i < 3; i++) s = step(grown, s, { t: 'none' }).state;
+    expect(s.baby).toMatchObject({ node: 'D4', mode: 'grabbing', target: 'bead' });
+    expect(reachedHigh(grown, s)).toBe(true);
   });
 });

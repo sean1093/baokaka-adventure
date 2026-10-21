@@ -1,5 +1,6 @@
 import { M2_TOYS, toyMoon } from '../core/fixtures/m2';
 import { M3_TOYS, toyPlane } from '../core/fixtures/m3';
+import { M4_TOYS, toyPinwheel } from '../core/fixtures/m4';
 import type { Id, PageDef } from '../core/types';
 import { PAGES, pageById } from '../pages';
 
@@ -52,8 +53,15 @@ const ring4: PageDef = { ...toyMoon, id: 'lab-ring4', title: '四個字', words:
  */
 const ring6: PageDef = { ...toyPlane, id: 'lab-ring6', title: '六個字', words: ['beep', 'bye', 'no', 'wow', 'hug', 'plane'], learns: undefined };
 
+/**
+ * The M4 engine I's toy pages (#127, `core/fixtures/m4.ts`): the steam and 咻——, the pinwheel and
+ * the facing cone, 扶著站 on the ferry (cruise and reachHigh), 101's coupled sections; and the
+ * library with the seven words to chapter 9 (嗶！ 掰掰 不要！ 哇！ 抱抱 飛機！ 咻——, `word-ring-7`).
+ */
+const ring7: PageDef = { ...toyPinwheel, id: 'lab-ring7', title: '七個字', words: ['beep', 'bye', 'no', 'wow', 'hug', 'plane', 'whoosh'], learns: undefined };
+
 /** Lab-only fixture pages (not in the registry). */
-export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...words, ...M2_TOYS, ring4, ...M3_TOYS, ring6];
+export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...words, ...M2_TOYS, ring4, ...M3_TOYS, ring6, ...M4_TOYS, ring7];
 
 /** Every page the lab lists, registered pages first. */
 export const LAB_PAGES: readonly PageDef[] = [...PAGES, ...LAB_FIXTURES];

@@ -46,6 +46,7 @@ import { inReach, WORDS } from './words';
  * | `L03-preset-field` | error | 3: a pushable without `fall`, a carrier without a `route` (or one under two nodes); a `route` on a non-carrier, a `counterweight` on a non-lift |
  * | `L03-carrier-start` | error | 3: a carrier starts mid-carry (`carrying@k`): it must start `idle` or `done` (#120) |
  * | `L03-carrier-driven` | error | 3: a carrier moved by anything but 抱抱 (a reaction, a perch `set` or `onPart`, a `landSets`): its state is where he is (#120) |
+ * | `L03-coupled` | error | 3: `coupled` on, or naming, a part that isn't a `wheel` / `section` / `loop` / `blowable`; coupled parts with different numbers of states; a part coupled to itself or listed twice (#127) |
  * | `L03-counterweight` | error | 3: a counterweighted lift no perch weighs (`onPart`), or whose `initial` isn't the state Mocha's start puts it in (#120) |
  * | `L04-attach-missing-state` | error | 4: a node attached to a part lacks a position for one of its states |
  * | `L04-gate-node-moves` | error | 4: a node attached to a gate has different positions (a doorway stays put, D-42) |
@@ -111,6 +112,8 @@ export const MAX_LINE_CHARS = 30;
 const EDGE_KINDS: readonly EdgeKind[] = ['crawl', 'climb', 'cruise', 'walk', 'jump', 'squeeze'];
 const PART_INPUTS: readonly PartInput[] = ['drag-linear', 'drag-rotary', 'tap-toggle', 'tap-cycle', 'none'];
 const RELATIVE_TO = new Set(['next', 'prev', 'toggle']);
+/** The presets a `coupled` list may join (#127): parts that turn through a cycle of states. */
+const COUPLED_PRESETS = new Set<PartPreset>(['wheel', 'section', 'loop', 'blowable']);
 const PUSHABLE_STATES = ['onPerch', 'falling', 'landed'];
 const BABY_KINDS = new Set<string>(['crawl', 'climb', 'cruise', 'walk']);
 /** Allowed state counts (GDD § 2.1 *Part presets*). */
@@ -558,6 +561,8 @@ class Linter {
         if (drivers.length > 0) this.error('L03-carrier-driven', [p.id], `carrier '${p.id}' is moved by ${drivers.join(', ')}; only 抱抱 moves a carrier`);
       }
 
+      if (p.coupled !== undefined) this.checkCoupled(info);
+
       const weight = p.preset === 'lift' ? p.counterweight : undefined;
       if (weight !== undefined) {
         this.partState(info, weight.on, `${where} counterweight`, p.id);
@@ -571,6 +576,29 @@ class Linter {
           this.error('L03-counterweight', [p.id], `lift '${p.id}' starts '${initial}', but Mocha ${expected === weight.on ? 'starts on it' : "doesn't start on it"}, so it is '${expected}'`);
         }
       }
+    }
+  }
+
+  /** `coupled` (#127, D-91): turning parts with the same number of states, never itself or twice. */
+  private checkCoupled(info: PartInfo): void {
+    const p = info.def;
+    const where = `part '${p.id}'`;
+    if (!Array.isArray(p.coupled)) return;
+    if (!COUPLED_PRESETS.has(p.preset)) {
+      this.error('L03-coupled', [p.id], `${where} is a ${p.preset}; only a wheel, section, loop or blowable can be \`coupled\``);
+      return;
+    }
+    const seen = new Set<Id>();
+    for (const id of p.coupled) {
+      const other = this.part(id, `${where} coupled`, p.id);
+      if (other === undefined) continue;
+      if (id === p.id) this.error('L03-coupled', [p.id], `${where} is coupled to itself`);
+      else if (seen.has(id)) this.error('L03-coupled', [p.id, id], `${where} lists '${id}' twice in \`coupled\``);
+      else if (!COUPLED_PRESETS.has(other.def.preset)) this.error('L03-coupled', [p.id, id], `${where} is coupled to '${id}', a ${other.def.preset}; only a wheel, section, loop or blowable can turn with it`);
+      else if (info.states !== null && other.states !== null && info.states.length !== other.states.length) {
+        this.error('L03-coupled', [p.id, id], `${where} has ${info.states.length} states but '${id}', coupled to it, has ${other.states.length}: a turn must mean the same steps on both`);
+      }
+      seen.add(id);
     }
   }
 
@@ -812,6 +840,32 @@ class Linter {
         }
       });
     });
+    // Coupling (#127): a part a reaction turns also turns its `coupled` parts (one hop: a coupled
+    // turn drives no further coupling), so "P can make Q change" also holds through P → X by a
+    // reaction, then X → Q by X's coupling. Certain when the reaction is, and Q always follows.
+    const index = new Map(ids.map((id, i) => [id, i] as const));
+    const coupledTo = ids.map((xid) => {
+      const x = this.parts.get(xid)!;
+      const list = Array.isArray(x.def.coupled) && COUPLED_PRESETS.has(x.def.preset) ? x.def.coupled : [];
+      return list.flatMap((qid) => {
+        const j = index.get(qid);
+        const q = j === undefined ? undefined : this.parts.get(qid)!;
+        if (q === undefined || q.states === null || qid === xid) return [];
+        const sure = q.def.lockedWhen === undefined && q.def.stateWhen === undefined && q.def.lockedByCat !== true && q.states.length >= 2;
+        return [{ j: j!, sure }];
+      });
+    });
+    const anyR = any.map((row) => [...row]);
+    const certainR = certain.map((row) => [...row]);
+    for (let i = 0; i < n; i++) {
+      for (let x = 0; x < n; x++) {
+        if (!anyR[i][x]) continue;
+        for (const { j, sure } of coupledTo[x]) {
+          any[i][j] = true;
+          if (certainR[i][x] && sure) certain[i][j] = true;
+        }
+      }
+    }
     const sureLoops = this.cycles(ids, certain);
     for (const group of sureLoops) {
       this.error('L12-cascade-loop', group, `parts ${group.map((id) => `'${id}'`).join(', ')} re-trigger each other unconditionally: every cascade through them exceeds 32 events`);

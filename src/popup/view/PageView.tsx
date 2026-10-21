@@ -18,6 +18,7 @@ import {
   LAMP_GLOW_R,
   Mocha,
   babyAnim,
+  reachedHigh,
   chooseFrame,
   edgeKind,
   fadeSlide,
@@ -374,7 +375,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const riding = babyFrom === babyTo && babyStart !== undefined && babyEnd !== undefined && (babyStart[0] !== babyEnd[0] || babyStart[1] !== babyEnd[1]);
   // The word he says this tick (#99: the big speech bubble is a bark, the effect ring is below)
   const sayWord = sayingWord(prev, state, events);
-  const bAnim = babyAnim({ mode: state.baby.mode, edge: babyEdge, riding, growth: stepGrowth(def, state), watching: finger !== null, word: sayWord });
+  const bAnim = babyAnim({ mode: state.baby.mode, edge: babyEdge, riding, growth: stepGrowth(def, state), watching: finger !== null, word: sayWord, high: reachedHigh(def, state) });
   const babyDist = babyEdge !== null && babyStart && babyEnd ? Math.hypot(babyEnd[0] - babyStart[0], babyEnd[1] - babyStart[1]) : 0;
   const bFrame = chooseFrame(bAnim, { k: kStep, dist: babyDist, tickMs, hold: held });
   let babyPose = stepPose(def, prev, state, babyFrom, babyTo, tStep, ms, { reduced, preview });

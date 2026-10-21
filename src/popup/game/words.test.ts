@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import c1p3 from '../core/fixtures/c1p3';
 import { toyMoon, toySquirrel } from '../core/fixtures/m2';
 import { toyClimb, toyHug, toyPlane } from '../core/fixtures/m3';
+import { toyFerry, toyPinwheel, toySteam } from '../core/fixtures/m4';
 import { SCRIPT } from '../content/script';
 import { initialState, replay, step } from '../core';
 import type { PageDef, SimState, Word } from '../core/types';
@@ -198,5 +199,30 @@ describe('the M3 words and growth: 抱抱, 飛機！, 爬樓梯 through the #99 
   test('the ring with M3\'s six words (the `word-ring-6` stage): 嗶！ 掰掰 不要！ 哇！ 抱抱 飛機！ in learning order', () => {
     const ring6: PageDef = { ...toyPlane, words: ['plane', 'hug', 'wow', 'no', 'bye', 'beep'], learns: undefined };
     expect(ringWords(ring6, initialState(ring6))).toEqual(['beep', 'bye', 'no', 'wow', 'hug', 'plane']);
+  });
+});
+
+describe('the M4 word and growth: 咻—— and 扶著站 through the #99 flow (#127)', () => {
+  test('咻—— is learned on the steam toy page; its learn beat lines exist; the ring offers it after', () => {
+    expect(ringWords(toySteam, initialState(toySteam))).toEqual([]);
+    const taught = run(toySteam, [{ t: 'none' }, { t: 'none' }]);
+    expect(learnedNow(taught.events)).toBe('whoosh');
+    expect(ringWords(toySteam, taught.state)).toEqual(['whoosh']);
+    expect(learnLines('whoosh')).toEqual(['learn.whoosh.src', 'learn.whoosh.baby', 'learn.whoosh.mocha']);
+    for (const key of learnLines('whoosh')) expect(SCRIPT[key], key).toBeDefined();
+    expect(firstUseLine(toySteam, 'whoosh')).toBeNull();
+    expect(firstUseLine(toyPinwheel, 'whoosh')).toBe('learn.whoosh.mocha');
+  });
+
+  test('扶著站 is a growth stage: learned pulling up on the railing; Mocha\'s line, no word in the ring', () => {
+    const taught = run(toyFerry, [{ t: 'mocha', perch: 'rail' }]);
+    expect(learnedNow(taught.events)).toBe('cruise');
+    expect(learnLines('cruise')).toEqual(['learn.cruise.mocha']);
+    expect(ringWords(toyFerry, taught.state)).toEqual([]);
+  });
+
+  test('the ring with the seven words to chapter 9 (the `word-ring-7` stage), in learning order', () => {
+    const ring7: PageDef = { ...toyPinwheel, words: ['whoosh', 'plane', 'hug', 'wow', 'no', 'bye', 'beep'], learns: undefined };
+    expect(ringWords(ring7, initialState(ring7))).toEqual(['beep', 'bye', 'no', 'wow', 'hug', 'plane', 'whoosh']);
   });
 });

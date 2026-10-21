@@ -213,6 +213,8 @@ describe('payload (#94 R3)', () => {
     expect(pageSprites(10)).toContain('baokaka.walk');
     expect(pageSprites(10)).toContain('mocha.walk');
     expect(pageSprites(9)).toContain('baokaka.pull');
+    expect(pageSprites(9)).toContain('baokaka.cruise');
+    expect(pageSprites(8)).not.toContain('baokaka.cruise');
     expect(pageSprites(1)).not.toContain('baokaka.walk');
     expect(pageSprites(3)).toContain('baokaka.refuse');
     // A chapter keeps what earlier chapters needed (a word learnt in 2 is said in 3)

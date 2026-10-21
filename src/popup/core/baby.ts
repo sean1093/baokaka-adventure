@@ -27,7 +27,7 @@ import type { AttractorDef, BabyMode, Growth, Id, Kind, PageDef, SimState } from
  *   cries because he refused things (不要！), he forgets the refusals after `FORGET_AFTER_CRIES`
  *   cries (D-75), so a refusal never strands him.
  * - **reachHigh** (§ 2.5): from growth 2, a height-1 attractor can be grabbed from an adjacent
- *   node. Behind `REACH_HIGH_ENABLED` (off until M4) or `BabyOptions.reachHigh`.
+ *   node joined to it by an edge whose condition holds (`REACH_HIGH_ENABLED`, on since #127).
  *
  * `carried`, `linked` and `saying` are the tick's (#84, M3/M4): `babyTick` leaves a carried or
  * linked baby alone and treats `saying` as already resolved.
@@ -47,8 +47,8 @@ export const LOOK_TICKS = 2;
 export const FORGET_AFTER_CRIES = 2;
 /** § 2.2.3: 「要！要！」 every this many ticks of `reaching`. */
 export const REACH_BARK_EVERY = 4;
-/** § 2.5 feature switch: M4 (扶著站) turns it on; pages can't until then. */
-export const REACH_HIGH_ENABLED = false;
+/** § 2.5 feature switch: on since M4 (扶著站, #127); still needs growth 2. `BabyOptions.reachHigh` overrides it. */
+export const REACH_HIGH_ENABLED = true;
 
 /** § 2.2.1: lower = wants it more. A page may override it (`priorityOverride`, page E). */
 export const KIND_PRIORITY: Readonly<Record<Kind, number>> = { shiny: 1, mocha: 2, snack: 3, light: 4 };
@@ -164,7 +164,7 @@ export function compareRanked(a: Ranked, b: Ranked): number {
 }
 
 /** Nodes joined to `node` by an edge whose condition holds (any kind, either direction), sorted by id. */
-function adjacentNodes(def: PageDef, state: SimState, node: Id): Id[] {
+export function adjacentNodes(def: PageDef, state: SimState, node: Id): Id[] {
   const out = new Set<Id>();
   for (const e of def.edges) {
     if (e.a !== node && e.b !== node) continue;
