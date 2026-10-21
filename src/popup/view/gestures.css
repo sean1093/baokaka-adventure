@@ -1,5 +1,6 @@
 /*
- * Gesture feedback (#90; GDD § 2.6, popup bible § 4.1): the locked wobble and Mocha's glare. The
+ * Gesture feedback (#90; GDD § 2.6, popup bible § 4.1): the locked wobble and Mocha's glare; and
+ * the plop that ends his first walk (#128). The
  * Dragging / Locked looks (lift, darken, paw badge) are the part views' `look` and the idle wiggle,
  * hint halo and ghost hand live in `affordance/affordance.css` (#140). Transforms only.
  */
@@ -32,13 +33,29 @@
   100% { transform: none; }
 }
 
+/* The end of his first walk (#128): he sits down with a plop — a squash, a little bounce */
+.bk-plop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: bk-plop 420ms cubic-bezier(0.3, 0.7, 0.4, 1) 1;
+}
+
+@keyframes bk-plop {
+  0% { transform: translateY(-5px) scale(0.96, 1.05); }
+  35% { transform: scale(1.09, 0.86); }
+  62% { transform: scale(0.97, 1.03); }
+  100% { transform: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gx-wobble,
-  .gx-glare { animation: none; }
+  .gx-glare,
+  .bk-plop { animation: none; }
 }
 
 .reduce-motion .gx-wobble,
-.reduce-motion .gx-glare { animation: none; }
+.reduce-motion .gx-glare,
+.reduce-motion .bk-plop { animation: none; }
 
 /*
  * A screenshot still (PagePlayer `still`, PageLab `still=1`, #92): nothing animates, idle loops

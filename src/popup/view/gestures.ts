@@ -1,5 +1,5 @@
 import { holds, partState } from '../core/cond';
-import { nodePos } from '../core/graph';
+import { linkNodes, nodePos } from '../core/graph';
 import { mochaNode, perchHidesMocha } from '../core/mocha';
 import { compilePart } from '../core/presets';
 import type { Id, Input, PageDef, PartDef, SimState } from '../core/types';
@@ -18,7 +18,8 @@ import { PRESET_Z } from './layers';
  *
  * **Targets** are what a finger can touch now (`targetsOf`): every player-driven part (its `hit`),
  * the perch paw prints while Mocha is on the page, Mocha himself, Baokaka, and the 土地公 while he
- * shows. Each sits on a layer (the § 3.9 order, `layers.ts`): a higher layer wins ties.
+ * shows. Linked (一起, #128) the perches and Mocha give way to the floor: every link node is a
+ * target, and a tap walks Mocha there. Each sits on a layer (the § 3.9 order, `layers.ts`): a higher layer wins ties.
  *
  * **Hit test** (`hitTest`), in order:
  * 1. the topmost target whose own shape contains the point;
@@ -52,8 +53,14 @@ export const BABY_BOX = { x: -48, y: -64, w: 96, h: 66 } as const;
 export const MOCHA_BOX = { x: -28, y: -68, w: 56, h: 70 } as const;
 export const PERCH_R = 27;
 export const TUDIGONG_R = 27;
+/**
+ * A floor node's hit circle in linked mode (#128), shrunk to half the distance to the nearest other
+ * link node so neighbours never overlap; ≥ 26.4 units (48 CSS px at 390 × 844) while link nodes
+ * are ≥ 53 apart, which lint `L18-link-crowded` asks of a page that says 一起.
+ */
+export const FLOOR_R = 28;
 
-export type TargetKind = 'part' | 'perch' | 'mocha' | 'baby' | 'tudigong';
+export type TargetKind = 'part' | 'perch' | 'floor' | 'mocha' | 'baby' | 'tudigong';
 
 /** How a part is dragged: along its track, around its centre, or by its corner (GDD § 2.6 drag row). */
 export type DragSpec =
@@ -79,7 +86,7 @@ export interface Target {
  * drawn far back (z2) but is a small find hidden behind parts (1-2's board): once he shows he
  * takes the touch over the part in front of him, so he is above the parts here.
  */
-export const TARGET_LAYER = { perch: 4.5, tudigong: 5, mocha: 6, baby: 6.5 } as const;
+export const TARGET_LAYER = { floor: 4.4, perch: 4.5, tudigong: 5, mocha: 6, baby: 6.5 } as const;
 
 const box = (p: Pt, b: { x: number; y: number; w: number; h: number }): Hit => ({ x: p[0] + b.x, y: p[1] + b.y, w: b.w, h: b.h });
 
@@ -146,10 +153,34 @@ export function targetsOf(def: PageDef, state: SimState): Target[] {
     const p = node === null ? undefined : nodePos(def, state, node);
     if (p && !hidden) out.push({ key: 'mocha:mocha', kind: 'mocha', id: 'mocha', hit: box(p, MOCHA_BOX), layer: TARGET_LAYER.mocha });
   }
+  if (state.baby.linked && !state.done) out.push(...floorTargets(def, state));
   const b = state.done ? undefined : nodePos(def, state, state.baby.node);
   if (b) out.push({ key: 'baby:baby', kind: 'baby', id: 'baby', hit: box(b, BABY_BOX), layer: TARGET_LAYER.baby });
   return out.sort((a, c) => a.layer - c.layer);
 }
+
+/**
+ * Linked mode's floor targets (#128): every link node but the one Mocha stands still on, a circle
+ * just above the floor line (`FLOOR_R`, never overlapping a neighbour's).
+ */
+export function floorTargets(def: PageDef, state: SimState): Target[] {
+  const m = state.mocha;
+  const here = m.path.length === 0 ? m.floorNode : undefined;
+  const at = linkNodes(def).flatMap((id) => {
+    const p = nodePos(def, state, id);
+    return p === undefined ? [] : [{ id, p }];
+  });
+  return at
+    .filter((a) => a.id !== here)
+    .map(({ id, p }) => {
+      let r = FLOOR_R;
+      for (const o of at) if (o.id !== id) r = Math.min(r, Math.hypot(o.p[0] - p[0], o.p[1] - p[1]) / 2);
+      return { key: `floor:${id}`, kind: 'floor' as const, id, hit: { cx: p[0], cy: p[1] - FLOOR_LIFT, r }, layer: TARGET_LAYER.floor };
+    });
+}
+
+/** How far above a node's floor line its floor mark and hit circle sit (page units). */
+export const FLOOR_LIFT = 6;
 
 /** A hit shape grown about its centre to at least `minPx` screen px each way at `scale` (R6). */
 export function minHit(hit: Hit, scale: number, minPx = MIN_HIT_PX): Hit {
@@ -485,6 +516,9 @@ export class GestureTracker {
         break;
       case 'perch':
         fx.push({ type: 'input', input: { t: 'mocha', perch: t.id } });
+        break;
+      case 'floor':
+        fx.push({ type: 'input', input: { t: 'floor', node: t.id } });
         break;
       case 'mocha':
         fx.push({ type: 'input', input: { t: 'pet' } });

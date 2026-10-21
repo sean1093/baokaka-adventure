@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 import { motifVoices, playSfx, playVoices, voiceVoices, type MotifStyle, type SfxCue } from '../../shared/audio';
 import type { SimEvent } from '../core/events';
-import { mochaNode } from '../core/mocha';
+import { mochaLinked, mochaNode } from '../core/mocha';
 import type { Id, PageDef, PartDef, SimState, Word } from '../core/types';
 import { WORD_MOTIF } from '../game/words';
 import { sayingWord } from './actors/animMap';
@@ -110,10 +110,11 @@ export function tickSounds(def: PageDef, prev: SimState, state: SimState, events
   // Crawl: pat-pat for each step he takes on his own (not riding, not carried)
   if (state.baby.node !== prev.baby.node && !state.baby.carriedBy && !has('ride') && state.baby.mode !== 'carried') out.push({ cue: 'patpat' });
 
-  // Mocha hops: a soft thump each node, and as he lands
+  // Mocha hops: a soft thump each node, and as he lands; linked (#128) he pads along the floor, softer
   const was = mochaNode(def, prev);
   const now = mochaNode(def, state);
-  if (now !== null && now !== was) out.push({ cue: 'thump', gain: state.mocha.path.length === 0 ? 1.2 : 0.8 });
+  const padding = mochaLinked(prev) && mochaLinked(state);
+  if (now !== null && now !== was) out.push({ cue: 'thump', gain: padding ? 0.45 : state.mocha.path.length === 0 ? 1.2 : 0.8 });
 
   // A push: the slow scrape; what lands: its material's drop
   if (has('push')) out.push({ cue: 'scrape' });

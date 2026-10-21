@@ -232,7 +232,7 @@ describe('the floor: tap a node, Mocha walks there and he follows', () => {
 
 describe('lonely creatures follow the pair (咻咻)', () => {
   const cloudy = (more: Partial<PageDef['creatures'][number]> = {}) =>
-    room({ creatures: [{ id: 'shushu', positions: { sky: 'shelf', a: 'A', b: 'B', c: 'C', d: 'D' }, initial: 'sky', blocks: false, lonely: true, art: 'toy/shushu', ...more }] });
+    room({ creatures: [{ id: 'shushu', positions: { sky: 'shelf', a: 'A', b: 'B', c: 'C', d: 'D' }, initial: 'sky', blocks: false, lonely: true, art: 'common/shushu', ...more }] });
 
   test('only linked; then to its position nearest Mocha, never on Mocha’s or his node', () => {
     const def = cloudy();
@@ -302,11 +302,15 @@ describe('the floor in solutions and lint', () => {
     const ramp = room({ edges: [...room().edges, e('C', 'shelf', { kind: 'climb' })] });
     expect(codes(ramp)).toEqual(['L18-linked-edge']);
     expect(codes({ ...ramp, words: ['hug'] })).toEqual([]);
+    expect(codes({ ...ramp, words: undefined })).toEqual([]);
     expect(codes({ ...ramp, words: ['hug'], learns: { word: 'together', when: { event: 'cry' } } })).toEqual(['L18-linked-edge']);
-    const lonely = room({ creatures: [{ id: 'shushu', positions: { a: 'A' }, initial: 'a', lonely: true, art: 'toy/shushu' }] });
+    const lonely = room({ creatures: [{ id: 'shushu', positions: { a: 'A' }, initial: 'a', lonely: true, art: 'common/shushu' }] });
     expect(codes(lonely)).toEqual(['L18-lonely-blocks']);
     expect(codes({ ...lonely, words: [] })).toEqual(['L18-lonely-blocks', 'L18-lonely-unlinked']);
     expect(codes({ ...room(), solution: [{ floor: 'nowhere' }] })).toEqual(['L01-unknown-ref']);
+    // Floor taps 48 px apart: link nodes closer than LINK_GAP warn
+    const crowded = room({ nodes: [...room().nodes.slice(0, 4), n('E', 340, 400), ...room().nodes.slice(4)], edges: [...room().edges, e('D', 'E')] });
+    expect(codes(crowded)).toEqual(['L18-link-crowded']);
     expect(codes({ ...room(), learns: { growth: 3, when: { event: 'lead', id: 'nowhere' } } })).toEqual(['L01-unknown-ref']);
   });
 });

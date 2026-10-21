@@ -71,6 +71,7 @@ import { inReach, WORDS } from './words';
  * | `L16-always-wet-perch` | warning | 16: a `wet`/`steam` perch with no `blockedWhen` is refused forever (C7) |
  * | `L18-linked-edge` | error | 18: on a page where 一起 can be said, a baby edge touches a height-2 node — in linked mode Mocha would lead him onto a perch (#128) |
  * | `L18-lonely-blocks` | error | 18: a `lonely` creature blocks its node: following the pair, it would wall them in (#128) |
+ * | `L18-link-crowded` | warning | 18: on a page where 一起 can be said, two link nodes (`graph.ts`) less than `LINK_GAP` apart: their floor taps can't both be 48 CSS px (#128) |
  * | `L18-lonely-unlinked` | warning | 18: a `lonely` creature on a page where 一起 can't be said never follows anyone (#128) |
  *
  * Text lengths count code points (`[...text].length`), 「」 and punctuation included (GDD § 5.1).
@@ -111,6 +112,11 @@ export const MAX_HIT_OVERLAP = 0.3;
 /** § 3.6 rule 10, § 5.1. */
 export const MAX_TITLE_CHARS = 10;
 export const MAX_LINE_CHARS = 30;
+/**
+ * § 3.6 rule 18 (#128): the closest two link nodes may be, in page units, on a page that says 一起 —
+ * each node's floor tap is a circle half that wide, 48 CSS px at the 390 × 844 book scale (≈ 0.91).
+ */
+export const LINK_GAP = 53;
 
 const EDGE_KINDS: readonly EdgeKind[] = ['crawl', 'climb', 'cruise', 'walk', 'jump', 'squeeze'];
 const PART_INPUTS: readonly PartInput[] = ['drag-linear', 'drag-rotary', 'tap-toggle', 'tap-cycle', 'none'];
@@ -763,10 +769,13 @@ class Linter {
 
   // ——— Rule 18: linked mode (一起, #128) ———
 
-  /** Whether 一起 can be said on this page: its words allow it (all words when unlisted), or it learns it. */
+  /**
+   * Whether 一起 can be said on this page: its words list it, or it learns it. (A page with no
+   * `words` is an engine fixture — the registry always fills them in, D-48 — and is not held to it.)
+   */
   private linkable(): boolean {
     const def = this.def;
-    return def.words === undefined || def.words.includes('together') || def.learns?.word === 'together';
+    return (Array.isArray(def.words) && def.words.includes('together')) || def.learns?.word === 'together';
   }
 
   /**
@@ -783,6 +792,15 @@ class Linter {
         if (!BABY_KINDS.has(e.kind)) continue;
         const high = [e.a, e.b].filter((n) => heights.get(n) === 2);
         if (high.length > 0) this.error('L18-linked-edge', [e.a, e.b], `edge #${i} (${e.a}–${e.b}) is a ${e.kind} edge to height-2 '${high[0]}': linked, Mocha would lead Baokaka onto a perch`);
+      }
+      // Floor taps: link nodes (`graph.ts`) that stay put, pairwise (a node riding a part moves; its taps are its own business)
+      const babyEnds = new Set(this.list(this.def.edges).flatMap((e) => (BABY_KINDS.has(e.kind) ? [e.a, e.b] : [])));
+      const fixed = this.list(this.def.nodes).filter((x) => babyEnds.has(x.id) && x.height <= 1 && x.attach === undefined);
+      for (const [k, a] of fixed.entries()) {
+        for (const b of fixed.slice(k + 1)) {
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d < LINK_GAP) this.warn('L18-link-crowded', [a.id, b.id], `link nodes '${a.id}' and '${b.id}' are ${Math.round(d)} apart (under ${LINK_GAP}): linked, their floor taps can't both be 48 px`);
+        }
       }
     }
     for (const c of this.list(this.def.creatures)) {

@@ -16,6 +16,9 @@ import { babyAnim, noteFrameFallback, type ActorAnim, type FrameChoice } from '.
  * - **Touch-watch** (GDD § 2.6, bible § 5): while a finger pauses the world he watches it, the
  *   whole standee tilted 3° toward it (`watch`: −1 left, 1 right).
  * - **Lamp glow** (bible § 5): a soft warm glow behind him near a lit light (`glow`).
+ * - **The plop** (§ 2.5 第一步, #128): landing the last step of a walk he sits down with a squash
+ *   and a little bounce (`.bk-plop`, gestures.css; a CSS animation, so stills and reduced motion
+ *   show the plain sit).
  */
 
 /** The touch-watch tilt toward the finger (bible § 5: 3°). */
@@ -61,7 +64,8 @@ export function Baby({ x, y, mode, anim, frame, sx, tilt = 0, opacity = 1, watch
   useEffect(() => noteFrameFallback(anim), [anim.fallback]);
   const lean = tilt + (watch === undefined ? 0 : watch * WATCH_TILT);
   const rotate = Math.abs(lean) < 0.01 ? '' : ` rotate(${r2(lean)})`;
-  const sprite = <SpriteAnim sprite={anim.sprite} anim={frame.anim} frame={frame.frame} playing={frame.playing && !still} reduced={reduced} />;
+  const art = <SpriteAnim sprite={anim.sprite} anim={frame.anim} frame={frame.frame} playing={frame.playing && !still} reduced={reduced} />;
+  const sprite = anim.gdd === 'plop' && !reduced && !still ? <g className="bk-plop">{art}</g> : art;
   return (
     <g
       data-actor="baby"

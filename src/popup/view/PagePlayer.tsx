@@ -35,7 +35,7 @@ import { PART_SETTLE_MS } from './interp';
 import { PageView, VIEW_BOX } from './PageView';
 import { useGestures } from './useGestures';
 import { barkLog, barksOf, talkScale, type BarkShow } from './talk';
-import { sayingWord } from './actors';
+import { edgeKind, sayingWord } from './actors';
 import { WordCard, WordRing, ringSafeArea, wantPoke } from './words';
 import { mochaInFrame, photoReady, type Shot } from '../game/photo';
 import { PhotoMoment } from './photo/PhotoMoment';
@@ -110,6 +110,9 @@ import { gestureSounds, stickerSounds, tickSounds, useSound } from './sound';
  * paper camera comes down over the page; the shot (`onPhoto`: the frame, and +M when Mocha sits in
  * the `photoRect`) resumes it and he grabs the treasure. Should he reach it first (it came into
  * reach on the spot), the moment plays after the grab. A spread's `onDone` waits for its photo.
+ *
+ * Story beats (#128): a line the page's `lines.onEvent` marks `pause` holds the world while it is on
+ * the page (10-6's first steps: a line, and a held breath, for each wobbly step).
  */
 
 /** Bubbles grown past this (大字 on a short phone, ≈ 1.6×) have room for one line a beat (#104). */
@@ -454,6 +457,24 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
     const keys = new Set(learnLines(learning.key));
     if (!talk.beats.some((b) => b.some((l) => keys.has(l.key)))) setLearning({ key: learning.key, stage: 'card' });
   }, [learning, talk]);
+  // His first footprints stay on the page (#128): every walk step taken this session, oldest first
+  const [trail, setTrail] = useState<readonly (readonly [Id, Id])[]>([]);
+  useEffect(() => setTrail([]), [session]);
+  useEffect(() => {
+    const from = frame.prev.baby.node;
+    const to = frame.state.baby.node;
+    if (from === to || edgeKind(def, from, to) !== 'walk') return;
+    setTrail((t) => (t.some(([a, b]) => a === from && b === to) ? t : [...t, [from, to]]));
+  }, [def, frame]);
+  // A story beat the world waits for (#128, GDD § 5.2's 10-6 first steps): while a line its page
+  // marks `pause` is on the page, nothing moves; reading it on lets the next tick run
+  const pauseKeys = useMemo(() => new Set((def.lines?.onEvent ?? []).filter((l) => l.pause === true).map((l) => l.line)), [def]);
+  const storyHolds = !still && (talk.beats[0]?.some((l) => pauseKeys.has(l.key)) ?? false);
+  useEffect(() => {
+    if (!storyHolds) return undefined;
+    session.pause('story');
+    return () => session.resume('story');
+  }, [session, storyHolds]);
   // The ring and the card hold the world while they are up (GDD § 2.4)
   useEffect(() => {
     if (!ringOpen) return undefined;
@@ -535,7 +556,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   const onEvent = useMemo(
     () => (event: GestureEvent) => {
       // The player's own move (a part, a perch, Mocha; a drag landing on a stop) puts the hint ladder back to rest
-      if ((event.type === 'tap' && (event.target.kind === 'part' || event.target.kind === 'perch' || event.target.kind === 'mocha')) || event.type === 'snap') {
+      if ((event.type === 'tap' && (event.target.kind === 'part' || event.target.kind === 'perch' || event.target.kind === 'floor' || event.target.kind === 'mocha')) || event.type === 'snap') {
         acted();
         traceRef.current?.({ t: 'move' });
       }
@@ -723,7 +744,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       <svg className="absolute inset-0 h-full w-full" aria-hidden="true" dangerouslySetInnerHTML={{ __html: chrome.cover }} />
       <div style={block} aria-hidden="true" />
       <div style={page} ref={setBox} data-page-box="">
-        <PageView def={def} prev={frame.prev} state={frame.state} ms={midStep ? stillAt : ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still && !midStep} events={frame.events} barks={barks} talk={talkView} textScale={textScale} lowPower={lowPower} />
+        <PageView def={def} prev={frame.prev} state={frame.state} ms={midStep ? stillAt : ms} tickMs={frame.tickMs} scale={scale} reduced={reduced} gesture={flags} affordance={pageAffordance} still={still && !midStep} events={frame.events} barks={barks} talk={talkView} textScale={textScale} lowPower={lowPower} trail={trail} />
       </div>
       <TopHud
         landmark={chapterInfo(def.chapter).landmark}

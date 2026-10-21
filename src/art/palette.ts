@@ -958,6 +958,12 @@ export const POPUP_STAGE = {
   skin: '#F6D2B8',
   skinShade: '#E8B49A',
   blush: '#EE9A92',
+  // 咻咻 (#128): its rain cloud's lilac grey and the drizzle; a rain puddle on the floor page (glassine over blue)
+  rainCloud: '#B4B0D6',
+  rainCloudDeep: '#8E89BA',
+  drizzle: '#C6DAF4',
+  puddle: '#3D5C8E',
+  puddleLight: '#A8C4EA',
   hair: '#3A2A2E',
   onesie: '#F4DFA0',
   onesieShade: '#D9BE7E',

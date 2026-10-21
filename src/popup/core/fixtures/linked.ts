@@ -49,7 +49,7 @@ export const toyParty = definePage({
       id: 'shushu', positions: { cloud: 'cloud', e: 'E', f: 'F' }, initial: 'cloud', blocks: false, lonely: true,
       // Hugged (within a step and a half), it lets go of the bead and drifts to the end of the room
       react: [{ on: { type: 'hug', within: 90 }, to: 'f', drop: 'bead' }],
-      art: 'toy/shushu',
+      art: 'common/shushu',
     },
   ],
   // Up in the rain cloud nobody sees it; down at its party 咻咻 holds it tight
@@ -88,7 +88,7 @@ export const toySteps = definePage({
     {
       id: 'shushu', positions: { cloud: 'cloud', g: 'G', e: 'E' }, initial: 'cloud', blocks: false, lonely: true,
       react: [{ on: { type: 'hug', within: 90 }, to: 'e', drop: 'lock' }],
-      art: 'toy/shushu',
+      art: 'common/shushu',
     },
   ],
   attractors: [{ id: 'lock', kind: 'shiny', node: 'cloud', heldBy: 'shushu', goal: true }],

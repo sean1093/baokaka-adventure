@@ -10,6 +10,8 @@ import { clamp01, easeInOut } from '../interp';
  *   at mid-step.
  * - **Landing:** a ±2° wobble over `LAND_MS`, damped.
  * - **Look L/R** (the fallback until #141's head turns): card flips away and back over the tick.
+ * - **First steps** (§ 2.5 第一步, #128): a walk step sways side to side on top of the lean, twice a
+ *   stride, arms out (`walkSway`): he is not sure of it yet.
  * - **Reduced motion:** no arc, lean or wobble; a step is a short fade-slide into place.
  */
 
@@ -45,6 +47,19 @@ export function standeeTilt(ms: number, tickMs: number, dir: -1 | 0 | 1, reduced
   const v = u / LAND_MS;
   // Rocks forward first (the card's momentum), then back, settling
   return dir * WOBBLE_DEG * Math.sin(Math.PI * 2 * 1.5 * v) * (1 - v);
+}
+
+/** The first walk's sway (#128): degrees at its widest, either side. */
+export const WALK_SWAY_DEG = 5;
+
+/**
+ * The wobble of a walk step (§ 2.5 第一步, #128), degrees clockwise about his feet, `t` (0–1) through
+ * a step `strides` strides long: two sways a stride, settling to upright as he lands. Zero under
+ * reduced motion.
+ */
+export function walkSway(t: number, strides: number, reduced = false): number {
+  if (reduced || t <= 0 || t >= 1) return 0;
+  return WALK_SWAY_DEG * Math.sin(Math.PI * 2 * strides * t) * (1 - t * 0.5);
 }
 
 /** Reduced motion's step: a short slide into place from the travel side while fading in. */
