@@ -73,6 +73,8 @@ export function hintTarget(def: PageDef, action: Input): Pick<HintShow, 'key' | 
       return { key: `perch:${action.perch}` };
     case 'pet':
       return { key: 'mocha:mocha' };
+    case 'floor':
+      return { key: `floor:${action.node}` };
     case 'say':
       return { key: 'baby:baby' };
     default:

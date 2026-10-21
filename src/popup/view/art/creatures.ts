@@ -31,6 +31,45 @@ export function origamiPigeon(ctx: KitCtx): string {
       + `<path d="M-6 -15L-1 -1" stroke="${C.cutRim}" stroke-width=".7" opacity=".7"/><circle cx="11.4" cy="-16.6" r="1" fill="${C.ink}"/>`, `<path d="${body}"/>`);
 }
 
+/** 咻咻's cloud outline (the prologue's peeking cloud, `shushuPeek`, at creature size), centred on the origin. */
+const SHUSHU_CLOUD = 'M-22 9q-13 0 -13 -11q0 -11 13 -11q2 -14 18 -14q13 0 18 11q13 -2 14 11q2 14 -13 14z';
+
+/**
+ * 咻咻 (GDD § 4.1; #128), the baby typhoon, as a creature: a little paper cloud with a face, feet
+ * (its float point) at the origin. Up in its rain cloud (`pos` 'cloud' or 'sky') it is lilac grey,
+ * eyes shut tight, and drizzles on whatever is under it; anywhere else — down on the floor,
+ * following the pair (`lonely`) — a small white cloud hovering over its own soft shadow, looking up
+ * at them with a tear still on its cheek.
+ */
+export function shushuCloud(ctx: KitCtx, pos?: string): string {
+  const raining = pos === 'cloud' || pos === 'sky';
+  const lift = raining ? 0 : -40;
+  const body = raining ? S.rainCloud : C.vellum;
+  const shade = raining ? S.rainCloudDeep : C.printLilac;
+  const eyes = raining
+    ? `<path d="M2 -4q2.6 2.2 5.2 0M11 -4q2.6 2.2 5.2 0" stroke="${C.ink}" stroke-width="1.5" stroke-linecap="round" fill="none"/>`
+    : `<circle cx="4.6" cy="-4.4" r="1.9" fill="${C.ink}"/><circle cx="13.4" cy="-3.8" r="1.9" fill="${C.ink}"/><circle cx="5.2" cy="-5.1" r=".6" fill="${C.cutRim}"/><circle cx="14" cy="-4.5" r=".6" fill="${C.cutRim}"/>`;
+  const tear = `<path d="M17.6 -0.6q1.8 2.8 0 4.2q-1.8 -1.4 0 -4.2z" fill="${S.drizzle}" stroke="${shade}" stroke-width=".5"/>`;
+  let drizzle = '';
+  if (raining) for (const [x, y, l] of [[-24, 18, 16], [-12, 24, 22], [0, 18, 18], [12, 26, 20], [24, 18, 14]] as const) drizzle += `M${x} ${y}l-3 ${l}`;
+  return (raining ? '' : softEllipse(ctx, 0, 1, 20, 3.4, 'shadow', 0.3))
+    + `<g transform="translate(0 ${lift})">`
+    + (raining ? `<path d="${drizzle}" stroke="${S.drizzle}" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="5 4" opacity=".85"/>` : '')
+    + depth(ctx, 2, `<path d="${SHUSHU_CLOUD}" fill="${body}"/>`
+      + `<path d="M-14 4q0 -9 9 -9q8 0 8 6q0 5 -5 5q-3 0 -3 -3" stroke="${shade}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`
+      + `<path d="M-30 1q2 -8 10 -8" stroke="${C.cutRim}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".7"/>`
+      + eyes + `<circle cx="1.6" cy="1.4" r="2.6" fill="${S.blush}" opacity=".55"/><circle cx="17" cy="2" r="2.4" fill="${S.blush}" opacity=".55"/>`
+      + (raining ? '' : tear), `<path d="${SHUSHU_CLOUD}"/>`)
+    + `</g>`;
+}
+
+/** A rain puddle on the floor page (#128: 咻咻's tears, 10-5), centred on a node's floor point. */
+export function puddle(): string {
+  return `<g data-puddle=""><ellipse cx="0" cy="1" rx="26" ry="6.5" fill="${S.puddle}" opacity=".78"/>`
+    + `<ellipse cx="-4" cy="0" rx="17" ry="3.6" fill="none" stroke="${S.puddleLight}" stroke-width="1.1" opacity=".75"/>`
+    + `<path d="M8 -1.5q6 -1 10 1" stroke="${C.cutRim}" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".7"/></g>`;
+}
+
 /** The backpacker's sleepy or open eyes and his face (paper style: dots, a blush, a small nose). */
 function packerFace(x: number, y: number, asleep: boolean): string {
   const eyes = asleep

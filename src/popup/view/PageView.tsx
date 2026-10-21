@@ -8,7 +8,7 @@ import { holds, partState } from '../core/cond';
 import { partLocked, stepGrowth } from '../core/step';
 import type { SimEvent } from '../core/events';
 import { nodePos } from '../core/graph';
-import { mochaNode, perchHidesMocha } from '../core/mocha';
+import { mochaLinked, mochaNode, perchHidesMocha } from '../core/mocha';
 import type { CreatureDef, CutoutDef, Id, PageDef, PerchDef, SimState } from '../core/types';
 import { SpriteGrade, chapterGradeKey, spriteBox, spriteHead } from '../sprites';
 import type { TalkLine } from '../content/script';
@@ -30,7 +30,9 @@ import {
   sayingWord,
   standeeTilt,
   stepT,
+  strideCycles,
   travelDir,
+  walkSway,
 } from './actors';
 import './affordance/affordance.css';
 import { haloShape, handGesture, linkThread } from './affordance/hints';
@@ -40,11 +42,12 @@ import { treasureOnPage } from './photo/treasureArt';
 import { dressOf, ledgeStyleOf, ownsPost } from './art/dress';
 import { dressedLedge, foregroundCard, styledRamp } from './art/ledges';
 import { Fireflies } from './Fireflies';
-import { attractorArt, chapterSky, decoyArt, spine, perchMark, perchPost, rail, ramp, spotPool, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
+import { attractorArt, chapterSky, decoyArt, firstFootprint, floorMark, spine, perchMark, perchPost, rail, ramp, spotPool, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
 import { riderArt } from './art/riders';
+import { puddle } from './art/creatures';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
-import { NO_GESTURE, hitCenter, minHit, rideHome, shiftHit, targetsOf, type GestureFlags } from './gestures';
+import { FLOOR_LIFT, NO_GESTURE, floorTargets, hitCenter, minHit, rideHome, shiftHit, targetsOf, type GestureFlags } from './gestures';
 import { clamp01, drawnNodePos, easeInOut, lerpPt, offpagePoint, partProgress, stepPose } from './interp';
 import { PRESET_Z, type LayerId } from './layers';
 import { ArtG, r2, tweened } from './parts/common';
@@ -80,6 +83,11 @@ import { BarkBubble, Subtitles, ThoughtBubble, barksOf, bubbleShow, goalBox, lay
  *
  * Words (#99): on a say tick the word's big speech bubble is one of his barks (`barksOf`) and its
  * reach widens from him as the effect ring (`words/SayFx.tsx`) in the fx layer.
+ *
+ * Linked (一起, #128): the perch paws give way to floor marks (a paw and a footprint) on every
+ * node a tap can lead them to; Mocha walks the floor `LINK_SIDE` ahead of him on his facing side
+ * (a walk cycle, no hop) and purrs beside him, the two of them in one warm pool of light; a walk
+ * step sways and leaves his first footprints, and the last one ends in the sit-down plop.
  */
 
 /** The SVG's view box in page units: the page plus room for the floor page's widening and the page block. */
@@ -120,9 +128,20 @@ export interface PageViewProps {
   readonly textScale?: number;
   /** Low power (bible § 9.3, #104): the grab's sparkle burst at half its rays and glints */
   readonly lowPower?: boolean;
+  /** Walk steps he took earlier this session (#128, `PagePlayer`): his first footprints stay on the floor */
+  readonly trail?: readonly (readonly [Id, Id])[];
 }
 
 const NO_EVENTS: readonly SimEvent[] = [];
+const NO_TRAIL: readonly (readonly [Id, Id])[] = [];
+
+/** The footprints of a walk step from `a` to `b` (#128): one per `FOOTPRINTS_AT` already reached at `k`. */
+function stepPrints(a: Pt, b: Pt, k: number, opacity: number): string {
+  return FOOTPRINTS_AT.filter((f) => k >= f)
+    // On the ledge's top, just behind its front edge (the floor marks' line, FLOOR_LIFT), left and right of his line
+    .map((f, i) => firstFootprint(a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f - FLOOR_LIFT + (i % 2 === 0 ? 1.8 : -1.8), i % 2 === 0, opacity))
+    .join('');
+}
 
 /** A baked bitmap as an SVG `<image>` string over its box (page or local units). */
 const image = (url: string, box: { x: number; y: number; w: number; h: number }, attrs = '') =>
@@ -144,6 +163,11 @@ function creaturePoint(def: PageDef, creature: CreatureDef, state: SimState, oth
   const anchor = near ?? (any === undefined ? undefined : nodePos(def, state, any));
   return anchor === undefined ? null : offpagePoint(anchor);
 }
+
+/** Linked (一起, #128): how far ahead of him, on his facing side, Mocha stands and walks (page units). */
+export const LINK_SIDE = 36;
+/** Where along a walk step his first footprints fall (fractions of the step, #128). */
+export const FOOTPRINTS_AT = [0.36, 0.7] as const;
 
 /** How far above the carrier's feet he rides in her arms (page units; GDD § 2.4 抱抱, #120). */
 export const CARRY_LIFT = 34;
@@ -178,7 +202,7 @@ export function carriedPose(def: PageDef, prev: SimState, state: SimState, pose:
   return { ...pose, x: pose.x + ahead, y: pose.y - CARRY_LIFT * lift };
 }
 
-export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false, events = NO_EVENTS, barks: barksProp, talk, textScale = 1, lowPower = false }: PageViewProps) {
+export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: reducedProp, gesture = NO_GESTURE, affordance = NO_AFFORDANCE, still = false, events = NO_EVENTS, barks: barksProp, talk, textScale = 1, lowPower = false, trail = NO_TRAIL }: PageViewProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;
   const ids = useSvgIds(`pg-${def.id}`);
@@ -217,6 +241,12 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     const crossing = stage.crossings.map((c) => ({ c, rail: railed ? rail(ctx, theme, c.part !== undefined) : '', ramp: c.from[1] === c.to[1] ? '' : ramp(ctx, c, theme) }));
     return { backdrop, cutouts, floor, foreground, crossing };
   }, [ctx, def, stage, theme]);
+
+  // 咻咻's rain on the floor (#128): a puddle on every floor node tagged `wet` that he walks (Mocha only crosses one linked)
+  const puddles = useMemo(() => {
+    const walked = new Set(def.edges.filter((e) => e.kind !== 'jump' && e.kind !== 'squeeze').flatMap((e) => [e.a, e.b]));
+    return def.nodes.filter((n) => n.tags?.includes('wet') && walked.has(n.id) && n.attach === undefined).map((n) => `<g transform="translate(${n.x} ${n.y})">${puddle()}</g>`).join('');
+  }, [def]);
 
   // ——— Parts, split around the ledges by depth ———
   const riders = useMemo(() => new Set(def.nodes.filter((n) => n.attach).map((n) => n.attach!.part)), [def]);
@@ -310,8 +340,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     );
   });
 
-  // ——— Attractors where they lie, and Mocha's empty perches ———
-  const mochaOn = state.mocha.perch !== null || state.mocha.path.length > 0;
+  // ——— Attractors where they lie, and Mocha's empty perches (linked, the floor's marks) ———
+  const linked = state.baby.linked;
+  const mochaOn = !linked && (state.mocha.perch !== null || state.mocha.path.length > 0);
   const attractors = def.attractors.map((a) => {
     if (state.consumed.includes(a.id) || (a.goal && state.done)) return null;
     if (!holds(def, state, a.visibleWhen)) return null;
@@ -334,8 +365,15 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         .filter((p) => p.id !== state.mocha.perch)
         .map((p) => <PerchMarkItem key={p.id === nope ? `${p.id}:nope:${state.tick}` : p.id} ctx={ctx} perch={p} def={def} state={state} bold={affordance.elder === true} nope={p.id === nope && !reduced} />)
     : [];
+  const floors = linked && !state.done
+    ? floorTargets(def, state).map((tg) => {
+        const [x, y] = hitCenter(tg.hit);
+        return <FloorMarkItem key={tg.id === nope ? `${tg.id}:nope:${state.tick}` : tg.id} ctx={ctx} x={x} y={y + FLOOR_LIFT} bold={affordance.elder === true} nope={tg.id === nope && !reduced} />;
+      })
+    : [];
   const nopePerch = nope === undefined ? undefined : def.perches.find((p) => p.id === nope);
-  const nopeAt = nopePerch === undefined ? undefined : nodePos(def, state, nopePerch.node);
+  // A floor node he can't lead them to (#128): he looks at it too
+  const nopeAt = nopePerch !== undefined ? nodePos(def, state, nopePerch.node) : nope !== undefined && linked ? nodePos(def, state, nope) : undefined;
 
   // ——— Creatures ———
   const shinyBeside = (p: Pt): Pt | undefined => {
@@ -375,7 +413,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const riding = babyFrom === babyTo && babyStart !== undefined && babyEnd !== undefined && (babyStart[0] !== babyEnd[0] || babyStart[1] !== babyEnd[1]);
   // The word he says this tick (#99: the big speech bubble is a bark, the effect ring is below)
   const sayWord = sayingWord(prev, state, events);
-  const bAnim = babyAnim({ mode: state.baby.mode, edge: babyEdge, riding, growth: stepGrowth(def, state), watching: finger !== null, word: sayWord, high: reachedHigh(def, state) });
+  // The first walk's last step lands in a plop (#128): once the step is down, or at once in a still
+  const plop = babyEdge === 'walk' && (tStep >= 1 || held);
+  const bAnim = babyAnim({ mode: state.baby.mode, edge: babyEdge, riding, growth: stepGrowth(def, state), watching: finger !== null, word: sayWord, high: reachedHigh(def, state), plop });
   const babyDist = babyEdge !== null && babyStart && babyEnd ? Math.hypot(babyEnd[0] - babyStart[0], babyEnd[1] - babyStart[1]) : 0;
   const bFrame = chooseFrame(bAnim, { k: kStep, dist: babyDist, tickMs, hold: held });
   let babyPose = stepPose(def, prev, state, babyFrom, babyTo, tStep, ms, { reduced, preview });
@@ -389,7 +429,18 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   // art (both tween the same way); lifted on the pick-up tick, lowered on the set-down tick
   if (babyPose !== null) babyPose = carriedPose(def, prev, state, babyPose, ms, reduced, reduced || still ? 1 : kStep);
   const babyDir = babyEdge !== null && babyStart && babyEnd ? travelDir(babyStart, babyEnd) : 0;
-  const babyTilt = still ? 0 : standeeTilt(ms, tickMs, babyDir, reduced);
+  // A walk step (第一步, #128) sways on top of the lean: he is not sure of it yet
+  const sway = babyEdge === 'walk' && bAnim.gdd === 'walk' ? walkSway(tStep, strideCycles(babyDist), reduced) : 0;
+  const babyTilt = still ? 0 : standeeTilt(ms, tickMs, babyDir, reduced) + sway;
+  // His first footprints, chalk on the floor: those of earlier walk steps stay, this step's appear as each foot comes down
+  const footprints = trail
+    .filter(([a, b]) => !(a === babyFrom && b === babyTo))
+    .map(([a, b]) => {
+      const p = nodePos(def, state, a);
+      const q = nodePos(def, state, b);
+      return p && q ? stepPrints(p, q, 1, 0.45) : '';
+    })
+    .join('') + (babyEdge === 'walk' && babyStart && babyEnd ? stepPrints(babyStart, babyEnd, held ? 1 : tStep, 0.6) : '');
   const watch = finger === null || babyPose === null ? undefined : finger[0] < babyPose.x ? -1 : 1;
   const sx = flipScale(prev.baby.facing, state.baby.facing, ms, reduced);
   const show = bubbleShow(def, state);
@@ -410,13 +461,19 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const perch = def.perches.find((p) => p.id === state.mocha.perch);
   const mochaHidden = perch !== undefined && perchHidesMocha(def, perch) && state.mocha.path.length === 0;
   const mochaTravel = mochaFrom !== null && mochaTo !== null && mochaFrom !== mochaTo;
+  // Linked (#128): on the floor on both sides of the tick, a step is a walk; the tick he hops down is a hop
+  const mochaWalk = mochaLinked(prev) && mochaLinked(state);
   const mochaStart = mochaFrom === null ? undefined : nodePos(def, prev, mochaFrom);
-  const mochaEnd = mochaTo === null ? undefined : nodePos(def, state, mochaTo);
+  // Linked (#128) he is drawn LINK_SIDE ahead of Baokaka's node, on his facing side
+  const mochaSide = mochaLinked(state) ? LINK_SIDE * (state.baby.facing === 'r' ? 1 : -1) : 0;
+  const mochaNodeEnd = mochaTo === null ? undefined : nodePos(def, state, mochaTo);
+  const mochaEnd: Pt | undefined = mochaNodeEnd === undefined ? undefined : [mochaNodeEnd[0] + mochaSide, mochaNodeEnd[1]];
   const stared = prev.mocha.stare;
   const mState = mochaState({
     travelling: mochaTravel,
     landed: tStep >= 1 || held,
     edge: mochaTravel ? edgeKind(def, mochaFrom!, mochaTo!) : null,
+    linked: mochaWalk,
     hidden: mochaHidden,
     staring: state.mocha.stare !== undefined,
     pushing: stared !== undefined && state.mocha.stare === undefined && state.pushables[stared] === 'falling',
@@ -424,22 +481,29 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     glare: locked !== null && finger !== null,
     puff: events.some((e) => e.type === 'mochaPuff'),
     nope: events.some((e) => e.type === 'mochaNope'),
-    cuddled: state.baby.mode === 'cuddling' && state.baby.target === 'mocha',
+    // Cuddled, or linked and beside him: he purrs
+    cuddled: (state.baby.mode === 'cuddling' && state.baby.target === 'mocha') || (state.baby.mode === 'linked' && state.baby.node === mochaTo),
     onPart: perch?.onPart !== undefined,
   });
   // A hint's cue (#100) while he is at rest: the nudge's yawn, 「等等看。」's sit; he looks at the hinted target
   const cue = affordance.mocha && mochaCueFits(mState) ? affordance.mocha : null;
   const mAnim = cue === 'yawn' || cue === 'wait' ? MOCHA_CUE_ANIM[cue] : MOCHA_STATE_ANIM[mState];
-  const mFrame = chooseFrame(mAnim, { k: tStep, dist: 0, tickMs, hold: held });
+  const mochaDist = mochaTravel && mochaStart && mochaNodeEnd ? Math.hypot(mochaNodeEnd[0] - mochaStart[0], mochaNodeEnd[1] - mochaStart[1]) : 0;
+  const mFrame = chooseFrame(mAnim, { k: mochaWalk ? kStep : tStep, dist: mochaDist, tickMs, hold: held });
   // In a box (C9) he is still drawn at the perch: the `inbox` frame is only his head and paws over the rim
-  let mochaPose = stepPose(def, prev, state, mochaFrom, mochaTo, tStep, ms, { reduced, hop: 24, preview });
+  let mochaPose = stepPose(def, prev, state, mochaFrom, mochaTo, tStep, ms, { reduced, hop: mochaWalk ? 0 : 24, preview });
+  // Linked he stands LINK_SIDE ahead of him on his facing side (turning with his card flip); hopping down, he lands there
+  if (mochaPose !== null && mochaLinked(state)) {
+    const side = LINK_SIDE * sx * (mochaWalk || held ? 1 : kStep);
+    mochaPose = { ...mochaPose, x: mochaPose.x + side };
+  }
   let mochaOpacity = 1;
   if (reduced && !still && mochaTravel && mochaStart && mochaPose) {
     const f = fadeSlide(mochaStart, [mochaPose.x, mochaPose.y], ms);
     mochaPose = { x: f.x, y: f.y, moving: f.opacity < 1 };
     mochaOpacity = f.opacity;
   }
-  const mochaDir = mochaTravel && mochaStart && mochaEnd ? travelDir(mochaStart, mochaEnd) : 0;
+  const mochaDir = mochaTravel && mochaStart && mochaNodeEnd ? travelDir(mochaStart, mochaNodeEnd) : 0;
   const mochaTilt = still ? 0 : standeeTilt(ms, tickMs, mochaDir, reduced);
   // At rest he sits turned toward 寶咖咖 — or, with a hint's yawn or look, toward the hinted target;
   // travelling, toward where he is going (frames face right)
@@ -482,6 +546,11 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   }, [beat, said.fit, onCrowded]);
   const babyOff: Pt = babyPose && babyEnd ? [babyPose.x - babyEnd[0], babyPose.y - babyEnd[1]] : [0, 0];
   const mochaOff: Pt = mochaPose && mochaEnd ? [mochaPose.x - mochaEnd[0], mochaPose.y - mochaEnd[1]] : [0, 0];
+  const mochaEl = mochaPose && (
+    <Mocha x={mochaPose.x} y={mochaPose.y} anim={mAnim} frame={mFrame} glare={locked?.serial} facing={mochaFacing} tilt={mochaTilt} opacity={mochaOpacity} reduced={reduced} still={still} tapping={cue === 'wait'} />
+  );
+  // Linked and on one node (or about to be): the pool of light under the pair (#128)
+  const together = linked && !state.done && state.baby.node === mochaTo;
   const was = still ? show : bubbleShow(def, prev);
 
   // ——— The grab (GDD § 2.8 step 1): 「這個！」 (a bark) and a sparkle burst where the shiny was ———
@@ -543,6 +612,10 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       <Layer id="floor">
         <ArtG html={statics.floor} />
         {crossings}
+        {puddles && <ArtG html={puddles} />}
+        {footprints && <ArtG html={footprints} />}
+        {/* Linked (#128): the floor's marks lie on the floor, under whoever stands near them */}
+        {floors.length > 0 && <g data-floor-marks="">{floors}</g>}
       </Layer>
       <Layer id="parts-near">
         {!haloMid && !haloOnTop && halo}
@@ -557,12 +630,16 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       <Layer id="actors">
         {/* The characters in their chapter's half grade (#96: a baked variant of each frame) */}
         <SpriteGrade.Provider value={chapterGradeKey(def.chapter)}>
-        {mochaPose && (
-          <Mocha x={mochaPose.x} y={mochaPose.y} anim={mAnim} frame={mFrame} glare={locked?.serial} facing={mochaFacing} tilt={mochaTilt} opacity={mochaOpacity} reduced={reduced} still={still} tapping={cue === 'wait'} />
+        {/* 一起 (#128): side by side, the two of them stand in one warm pool of light */}
+        {together && babyPose && mochaPose && (
+          <ellipse data-together="" cx={r2((babyPose.x + mochaPose.x) / 2)} cy={r2((babyPose.y + mochaPose.y) / 2 - 3)} rx={r2(Math.abs(mochaPose.x - babyPose.x) / 2 + 40)} ry={16} fill={`url(#${ctx.id('standeeGlow')})`} />
         )}
+        {/* Linked (#128) Mocha walks ahead of him, so he is drawn in front */}
+        {!linked && mochaEl}
         {babyPose && (
           <Baby x={babyPose.x} y={babyPose.y} mode={state.baby.mode} anim={bAnim} frame={bFrame} sx={sx} tilt={babyTilt} opacity={babyOpacity} watch={watch} glow={glow} reduced={reduced} still={still} />
         )}
+        {linked && mochaEl}
         </SpriteGrade.Provider>
       </Layer>
       <Layer id="fx">
@@ -671,6 +748,12 @@ function AttractorItem({ ctx, id, kind, art, x, y, treasure, look, from }: { ctx
 function PerchMarkItem({ ctx, perch, def, state, bold, nope = false }: { ctx: KitCtx; perch: PerchDef; def: PageDef; state: SimState; bold: boolean; nope?: boolean }) {
   const p = nodePos(def, state, perch.node);
   const html = useMemo(() => (p ? perchMark(ctx, p[0], p[1], bold) : ''), [ctx, p?.[0], p?.[1], bold]);
+  return <ArtG html={html} className={nope ? 'perch-mark perch-nope' : 'perch-mark'} />;
+}
+
+/** Linked mode's floor mark (#128): a paw and a footprint where a tap leads them; shakes on a 「喵？」. */
+function FloorMarkItem({ ctx, x, y, bold, nope = false }: { ctx: KitCtx; x: number; y: number; bold: boolean; nope?: boolean }) {
+  const html = useMemo(() => floorMark(ctx, x, y, bold), [ctx, x, y, bold]);
   return <ArtG html={html} className={nope ? 'perch-mark perch-nope' : 'perch-mark'} />;
 }
 

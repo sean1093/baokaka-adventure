@@ -211,7 +211,7 @@ describe('the page list', () => {
 
   test('the lab lists every registered page, then the lab fixtures', () => {
     expect(LAB_PAGES.slice(0, PAGES.length)).toEqual(PAGES);
-    expect(LAB_FIXTURES.map((p) => p.id)).toEqual(['c1p2-broken', 'lab-words', 'toy-spotlight', 'toy-squirrel', 'toy-moon', 'lab-ring4', 'toy-balloon', 'toy-hug', 'toy-carousel', 'toy-plane', 'toy-climb', 'lab-ring6', 'toy-steam', 'toy-pinwheel', 'toy-ferry', 'toy-101', 'lab-ring7']);
+    expect(LAB_FIXTURES.map((p) => p.id)).toEqual(['c1p2-broken', 'lab-words', 'toy-spotlight', 'toy-squirrel', 'toy-moon', 'lab-ring4', 'toy-balloon', 'toy-hug', 'toy-carousel', 'toy-plane', 'toy-climb', 'lab-ring6', 'toy-steam', 'toy-pinwheel', 'toy-ferry', 'toy-101', 'lab-ring7', 'toy-party', 'toy-steps']);
     expect(labPageById('c1p2')).toBe(c1p2);
     expect(labPageById('c1p2-broken')).toBe(LAB_FIXTURES[0]);
     expect(labPageById('nope')).toBeUndefined();

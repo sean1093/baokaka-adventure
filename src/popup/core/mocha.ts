@@ -1,6 +1,6 @@
 import { evalCond, holds } from './cond';
 import type { SimEvent } from './events';
-import { walkGraph } from './graph';
+import { isLinkNode, walkGraph } from './graph';
 import { compilePart } from './presets';
 import type { Id, Input, NodeDef, PageDef, PerchDef, SimState } from './types';
 
@@ -35,6 +35,13 @@ import type { Id, Input, NodeDef, PageDef, PerchDef, SimState } from './types';
  * - **Pet** (tap Mocha) repeats the perch's actions — press the button again, pull the cord again,
  *   push again if the pushable is back `onPerch` — with no new `catArrive` and no scaring.
  *
+ * **Linked mode** (一起, GDD § 2.4, #128, D-92): C1, C7 and C8 are suspended. `mochaLink` hops him
+ * down from wherever he is to Baokaka's node (leaving his perch as any trip does); from then on he
+ * stands on the floor (`floorNode`), perches and pets are ignored, and a `floor` input
+ * (`mochaFloor`) walks him to a link node over every baby edge kind (`lead` walker, `graph.ts`),
+ * one edge per tick (`LEAD_EDGES_PER_TICK`, Baokaka's pace, so they walk side by side), through
+ * puddles and all. Arriving he emits `lead`.
+ *
  * A press or a `set` always emits `partEnter` (with `state`), even when the part is already in
  * that state: that is what "press again" means, and what 1-5's elevator reacts to. The cascade
  * that turns these events into reactions is the tick's (#84).
@@ -42,6 +49,8 @@ import type { Id, Input, NodeDef, PageDef, PerchDef, SimState } from './types';
 
 /** § 2.3: edges Mocha travels per tick. */
 export const MOCHA_EDGES_PER_TICK = 2;
+/** Linked mode (#128): Mocha walks the floor at Baokaka's pace, one edge per tick. */
+export const LEAD_EDGES_PER_TICK = 1;
 
 /** Why a perch is out of bounds for Mocha right now. */
 export type PerchRefusal = 'wet' | 'steam' | 'glass' | 'blocked';
@@ -78,9 +87,15 @@ export function mochaSettled(state: SimState): boolean {
   return state.mocha.perch !== null && state.mocha.path.length === 0;
 }
 
+/** Mocha is on the floor in linked mode (一起, #128). */
+export function mochaLinked(state: SimState): boolean {
+  return state.mocha.floorNode !== undefined;
+}
+
 /** The node Mocha is on (mid-trip, the node he has reached), or null when he isn't on the page. */
 export function mochaNode(def: PageDef, state: SimState): Id | null {
-  const { perch, path } = state.mocha;
+  const { perch, path, floorNode } = state.mocha;
+  if (floorNode !== undefined) return floorNode;
   if (path.length > 0) return path[0];
   return findPerch(def, perch)?.node ?? null;
 }
@@ -127,7 +142,7 @@ function avoided(def: PageDef, state: SimState): Id[] {
 export function catPath(def: PageDef, state: SimState, perchId: Id): Id[] | null {
   const from = mochaNode(def, state);
   const perch = findPerch(def, perchId);
-  if (from === null || perch === undefined || perchRefusal(def, state, perch) !== null) return null;
+  if (from === null || mochaLinked(state) || perch === undefined || perchRefusal(def, state, perch) !== null) return null;
   return walkGraph(def, state, { who: 'cat', avoid: avoided(def, state) }).bfs(from, perch.node);
 }
 
@@ -139,7 +154,7 @@ export function catPath(def: PageDef, state: SimState, perchId: Id): Id[] | null
  */
 export function mochaCommand(def: PageDef, state: SimState, perchId: Id): MochaResult {
   const m = state.mocha;
-  if (mochaNode(def, state) === null) return { state, events: [] };
+  if (mochaNode(def, state) === null || mochaLinked(state)) return { state, events: [] };
   if (perchId === (m.path.length > 0 ? m.to : m.perch)) return { state, events: [] };
   const perch = findPerch(def, perchId);
   const refusal = perch === undefined ? null : perchRefusal(def, state, perch);
@@ -192,19 +207,10 @@ export function mochaTick(def: PageDef, state: SimState, input?: Input): MochaRe
   }
 
   if (s.mocha.path.length === 0) return { state: s, events };
+  if (mochaLinked(s)) return { state: leadStep(s, events), events };
 
   // Leaving: catLeave, release the button he held (locks are derived and lift by themselves).
-  const origin = findPerch(def, s.mocha.perch);
-  if (s.mocha.perch !== null) {
-    events.push({ type: 'catLeave', id: s.mocha.perch });
-    s = { ...s, mocha: { ...s.mocha, perch: null } };
-    const held = origin?.onPart;
-    if (held !== undefined && isButton(def, held) && s.parts[held] === 'down' && !buttonWeighed(def, s, held)) {
-      s = setPart(def, s, held, 'up', events);
-    }
-    const weight = counterweightOf(def, held);
-    if (weight !== undefined) s = setPart(def, s, held!, weight.off, events);
-  }
+  s = leavePerch(def, s, events);
 
   const path = s.mocha.path.slice(Math.min(MOCHA_EDGES_PER_TICK, s.mocha.path.length - 1));
   if (path.length > 1) return { state: { ...s, mocha: { ...s.mocha, path } }, events };
@@ -218,6 +224,57 @@ export function mochaTick(def: PageDef, state: SimState, input?: Input): MochaRe
   events.push({ type: 'catArrive', id: perch.id });
   s = perchActions(def, s, perch, events, true);
   return { state: s, events };
+}
+
+/** Leaving his perch: `catLeave`, and the button or counterweight he held lets go. No-op off a perch. */
+function leavePerch(def: PageDef, state: SimState, events: SimEvent[]): SimState {
+  const origin = findPerch(def, state.mocha.perch);
+  if (state.mocha.perch === null) return state;
+  events.push({ type: 'catLeave', id: state.mocha.perch });
+  let s: SimState = { ...state, mocha: { ...state.mocha, perch: null } };
+  const held = origin?.onPart;
+  if (held !== undefined && isButton(def, held) && s.parts[held] === 'down' && !buttonWeighed(def, s, held)) {
+    s = setPart(def, s, held, 'up', events);
+  }
+  const weight = counterweightOf(def, held);
+  if (weight !== undefined) s = setPart(def, s, held!, weight.off, events);
+  return s;
+}
+
+/**
+ * 一起 (§ 2.4, #128): Mocha hops down to Baokaka's node and stands on the floor for the rest of the
+ * page. From a perch he leaves it (`catLeave`, releases); mid-trip, the trip is dropped; a stare is
+ * forgotten. Nothing happens when he isn't on the page (or is already linked).
+ */
+export function mochaLink(def: PageDef, state: SimState): MochaResult {
+  if (mochaNode(def, state) === null || mochaLinked(state)) return { state, events: [] };
+  const events: SimEvent[] = [];
+  const s = leavePerch(def, state, events);
+  return { state: { ...s, mocha: { perch: null, path: [], floorNode: state.baby.node } }, events };
+}
+
+/**
+ * § 3.3 phase 1, input `floor` (linked mode, #128): walk Mocha to link node `node` over the floor
+ * (the `lead` walker: every baby edge kind, never through a creature, a closed gate or a place no
+ * one stands). Commits the path for phase 3; `mochaNope` when there is no way (or it isn't a link
+ * node); the node he stands on stops him. Ignored unless he is linked.
+ */
+export function mochaFloor(def: PageDef, state: SimState, node: Id): MochaResult {
+  const m = state.mocha;
+  if (m.floorNode === undefined) return { state, events: [] };
+  if (node === (m.path.at(-1) ?? m.floorNode)) return { state, events: [] };
+  const path = isLinkNode(def, node) ? walkGraph(def, state, { who: 'lead' }).bfs(m.floorNode, node) : null;
+  if (path === null) return { state, events: [{ type: 'mochaNope', id: node }] };
+  return { state: { ...state, mocha: { ...m, path: path.length > 1 ? path : [] } }, events: [] };
+}
+
+/** Phase 3 in linked mode: one edge along his floor path; arriving, `lead` (with where, for radii). */
+function leadStep(state: SimState, events: SimEvent[]): SimState {
+  const path = state.mocha.path.slice(Math.min(LEAD_EDGES_PER_TICK, state.mocha.path.length - 1));
+  const floorNode = path[0];
+  if (path.length > 1) return { ...state, mocha: { ...state.mocha, floorNode, path } };
+  events.push({ type: 'lead', id: floorNode });
+  return { ...state, mocha: { ...state.mocha, floorNode, path: [] } };
 }
 
 function isButton(def: PageDef, partId: Id): boolean {

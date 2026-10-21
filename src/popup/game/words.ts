@@ -1,8 +1,8 @@
 import { GROWTH_KEY, LEARN_BEATS, learnLineKeys, type LearnKey } from '../content/words';
 import type { SimEvent } from '../core/events';
-import { learned } from '../core/step';
+import { learned, sayable } from '../core/step';
 import type { BabyMode, LineKey, PageDef, SimState, Word } from '../core/types';
-import { WORDS, wordAvailable } from '../core/words';
+import { WORDS } from '../core/words';
 
 /**
  * Words on the page (GDD § 2.4, § 5.4, § 6 risk 1; #99): what the word ring offers, the learn beat,
@@ -16,12 +16,12 @@ export const MAX_RING_WORDS = 8;
 /**
  * The words the ring offers now: exactly what `core/step` would accept as a `say` — the page's
  * `words` (by default those learned on earlier pages; a replayed earlier page hides words learned
- * later, § 2.10, #93) plus its own `learns` word once it has been learned — in the § 2.4 schedule
- * order (the order they are learned). Empty: tapping Baokaka shows 「要！」 instead (§ 6 risk 1).
+ * later, § 2.10, #93) plus its own `learns` word once it has been learned (`sayable`; linked, not
+ * 一起 again nor 不要！, #128) — in the § 2.4 schedule order (the order they are learned). Empty:
+ * tapping Baokaka shows 「要！」 instead (§ 6 risk 1).
  */
 export function ringWords(def: PageDef, state: SimState): Word[] {
-  const done = learned(state);
-  return WORDS.filter((w) => wordAvailable(def, w, done)).slice(0, MAX_RING_WORDS);
+  return WORDS.filter((w) => sayable(def, state, w)).slice(0, MAX_RING_WORDS);
 }
 
 /** What this tick's `learn` event taught (a word, else a growth stage), or null. */

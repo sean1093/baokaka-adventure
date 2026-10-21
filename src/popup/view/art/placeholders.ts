@@ -1,6 +1,6 @@
 import { POPUP as C, POPUP_CHAPTER_CLOCK, POPUP_MAOKONG as MK, POPUP_STAGE as S, POPUP_STATION as T, mixHex, type PopupChapterSky } from '../../../art/palette';
 import type { Kind, PageDef } from '../../core/types';
-import { PRESET_DEFS, brad, depth, f1, kitDefs, pageBlock, paw, pinholes, ref, scallopBand, seeded, skyline, softEllipse, sparkle, translate, type DefName, type KitCtx } from '../../art';
+import { PRESET_DEFS, brad, depth, f1, f2, kitDefs, pageBlock, paw, pinholes, ref, scallopBand, seeded, skyline, softEllipse, sparkle, translate, type DefName, type KitCtx } from '../../art';
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorOutline, floorWiden, towardVp } from '../geometry';
 import { treasureArt } from '../photo/treasureArt';
 import { LEDGE_DEPTH, type Carriage, type LedgeRun, type PerchPost, type Slope } from '../stage';
@@ -432,6 +432,36 @@ export function perchMark(ctx: KitCtx, x: number, y: number, bold = false): stri
   // 1-1's rack paw vanished on the cream map)
   return `<g data-affordance="perch" transform="${translate(x, y - 6)}">${softEllipse(ctx, 0, 2, 22, 7, 'marigold', 0.45)}`
     + `<g stroke="${C.ink}" stroke-width=".9" stroke-opacity=".85">${paw(C.chalk, 1.15)}</g></g>`;
+}
+
+/** A baby's footprint, toes up (+y is the heel): a sole and four toes, centred on the origin. */
+function babyFoot(fill: string, s = 1, mirror = false): string {
+  const m = mirror ? -1 : 1;
+  const toe = (x: number, y: number, r: number) => `<circle cx="${f1(x * s * m)}" cy="${f1(y * s)}" r="${f1(r * s)}"/>`;
+  return `<g fill="${fill}"><ellipse cy="${f1(1.4 * s)}" rx="${f1(3.4 * s)}" ry="${f1(4.8 * s)}"/>`
+    + toe(-2.6, -4.6, 1.5) + toe(-0.4, -5.6, 1.15) + toe(1.6, -5.2, 1) + toe(3.2, -4, 0.9) + `</g>`;
+}
+
+/**
+ * Linked mode's floor marker (一起, GDD § 2.4, #128): where a tap leads them both — Mocha's chalk
+ * paw and a baby's footprint side by side on a soft marigold halo, laid flat on the floor
+ * (`data-affordance="floor"`: like a perch's paw, an affordance, so it may wear marigold). Centred
+ * on the node's floor point (x, y); `bold` for 長輩模式.
+ */
+export function floorMark(ctx: KitCtx, x: number, y: number, bold = false): string {
+  const k = bold ? 1.25 : 1;
+  return `<g data-affordance="floor"${bold ? ' data-bold=""' : ''} transform="${translate(x, y - 6)}">${softEllipse(ctx, 0, 2, 24 * k, 8 * k, 'marigold', bold ? 0.6 : 0.45)}`
+    + `<g transform="scale(1 .62)" stroke="${C.ink}" stroke-width="${bold ? 1.1 : 0.9}" stroke-opacity=".85">`
+    + `<g transform="translate(${f1(-7 * k)} 0)">${paw(C.chalk, 1.05 * k)}</g>`
+    + `<g transform="translate(${f1(8 * k)} 1)">${babyFoot(C.chalk, 1.05 * k, true)}</g></g></g>`;
+}
+
+/**
+ * One of his first footprints (§ 2.5 第一步, #128), a soft print on the floor where a walk step put
+ * his foot down: left or right of the line he walks, laid flat. Centred on (x, y).
+ */
+export function firstFootprint(x: number, y: number, left: boolean, opacity: number): string {
+  return `<g data-footprint="" transform="${translate(x, y)} scale(1.5 .8)" opacity="${f2(opacity)}">${babyFoot(C.inkSoft, 1, left)}</g>`;
 }
 
 /** The track pit a carriage runs in, from its level down to the floor page's front edge. */

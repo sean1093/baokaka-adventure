@@ -241,6 +241,8 @@ The first candidate is the **target**.
 
 `idle` · `moving` · `reaching` · `looking(n)` · `crying` · `watching` · `cuddling` · `eating` · `grabbing` · `saying(word)` · `carried(by, k)` · `linked` (一起) · `done`
 
+(Linked mode is `baby.linked`, for the rest of the page; the mode `linked` is "with Mocha", and following him he is `moving` or `reaching`, #128.)
+
 All are deterministic functions of the state (§3.3). `core/baby.ts` (#82) implements §2.2.1–2.2.5 as `babyTick(def, state, { prev })`; the precise readings (Mocha as the candidate `'mocha'` at the perch's `reachNode`, decoys always unreachable, unreachable candidates tie on path length, arrival on the same tick as the move, `reaching` the tick after he gets as close as he can, silent comfort, `refused` cleared on the first arrival or when the refused attractor's place or availability changes) are in D-43. The view-only "touch-watch" pose (§2.6) is *not* a mode; the simulation is simply paused.
 
 ### 2.3 Mocha: controls and cat rules
@@ -300,7 +302,7 @@ Baokaka knows about 12 words (`docs/story/script.md` vocabulary). Some are **bar
 | **咻——** | 8-3 北投 (溫泉阿嬤 says 「呼呼再吃」) | `whoosh` | 140, in a 90° cone in his facing direction | `blowable` parts in the cone advance one state (pinwheel +1, boat +1 stop, steam cloud `clear`, sail `full`). | Move light objects, clear steam, spin pinwheel-driven lifts. |
 | **一起** | 10-5 台北101 | `together` | — | Enters `linked` mode for the rest of the page. Mocha hops down to Baokaka's node, and cat rule C1 is suspended. **Tapping any floor node walks Mocha there** (over crawl/climb/cruise/walk edges), and Baokaka **follows Mocha**: in `linked` mode Mocha has priority 0, above shiny. Creatures tagged `lonely` (咻咻) follow the pair. In linked mode, cat rules C1, C7 and C8 are suspended: Mocha walks the floor, **even through puddles, for him**. | The finale: the first time you lead him, because he trusts you. |
 
-**For engineers.** `core/words.ts` (#84): `wordEvent`, `inReach` (the radius, and 咻——'s cone as exact integer math: |dy| ≤ dx in his facing, edges included), `wordAvailable` (a page's `words`, plus its `learns` word once learned) and `sayNo`. 嗶！, 哇！ and 掰掰 act only through page reactions (a `toggle` reaction makes 哇！ reversible; two `when`-guarded reactions make 掰掰 send a creature away and back). Built in: 飛機！ toggles each `winged` creature with no `sky` reaction between `initial` and `sky` (else `away`), and 咻—— advances `blowable` parts with no `whoosh` reaction (wrapping). 一起 (#128) emits its event only for now (D-45). M2 (#112, D-75): a refusal is forgotten after two cries (`FORGET_AFTER_CRIES`, `baby.ts`); the toy pages `core/fixtures/m2.ts` prove the spotlight (`nodeBy`), the squirrel (`heldBy`, `fleesFromCat`, 掰掰's `drop`) and the moon decoy with 不要！ solver-green, and PageLab lists them as stages. M3 (#120, D-83): 抱抱 is built in (`core/carrier.ts`): the first carrier within one edge (her node, or one a baby edge with an open `when` joins to his), `idle` or `done`, not locked and with her whole route clear, lifts him onto her node (`carried`) and walks the route one edge a tick (waiting at a step that has closed), then sets him down `idle`; hugged again at the far end (`done`) she walks him back. No carrier: `hugNobody` (arms up, Mocha purrs). Words wait while he is carried. The toy pages `core/fixtures/m3.ts` prove 抱抱, 飛機！, 爬樓梯, the counterweight lift and the cranked loop solver-green. M4 (#127, D-91): the toy pages `core/fixtures/m4.ts` prove 咻—— solver-green — `toy-steam` (learn it; a steam cloud clears, a hat blows off and back on) and `toy-pinwheel` (**facing matters**: the pinwheel spins only once Mocha has drawn him round to face it) — with the cone's edges tested to the unit (±45° and the 140 arc are inside). A `blowable` turned by 咻—— also turns its `coupled` parts (a pinwheel driving a belt).
+**For engineers.** `core/words.ts` (#84): `wordEvent`, `inReach` (the radius, and 咻——'s cone as exact integer math: |dy| ≤ dx in his facing, edges included), `wordAvailable` (a page's `words`, plus its `learns` word once learned) and `sayNo`. 嗶！, 哇！ and 掰掰 act only through page reactions (a `toggle` reaction makes 哇！ reversible; two `when`-guarded reactions make 掰掰 send a creature away and back). Built in: 飛機！ toggles each `winged` creature with no `sky` reaction between `initial` and `sky` (else `away`), and 咻—— advances `blowable` parts with no `whoosh` reaction (wrapping). 一起 (#128) emits its event only for now (D-45). M2 (#112, D-75): a refusal is forgotten after two cries (`FORGET_AFTER_CRIES`, `baby.ts`); the toy pages `core/fixtures/m2.ts` prove the spotlight (`nodeBy`), the squirrel (`heldBy`, `fleesFromCat`, 掰掰's `drop`) and the moon decoy with 不要！ solver-green, and PageLab lists them as stages. M3 (#120, D-83): 抱抱 is built in (`core/carrier.ts`): the first carrier within one edge (her node, or one a baby edge with an open `when` joins to his), `idle` or `done`, not locked and with her whole route clear, lifts him onto her node (`carried`) and walks the route one edge a tick (waiting at a step that has closed), then sets him down `idle`; hugged again at the far end (`done`) she walks him back. No carrier: `hugNobody` (arms up, Mocha purrs). Words wait while he is carried. The toy pages `core/fixtures/m3.ts` prove 抱抱, 飛機！, 爬樓梯, the counterweight lift and the cranked loop solver-green. M4 (#127, D-91): the toy pages `core/fixtures/m4.ts` prove 咻—— solver-green — `toy-steam` (learn it; a steam cloud clears, a hat blows off and back on) and `toy-pinwheel` (**facing matters**: the pinwheel spins only once Mocha has drawn him round to face it) — with the cone's edges tested to the unit (±45° and the 140 arc are inside). A `blowable` turned by 咻—— also turns its `coupled` parts (a pinwheel driving a belt). M4 II (#128, D-92): **一起 is built in.** Said with Mocha on the page, he hops down to Baokaka's node (`mochaLink`: leaving a perch releases what he held) and they are linked for the rest of the page (`baby.linked`, `mocha.floorNode`). A `floor` input walks Mocha to a **link node** — a node some baby edge touches, height ≤ 1, not riding a pushable or a carrier (`linkNodes`, `graph.ts`) — over every baby edge kind whatever Baokaka's growth, blocked by creatures and closed gates like him, through puddles (C1/C7/C8 suspended), **one edge a tick**, Baokaka's pace, so they move side by side; arriving he emits `lead` (a new § 3.2 event, `id` = the node). Baokaka follows (`linkedTick`, `baby.ts`): one edge toward Mocha's node at his growth (`moving`, `linked` with him), or — where he can't follow, as on 10-6 before his first steps — as close as he can, `reaching` for Mocha (「要！要！」 every 4 ticks). He never cries and forgets refusals; he still picks up a shiny or snack on or next to his node (never a decoy, never one a creature still holds: 咻咻 gives the 金鎖片 back when hugged). Linked, the words are all but 一起 and 不要！ (`sayable`, shared by the ring and the solver), and 抱抱 picks up no carrier (the `hug` event still reaches reactions). `lonely` creatures follow the pair in phase 4 (`followPair`): to their position nearest Mocha, never onto his or Baokaka's node. **Linked is for good:** on a page where Mocha's perches matter, 一起 is a trap (a page offers it only from 10-5 on, where linked mode is the plan). The toy pages `core/fixtures/linked.ts` prove it solver-green: `toy-party` (learn 一起 when both cry; Mocha through the puddle; 咻咻 comes down and lets go of the bead to 抱抱) and `toy-steps` (第一步).
 
 Each word's first use on a page shows a one-time **Mocha translation** joke (§5.4). The word ring button for a newly learned word glows until it is first used.
 
@@ -320,6 +322,8 @@ Growth stages unlock **edge kinds**. They're learned in story moments and never 
 Movement speed is 1 edge per tick at every stage. Walking is not faster; it is *new places*.
 
 **For engineers (#127, D-91).** `cruise` edges open at growth 2 (`graph.ts`), and `reachHigh` is on (`REACH_HIGH_ENABLED`, `baby.ts`; #82 built it behind the switch): from growth 2 a height-1 attractor counts as reachable from any node joined to it by an edge whose `when` holds — any kind, a cat's `jump` included — and he grabs it from the nearest such node, standing (the `pull` frame). The solver's walkable-decoy check counts such a node too, so a height-1 decoy must be two edges from anywhere he can stand. A cruise step plays `cruise` (reach out along the rail, close up). `toy-ferry` (`core/fixtures/m4.ts`) learns 扶著站 reaching up to Mocha on the railing, cruises past the rope and grabs the bead off the bench; `toy-101` proves coupled sections and Mocha's clutch.
+
+**For engineers (#128, D-92).** `walk` edges open at growth 3. `toy-steps` (`core/fixtures/linked.ts`) is 10-6's beat in miniature: at the rail's end he reaches for the 金鎖片 in 咻咻's cloud; linked, Mocha is tapped across the open deck and waits there (`lead`), which teaches 第一步 (`learns: { growth: 3, when: { event: 'lead', id: 'G' } }` — a learn event may name its subject); he walks the three `walk` edges to Mocha. On the page a walk step plays `baokaka.walk` (8 frames, arms out) with a sway on top of the lean (`walkSway`), leaves soft footprints that stay for the session (`PagePlayer`'s trail), and the last step lands in the sit-down plop (`sit` squashed by `.bk-plop`); linked, Mocha walks the floor beside him (`mocha.walk`, a stride cycle, no hop) `LINK_SIDE` ahead on his facing side, and purrs when they share a node, in one pool of light.
 
 ### 2.6 Interaction grammar and gestures
 
@@ -636,13 +640,13 @@ export interface PageDef {
   baby: { start: Id; facing: 'l' | 'r'; growth?: Growth };   // growth defaults to "learned by this page"
   mocha: { start: Id | null };          // perch id, or null = not on page
   words?: Word[];                       // defaults to words learned before this page
-  learns?: { word?: Word; growth?: Growth; when: Cond | { event: EventType } };
+  learns?: { word?: Word; growth?: Growth; when: Cond | { event: EventType; id?: Id } };   // id narrows the event (#128)
   mischief: { text: string; when: EventPredicate };
   tudigong: { x: number; y: number; visibleWhen?: Cond; hat: string };
   solution: SolutionStep[];             // intended solution, replayed in tests
   allowTrivial?: boolean;               // tutorial beats / page E only
   priorityOverride?: Partial<Record<Kind, number>>;   // page E only
-  lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey }[] };
+  lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey; pause?: boolean }[] };   // pause: the world holds while it is up (#128)
   backdrop: string;                     // baked art key
   cutouts?: { art: string; x: number; y: number; visibleWhen?: Cond }[];   // standing cut-outs (§ 3.9 layer 2), placed by their origin (#96); shown only while `visibleWhen` holds (#115)
 }
@@ -651,10 +655,12 @@ export type SolutionStep =
   | { set: Id; to: string }            // gesture result
   | { mocha: Id } | { pet: true }      // pet = tap Mocha (repeat perch action)
   | { say: Word } | { tap: Id }
+  | { floor: Id }                      // linked mode: tap a floor node (#128)
   | { wait: number | 'settle' | 'goal' };
 
 export type EventType = 'beep' | 'wave' | 'wow' | 'hug' | 'sky' | 'whoosh' | 'together' | 'cry'
-  | 'catArrive' | 'catLeave' | 'push' | 'land' | 'babyEnter' | 'ride' | 'grab' | 'eat' | 'partEnter';
+  | 'catArrive' | 'catLeave' | 'push' | 'land' | 'babyEnter' | 'ride' | 'grab' | 'eat' | 'partEnter'
+  | 'lead';                             // linked: Mocha has led them to the floor node he was sent to (#128)
 export type EventPredicate = { type: EventType; id?: Id; count?: number; when?: Cond };
 export type DefinePage = (def: PageDef) => PageDef;   // core/define.ts, re-exported by pages/
 
@@ -700,13 +706,13 @@ export type Input =
    - `mocha`: compute the cat path. If there's none, emit a `mochaNope` UI event and make no state change.
    - `say`: Baokaka enters `saying`, and the word's event is queued for phase 5.
    - `tap`: props, flaps, lights.
-   - `floor`: linked mode only.
+   - `floor`: linked mode only: Mocha's walk to a link node (#128).
 2. **Cascade.** Process queued events FIFO. For each event, collect matching reactions (`within` is measured from the event origin; default radii are in §2.4), apply transitions, and queue any `emit` events from parts entering states. This is bounded to **32 iterations**; exceeding it throws, and lint and tests catch it.
 3. **Mocha.**
    - If he has a path, advance 2 edges.
    - On arrival: emit `catArrive(perch)`, apply `onPart`, `set` and `fleesFromCat`; if the perch has `push`, set the pushable to `falling` (it lands next tick, emits `land`, applies `landSets`).
    - On leaving: emit `catLeave`, which releases buttons and locks.
-4. **Creatures.** Apply queued creature moves. Creatures with a `drop` place their held attractor on their node.
+4. **Creatures.** Apply queued creature moves. Creatures with a `drop` place their held attractor on their node. Linked, `lonely` creatures follow the pair (#128).
 5. **Baby.**
    - Resolve `saying`: emit the word event into a mini-cascade (as in phase 2).
    - Then:
@@ -825,6 +831,7 @@ Each of the following is an error:
 15. Warning only: a part's `lockedWhen`/`stateWhen` reads a part that reacts to the same event earlier in data order, so it sees that event's new state while reaction `when`s see the old one (D-45).
 16. Warning only: a perch on a `wet`/`steam` node has no `blockedWhen`, so Mocha refuses it forever (C7).
 17. A carrier's route steps only between nodes a baby edge joins and never through a height-2 node; a carrier starts `idle` or `done` and only 抱抱 moves it; a counterweighted lift has a perch on it and starts in the state Mocha's start puts it in (#120, D-83).
+18. Linked mode (#128, D-92). On a page where 一起 can be said (its `words` list it, or it learns it), no baby edge touches a height-2 node (linked, Mocha leads over every baby edge, so a perch would become a place he leads Baokaka); warning: two fixed link nodes closer than 53 units (`LINK_GAP`: their floor taps can't both be 48 CSS px). A `lonely` creature may not block (it would wall the pair in); warning: a `lonely` creature on a page without 一起.
 
 **For engineers.** `core/lint.ts` (#86) implements this as `lintPage(def, script?) → { errors, warnings }`; every issue has a stable code (`L01-unknown-ref`, `L05-vanishing-ground`, `L09-hit-overlap` …; the table is in the file header), the page id and the ids it is about. The readings this list leaves open are in D-47. In short: rule 1 also covers enum values (presets, inputs, edge kinds, events, words), `drop`/`push`/`followsPushable` kinds, perch-node sharing, the reserved attractor id `'mocha'` and a `winged` creature's sky position; rule 3 checks the **compiled** states (`compilePart`'s defaults), `input ∈ PRESETS[preset].inputs`, pushable states, and the 2–4 / 2–8 stop counts; rule 4 also requires a gate's doorway node to stay put; rule 5 = a node an edge leads to never leaves the 390 × 560 page and never rides a pushable; rule 6 = a node Baokaka can stand on is never attached to a pushable or a carrier; rule 7's static half = every pushable is pushed by a perch and reactions may only put it back `onPerch` (`solutionPushables` names the ones a solution relies on; the dead-end half is the solver's); rule 9 measures interactive parts only (input not `none`), circles by radius, overlap as a share of the smaller area; text counts code points; rule 12's static half errors on cycles of unconditional `next`/`prev`/`toggle` reactions and warns (`L12-cascade-cycle`) on any other reaction cycle (since #127 a reaction that turns a part with `coupled` parts reaches them too; `L03-coupled` checks the coupling itself); rule 13 flags any function value in the page data. Line keys are checked only when a `script` table is passed. The lint never throws and takes ≈ 0.1 ms per page.
 
@@ -839,7 +846,7 @@ Each of the following is an error:
   - `pet`;
   - `say` for each available word;
   - `tap` for each tappable prop, flap or light;
-  - in linked mode, `floor` for each floor node.
+  - in linked mode, `floor` for each link node but the one Mocha stands still on (#128).
 - **Pruning:** inputs that produce an identical next state as `none` are dropped. Cap: 2,000,000 states (configurable per page). Exceeding it is a test failure, which tells the designer to simplify the page.
 - **Outputs:**
   - `solvable` and `par`, the minimum number of **non-wait inputs** (the "number of moves"). It is shown in PageLab and used for the difficulty sanity check: difficulty 1 → par 1–2, 2 → 2–3, 3 → 3–4, 4 → 4–5, 5 → 5–7.
@@ -1560,6 +1567,8 @@ pa：「本列車直達：寶咖咖的家。」
 ```
 
 (Mocha's translation is, for the only time, short and exact. This is the bible's payoff.)
+
+**For engineers (#128).** The lines are in `content/script.ts` as `c10p6.steps.1–6`, `c10p6.hug.1–4` and `c10p6.end.1–4`. A page holds the world for a line by marking it `pause` in `lines.onEvent` (`PagePlayer` pauses while it is up); `toy-steps` plays the beat as 10-6 might: the first two lines when Mocha waits across (`lead`), then 「一步。」「兩步。」「三步。」 on each wobbly step (`babyEnter`), each held, and the hug lines when he has the 金鎖片 back.
 
 ### 5.3 Recurring lines
 

@@ -2,7 +2,7 @@ import { PRESET_ART, PRESET_DEFS, kitDefs, type KitCtx, type PartArtOptions, typ
 import type { PageDef } from '../../core/types';
 import { backdropImage, cutoutImage, partImage, type EnvImage, type PartImage } from '../../env/loader';
 import { campusPoster, goose, magpie } from './campus';
-import { backpacker, origamiPigeon } from './creatures';
+import { backpacker, origamiPigeon, shushuCloud } from './creatures';
 import { commuter, egret, jogger, painter, shiba, squirrel, sweeper, turtle } from './park';
 import { origamiBird, placeholderBackdrop } from './placeholders';
 import { crowdLegs, pachinkoUncle, passengers, strayDog } from './market';
@@ -36,6 +36,8 @@ const BACKDROPS: Readonly<Record<string, BackdropArt>> = {};
 /** Creatures by key (#108: origami creatures and the paper-style cast, `creatures.ts`). */
 const CREATURES: Readonly<Record<string, CreatureArt>> = {
   'common/pigeon': origamiPigeon,
+  // 咻咻 (#128): the little cloud, raining up in its cloud or following them on the floor
+  'common/shushu': shushuCloud,
   'c1/backpacker': backpacker,
   // 大安森林公園 (#115, `park.ts`): the paper-style cast and the origami animals
   'c2/commuter': commuter,

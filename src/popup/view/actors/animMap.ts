@@ -24,6 +24,10 @@ import type { SpriteId } from '../../sprites';
  *   sidestep (`cruise`, 2), so with `pull` and `wobble` (2) every GDD frame is drawn.
  * - **扶著站 (#127):** a `cruise` edge steps with `cruise` (reach out along the rail, close up);
  *   a bead grabbed from the node next to it (reachHigh) is grabbed standing, `pull`.
+ * - **一起 and 第一步 (#128):** linked, Mocha walks the floor beside him (`mocha.walk`, a stride
+ *   cycle over the step); with Mocha he sits. A `walk` edge is the wobbly first walk (`walk`, 8
+ *   frames, arms out), and arriving from one he sits down with a plop (`plop`: the `sit` frame,
+ *   squashed by `.bk-plop` as it lands).
  * - **Growth guard** (bible § 5): art never shows a pose he can't do yet. Standing poses need the
  *   growth stage that allows them (cruise 2, walk 3); otherwise he crawls.
  */
@@ -45,7 +49,8 @@ export type BabyFrame =
   | 'carried'
   | 'climb'
   | 'standCruise'
-  | 'walk';
+  | 'walk'
+  | 'plop';
 export type MochaFrame = 'sit' | 'loaf' | 'hop' | 'land' | 'eyeContact' | 'push' | 'glare' | 'puff' | 'purr' | 'inBox' | 'walk';
 
 /** How the shown frame is chosen. */
@@ -109,7 +114,8 @@ export const BABY_MODE_ANIM: Readonly<Record<BabyMode, ActorAnim>> = {
   grabbing: hold('baokaka.hold', 'grab'),
   saying: hold('baokaka.point', 'say'),
   carried: hold('baokaka.carried', 'carried'),
-  linked: { sprite: 'baokaka.crawl', play: { kind: 'stride' }, gdd: 'crawl' },
+  // With Mocha on the floor (一起, #128): he sits beside him
+  linked: hold('baokaka.sit', 'sit'),
   done: clock('baokaka.clap', null),
 };
 
@@ -135,16 +141,21 @@ export interface BabyAnimInput {
   readonly word?: Word | null;
   /** He grabs a height-1 attractor from the node next to it (GDD § 2.5 reachHigh, `reachedHigh`) */
   readonly high?: boolean;
+  /** He has landed the last step of a walk (§ 2.5 第一步, #128): the sit-down plop */
+  readonly plop?: boolean;
 }
 
 /** Modes a ride doesn't interrupt: they have their own, stronger pose. */
 const RIDE_KEEPS: ReadonlySet<BabyMode> = new Set(['crying', 'saying', 'eating', 'grabbing', 'done']);
 
 /** 寶咖咖's animation this tick. */
-export function babyAnim({ mode, edge, riding = false, growth, watching = false, word = null, high = false }: BabyAnimInput): ActorAnim {
+export function babyAnim({ mode, edge, riding = false, growth, watching = false, word = null, high = false, plop = false }: BabyAnimInput): ActorAnim {
   let anim: ActorAnim;
   if (watching) {
     anim = hold('baokaka.touchwatch', 'touchWatch');
+  } else if (plop && edge === 'walk' && mode !== 'moving') {
+    // The end of a walk (bible § 5: wobbly walk, arms out, a sit-down "plop" at the end)
+    anim = hold('baokaka.sit', 'plop');
   } else if (edge !== null && (mode === 'moving' || mode === 'linked')) {
     anim = moveAnim(edge);
   } else if (riding && !RIDE_KEEPS.has(mode)) {
@@ -155,7 +166,7 @@ export function babyAnim({ mode, edge, riding = false, growth, watching = false,
   } else if (high && mode === 'grabbing') {
     // reachHigh: standing up, hands up on the high ledge (the pull-to-stand frame)
     anim = hold('baokaka.pull', 'grab');
-  } else if ((mode === 'moving' || mode === 'linked') && edge === null) {
+  } else if (mode === 'moving' && edge === null) {
     // Between steps (a held still, a tick he didn't step): the cycle's key frame
     anim = hold('baokaka.crawl', 'crawl');
   } else {
@@ -198,7 +209,7 @@ function moveAnim(edge: EdgeKind): ActorAnim {
 // ——— 摩卡 ———
 
 /** Mocha's states for the view (GDD § 2.3). The unit test insists on an animation per state. */
-export const MOCHA_STATES = ['sit', 'onPart', 'hop', 'squeeze', 'eyeContact', 'push', 'glare', 'puff', 'nope', 'purr', 'inBox'] as const;
+export const MOCHA_STATES = ['sit', 'onPart', 'hop', 'squeeze', 'walk', 'eyeContact', 'push', 'glare', 'puff', 'nope', 'purr', 'inBox'] as const;
 export type MochaState = (typeof MOCHA_STATES)[number];
 
 export const MOCHA_STATE_ANIM: Readonly<Record<MochaState, ActorAnim>> = {
@@ -208,6 +219,8 @@ export const MOCHA_STATE_ANIM: Readonly<Record<MochaState, ActorAnim>> = {
   // Crouch, air, land (the land is `jump` frame 3)
   hop: { sprite: 'mocha.jump', play: { kind: 'step', at: HOP_AT }, gdd: 'hop' },
   squeeze: hold('mocha.squeeze', null),
+  // Linked (一起, #128): walking the floor ahead of him, a lateral-sequence gait over the step
+  walk: { sprite: 'mocha.walk', play: { kind: 'stride' }, gdd: 'walk' },
   // C3: the signature beat, a whole tick looking at the camera (`push` frame 1)
   eyeContact: hold('mocha.push', 'eyeContact', 0),
   // The tick after the stare: the shove (`push` frame 2) while the pushable starts its fall
@@ -227,8 +240,10 @@ export interface MochaAnimInput {
   readonly travelling: boolean;
   /** …and has landed (the step's progress reached 1) */
   readonly landed?: boolean;
-  /** The kind of that edge (`jump` or `squeeze`) */
+  /** The kind of that edge (`jump` or `squeeze`; linked, a baby kind) */
   readonly edge?: EdgeKind | null;
+  /** Linked (一起, #128): he is on the floor, so a step along an edge is a walk, not a hop */
+  readonly linked?: boolean;
   /** He sits in a box perch (C9): only his head and paws show over the rim */
   readonly hidden?: boolean;
   /** The eye-contact tick before a push (C3, `mocha.stare`) */
@@ -249,6 +264,7 @@ export interface MochaAnimInput {
 /** Mocha's state this tick, by precedence: hidden, travelling, the push beat, reactions, at rest. */
 export function mochaState(i: MochaAnimInput): MochaState {
   if (i.hidden) return 'inBox';
+  if (i.travelling && i.linked && i.edge != null) return 'walk';
   // The eye contact is the tick that ends with `stare` (D-44): arriving that tick, it starts as he lands
   if (i.travelling && !(i.landed && i.staring)) return i.edge === 'squeeze' ? 'squeeze' : 'hop';
   if (i.staring) return 'eyeContact';
@@ -372,6 +388,8 @@ export const FRAME_REPORT: readonly FrameNeed[] = [
   { char: 'baokaka', id: 'climb', label: 'climb', frames: 3, when: 'later', delivered: [d('baokaka.climb', 0, 1, 2)] },
   { char: 'baokaka', id: 'standCruise', label: 'stand-cruise', frames: 4, when: 'later', delivered: [d('baokaka.pull', 0), d('baokaka.wobble', 0, 1), d('baokaka.cruise', 0, 1)] },
   { char: 'baokaka', id: 'walk', label: 'walk (wobbly)', frames: 8, when: 'later', delivered: [d('baokaka.walk', 0, 1, 2, 3, 4, 5, 6, 7)] },
+  // The sit-down plop at the end of the first walk (#128): `sit`, landed with a squash (`.bk-plop`)
+  { char: 'baokaka', id: 'plop', label: 'sit-down plop', frames: 1, when: 'later', delivered: [d('baokaka.sit', 0)] },
   { char: 'mocha', id: 'sit', label: 'sit', frames: 1, when: 'M1', delivered: [d('mocha.sit', 0)] },
   { char: 'mocha', id: 'loaf', label: 'loaf', frames: 1, when: 'M1', delivered: [d('mocha.loaf', 0)] },
   { char: 'mocha', id: 'hop', label: 'hop', frames: 3, when: 'M1', delivered: [d('mocha.jump', 0, 1, 2)] },

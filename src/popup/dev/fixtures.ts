@@ -1794,6 +1794,38 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'The ring with the seven words to chapter 9 (GDD § 2.4, #127): 嗶！ 掰掰 不要！ 哇！ 抱抱 飛機！ 咻—— in learning order, each on its seal. Lab stage (the library toy page with every word but 一起).',
     expect: { mode: 'cuddling' },
   },
+  {
+    name: 'linked-mode',
+    page: 'toy-party',
+    steps: [{ wait: 1 }, { say: 'no' }, { wait: 'settle' }, { say: 'together' }, { floor: 'D' }, { wait: 1 }],
+    show: { stepAt: 190 },
+    note: 'Linked mode (GDD § 2.4 一起, 10-5, #128): both cried, he said 一起, and Mocha hopped down to him. Tapped across the room, Mocha walks the floor through 咻咻\'s puddle — for him — a step ahead, and he crawls along beside; every place a tap can lead them wears a paw-and-footprint mark, and 咻咻 (lonely) has come down off its cloud to follow them. Toy page.',
+    expect: { mode: 'linked' },
+  },
+  {
+    name: 'word-card-walk',
+    page: 'toy-steps',
+    steps: [{ wait: 3 }, { say: 'together' }, { floor: 'G' }, { wait: 2 }],
+    show: { words: { card: 'walk' } },
+    note: 'The 第一步 learn beat\'s card (GDD § 5.4, #128): at the rail\'s end, with Mocha waiting on the other side of the open deck, he lets go: 「第一步！」 (two footprints, no effect line). Toy page after 10-6.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'first-steps',
+    page: 'toy-steps',
+    steps: [{ wait: 3 }, { say: 'together' }, { floor: 'G' }, { wait: 4 }],
+    show: { stepAt: 200, talk: ['c10p6.steps.4'] },
+    note: 'His first steps (GDD § 2.5 第一步, § 5.2 10-6, #128): off the rail and across the open deck to Mocha — the wobbly walk, arms out, swaying — a chalk footprint where each foot came down. The world holds for a line on every step (「兩步。」). Toy page.',
+    expect: { mode: 'moving', event: 'babyEnter' },
+  },
+  {
+    name: 'first-steps-plop',
+    page: 'toy-steps',
+    steps: [{ wait: 3 }, { say: 'together' }, { floor: 'G' }, { wait: 5 }],
+    show: { talk: ['c10p6.steps.5', 'c10p6.steps.6'] },
+    note: 'The third step lands (GDD § 2.5, #128): he sits down with a plop beside Mocha, who purrs; the two of them in one pool of light, 咻咻 just past them. 「三步。」「走、走路了……他在走路！」 Next: 抱抱. Toy page.',
+    expect: { mode: 'linked', event: 'babyEnter' },
+  },
 ];
 
 /** A fixture's page and its final frame: the state, and the state before the last tick. */

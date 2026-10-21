@@ -217,12 +217,10 @@ describe('arrival effects and page state', () => {
     expect(r2.events).toEqual([]);
   });
 
-  test('carried and linked babies are the tick’s business', () => {
+  test('a carried baby is the tick’s business', () => {
     const def = page({ ...line('AB'), attractors: [att('bead', 'shiny', 'B')] });
-    for (const mode of ['carried', 'linked'] as const) {
-      const s = withBaby(initialState(def), { mode });
-      expect(babyTick(def, s)).toEqual({ state: s, events: [] });
-    }
+    const s = withBaby(initialState(def), { mode: 'carried' });
+    expect(babyTick(def, s)).toEqual({ state: s, events: [] });
   });
 
   test('saying is treated as resolved: the decision loop takes over', () => {
