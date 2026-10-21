@@ -484,7 +484,8 @@ export function origamiBird(ctx: KitCtx): string {
  * foil badge (#108); `斗笠` is chapter 2's wide straw hat (#114) with his 掃把 on his shoulder (#115);
  * `藍色校工帽` is chapter 3's blue campus janitor's cap with a short peak (#116); `算命墨鏡` is chapter 4's
  * fortune-teller's round dark glasses in gold wire under his red 員外帽 (#118, #119); `鴨舌帽` is chapter 5's
- * night-market duck-bill cap, worn peak forward (#121).
+ * night-market duck-bill cap, worn peak forward (#121); `機場背心` is chapter 6's apron crew's safety
+ * vest, under his red 員外帽 (#123).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -520,7 +521,13 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
     ? `<path d="M-1.4 -.4h2.8" stroke="${C.printDark}" stroke-width="1"/><circle cx="-3.6" cy="-.2" r="2.6" fill="${C.ink}" stroke="${C.goldDeep}" stroke-width=".6"/><circle cx="3.6" cy="-.2" r="2.6" fill="${C.ink}" stroke="${C.goldDeep}" stroke-width=".6"/>`
       + `<path d="M-4.6 -1.4l1 -.6M2.6 -1.4l1 -.6" stroke="${C.standeeCard}" stroke-width=".7" stroke-linecap="round" opacity=".8"/>`
     : '';
-  return depth(ctx, 2, broom + face + shades + cap, `<circle r="7.5"/>`);
+  // Chapter 6's 機場背心 (#123): an apron crew's safety vest over his shoulders, under the beard — an
+  // ochre yoke with a reflective chalk band (never marigold: that is the touchables' card)
+  const vest = hat === '機場背心'
+    ? `<path d="M-10 16q0 -8 6 -9.4l4 3.4l4 -3.4q6 1.4 6 9.4z" fill="${C.ochre}"/><path d="M-9.6 13.4h19.2" stroke="${C.chalk}" stroke-width="1.6"/>`
+      + `<path d="M0 10v6" stroke="${C.ochreDark}" stroke-width=".8"/>`
+    : '';
+  return depth(ctx, 2, broom + vest + face + shades + cap, `<circle r="7.5"/>${vest === '' ? '' : '<path d="M-10 16q0 -8 6 -9.4h8q6 1.4 6 9.4z"/>'}`);
 }
 
 /** A light attractor where it lies: a little paper star lamp. */

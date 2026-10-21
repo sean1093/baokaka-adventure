@@ -446,6 +446,84 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "ac5f6be96098b5ba"
+    },
+    "c6/front-car": {
+      "file": "backdrops/c6/front-car",
+      "bytes": 147762,
+      "chapter": 6,
+      "grade": [1.085, 1.047, 1.039],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "4732b11821d91e14"
+    },
+    "c6/baggage-hall": {
+      "file": "backdrops/c6/baggage-hall",
+      "bytes": 147762,
+      "chapter": 6,
+      "grade": [1.085, 1.047, 1.039],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "4732b11821d91e14"
+    },
+    "c6/observation-deck": {
+      "file": "backdrops/c6/observation-deck",
+      "bytes": 147762,
+      "chapter": 6,
+      "grade": [1.085, 1.047, 1.039],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "4732b11821d91e14"
+    },
+    "c6/jet-bridge": {
+      "file": "backdrops/c6/jet-bridge",
+      "bytes": 147762,
+      "chapter": 6,
+      "grade": [1.085, 1.047, 1.039],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "4732b11821d91e14"
+    },
+    "c6/tower-catwalk": {
+      "file": "backdrops/c6/tower-catwalk",
+      "bytes": 147762,
+      "chapter": 6,
+      "grade": [1.085, 1.047, 1.039],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "4732b11821d91e14"
+    },
+    "c6/customs-spread": {
+      "file": "backdrops/c6/customs-spread",
+      "bytes": 147762,
+      "chapter": 6,
+      "grade": [1.085, 1.047, 1.039],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "4732b11821d91e14"
     }
   },
   "parts": {
@@ -2257,6 +2335,68 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "aa465dd1de21073d"
+    },
+    "c6/front-window": {
+      "preset": "tab",
+      "box": {
+        "x": -88,
+        "y": -216,
+        "w": 236,
+        "h": 268
+      },
+      "states": {
+        "junction": {
+          "file": "parts/c6/front-window.junction",
+          "bytes": 9078
+        },
+        "loop": {
+          "file": "parts/c6/front-window.loop",
+          "bytes": 7044
+        },
+        "airport": {
+          "file": "parts/c6/front-window.airport",
+          "bytes": 8052
+        }
+      },
+      "lifted": {
+        "junction": {
+          "file": "parts/c6/front-window.junction.lifted",
+          "bytes": 13406
+        },
+        "loop": {
+          "file": "parts/c6/front-window.loop.lifted",
+          "bytes": 11260
+        },
+        "airport": {
+          "file": "parts/c6/front-window.airport.lifted",
+          "bytes": 12172
+        }
+      },
+      "source": "11c05aa70e565e67"
+    },
+    "c6/stamp": {
+      "preset": "pushable",
+      "box": {
+        "x": -20,
+        "y": -20,
+        "w": 40,
+        "h": 49
+      },
+      "states": {
+        "onPerch": {
+          "file": "parts/c6/stamp.onPerch",
+          "bytes": 424
+        },
+        "falling": {
+          "file": "parts/c6/stamp.falling",
+          "bytes": 2248
+        },
+        "landed": {
+          "file": "parts/c6/stamp.landed",
+          "bytes": 424
+        }
+      },
+      "source": "636fef826fd807e6"
     }
   },
   "cutouts": {

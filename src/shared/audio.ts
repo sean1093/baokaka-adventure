@@ -431,7 +431,7 @@ export function voiceVoices(syllables: number, pitch = 1): Voice[] {
 // downloaded and nothing drifts. The RPG has a theme per place; 翻翻台北 has a music box per
 // chapter (GDD § 2.12: "one 8–16 bar loop per chapter in a pentatonic key").
 
-export type Track = 'field' | 'night' | 'battle' | 'boss' | 'ending' | 'chapter0' | 'chapter1' | 'chapter2' | 'chapter3' | 'chapter4' | 'chapter5';
+export type Track = 'field' | 'night' | 'battle' | 'boss' | 'ending' | 'chapter0' | 'chapter1' | 'chapter2' | 'chapter3' | 'chapter4' | 'chapter5' | 'chapter6';
 
 /** 宮商角徵羽 across three octaves, as semitone offsets from the root. */
 export const PENTATONIC = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24];
@@ -564,11 +564,25 @@ export const TRACKS: Readonly<Record<Track, TrackSpec>> = {
     peak: 0.05,
     box: true,
   },
+  // 第六章 松山機場 (#123): the planes asleep on the apron, a slow climb up the scale and a long
+  // glide down like a plane coming in to land, 8 bars in F
+  chapter6: {
+    root: 349.23,
+    step: 0.38,
+    melody: [
+      0, 2, 4, -1, 5, -1, 7, -1, 6, 5, 4, -1, -1, -1, -1, -1,
+      4, 5, 7, -1, 6, -1, 4, 3, 2, -1, 1, -1, 0, -1, -1, -1,
+    ],
+    bass: [0, 3, 2, 4, 0, 3, 1, 0],
+    wave: 'sine',
+    peak: 0.05,
+    box: true,
+  },
 };
 
-/** 翻翻台北's music box for a chapter, or null where its loop isn't written yet (chapters 6–10 bring theirs). */
+/** 翻翻台北's music box for a chapter, or null where its loop isn't written yet (chapters 7–10 bring theirs). */
 export function chapterTrack(chapter: number): Track | null {
-  const tracks: readonly Track[] = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5'];
+  const tracks: readonly Track[] = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5', 'chapter6'];
   return tracks[chapter] ?? null;
 }
 

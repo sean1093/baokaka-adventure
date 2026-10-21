@@ -170,7 +170,8 @@ describe('the album\'s pages', () => {
     expect(spreadPage(1, registry)?.id).toBe('c1p6');
     expect(spreadPage(0, registry)?.id).toBe('c0p4');
     expect(spreadPage(5, registry)?.id).toBe('c5p6');
-    expect(spreadPage(6, registry)).toBeUndefined();
+    expect(spreadPage(6, registry)?.id).toBe('c6p6');
+    expect(spreadPage(7, registry)).toBeUndefined();
   });
 
 });

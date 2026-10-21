@@ -136,6 +136,10 @@ const ON_SPREAD_C4: NavState = { base: { kind: 'page', id: 'c4p6', run: 0 }, lay
 const AT_SPREAD_C5 = (['c5p1', 'c5p2', 'c5p3', 'c5p4', 'c5p5'] as const).reduce((s, id) => completePage(s, id, { moves: 3 }), C4_DONE);
 const C5_DONE = keepPhoto(completePage(AT_SPREAD_C5, 'c5p6', { moves: 4 }), 5, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 18, 20) });
 const ON_SPREAD_C5: NavState = { base: { kind: 'page', id: 'c5p6', run: 0 }, layer: null };
+// Chapter 6 (#123): every page before 6-6 done, then 6-6 with its photo
+const AT_SPREAD_C6 = (['c6p1', 'c6p2', 'c6p3', 'c6p4', 'c6p5'] as const).reduce((s, id) => completePage(s, id, { moves: 4 }), C5_DONE);
+const C6_DONE = keepPhoto(completePage(AT_SPREAD_C6, 'c6p6', { moves: 4 }), 6, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 18, 50) });
+const ON_SPREAD_C6: NavState = { base: { kind: 'page', id: 'c6p6', run: 0 }, layer: null };
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -254,11 +258,25 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     note: 'Chapter 5\'s end (GDD § 5.2 5-6 end; #121): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——蔥。」 and 摩卡\'s 「蔥抓餅……加蛋。……我什麼都沒說。」 Live, the last tap fills the 抓周 tray\'s fifth slot.',
   },
   {
-    name: 'chapter-soon-c6',
-    page: 'c5p6',
+    name: 'spread-shell-c6',
+    page: 'c6p6',
     steps: [],
-    screen: { nav: ON_SPREAD_C5, save: C5_DONE, soonCard: 6 },
-    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 6 since #121): chapter 5 done, the chapter turn drops chapter 6\'s card over the book on the quilt — 第六章, 「飛機睡著的時候」, 02:50, 松山機場 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
+    screen: { nav: ON_SPREAD_C6, save: AT_SPREAD_C6 },
+    note: '6-6 in the game shell (#123): play it live — 飛機！ (the pigeons fly out of the X-ray tray), 嗶！ from the tray (the scanner wakes), the belt turned to the far end, Mocha onto the counter (he pushes the 印章 off), the photo moment with the 印章, the album page, the chapter-end line, the tray\'s sixth coin, the sticker card, chapter 7\'s card with 「未完待續」, then the 目錄 (`check:play` scenario `photo-spread-c6`).',
+  },
+  {
+    name: 'chapter-end-c6',
+    page: 'c6p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C6, save: C6_DONE, endLinesOf: 6 },
+    note: 'Chapter 6\'s end (GDD § 5.2 6-6 end; #123): after the album, over the finished spread (dimmed), the narration strip 「找到了！抓周寶物——印章。」 Live, the tap fills the 抓周 tray\'s sixth slot.',
+  },
+  {
+    name: 'chapter-soon-c7',
+    page: 'c6p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C6, save: C6_DONE, soonCard: 7 },
+    note: 'The next chapter\'s card while it isn\'t built (#107, D-70; chapter 7 since #123): chapter 6 done, the chapter turn drops chapter 7\'s card over the book on the quilt — 第七章, 「纜車上的月亮」, 03:30, 動物園 — with 「下一站 未完待續」 on its split-flap row and 「下一站還在畫……未完待續。」 under it; a tap lifts it away and the 目錄 opens.',
   },
   {
     name: 'album-c1-retake',
@@ -878,6 +896,142 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     page: 'c5p6',
     steps: [{ mocha: 'sign' }, { wait: 'settle' }, { say: 'no' }, { wait: 'settle' }, { say: 'hug' }, { wait: 'settle' }, { mocha: 'trays' }, { wait: 2 }],
     note: '5-6: inside the stall, Mocha jumped onto the tray stack and his weight sank it: the 蔥 on the bottom tray comes into view, and Baokaka crawls to it (the photo moment is next).',
+  },
+  // ——— Chapter 6 「飛機睡著的時候」 (#123; its art #124) ———
+  {
+    name: 'c6p1-start',
+    page: 'c6p1',
+    steps: [{ wait: 2 }],
+    note: '6-1 「文湖線前窗」 (#123): the front car of a driverless 文湖線 train, stopped at a junction in the dark — its big front window over the track, the track-switch tab under it (on the depot loop). Baokaka cuddles Mocha on a hand strap by the doors, where a cabin-crew 姊姊 dozes; a paw print on the dashboard.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c6p1-loop',
+    page: 'c6p1',
+    steps: [{ mocha: 'dash' }, { wait: 'settle' }, { say: 'beep' }],
+    note: '6-1: Mocha on the dashboard brought Baokaka to the front window, and his 嗶！ started the driverless train — down the depot loop, the switch still on it (the 淘氣 counts three loops; the 土地公 waves from the depot\'s shed).',
+    expect: { mode: 'saying', event: 'beep' },
+  },
+  {
+    name: 'c6p1-airport',
+    page: 'c6p1',
+    steps: [{ mocha: 'dash' }, { wait: 'settle' }, { set: 'switch', to: 'airport' }, { say: 'beep' }, { wait: 'settle' }],
+    note: '6-1: the switch thrown to the airport and 嗶！: the train ran into 松山機場 and the bead shines on the platform; Baokaka crawled to the doors and reaches up the step, beside the dozing 姊姊.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c6p1-crew',
+    page: 'c6p1',
+    steps: [{ mocha: 'dash' }, { wait: 'settle' }, { set: 'switch', to: 'airport' }, { say: 'beep' }, { wait: 'settle' }, { say: 'hug' }, { wait: 1 }],
+    show: { talk: ['c6p1.crew.1'] },
+    note: '6-1: 抱抱 — the cabin-crew 姊姊 wakes (「嗯……到機場了？姊姊抱你下車。」) and lifts him off the train onto the platform.',
+    expect: { mode: 'carried' },
+  },
+  {
+    name: 'c6p2-start',
+    page: 'c6p2',
+    steps: [{ wait: 'settle' }],
+    note: '6-2 「行李轉盤」 (#123): the baggage carousel at night, switched off (its beacon dark); a suitcase on the back run, the bead on the floor past the far end. Baokaka reaches from the near end. Mocha on the carousel\'s island; paw prints behind the rubber curtain (the start button) and on a second suitcase.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c6p2-clerk',
+    page: 'c6p2',
+    steps: [{ wait: 'settle' }, { mocha: 'button' }, { wait: 1 }],
+    show: { talk: ['c6p2.clerk.1', 'c6p2.clerk.2', 'c6p2.clerk.3'] },
+    note: '6-2: Mocha squeezed through the rubber curtain onto the start button; the beacon spins — and the 店員小哥 minds the baggage hall too: 「叮咚～歡迎光臨！」「……行李轉盤也是你們的？」「我們是連鎖的。」',
+  },
+  {
+    name: 'c6p2-aboard',
+    page: 'c6p2',
+    steps: [{ wait: 'settle' }, { mocha: 'button' }, { wait: 'settle' }, { set: 'belt', to: '2' }, { wait: 'settle' }],
+    note: '6-2: the belt turned two slots brought the suitcase round to the near end, and Baokaka crawled onto it; one more turn and it carries him to the bead.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c6p3-start',
+    page: 'c6p3',
+    steps: [{ wait: 2 }],
+    note: '6-3 「看飛機」 (#123): the airport\'s rooftop observation deck at night, a sleeping plane on the apron beyond the glass. A little gate shuts off the deck\'s far end, pigeons roosting on its push button. Baokaka cuddles Mocha on the bench by the stairs; a paw print on the window rail.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c6p3-learn',
+    page: 'c6p3',
+    steps: [{ wait: 2 }, { mocha: 'rail' }, { wait: 1 }],
+    show: { words: { card: 'plane' } },
+    note: 'Learning 飛機！ (GDD § 5.4, #123): Mocha on the window rail drew him to the glass; the sleeping plane\'s lights blinked, he pointed — 「飛……飛機！」 — and the word card 「飛機！：鳥都飛起來」 is taped over the dimmed page.',
+    expect: { event: 'learn' },
+  },
+  {
+    name: 'c6p3-gate',
+    page: 'c6p3',
+    steps: [{ mocha: 'rail' }, { wait: 'settle' }, { say: 'plane' }],
+    note: '6-3: 飛機！ — the pigeons flew up off the gate\'s button, the gate swung open and the bead shines at the deck\'s end; the plane winked its lights (the 土地公 on its tail fin).',
+    expect: { mode: 'saying', event: 'sky' },
+  },
+  {
+    name: 'c6p4-start',
+    page: 'c6p4',
+    steps: [{ wait: 'settle' }],
+    note: '6-4 「空橋」 (#123): the jet bridge from the gate lounge, pulled in, its cab stowed along the terminal; a flock of night birds roosts on the cab\'s gangplank, its end dragging on the apron. The bead shines in the A321\'s open door; Baokaka reaches from the bridge\'s end. The extend tab and the cab\'s wheel (locked while the birds roost).',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c6p4-swung',
+    page: 'c6p4',
+    steps: [{ wait: 'settle' }, { set: 'extend', to: 'out' }, { wait: 'settle' }, { say: 'plane' }, { set: 'swing', to: 'jet' }, { wait: 'settle' }],
+    note: '6-4: the bridge pulled out (he crawled into the cab), 飛機！ sent the birds up — the plank tipped up and the cab swung free — and the cab is at the A321\'s door, the plank\'s end in the air. One more 飛機！ brings the birds back to tip it down onto the sill.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c6p4-cargo',
+    page: 'c6p4',
+    steps: [{ wait: 'settle' }, { set: 'extend', to: 'out' }, { wait: 'settle' }, { say: 'plane' }, { set: 'swing', to: 'cargo' }],
+    note: '6-4\'s 淘氣: the jet bridge parked at the wrong plane — the 貨機 behind the A321 (the 土地公 in its window).',
+  },
+  {
+    name: 'c6p5-start',
+    page: 'c6p5',
+    steps: [{ wait: 2 }],
+    note: '6-5 「塔台」 (#123): the catwalk round the control tower\'s cab, at night. The signal searchlight throws its pool on the railing; pigeons doze on the catwalk round the crate of spare bulbs; the runway lights are out. Baokaka cuddles Mocha on the antenna mast. The radio on the sill is the 淘氣.',
+    expect: { mode: 'cuddling' },
+  },
+  {
+    name: 'c6p5-radio',
+    page: 'c6p5',
+    steps: [{ wait: 2 }, { tap: 'radio' }],
+    show: { talk: ['c6p5.tower.1', 'c6p5.tower.2'] },
+    note: '6-5: the radio answers its first 「Over。」 with the tower\'s log (§ 5.2 6-5, the chapter\'s 咻咻 beat): 「剛剛有朵雲問：可以起飛嗎？」「我說不行。Over。」',
+  },
+  {
+    name: 'c6p5-light',
+    page: 'c6p5',
+    steps: [{ say: 'plane' }, { mocha: 'crate' }, { wait: 'settle' }, { set: 'searchlight', to: 'far' }, { wait: 'settle' }],
+    note: '6-5: 飛機！ lifted the pigeons off the catwalk, Mocha curled up in the crate (out of sight), and Baokaka followed the searchlight\'s pool to the catwalk\'s far end, where he reaches up for it — in 哇！\'s reach of the runway lights.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c6p6-spread',
+    page: 'c6p6',
+    steps: [{ wait: 2 }],
+    note: '6-6 「海關的印章」 as it opens (#123): the centrefold — the queue (left), the X-ray machine and its belt across the middle, the customs officer\'s high counter (right) with the 印章 on its ink pad. Pigeons doze in the tray at the belt\'s mouth; Baokaka reaches up for the 印章 from the queue. Mocha on the rope post.',
+    expect: { mode: 'reaching' },
+  },
+  {
+    name: 'c6p6-xray',
+    page: 'c6p6',
+    steps: [{ say: 'plane' }, { wait: 'settle' }, { say: 'beep' }, { set: 'belt', to: '1' }],
+    show: { talk: ['c6p6.xray.1'] },
+    note: '6-6: 飛機！ sent the pigeons up, he climbed into the tray, 嗶！ woke the scanner, and the belt carries him into the X-ray tunnel — the screen shows his silhouette and a bottle (Mocha: 「X光說：寶寶一個，奶瓶一支。」).',
+    expect: { event: 'ride' },
+  },
+  {
+    name: 'c6p6-pushed',
+    page: 'c6p6',
+    steps: [{ say: 'plane' }, { wait: 'settle' }, { say: 'beep' }, { set: 'belt', to: '2' }, { wait: 'settle' }, { mocha: 'counter' }, { wait: 2 }],
+    note: '6-6: off the belt under the counter, Mocha on the counter gave the camera his look and pushed the 印章 off; it landed beside Baokaka and he grabs it — 「這個！」 (in the game the photo moment frames this; the 土地公 in his 機場背心 on the passport-stamp poster).',
+    expect: { event: 'grab' },
   },
   {
     name: 'c0p2-start',
