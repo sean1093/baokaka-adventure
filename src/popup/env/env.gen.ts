@@ -680,6 +680,84 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "2e9d28d2aa3685e3"
+    },
+    "c9/tamsui-line": {
+      "file": "backdrops/c9/tamsui-line",
+      "bytes": 122390,
+      "chapter": 9,
+      "grade": [1.322, 1.228, 1.129],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "34f6de74b613fdaa"
+    },
+    "c9/old-street": {
+      "file": "backdrops/c9/old-street",
+      "bytes": 122390,
+      "chapter": 9,
+      "grade": [1.322, 1.228, 1.129],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "34f6de74b613fdaa"
+    },
+    "c9/ferry": {
+      "file": "backdrops/c9/ferry",
+      "bytes": 122390,
+      "chapter": 9,
+      "grade": [1.322, 1.228, 1.129],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "34f6de74b613fdaa"
+    },
+    "c9/fishermans-wharf": {
+      "file": "backdrops/c9/fishermans-wharf",
+      "bytes": 122390,
+      "chapter": 9,
+      "grade": [1.322, 1.228, 1.129],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "34f6de74b613fdaa"
+    },
+    "c9/tamkang-bridge": {
+      "file": "backdrops/c9/tamkang-bridge",
+      "bytes": 122390,
+      "chapter": 9,
+      "grade": [1.322, 1.228, 1.129],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "34f6de74b613fdaa"
+    },
+    "c9/fishing-harbour": {
+      "file": "backdrops/c9/fishing-harbour",
+      "bytes": 122390,
+      "chapter": 9,
+      "grade": [1.322, 1.228, 1.129],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "34f6de74b613fdaa"
     }
   },
   "parts": {
@@ -3519,6 +3597,269 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "55ee1bd545379942"
+    },
+    "c9/window-blind": {
+      "preset": "blowable",
+      "box": {
+        "x": -31,
+        "y": -36,
+        "w": 68,
+        "h": 82
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c9/window-blind.closed",
+          "bytes": 1798
+        },
+        "open": {
+          "file": "parts/c9/window-blind.open",
+          "bytes": 1432
+        }
+      },
+      "source": "e1a81e74ec234e8e"
+    },
+    "c9/shutter": {
+      "preset": "flap",
+      "box": {
+        "x": -14,
+        "y": -8,
+        "w": 78,
+        "h": 70
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c9/shutter.closed",
+          "bytes": 2410
+        },
+        "open": {
+          "file": "parts/c9/shutter.open",
+          "bytes": 2856
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c9/shutter.closed.lifted",
+          "bytes": 3646
+        },
+        "open": {
+          "file": "parts/c9/shutter.open.lifted",
+          "bytes": 3480
+        }
+      },
+      "source": "53a46d8d08f5c478"
+    },
+    "c9/ferry-horn": {
+      "preset": "button",
+      "box": {
+        "x": -20,
+        "y": -21,
+        "w": 49,
+        "h": 37
+      },
+      "states": {
+        "up": {
+          "file": "parts/c9/ferry-horn.up",
+          "bytes": 1772
+        },
+        "down": {
+          "file": "parts/c9/ferry-horn.down",
+          "bytes": 2370
+        }
+      },
+      "source": "ea63f772b72d032b"
+    },
+    "c9/tide": {
+      "preset": "lift",
+      "box": {
+        "x": -136,
+        "y": -41,
+        "w": 271,
+        "h": 121
+      },
+      "states": {
+        "dawn": {
+          "file": "parts/c9/tide.dawn",
+          "bytes": 1742
+        },
+        "noon": {
+          "file": "parts/c9/tide.noon",
+          "bytes": 1802
+        },
+        "sunset": {
+          "file": "parts/c9/tide.sunset",
+          "bytes": 1712
+        }
+      },
+      "source": "3c36554829565e6e"
+    },
+    "c9/dinghy": {
+      "preset": "lift",
+      "box": {
+        "x": -34,
+        "y": -2,
+        "w": 77,
+        "h": 23
+      },
+      "states": {
+        "dawn": {
+          "file": "parts/c9/dinghy.dawn",
+          "bytes": 1406
+        },
+        "noon": {
+          "file": "parts/c9/dinghy.noon",
+          "bytes": 1406
+        },
+        "sunset": {
+          "file": "parts/c9/dinghy.sunset",
+          "bytes": 1406
+        }
+      },
+      "source": "350c973b74489caf"
+    },
+    "c9/sail": {
+      "preset": "blowable",
+      "box": {
+        "x": -28,
+        "y": -42,
+        "w": 57,
+        "h": 87
+      },
+      "states": {
+        "0": {
+          "file": "parts/c9/sail.0",
+          "bytes": 2188
+        },
+        "1": {
+          "file": "parts/c9/sail.1",
+          "bytes": 2142
+        },
+        "2": {
+          "file": "parts/c9/sail.2",
+          "bytes": 2188
+        },
+        "3": {
+          "file": "parts/c9/sail.3",
+          "bytes": 2232
+        }
+      },
+      "source": "c2b16c0390589493"
+    },
+    "c9/derrick": {
+      "preset": "loop",
+      "box": {
+        "x": -35,
+        "y": -36,
+        "w": 66,
+        "h": 82
+      },
+      "states": {
+        "0": {
+          "file": "parts/c9/derrick.0",
+          "bytes": 2448
+        },
+        "1": {
+          "file": "parts/c9/derrick.1",
+          "bytes": 2448
+        },
+        "2": {
+          "file": "parts/c9/derrick.2",
+          "bytes": 2448
+        },
+        "3": {
+          "file": "parts/c9/derrick.3",
+          "bytes": 2448
+        }
+      },
+      "source": "33a7bfe38161369c"
+    },
+    "c9/iron-egg-granny": {
+      "preset": "carrier",
+      "box": {
+        "x": -50,
+        "y": -172,
+        "w": 107,
+        "h": 188
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c9/iron-egg-granny.idle",
+          "bytes": 7686
+        },
+        "carrying": {
+          "file": "parts/c9/iron-egg-granny.carrying",
+          "bytes": 7442
+        },
+        "back": {
+          "file": "parts/c9/iron-egg-granny.back",
+          "bytes": 7856
+        },
+        "done": {
+          "file": "parts/c9/iron-egg-granny.done",
+          "bytes": 7954
+        }
+      },
+      "source": "7d78c1ac290b8896"
+    },
+    "c9/cable-sol": {
+      "preset": "prop",
+      "box": {
+        "x": -38,
+        "y": -38,
+        "w": 76,
+        "h": 76
+      },
+      "states": {
+        "still": {
+          "file": "parts/c9/cable-sol.still",
+          "bytes": 3206
+        },
+        "hum": {
+          "file": "parts/c9/cable-sol.hum",
+          "bytes": 4344
+        }
+      },
+      "source": "d81693156efc81ea"
+    },
+    "c9/cable-la": {
+      "preset": "prop",
+      "box": {
+        "x": -38,
+        "y": -38,
+        "w": 76,
+        "h": 76
+      },
+      "states": {
+        "still": {
+          "file": "parts/c9/cable-la.still",
+          "bytes": 3004
+        },
+        "hum": {
+          "file": "parts/c9/cable-la.hum",
+          "bytes": 4224
+        }
+      },
+      "source": "79e1c94850325bee"
+    },
+    "c9/cable-do": {
+      "preset": "prop",
+      "box": {
+        "x": -38,
+        "y": -38,
+        "w": 76,
+        "h": 76
+      },
+      "states": {
+        "still": {
+          "file": "parts/c9/cable-do.still",
+          "bytes": 3032
+        },
+        "hum": {
+          "file": "parts/c9/cable-do.hum",
+          "bytes": 4224
+        }
+      },
+      "source": "f234555206de1f5c"
     }
   },
   "cutouts": {
@@ -3625,6 +3966,19 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 270
       },
       "source": "4c1cd316ca97c5b5"
+    },
+    "c9/tune-plate": {
+      "file": "cutouts/c9/tune-plate",
+      "bytes": 3596,
+      "chapter": 9,
+      "grade": [1.322, 1.228, 1.129],
+      "box": {
+        "x": 246,
+        "y": 260,
+        "w": 120,
+        "h": 60
+      },
+      "source": "a1a2812de7747fd9"
     }
   },
   "screens": {

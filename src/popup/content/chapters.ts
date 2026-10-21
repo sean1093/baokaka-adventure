@@ -36,7 +36,7 @@ export const CHAPTERS: readonly ChapterInfo[] = [
   { chapter: 6, title: '飛機睡著的時候', landmark: '松山機場', station: '松山機場', time: '02:50', next: '松山機場', pages: 6, pageTitles: ['文湖線前窗', '行李轉盤', '看飛機', '空橋', '塔台', '海關的印章'] },
   { chapter: 7, title: '纜車上的月亮', landmark: '貓空', station: '貓空', time: '03:30', next: '動物園', pages: 6, pageTitles: ['往動物園', '纜車站', '茶園階梯', '水晶車廂', '大茶壺', '菜園的芹菜'] },
   { chapter: 8, title: '熱呼呼的煙', landmark: '北投', station: '北投', time: '04:00', next: '新北投', pages: 6, pageTitles: ['新北投支線', '地熱谷', '呼呼', '北投圖書館', '大浴池', '澡堂的算盤'] },
-  { chapter: 9, title: '河的盡頭是海', landmark: '淡水', station: '淡水', time: '04:40', next: '淡水', pages: 6 },
+  { chapter: 9, title: '河的盡頭是海', landmark: '淡水', station: '淡水', time: '04:40', next: '淡水', pages: 6, pageTitles: ['往淡水', '淡水老街', '渡輪', '漁人碼頭', '淡江大橋', '碼頭的聽診器'] },
   { chapter: 10, title: '離天空最近的地方', landmark: '台北101', station: '101', time: '05:10', next: '台北101', pages: 6 },
 ];
 
@@ -57,6 +57,7 @@ const CARD_LINES: Readonly<Record<number, readonly LineKey[]>> = {
   6: ['c6.intro.1', 'c6.intro.2', 'c6.intro.3'],
   7: ['c7.intro.1', 'c7.intro.2', 'c7.intro.3'],
   8: ['c8.intro.1', 'c8.intro.2', 'c8.intro.3'],
+  9: ['c9.intro.1', 'c9.intro.2', 'c9.intro.3'],
 };
 
 /** The chapter card's lines (none for a chapter not written yet). */
@@ -76,6 +77,7 @@ const END_LINES: Readonly<Record<number, readonly LineKey[]>> = {
   6: ['c6p6.end.1'],
   7: ['c7p6.end.1'],
   8: ['c8p6.end.1'],
+  9: ['c9p6.end.1'],
 };
 
 /** A chapter's end lines (none for a chapter not written yet). */

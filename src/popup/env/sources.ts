@@ -11,6 +11,7 @@ import { C5_BACKDROPS, C5_PARTS } from './art/c5';
 import { C6_BACKDROPS, C6_PARTS } from './art/c6';
 import { C7_BACKDROPS, C7_CUTOUTS, C7_PARTS } from './art/c7';
 import { C8_BACKDROPS, C8_PARTS } from './art/c8';
+import { C9_CUTOUTS, C9_PARTS } from './art/c9';
 import { SCREEN_ART, type ScreenSource } from './art/screens';
 import type { EnvBox } from './manifest';
 
@@ -69,10 +70,11 @@ export const PART_SOURCES: Readonly<Record<string, PartSource>> = {
   ...C6_PARTS,
   ...C7_PARTS,
   ...C8_PARTS,
+  ...C9_PARTS,
 };
 
 /** Standing cut-outs by key (e.g. 'c1/lamp-post'). */
-export const CUTOUT_SOURCES: Readonly<Record<string, CutoutSource>> = { ...C2_CUTOUTS, ...C3_CUTOUTS, ...C4_CUTOUTS, ...C7_CUTOUTS };
+export const CUTOUT_SOURCES: Readonly<Record<string, CutoutSource>> = { ...C2_CUTOUTS, ...C3_CUTOUTS, ...C4_CUTOUTS, ...C7_CUTOUTS, ...C9_CUTOUTS };
 
 /** One backdrop to bake. */
 export interface BackdropSource {
