@@ -337,15 +337,19 @@ function arrange(scene: TalkScene, plan: CloudPlan, only?: number): Omit<TalkLay
     const hardFree = (b: Box) => avoid.hard.every((h) => overlap(b, h) === 0);
     // The later passes may take any open spot on the page, top first; only when none keeps off him,
     // the goal, the cloud and the other cards do they wrap the line narrower and taller (#197)
+    // ...below the line before, so the beat still reads top to bottom
+    const below = Math.max(voiceTop, ...subs.map((x) => x.box.y + 1));
     let fitted = size;
-    let pick = pickBox(dense ? [...candidates, ...denseCandidates(voiceTop, size, from)] : candidates, avoid);
+    let pick = pickBox(dense ? [...candidates, ...denseCandidates(below, size, from)] : candidates, avoid);
     if (dense && !hardFree(pick.box)) {
       let width = size.w;
       for (const f of NARROWER) {
         const narrow = subtitleSize(line.text, line.label, k, maxW * f);
         if (narrow.w >= width - 1) continue;
         width = narrow.w;
-        const p = pickBox(denseCandidates(voiceTop, narrow, from), avoid);
+        const spots = denseCandidates(below, narrow, from);
+        if (spots.length === 0) continue;
+        const p = pickBox(spots, avoid);
         if (hardFree(p.box)) {
           [pick, fitted] = [p, narrow];
           break;
@@ -359,14 +363,14 @@ function arrange(scene: TalkScene, plan: CloudPlan, only?: number): Omit<TalkLay
 }
 
 /**
- * Every spot on the page for a card of `size` (#197), top to bottom in `DENSE_STEP` rows: against
+ * Every spot on the page from `top` down for a card of `size` (#197), in `DENSE_STEP` rows: against
  * the left edge, centred, against the right edge, and centred under its speaker when it has one.
  */
 function denseCandidates(top: number, size: { w: number; h: number }, from: Pt | null): Box[] {
   const xs = [TALK_BOUNDS.x, (PAGE_W - size.w) / 2, TALK_BOUNDS.x + TALK_BOUNDS.w - size.w];
   if (from !== null) xs.push(from[0] - size.w / 2);
   const out: Box[] = [];
-  for (let y = Math.max(TALK_BOUNDS.y, top - 8); y + size.h <= TALK_BOUNDS.y + TALK_BOUNDS.h; y += DENSE_STEP) {
+  for (let y = Math.max(TALK_BOUNDS.y, top); y + size.h <= TALK_BOUNDS.y + TALK_BOUNDS.h; y += DENSE_STEP) {
     for (const x of xs) out.push({ x, y, w: size.w, h: size.h });
   }
   return out;
