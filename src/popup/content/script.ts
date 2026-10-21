@@ -232,7 +232,7 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c8p1.uncle.1': { who: 'npc', label: '泡湯阿伯', text: '嗯……要去泡湯喔？阿伯抱你過去。' },
   // 8-2: the steam comes up under Mocha a third time (the 淘氣)
   'c8p2.mocha.1': { who: 'mocha', text: '……毛都炸開了。不要看。' },
-  // 8-3: 咻—— blows the 溫泉阿嬤's towel hat off (the 淘氣)
+  // 8-3: 咻—— blows the 溫泉阿嬤's sun hat off (the 淘氣)
   'c8p3.granny.1': { who: 'npc', label: '溫泉阿嬤', text: '哎唷！我的帽子！' },
   // § 5.3 店員小哥's chapter 8 cameo (8-5: Mocha hops onto his bathhouse shop's counter)
   'c8p5.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
