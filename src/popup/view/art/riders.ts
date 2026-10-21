@@ -19,7 +19,7 @@ const RIDERS: Readonly<Record<string, RiderArt>> = {
   ...AIRPORT_RIDERS,
   // 貓空 (#126, `gondola.ts`): the 水晶車廂 and the 店員小哥's shop cabin
   ...MAOKONG_RIDERS,
-  // 北投 (#129, `beitou.ts`; a placeholder until #130): 8-4's book tray
+  // 北投 (#130, `beitou.ts`): 8-4's book tray
   ...BEITOU_RIDERS,
 };
 

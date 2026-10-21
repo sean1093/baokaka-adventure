@@ -605,7 +605,7 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c8/hot-spring-train": {
       "file": "backdrops/c8/hot-spring-train",
-      "bytes": 137420,
+      "bytes": 142872,
       "chapter": 8,
       "grade": [1.164, 1.105, 1.083],
       "box": {
@@ -614,11 +614,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "94546360209d5d6b"
+      "source": "62a4eaffd6512be9"
     },
     "c8/thermal-valley": {
       "file": "backdrops/c8/thermal-valley",
-      "bytes": 137420,
+      "bytes": 161314,
       "chapter": 8,
       "grade": [1.164, 1.105, 1.083],
       "box": {
@@ -627,11 +627,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "94546360209d5d6b"
+      "source": "e99c5a0481c2c984"
     },
     "c8/bath-boardwalk": {
       "file": "backdrops/c8/bath-boardwalk",
-      "bytes": 137420,
+      "bytes": 191622,
       "chapter": 8,
       "grade": [1.164, 1.105, 1.083],
       "box": {
@@ -640,11 +640,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "94546360209d5d6b"
+      "source": "c73835cade678b27"
     },
     "c8/library": {
       "file": "backdrops/c8/library",
-      "bytes": 137420,
+      "bytes": 174022,
       "chapter": 8,
       "grade": [1.164, 1.105, 1.083],
       "box": {
@@ -653,11 +653,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "94546360209d5d6b"
+      "source": "287c1ba51148c470"
     },
     "c8/big-bath": {
       "file": "backdrops/c8/big-bath",
-      "bytes": 137420,
+      "bytes": 97372,
       "chapter": 8,
       "grade": [1.164, 1.105, 1.083],
       "box": {
@@ -666,11 +666,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "94546360209d5d6b"
+      "source": "5a75c2d8059b5ffd"
     },
     "c8/bathhouse-hall": {
       "file": "backdrops/c8/bathhouse-hall",
-      "bytes": 137420,
+      "bytes": 127116,
       "chapter": 8,
       "grade": [1.164, 1.105, 1.083],
       "box": {
@@ -679,7 +679,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "94546360209d5d6b"
+      "source": "2e9d28d2aa3685e3"
     }
   },
   "parts": {
@@ -3168,110 +3168,164 @@ export const ENV_MANIFEST: EnvManifest = {
     "c8/seat-cushion": {
       "preset": "button",
       "box": {
-        "x": -25,
-        "y": -3,
-        "w": 54,
-        "h": 16
+        "x": -26,
+        "y": -5,
+        "w": 56,
+        "h": 19
       },
       "states": {
         "up": {
           "file": "parts/c8/seat-cushion.up",
-          "bytes": 988
+          "bytes": 1276
         },
         "down": {
           "file": "parts/c8/seat-cushion.down",
-          "bytes": 894
+          "bytes": 1368
         }
       },
-      "source": "968ddbd3250e05af"
+      "source": "17b20692eba3c616"
     },
     "c8/steam": {
       "preset": "blowable",
       "box": {
-        "x": -40,
-        "y": -49,
-        "w": 79,
-        "h": 97
+        "x": -54,
+        "y": -59,
+        "w": 103,
+        "h": 115
       },
       "states": {
         "fog": {
           "file": "parts/c8/steam.fog",
-          "bytes": 2992
+          "bytes": 7390
         },
         "clear": {
           "file": "parts/c8/steam.clear",
-          "bytes": 958
+          "bytes": 1094
         }
       },
-      "source": "08b136bd3be6273b"
+      "source": "6bb4863c0882a1d5"
     },
     "c8/steam-cloud": {
       "preset": "lift",
       "box": {
-        "x": -38,
-        "y": -1,
-        "w": 82,
-        "h": 38
+        "x": -42,
+        "y": -9,
+        "w": 89,
+        "h": 79
       },
       "states": {
         "down": {
           "file": "parts/c8/steam-cloud.down",
-          "bytes": 1746
+          "bytes": 1962
         },
         "up": {
           "file": "parts/c8/steam-cloud.up",
-          "bytes": 2114
+          "bytes": 3740
         }
       },
-      "source": "58ed88dd42cbb7de"
+      "source": "0c6461fad2d607a4"
+    },
+    "c8/valve": {
+      "preset": "wheel",
+      "box": {
+        "x": -50,
+        "y": -43,
+        "w": 104,
+        "h": 97
+      },
+      "pivot": [0, 0],
+      "states": {
+        "off": {
+          "file": "parts/c8/valve.off",
+          "bytes": 6534
+        }
+      },
+      "lifted": {
+        "off": {
+          "file": "parts/c8/valve.off.lifted",
+          "bytes": 8066
+        }
+      },
+      "source": "b0cae8a7c1978a30"
     },
     "c8/granny-hat": {
       "preset": "blowable",
       "box": {
-        "x": -23,
-        "y": -43,
-        "w": 52,
-        "h": 59
+        "x": -36,
+        "y": -104,
+        "w": 72,
+        "h": 152
       },
       "states": {
         "on": {
           "file": "parts/c8/granny-hat.on",
-          "bytes": 1788
+          "bytes": 6248
         },
         "off": {
           "file": "parts/c8/granny-hat.off",
-          "bytes": 2042
+          "bytes": 8048
         }
       },
-      "source": "a2d243e3cc7a970c"
+      "source": "7d82b3b226a94d88"
     },
     "c8/pinwheel": {
       "preset": "blowable",
       "box": {
-        "x": -23,
-        "y": -20,
-        "w": 52,
-        "h": 54
+        "x": -25,
+        "y": -21,
+        "w": 56,
+        "h": 57
       },
       "states": {
         "0": {
           "file": "parts/c8/pinwheel.0",
-          "bytes": 2480
+          "bytes": 3276
         },
         "1": {
           "file": "parts/c8/pinwheel.1",
-          "bytes": 2500
+          "bytes": 3276
         },
         "2": {
           "file": "parts/c8/pinwheel.2",
-          "bytes": 2470
+          "bytes": 3210
         },
         "3": {
           "file": "parts/c8/pinwheel.3",
-          "bytes": 2544
+          "bytes": 3242
         }
       },
-      "source": "12c6228d9c3898b9"
+      "source": "f9abf8db5c019a2b"
+    },
+    "c8/library-window": {
+      "preset": "flap",
+      "box": {
+        "x": -14,
+        "y": -8,
+        "w": 78,
+        "h": 70
+      },
+      "hinge": 0,
+      "states": {
+        "closed": {
+          "file": "parts/c8/library-window.closed",
+          "bytes": 2576
+        },
+        "open": {
+          "file": "parts/c8/library-window.open",
+          "bytes": 2832
+        }
+      },
+      "lifted": {
+        "closed": {
+          "file": "parts/c8/library-window.closed.lifted",
+          "bytes": 3968
+        },
+        "open": {
+          "file": "parts/c8/library-window.open.lifted",
+          "bytes": 3508
+        }
+      },
+      "source": "ccf0dc312cc37d2c"
     },
     "c8/book-belt": {
       "preset": "loop",
@@ -3279,115 +3333,192 @@ export const ENV_MANIFEST: EnvManifest = {
         "x": -39,
         "y": -71,
         "w": 78,
-        "h": 144
+        "h": 146
       },
       "states": {
         "0": {
           "file": "parts/c8/book-belt.0",
-          "bytes": 6190
-        },
-        "1": {
-          "file": "parts/c8/book-belt.1",
-          "bytes": 6190
-        },
-        "2": {
-          "file": "parts/c8/book-belt.2",
-          "bytes": 6190
-        },
-        "3": {
-          "file": "parts/c8/book-belt.3",
-          "bytes": 6190
+          "bytes": 6888
         }
       },
-      "source": "b2e6f4d45d06f0d2"
+      "source": "eb359dab225d8e06"
+    },
+    "c8/bath-tap": {
+      "preset": "wheel",
+      "box": {
+        "x": -53,
+        "y": -46,
+        "w": 109,
+        "h": 102
+      },
+      "pivot": [0, 0],
+      "states": {
+        "low": {
+          "file": "parts/c8/bath-tap.low",
+          "bytes": 6602
+        }
+      },
+      "lifted": {
+        "low": {
+          "file": "parts/c8/bath-tap.low.lifted",
+          "bytes": 8808
+        }
+      },
+      "source": "8dcabef4b8c44c14"
     },
     "c8/wooden-tub": {
       "preset": "lift",
       "box": {
-        "x": -29,
-        "y": -6,
-        "w": 65,
-        "h": 41
+        "x": -31,
+        "y": -7,
+        "w": 69,
+        "h": 42
       },
       "states": {
         "low": {
           "file": "parts/c8/wooden-tub.low",
-          "bytes": 2078
+          "bytes": 2590
         },
         "mid": {
           "file": "parts/c8/wooden-tub.mid",
-          "bytes": 2078
+          "bytes": 2590
         },
         "high": {
           "file": "parts/c8/wooden-tub.high",
-          "bytes": 2078
+          "bytes": 2590
         }
       },
-      "source": "68730260af504398"
+      "source": "1d836884a01f7a29"
     },
     "c8/bath-water": {
       "preset": "lift",
       "box": {
         "x": -105,
-        "y": 7,
+        "y": -23,
         "w": 210,
-        "h": 87
+        "h": 125
       },
       "states": {
         "low": {
           "file": "parts/c8/bath-water.low",
-          "bytes": 246
+          "bytes": 968
         },
         "mid": {
           "file": "parts/c8/bath-water.mid",
-          "bytes": 1390
+          "bytes": 2784
         },
         "high": {
           "file": "parts/c8/bath-water.high",
-          "bytes": 1300
+          "bytes": 3118
         }
       },
-      "source": "b6ba55a6a0bef220"
+      "source": "bf3de6830e986830"
     },
     "c8/counter-bell": {
       "preset": "button",
       "box": {
         "x": -21,
-        "y": -17,
-        "w": 42,
-        "h": 37
+        "y": -26,
+        "w": 52,
+        "h": 48
       },
       "states": {
         "up": {
           "file": "parts/c8/counter-bell.up",
-          "bytes": 1474
+          "bytes": 1670
         },
         "down": {
           "file": "parts/c8/counter-bell.down",
-          "bytes": 1806
+          "bytes": 2756
         }
       },
-      "source": "09019686918a836e"
+      "source": "52b9f5873ff48bb7"
     },
     "c8/bantai-window": {
       "preset": "gate",
       "box": {
         "x": -25,
         "y": -23,
-        "w": 84,
+        "w": 86,
         "h": 54
       },
       "states": {
         "closed": {
           "file": "parts/c8/bantai-window.closed",
-          "bytes": 1468
+          "bytes": 1424
         },
         "open": {
           "file": "parts/c8/bantai-window.open",
-          "bytes": 1570
+          "bytes": 3176
         }
       },
-      "source": "5aa0300a10029ec3"
+      "source": "77b9a318714903de"
+    },
+    "c8/abacus-rod": {
+      "preset": "slider",
+      "box": {
+        "x": -53,
+        "y": -17,
+        "w": 109,
+        "h": 51
+      },
+      "states": {
+        "0": {
+          "file": "parts/c8/abacus-rod.0",
+          "bytes": 1322
+        },
+        "1": {
+          "file": "parts/c8/abacus-rod.1",
+          "bytes": 1322
+        },
+        "2": {
+          "file": "parts/c8/abacus-rod.2",
+          "bytes": 1322
+        }
+      },
+      "lifted": {
+        "0": {
+          "file": "parts/c8/abacus-rod.0.lifted",
+          "bytes": 2766
+        },
+        "1": {
+          "file": "parts/c8/abacus-rod.1.lifted",
+          "bytes": 2766
+        },
+        "2": {
+          "file": "parts/c8/abacus-rod.2.lifted",
+          "bytes": 2766
+        }
+      },
+      "source": "3f06cbb49e6efeb1"
+    },
+    "c8/bath-uncle": {
+      "preset": "carrier",
+      "box": {
+        "x": -51,
+        "y": -176,
+        "w": 110,
+        "h": 193
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c8/bath-uncle.idle",
+          "bytes": 8430
+        },
+        "carrying": {
+          "file": "parts/c8/bath-uncle.carrying",
+          "bytes": 7818
+        },
+        "back": {
+          "file": "parts/c8/bath-uncle.back",
+          "bytes": 7998
+        },
+        "done": {
+          "file": "parts/c8/bath-uncle.done",
+          "bytes": 8092
+        }
+      },
+      "source": "55ee1bd545379942"
     }
   },
   "cutouts": {

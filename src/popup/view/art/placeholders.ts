@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_CHAPTER_CLOCK, POPUP_MAOKONG as MK, POPUP_STAGE as S, POPUP_STATION as T, mixHex, type PopupChapterSky } from '../../../art/palette';
+import { POPUP as C, POPUP_BEITOU as BT, POPUP_CHAPTER_CLOCK, POPUP_MAOKONG as MK, POPUP_STAGE as S, POPUP_STATION as T, mixHex, type PopupChapterSky } from '../../../art/palette';
 import type { Kind, PageDef } from '../../core/types';
 import { PRESET_DEFS, brad, depth, f1, f2, kitDefs, pageBlock, paw, pinholes, ref, scallopBand, seeded, skyline, softEllipse, sparkle, translate, type DefName, type KitCtx } from '../../art';
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorOutline, floorWiden, towardVp } from '../geometry';
@@ -603,8 +603,8 @@ export function spotPool(ctx: KitCtx, from?: readonly [number, number]): string 
  * origin on the water), `c3/bell` the brass 傅鐘 (origin at its crown), `c3/glasses` reading glasses
  * (origin at the bridge); `c5/phone` 5-1's glowing phone and `c5/griddle` 5-6's shining griddle (#121,
  * drawn in the market kit by #122); `c7/panda-sign` 7-1's lit panda sign over the platform (#125; drawn in the
- * chapter's kit by #126); `c8/stained-glass` 8-1's stained-glass window in the hot-spring car (#129, a
- * placeholder until #130); any other key a cold silver glint. Drawn in the campus kit by #117.
+ * chapter's kit by #126); `c8/stained-glass` 8-1's stained-glass window in the hot-spring car (#129;
+ * drawn in the chapter's kit by #130); any other key a cold silver glint. Drawn in the campus kit by #117.
  */
 export function decoyArt(ctx: KitCtx, key?: string): string {
   const glint = (x: number, y: number, r: number) => sparkle(ctx, x, y, r);
@@ -697,14 +697,18 @@ export function decoyArt(ctx: KitCtx, key?: string): string {
         + glint(17, -15, 3.8) + glint(-17, 12, 3);
     }
     case 'c8/stained-glass': {
-      // 8-1's stained-glass window in the hot-spring car (#129; a placeholder until #130): an arched
-      // window of coloured glassine panes in a dark frame, lamplight glittering through it. Within ±18 units
+      // 8-1's stained-glass window in the hot-spring car (#129; drawn in the chapter's kit by #130): an
+      // arched window of coloured glassine in its cedar leading — a moon over 北投's hills, a teal
+      // spring with its steam curling up — lamplight glittering through it. Within ±18 units
       const arch = 'M-14 14V-4Q-14 -18 0 -18Q14 -18 14 -4V14Z';
-      return softEllipse(ctx, 0, 0, 26, 22, 'lamp', 0.18, 'blur8')
-        + depth(ctx, 3, `<path d="${arch}" fill="${C.printDark}"/><path d="M-11 12V-4Q-11 -15 0 -15Q11 -15 11 -4V12Z" fill="${C.glassine}"/>`
-          + `<path d="M-11 0H11V12H-11Z" fill="${C.washiCeladon}" opacity=".85"/><path d="M-11 -4Q-11 -15 0 -15V0H-11Z" fill="${C.washiPink}" opacity=".85"/>`
-          + `<path d="M0 -15Q11 -15 11 -4V0H0Z" fill="${C.printLilac}" opacity=".85"/><circle cx="0" cy="0" r="4" fill="${C.lamp}"/>`
-          + `<path d="M0 -15V12M-11 0H11" stroke="${C.printDark}" stroke-width="1.6"/>`, `<path d="${arch}"/>`)
+      const inner = 'M-11 12V-4Q-11 -15 0 -15Q11 -15 11 -4V12Z';
+      return softEllipse(ctx, 0, 0, 26, 22, 'lamp', 0.2, 'blur8')
+        + depth(ctx, 3, `<path d="${arch}" fill="${BT.cedarDeep}"/><path d="${inner}" fill="${C.printLilac}"/>`
+          + `<circle cx="4" cy="-8" r="3.4" fill="${C.lamp}"/>`
+          + `<path d="M-11 0L-4 -6L2 -2L11 -7V12H-11Z" fill="${BT.roofGreen}"/><path d="M-11 5Q0 1 11 5V12H-11Z" fill="${BT.tealLight}"/>`
+          + `<path d="M-4 4q-2 -3 0 -6t0 -5M2 4q-2 -3 0 -6" stroke="${C.washi}" stroke-width="1.2" fill="none" stroke-linecap="round"/>`
+          + `<path d="M0 -15V12M-11 0H11M-11 6H11" stroke="${BT.cedarDeep}" stroke-width="1.2"/>`
+          + `<path d="${inner}" fill="${C.glassine}" opacity=".18"/><path d="M-9 10L-2 -12" stroke="${C.cutRim}" stroke-width="1.4" opacity=".5"/>`, `<path d="${arch}"/>`)
         + glint(15, -14, 3.8) + glint(-15, 10, 3);
     }
     default:

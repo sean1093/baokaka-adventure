@@ -391,6 +391,24 @@ describe('sources', () => {
     }
   });
 
+  test('chapter 8 (#130): every art key resolves to its own art — no live placeholder, no placeholder stage', () => {
+    const c8 = PAGES.filter((p) => p.chapter === 8);
+    expect(c8.map((p) => p.id)).toEqual(['c8p1', 'c8p2', 'c8p3', 'c8p4', 'c8p5', 'c8p6']);
+    for (const b of backdropSources(c8)) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+    for (const p of c8) {
+      expect(pageArt(p, M).placeholders, p.id).toEqual([]);
+      for (const part of p.parts) expect(isPlaceholder(part.art), `${p.id} ${part.art}`).toBe(false);
+      for (const c of p.creatures) expect(hasCreatureArt(c.art), `${p.id} ${c.art}`).toBe(true);
+    }
+    // The 阿伯 is baked per look (D-85); the belt is one drawing; the 阿嬤 sits under her hat in its part
+    expect(Object.keys(M.parts['c8/bath-uncle']?.states ?? {})).toEqual(expect.arrayContaining(['idle', 'carrying', 'back', 'done']));
+    for (const state of ['1', '2', '3']) expect(partImage('c8/book-belt', state)?.url, state).toBe(partImage('c8/book-belt', '0')?.url);
+    expect(Object.keys(M.parts['c8/granny-hat']?.states ?? {})).toEqual(expect.arrayContaining(['on', 'off']));
+  });
+
   test('4-3\'s shadow (the 淘氣\'s art) shows only while Mocha hides behind the lit second sign (#119)', () => {
     const src = CUTOUT_SOURCES['c4/mocha-shadow'];
     expect(lintMarkup(src.draw(kitCtx('t', { filters: true })), { page: 'c4p3', touchable: () => false, expected: [], where: 'shadow' })).toEqual([]);

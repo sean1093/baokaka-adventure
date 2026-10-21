@@ -8,6 +8,7 @@ import { origamiBird, placeholderBackdrop } from './placeholders';
 import { crowdLegs, pachinkoUncle, passengers, strayDog } from './market';
 import { nightHerons } from './airport';
 import { pangolin, sleepingBear, teaFarmer } from './maokong';
+import { eggBasket } from './beitou';
 import { busker, dancers, karaokeKing } from './ximen';
 
 /**
@@ -69,6 +70,8 @@ const CREATURES: Readonly<Record<string, CreatureArt>> = {
   'c7/pangolin': pangolin,
   'c7/tea-farmer': teaFarmer,
   'c7/sleeping-bear': sleepingBear,
+  // 北投 (#130, `beitou.ts`): 8-3's 溫泉阿嬤's basket of hot-spring eggs (she sits with her hat in its part)
+  'c8/hot-spring-granny': eggBasket,
 };
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';

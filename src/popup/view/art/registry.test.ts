@@ -133,6 +133,23 @@ describe('art registry fallback', () => {
     expect(new Set(drawn).size).toBe(drawn.length);
   });
 
+  test('chapter 8\'s cast and riders (#130): own art, no filters, never marigold', async () => {
+    const { riderArt } = await import('./riders');
+    const { bathUncleArt, grannyFigure } = await import('./beitou');
+    const ctx = kitCtx('t');
+    expect(creatureArt('c8/hot-spring-granny'), 'c8/hot-spring-granny').not.toBe(origamiBird);
+    const drawn = [creatureArt('c8/hot-spring-granny')(ctx, 'bench'), grannyFigure(ctx), grannyFigure(ctx, true)];
+    for (const look of ['idle', 'carrying', 'back', 'done'] as const) drawn.push(bathUncleArt(ctx, look));
+    const tray = riderArt('c8/book-belt', 'T');
+    expect(tray).not.toBeNull();
+    drawn.push(tray!(ctx));
+    for (const svg of drawn) {
+      expect(svg).not.toMatch(/\bfilter=/);
+      expect(lintMarkup(svg, { page: 'c8', touchable: () => false, expected: [], where: 'c8' })).toEqual([]);
+    }
+    expect(new Set(drawn).size).toBe(drawn.length);
+  });
+
   test('each missing key is logged once (per kind) in dev', () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     partArt('x/one', 'flap');

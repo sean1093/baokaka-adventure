@@ -1,11 +1,11 @@
-import { POPUP as C, POPUP_AIRPORT as A, POPUP_CAMPUS as K, POPUP_MAOKONG as G, POPUP_MARKET as M } from '../../../art/palette';
+import { POPUP as C, POPUP_AIRPORT as A, POPUP_BEITOU as BT, POPUP_CAMPUS as K, POPUP_MAOKONG as G, POPUP_MARKET as M } from '../../../art/palette';
 import { f1, ref, softEllipse, sparkle, type KitCtx } from '../../art';
 import { albumChapter } from '../../content/album';
 
 /**
  * The chapter treasures as the spread and the photo draw them (GDD § 2.9, § 4.2; #103), flat SVG
  * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1), 畫筆 (chapter 2,
- * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119), 蔥 (chapter 5, #122), 印章 (chapter 6, #124) and 芹菜 (chapter 7, #126) are drawn; the other chapters' treasures are a foil token with the treasure's first
+ * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119), 蔥 (chapter 5, #122), 印章 (chapter 6, #124), 芹菜 (chapter 7, #126) and 算盤 (chapter 8, #130) are drawn; the other chapters' treasures are a foil token with the treasure's first
  * character until their chapters' art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
  * never marigold (reserved for touchables). The caller's defs must hold `foil`.
  */
@@ -150,6 +150,37 @@ function celery(ctx: KitCtx): string {
     + `</g>` + sparkle(ctx, 16, -18, 4);
 }
 
+/**
+ * 算盤 (chapter 8, #130; 會算錢, good with money): the bathhouse cashier's old abacus at a slant — a
+ * rosewood frame with foil-capped corners, the beam across it, seven brass rods of ebony beads (two
+ * above the beam, four below), a few beads pushed up to the beam as if counting; a glint.
+ */
+function abacus(ctx: KitCtx): string {
+  const [w, h] = [44, 28];
+  const beam = -h / 2 + 9;
+  const rods = Array.from({ length: 7 }, (_, i) => -w / 2 + 5 + i * ((w - 10) / 6));
+  const bead = (x: number, y: number) => `M${f1(x - 2.8)} ${f1(y)}L${f1(x)} ${f1(y - 1.9)}L${f1(x + 2.8)} ${f1(y)}L${f1(x)} ${f1(y + 1.9)}Z`;
+  let beads = '';
+  rods.forEach((x, i) => {
+    const up = i % 3 === 1;
+    beads += bead(x, up ? beam - 2.4 : -h / 2 + 3.6) + bead(x, up ? beam - 6.2 : -h / 2 + 7.2);
+    // Four below the beam, stacked at the bottom; on two rods the top one is pushed up to the beam (counting)
+    const counted = i === 2 || i === 5;
+    for (let k = 0; k < 4; k++) beads += bead(x, counted && k === 3 ? beam + 2.4 : h / 2 - 2.6 - k * 3.6);
+  });
+  // Few elements (it is drawn twice on 8-6, on the page and in his bubble, inside the animated budget):
+  // the frame with its beam as one card, the rods, the beads, the foil corners
+  const frame = `M${-w / 2 - 3} ${-h / 2 - 3}h${w + 6}v${h + 6}h${-w - 6}zM${-w / 2} ${-h / 2}v${beam - 1 + h / 2}h${w}v${-(beam - 1 + h / 2)}zM${-w / 2} ${beam + 1.4}v${h / 2 - beam - 1.4}h${w}v${-(h / 2 - beam - 1.4)}z`;
+  const corners = [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sy]) => `M${f1(sx * (w / 2 + 1.5) - 2.5)} ${f1(sy * (h / 2 + 1.5) - 2.5)}h5v5h-5z`).join('');
+  return `<g transform="rotate(-16)">`
+    + `<ellipse cx="0" cy="${h / 2 + 4}" rx="24" ry="3" fill="${C.shadow}" opacity=".28"/>`
+    + `<path d="${frame}" fill-rule="evenodd" fill="${BT.cedarDeep}"/>`
+    + `<path d="${rods.map((x) => `M${f1(x)} ${-h / 2}V${h / 2}`).join('')}" stroke="${BT.brass}" stroke-width=".9"/>`
+    + `<path d="${beads}" fill="${BT.ebony}" stroke="${BT.ebonyLit}" stroke-width=".5"/>`
+    + `<path d="${corners}" fill="${ref(ctx, 'foil')}"/>`
+    + `</g>` + sparkle(ctx, 20, -16, 4);
+}
+
 /** A treasure not drawn yet: a foil token with its first character. */
 function token(ctx: KitCtx, name: string): string {
   return `<ellipse cx="1" cy="17" rx="15" ry="3" fill="${C.shadow}" opacity=".28"/>`
@@ -166,6 +197,7 @@ export function treasureArt(ctx: KitCtx, chapter: number): string {
   if (chapter === 5) return scallion(ctx);
   if (chapter === 6) return passportStamp(ctx);
   if (chapter === 7) return celery(ctx);
+  if (chapter === 8) return abacus(ctx);
   return token(ctx, albumChapter(chapter).treasure);
 }
 
