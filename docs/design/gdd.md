@@ -1265,14 +1265,16 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 
 #### Chapter 7 「纜車上的月亮」 (貓空, 03:30) · treasure 芹菜 · growth 爬樓梯
 
+**Specified in full** (the § 4.3 format, node/edge sketches, the solver's numbers): [`docs/design/pages/c7.md`](pages/c7.md) (#125, D-89). The rows below are the outline, updated where the full spec changed it.
+
 | Page | Title | Key mechanic → aha | 淘氣 | Diff |
 |---|---|---|---|---|
-| 7-1 | 往動物園 | Review: 飛機！ night herons, 抱抱 a zookeeper, and 不要！ a shiny exhibit sign. | Wave 掰掰 at a sleeping pangolin | 3 |
-| 7-2 | 纜車站 | Gondolas on a cranked **loop**. Choose which cabin to ride; Mocha refuses the glass-floor cabin (C8). | Send the glass cabin round with nobody in it | 3 |
-| 7-3 | 茶園階梯 | **Learn 爬樓梯**: he watches the tea farmer climb a terrace, pulls himself up one step, and **climb** edges unlock. Then a terrace route. | Climb up and down the same step 5 times | 2 |
-| 7-4 | 水晶車廂 | Inside a glass-floor gondola: cloud **flaps** below reveal and hide things on the ground (attractor visibility from below). Climb the seats; Mocha stays on the bench. | Open every cloud: Mocha looks down and loafs in protest | 3 |
-| 7-5 | 大茶壺 | A giant teapot **wheel** tilts and pours tea, setting the water level (a lift-like state) under floating teacups, which become stepping-stones. Mocha avoids wet perches. | Fill a teacup with Mocha watching (「……」) | 4 |
-| 7-6 | 菜園的芹菜 (spread) | 黑糖 the black bear sleeps on the celery bed. A cry wakes him (「歹、歹勢」). 抱抱 the bear, and he carries Baokaka up the terraces. Climb plus Mocha. | 抱抱 the bear twice (he hums) | 4 |
+| 7-1 | 往動物園 | Review at 動物園 station: Mocha down onto the plaza's lamp post, 不要！ the zoo's shiny panda sign (he crawls to the top of the stairs), 抱抱 the dozing zookeeper (he carries him down the stairs), 飛機！ the night herons off the path. | Wave 掰掰 at a sleeping pangolin | 3 |
+| 7-2 | 纜車站 | Two cabins on a cranked **loop**: the glass-floored one and the 店員小哥's shop (「行動分店。」). The top station's turnstile opens when the shop docks with Mocha aboard, and Mocha refuses the glass cabin (C8): Baokaka rides one, Mocha the other. → *Choose the cabin.* | Send the glass cabin round with nobody in it | 3 |
+| 7-3 | 茶園階梯 | **Learn 爬樓梯**: Mocha up at the tea shed, 掰掰 the tea farmer off the first step; he climbs a terrace, Baokaka watches and pulls himself up after him, and **climb** edges unlock. Then up the terraces. | Climb up and down the same step 5 times | 2 |
+| 7-4 | 水晶車廂 | Inside a glass-floor gondola: cloud **flaps** below reveal what lies on the ground (attractor visibility from below): the 黑糖珍奶 under the right cloud draws him across the glass; 哇！ the reading lamp shows the bead on the rack; fold down the seat and climb. Mocha stays in his basket on the bench. | Open every cloud: Mocha looks down and loafs in protest | 3 |
+| 7-5 | 大茶壺 | A giant teapot **wheel** tilts and pours tea, setting the water level (a **lift**) under floating teacups, which become stepping-stones: cross at half, climb out at full. Mocha avoids wet perches: he crosses the cups only when the pool is drained, and leads. | Fill a teacup with Mocha watching (「……」) | 4 |
+| 7-6 | 菜園的芹菜 (spread) | 黑糖 the black bear sleeps on the celery bed. Hide Mocha and 不要！ the moon in the rain barrel: a cry wakes him (「歹、歹勢」). 抱抱 the bear, and he carries Baokaka up the terrace walls; Mocha on the fence post opens the gate, and he climbs to the 芹菜. | 抱抱 the bear twice (he hums) | 4 |
 
 #### Chapter 8 「熱呼呼的煙」 (北投, 04:00) · treasure 算盤 · word 咻——
 
@@ -1480,7 +1482,12 @@ nar：纜車一格一格，往山上爬。
 mocha：「貓喜歡高的地方。不是這種高。」
 ```
 
-- **7-6 黑糖:** `npc(黑糖)：「歹、歹勢，我睡在芹菜上了。」`, `mocha：「……熊也會說歹勢。」`
+- **7-1 保育員** (抱抱: he wakes and carries him down the stairs; #125): `npc(保育員)：「嗯……小朋友迷路了？叔叔抱你下樓。」`
+- **7-2 店員小哥** (Mocha jumps into his gondola shop; #125): `clerk：「叮咚～歡迎光臨！」`, `mocha：「……纜車也是你們的？」`, `clerk：「行動分店。」`; when the shop docks and he opens the turnstile, `clerk：「貓空站到了，謝謝光臨！」`
+- **7-3 採茶阿伯** (掰掰: he climbs up the terrace; #125): `npc(採茶阿伯)：「掰掰～阿伯上去採茶囉！」`
+- **7-4** (every cloud blown aside, the 淘氣; #125): `mocha：「……我不要往下看。」`
+- **7-5** (the pool filled with Mocha watching, the 淘氣; #125): `mocha：「……」`
+- **7-6 黑糖:** `npc(黑糖)：「歹、歹勢，我睡在芹菜上了。」`, `mocha：「……熊也會說歹勢。」`; hugged a second time he hums (the 淘氣; #125), `npc(黑糖)：「嗯～嗯嗯～♪」`
 - **7-6 end:** `nar：找到了！抓周寶物——芹菜。`
 
 **Ch8 「熱呼呼的煙」 04:00 · 下一站 新北投**
