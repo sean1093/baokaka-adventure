@@ -1,5 +1,6 @@
 import { M2_TOYS, toyMoon } from '../core/fixtures/m2';
 import { M3_TOYS, toyPlane } from '../core/fixtures/m3';
+import { LINKED_TOYS } from '../core/fixtures/linked';
 import { M4_TOYS, toyPinwheel } from '../core/fixtures/m4';
 import type { Id, PageDef } from '../core/types';
 import { PAGES, pageById } from '../pages';
@@ -33,7 +34,8 @@ const brokenC1p2: PageDef[] =
 
 /**
  * 1-3 with every word at once (no `words` restriction): the full word ring, eight words and
- * 「好了」 (#99's `word-ring-full`). The real 1-3 offers only 嗶！.
+ * 「好了」 (#99's `word-ring-full`). The real 1-3 offers only 嗶！. Since #128 its solver badge
+ * shows one soft trap: 一起 links them for the rest of the page, where Mocha can't push the card.
  */
 const c1p3 = pageById('c1p3');
 const words: PageDef[] = c1p3 === undefined ? [] : [{ ...c1p3, id: 'lab-words', title: '八個字', words: undefined }];
@@ -60,8 +62,13 @@ const ring6: PageDef = { ...toyPlane, id: 'lab-ring6', title: '六個字', words
  */
 const ring7: PageDef = { ...toyPinwheel, id: 'lab-ring7', title: '七個字', words: ['beep', 'bye', 'no', 'wow', 'hug', 'plane', 'whoosh'], learns: undefined };
 
+/**
+ * The M4 engine II's toy pages (#128, `core/fixtures/linked.ts`): 咻咻's party (一起 and linked mode,
+ * the lonely 咻咻) and the roof (第一步: three walk steps).
+ */
+
 /** Lab-only fixture pages (not in the registry). */
-export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...words, ...M2_TOYS, ring4, ...M3_TOYS, ring6, ...M4_TOYS, ring7];
+export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...words, ...M2_TOYS, ring4, ...M3_TOYS, ring6, ...M4_TOYS, ring7, ...LINKED_TOYS];
 
 /** Every page the lab lists, registered pages first. */
 export const LAB_PAGES: readonly PageDef[] = [...PAGES, ...LAB_FIXTURES];

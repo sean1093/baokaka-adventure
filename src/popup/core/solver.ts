@@ -1,12 +1,12 @@
 import { adjacentNodes, attractorNode, rankCandidates, REACH_HIGH_ENABLED, visibleTie } from './baby';
 import { holds } from './cond';
-import { walkGraph } from './graph';
+import { linkNodes, walkGraph } from './graph';
 import { mochaNode, mochaSettled, catPath } from './mocha';
 import { compilePart } from './presets';
 import { initialState } from './state';
-import { CascadeOverflowError, learned, matchPredicate, partLocked, step, stepGrowth } from './step';
+import { CascadeOverflowError, matchPredicate, partLocked, sayable, step, stepGrowth } from './step';
 import type { Id, Input, PageDef, SimState, SolutionStep } from './types';
-import { WORDS, wordAvailable } from './words';
+import { WORDS } from './words';
 
 /**
  * The solver (GDD § 3.7): a search over the same `step` the game runs, from a page's initial state
@@ -170,6 +170,7 @@ function touchOf(input: Input): string {
       return 'p\x1f' + input.id;
     case 'mocha':
     case 'pet':
+    case 'floor':
       return 'mocha';
     case 'say':
       return 'w\x1f' + input.word;
@@ -189,7 +190,6 @@ function inputKey(input: Input): string {
       return 'w\x1f' + input.word;
     case 'tap':
       return 't\x1f' + input.id;
-    /* v8 ignore next 2 -- floor is a no-op until #128, so the search prunes it before interning */
     case 'floor':
       return 'f\x1f' + input.node;
     default:
@@ -271,7 +271,8 @@ export function solverKey(def: PageDef, state: SimState): string {
  * of each unlocked drag part (tab, slider, wheel, crank), a tap on every unlocked tappable part
  * (flap, prop, tappable light, crank — and tab, slider and wheel, whose tap cycles), `mocha` to
  * every perch he has a path to, `pet` while he's settled, `say` for every available word, and
- * `floor` to every floor node in linked mode. None for a done state.
+ * `floor` to every link node in linked mode (`linkNodes`) but the one Mocha stands still on. None
+ * for a done state.
  */
 export function candidateInputs(def: PageDef, state: SimState): Input[] {
   if (state.done) return [];
@@ -294,12 +295,11 @@ export function candidateInputs(def: PageDef, state: SimState): Input[] {
     }
   }
   if (mochaSettled(state) && state.mocha.stare === undefined) out.push({ t: 'pet' });
-  const { mode, linked } = state.baby;
-  if (mode !== 'carried' && mode !== 'linked') {
-    const knows = learned(state);
-    for (const word of WORDS) if (wordAvailable(def, word, knows)) out.push({ t: 'say', word });
+  for (const word of WORDS) if (sayable(def, state, word)) out.push({ t: 'say', word });
+  if (state.baby.linked) {
+    const m = state.mocha;
+    for (const node of linkNodes(def)) if (node !== m.floorNode || m.path.length > 0) out.push({ t: 'floor', node });
   }
-  if (linked) for (const node of def.nodes) if (node.height === 0) out.push({ t: 'floor', node: node.id });
   return out;
 }
 
@@ -360,7 +360,8 @@ export function toSolutionSteps(inputs: readonly Input[]): SolutionStep[] {
         out.push({ say: input.word });
         break;
       case 'floor':
-        throw new Error(`toSolutionSteps: 'floor' has no SolutionStep form (linked mode, #128)`);
+        out.push({ floor: input.node });
+        break;
     }
   }
   return out;

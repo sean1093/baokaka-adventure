@@ -38,6 +38,7 @@ export function toInput(s: SolutionStep): Input | null {
   if ('pet' in s) return { t: 'pet' };
   if ('say' in s) return { t: 'say', word: s.say };
   if ('tap' in s) return { t: 'tap', id: s.tap };
+  if ('floor' in s) return { t: 'floor', node: s.floor };
   return null;
 }
 

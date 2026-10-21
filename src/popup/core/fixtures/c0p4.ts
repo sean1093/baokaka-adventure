@@ -36,6 +36,9 @@ export default definePage({
   attractors: [{ id: 'bead', kind: 'shiny', node: 'trainStep', goal: true, visibleWhen: { part: 'curtain', in: ['open'] } }],
   baby: { start: 'R1', facing: 'r' },
   mocha: { start: 'sill' },
+  // The engine fixture knows every word but 一起 (#128): linked for the rest of the page, Mocha
+  // could no longer perch, and the curtain is pulled from a perch (the page itself offers none)
+  words: ['beep', 'bye', 'no', 'wow', 'hug', 'plane', 'whoosh'],
   mischief: {
     text: '把摩卡捲進窗簾',
     when: { type: 'partEnter', id: 'curtain', when: { all: [{ part: 'curtain', in: ['closed'] }, { mochaAt: 'rod' }] } },

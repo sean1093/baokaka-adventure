@@ -14,7 +14,7 @@ const beepAt = (x: number, y: number, within = 120): SimEvent => ({ type: 'beep'
 describe('event names (the single list)', () => {
   test('EVENT_TYPES lists every § 3.2 event once', () => {
     expect(new Set(EVENT_TYPES).size).toBe(EVENT_TYPES.length);
-    expect(EVENT_TYPES).toHaveLength(17);
+    expect(EVENT_TYPES).toHaveLength(18);
   });
 
   test('UI events are distinct from § 3.2 events', () => {

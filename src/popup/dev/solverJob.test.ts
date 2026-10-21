@@ -26,6 +26,10 @@ describe('reports', () => {
     for (const r of replies) {
       if (r.kind !== 'report') throw new Error('expected reports');
       if (r.page === 'c1p2-broken') expect(r.report.deadEnds).toBeGreaterThan(0);
+      // The ring demo offers all eight words on 1-3: 一起 there links them for the rest of the page,
+      // so Mocha can't push the card any more — a move to undo the long way (#128: a page offers 一起
+      // only where linked mode is the plan, from 10-5 on)
+      else if (r.page === 'lab-words') expect(r.report.failures).toEqual([expect.stringMatching(/^1 soft trap: .*"together"/)]);
       else expect(r.report.failures).toEqual([]);
     }
   });

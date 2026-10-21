@@ -27,6 +27,7 @@ export const EVENT_TYPES = [
   'grab',
   'eat',
   'partEnter',
+  'lead',
 ] as const satisfies readonly EventType[];
 
 // Compile-time check that EVENT_TYPES lists every EventType (and nothing else).

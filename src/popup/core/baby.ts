@@ -1,7 +1,7 @@
 import { holds, partState } from './cond';
 import type { Bark, SimEvent } from './events';
 import { dist2, nodePos, walkGraph, type Point, type WalkGraph } from './graph';
-import { mochaAttractorNode } from './mocha';
+import { mochaAttractorNode, mochaNode } from './mocha';
 import type { AttractorDef, BabyMode, Growth, Id, Kind, PageDef, SimState } from './types';
 
 /**
@@ -29,8 +29,9 @@ import type { AttractorDef, BabyMode, Growth, Id, Kind, PageDef, SimState } from
  * - **reachHigh** (§ 2.5): from growth 2, a height-1 attractor can be grabbed from an adjacent
  *   node joined to it by an edge whose condition holds (`REACH_HIGH_ENABLED`, on since #127).
  *
- * `carried`, `linked` and `saying` are the tick's (#84, M3/M4): `babyTick` leaves a carried or
- * linked baby alone and treats `saying` as already resolved.
+ * `carried` and `saying` are the tick's (#84, M3): `babyTick` leaves a carried baby alone and
+ * treats `saying` as already resolved. **Linked** (一起, § 2.4, #128, D-92) he runs `linkedTick`
+ * instead: Mocha, on the floor, is priority 0 above everything, so he follows Mocha's node.
  */
 
 /** Mocha's id as a candidate (and in `baby.refused` / `baby.target`). */
@@ -263,7 +264,8 @@ export function babyTick(def: PageDef, state: SimState, opts: BabyOptions = {}):
   if (state.done) {
     return { state: before.mode === 'done' ? state : { ...state, baby: { ...before, mode: 'done' } }, events: [] };
   }
-  if (before.mode === 'carried' || before.mode === 'linked') return { state, events: [] };
+  if (before.mode === 'carried') return { state, events: [] };
+  if (before.linked) return linkedTick(def, state, opts);
 
   const events: SimEvent[] = [];
   let refused = opts.prev ? keepRefusals(def, opts.prev, state) : before.refused;
@@ -353,4 +355,62 @@ export function babyTick(def: PageDef, state: SimState, opts: BabyOptions = {}):
 function step(def: PageDef, state: SimState, from: Id, to: Id, facing: 'l' | 'r', events: SimEvent[]): { node: Id; facing: 'l' | 'r' } {
   events.push({ type: 'babyEnter', id: to });
   return { node: to, facing: facingToward(nodePos(def, state, from), nodePos(def, state, to), facing) };
+}
+
+/**
+ * Linked mode (一起, GDD § 2.4, #128, D-92): Mocha walks the floor and he follows. Mocha has
+ * priority 0, so nothing else is ever his target: one edge of the shortest way to Mocha's node at
+ * his growth (`moving`), with him there (`linked`), or — when he can't get there, as at the rail's
+ * end on 10-6 before his first steps — as close as he can and `reaching` for Mocha (「要！要！」
+ * every 4 ticks). He never cries, wants nothing else and forgets his refusals.
+ *
+ * Holding on to Mocha he still picks up what he passes (`linkedGrab`): after his move, a shiny or a
+ * snack on his node or one open edge from it (never a decoy, never one a creature still holds) is
+ * grabbed or eaten — the goal sets `done`. That is how the 金鎖片 comes back to his hands.
+ */
+export function linkedTick(def: PageDef, state: SimState, opts: BabyOptions = {}): BabyResult {
+  const before = state.baby;
+  const events: SimEvent[] = [];
+  const graph = walkGraph(def, state, { who: 'baby', growth: babyGrowth(def, opts) });
+  const goal = mochaNode(def, state);
+  let node = before.node;
+  let facing = before.facing;
+  let mode: BabyMode = 'linked';
+  let reachTicks = 0;
+  if (goal !== null && goal !== node) {
+    const path = graph.bfs(node, goal);
+    const nearest = path === null ? graph.nearestReachableTo(node, goal) : null;
+    const next = path !== null ? path[1] : nearest !== null && nearest.node !== node ? nearest.path[1] : null;
+    if (next !== null) {
+      ({ node, facing } = step(def, state, node, next, facing, events));
+      mode = node === goal ? 'linked' : 'moving';
+    } else {
+      mode = 'reaching';
+      facing = facingToward(nodePos(def, state, node), nodePos(def, state, goal), facing);
+      const again = before.mode === 'reaching';
+      reachTicks = again ? (before.reachTicks + 1) % REACH_BARK_EVERY : 0;
+      if (again && reachTicks === 0) events.push({ type: 'bark', id: MOCHA, bark: 'wantWant' });
+    }
+  }
+  const s: SimState = { ...state, baby: { ...before, node, facing, mode, refused: [], lookCount: 0, target: MOCHA, reachTicks } };
+  return linkedGrab(def, s, mode === 'reaching' ? graph : walkGraph(def, s, { who: 'baby', growth: babyGrowth(def, opts) }), events);
+}
+
+/** Linked mode's pick-up (`linkedTick`): the first grabbable shiny or snack, in data order, on or next to his node. */
+function linkedGrab(def: PageDef, state: SimState, graph: WalkGraph, events: SimEvent[]): BabyResult {
+  const here = state.baby.node;
+  const reach = graph.reachSet(here);
+  for (const a of def.attractors) {
+    if ((a.kind !== 'shiny' && a.kind !== 'snack') || a.decoy === true) continue;
+    if (state.baby.refused.includes(a.id)) continue;
+    // Still in a creature's hands: he doesn't snatch (咻咻 gives the 金鎖片 back when hugged)
+    if (a.heldBy !== undefined && state.dropped?.[a.id] === undefined) continue;
+    const at = availableNode(def, state, a);
+    if (at === null || (at !== here && reach.steps(at) !== 1)) continue;
+    const shiny = a.kind === 'shiny';
+    events.push({ type: shiny ? 'grab' : 'eat', id: a.id });
+    const baby = { ...state.baby, mode: (shiny ? 'grabbing' : 'eating') as BabyMode, target: a.id };
+    return { state: { ...state, consumed: [...state.consumed, a.id], done: shiny && a.goal === true, baby }, events };
+  }
+  return { state, events };
 }

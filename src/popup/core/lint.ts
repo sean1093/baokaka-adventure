@@ -69,6 +69,9 @@ import { inReach, WORDS } from './words';
  * | `L14-visible-tie` | warning | 14: his first target ties with another on priority, reachability and path length in the initial state (GDD § 6 risk 4; the solver's `visibleTies` checks every reachable state, #112) |
  * | `L15-lock-order` | warning | 15: a part's `lockedWhen`/`stateWhen` reads a part that reacts to the same event earlier in data order, so it sees that event's new state (D-45) |
  * | `L16-always-wet-perch` | warning | 16: a `wet`/`steam` perch with no `blockedWhen` is refused forever (C7) |
+ * | `L18-linked-edge` | error | 18: on a page where 一起 can be said, a baby edge touches a height-2 node — in linked mode Mocha would lead him onto a perch (#128) |
+ * | `L18-lonely-blocks` | error | 18: a `lonely` creature blocks its node: following the pair, it would wall them in (#128) |
+ * | `L18-lonely-unlinked` | warning | 18: a `lonely` creature on a page where 一起 can't be said never follows anyone (#128) |
  *
  * Text lengths count code points (`[...text].length`), 「」 and punctuation included (GDD § 5.1).
  * Rule 12's fuzzing is the solver's (#87): the lint finds what the structure alone proves. Rule 7's
@@ -277,6 +280,7 @@ class Linter {
     this.checkLockOrder();
     this.checkCustom();
     this.checkTie();
+    this.checkLinked();
     return { errors: this.errors, warnings: this.warnings };
   }
 
@@ -696,7 +700,10 @@ class Linter {
     if (def.learns !== undefined) {
       if (def.learns.word !== undefined) this.word(def.learns.word, 'learns', this.page);
       const when = def.learns.when;
-      if (isObject(when) && 'event' in when) this.eventType(when.event, 'learns', this.page);
+      if (isObject(when) && 'event' in when) {
+        this.eventType(when.event, 'learns', this.page);
+        this.anyId(when.id, 'learns', this.page);
+      }
       else this.cond(when as Cond, 'learns', this.page);
     }
 
@@ -750,6 +757,38 @@ class Linter {
       else if ('mocha' in step) this.ref(this.perches, 'perch', step.mocha, where, this.page);
       else if ('tap' in step) this.part(step.tap, where, this.page);
       else if ('say' in step) this.word(step.say, where, this.page);
+      else if ('floor' in step) this.node(step.floor, where, this.page);
+    }
+  }
+
+  // ——— Rule 18: linked mode (一起, #128) ———
+
+  /** Whether 一起 can be said on this page: its words allow it (all words when unlisted), or it learns it. */
+  private linkable(): boolean {
+    const def = this.def;
+    return def.words === undefined || def.words.includes('together') || def.learns?.word === 'together';
+  }
+
+  /**
+   * Linked mode walks Mocha over every baby edge, whatever Baokaka's growth, and he follows: so on a
+   * page where 一起 can be said, no baby edge may touch a perch-height node (link nodes, `graph.ts`,
+   * stay where people stand; the other unsafe kinds — a pushable or a carrier — are rules 5 and 6).
+   * A `lonely` creature follows the pair, so it may not block, and is pointless without 一起.
+   */
+  private checkLinked(): void {
+    const linkable = this.linkable();
+    if (linkable) {
+      const heights = new Map(this.list(this.def.nodes).map((n) => [n.id, n.height]));
+      for (const [i, e] of this.list(this.def.edges).entries()) {
+        if (!BABY_KINDS.has(e.kind)) continue;
+        const high = [e.a, e.b].filter((n) => heights.get(n) === 2);
+        if (high.length > 0) this.error('L18-linked-edge', [e.a, e.b], `edge #${i} (${e.a}–${e.b}) is a ${e.kind} edge to height-2 '${high[0]}': linked, Mocha would lead Baokaka onto a perch`);
+      }
+    }
+    for (const c of this.list(this.def.creatures)) {
+      if (c.lonely !== true) continue;
+      if (c.blocks !== false) this.error('L18-lonely-blocks', [c.id], `lonely creature '${c.id}' blocks its node: following the pair it would wall them in (set blocks: false)`);
+      if (!linkable) this.warn('L18-lonely-unlinked', [c.id], `lonely creature '${c.id}' is on a page where 一起 can't be said: it never follows anyone`);
     }
   }
 

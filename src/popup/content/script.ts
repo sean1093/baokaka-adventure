@@ -208,6 +208,22 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c7p6.bear.3': { who: 'npc', label: '黑糖', text: '嗯～嗯嗯～♪' },
   // § 5.2 7-6 end
   'c7p6.end.1': { who: 'nar', text: '找到了！抓周寶物——芹菜。' },
+  // § 5.2 10-6 first steps (#128): the world holds for each (`lines.onEvent` with `pause`). As the
+  // rail ends and Mocha waits across, he lets go; a line per wobbly step; the hug; the end
+  'c10p6.steps.1': { who: 'shushu', text: '沒有人說歡迎咻咻……' },
+  'c10p6.steps.2': { who: 'nar', text: '寶咖咖放開了欄杆。' },
+  'c10p6.steps.3': { who: 'nar', text: '一步。' },
+  'c10p6.steps.4': { who: 'nar', text: '兩步。' },
+  'c10p6.steps.5': { who: 'nar', text: '三步。' },
+  'c10p6.steps.6': { who: 'mocha', text: '走、走路了……他在走路！' },
+  'c10p6.hug.1': { who: 'baby', text: '抱抱。' },
+  'c10p6.hug.2': { who: 'shushu', text: '……抱抱？' },
+  'c10p6.hug.3': { who: 'nar', text: '小雲，慢慢變白、變軟了。' },
+  'c10p6.hug.4': { who: 'nar', text: '金鎖片，回到了寶咖咖手上。' },
+  'c10p6.end.1': { who: 'baby', text: '一起。' },
+  'c10p6.end.2': { who: 'mocha', text: '他說：『一起過生日。』' },
+  'c10p6.end.3': { who: 'nar', text: '太陽，從山的後面出來了。' },
+  'c10p6.end.4': { who: 'pa', text: '本列車直達：寶咖咖的家。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

@@ -163,7 +163,7 @@ describe('phase 1: tap, mocha, pet, floor', () => {
     expect(types(pet.events).filter((t) => t !== 'bark' && t !== 'babyEnter')).toEqual([]);
   });
 
-  test('`floor` (linked mode, #128) and `none` change nothing but the clock and his decision', () => {
+  test('`floor` outside linked mode (#128) and `none` change nothing but the clock and his decision', () => {
     const a = step(c1p2, initialState(c1p2), { t: 'floor', node: 'L2' });
     const b = step(c1p2, initialState(c1p2), NONE);
     expect(canonicalKey(a.state)).toBe(canonicalKey(b.state));

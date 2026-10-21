@@ -17,7 +17,7 @@ import type { EventType, PageDef, SimState, Word } from './types';
  * | 抱抱 `hug` | `hug` | 1 edge | built in: an idle (or `done`) carrier within one edge picks him up and walks its route (`carrier.ts`, #120); else `hugNobody`. The bare event also reaches `hug` reactions anywhere |
  * | 飛機！ `plane` | `sky` | whole page | built in: `winged` creatures toggle ground ↔ sky (`creatures.ts`); parts with a `sky` reaction |
  * | 咻—— `whoosh` | `whoosh` | 140, 90° cone in his facing | built in: `blowable` parts in the cone advance one state; any `whoosh` reaction |
- * | 一起 `together` | `together` | — | **stub**: the event only; linked mode is #128 |
+ * | 一起 `together` | `together` | — | built in: Mocha hops down to him and they are linked for the rest of the page (`step.ts` `link`, `mocha.ts` `mochaLink`, `baby.ts` `linkedTick`; #128) |
  *
  * "Within reach" is a straight line from Baokaka's node (`inReach`); the cone is exact integer
  * math (|dy| ≤ dx in his facing direction, so its edges at ±45° are inside).
@@ -79,7 +79,7 @@ export function wordEvent(def: PageDef, state: SimState, word: Word): SimEvent |
   const at = nodePos(def, state, state.baby.node);
   const event: SimEvent = { type, id: state.baby.node };
   if (at !== undefined) event.at = at;
-  // 抱抱's carrier is picked by `hugCarrier` (one edge, not a radius); TODO(#128): 一起 enters linked mode.
+  // 抱抱's carrier is picked by `hugCarrier` (one edge, not a radius); 一起 links them (`step.ts`).
   if (type === 'hug' || type === 'together') return event;
   event.within = EVENT_RADIUS[type];
   if (type === 'whoosh') event.facing = state.baby.facing;

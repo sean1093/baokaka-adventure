@@ -238,7 +238,8 @@ export interface PageDef {
   mocha: { start: Id | null };
   /** defaults to words learned before this page */
   words?: Word[];
-  learns?: { word?: Word; growth?: Growth; when: Cond | { event: EventType } };
+  /** `when`: a condition, or an event (narrowed to its subject by `id`, #128: 10-6 learns 第一步 when Mocha leads him across: `{ event: 'lead', id: 'G' }`) */
+  learns?: { word?: Word; growth?: Growth; when: Cond | { event: EventType; id?: Id } };
   mischief: { text: string; when: EventPredicate };
   tudigong: { x: number; y: number; visibleWhen?: Cond; hat: string };
   /** intended solution, replayed in tests */
@@ -247,7 +248,11 @@ export interface PageDef {
   allowTrivial?: boolean;
   /** page E only */
   priorityOverride?: Partial<Record<Kind, number>>;
-  lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey }[] };
+  /**
+   * `pause`: the world holds while the line is on the page (#128: a story beat the simulation waits
+   * for, GDD § 5.2's 10-6 first steps); the next tick runs once it has been read.
+   */
+  lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey; pause?: boolean }[] };
   /** baked art key */
   backdrop: string;
   /**
@@ -268,6 +273,8 @@ export type SolutionStep =
   | { pet: true }
   | { say: Word }
   | { tap: Id }
+  /** linked mode (一起, #128): tap a floor node, Mocha walks there and Baokaka follows */
+  | { floor: Id }
   | { wait: number | 'settle' | 'goal' };
 
 export type EventType =
@@ -287,7 +294,9 @@ export type EventType =
   | 'ride'
   | 'grab'
   | 'eat'
-  | 'partEnter';
+  | 'partEnter'
+  /** linked mode (一起, #128): Mocha has led them to the floor node he was sent to (`id`) */
+  | 'lead';
 
 export type EventPredicate = { type: EventType; id?: Id; count?: number; when?: Cond };
 
@@ -340,7 +349,8 @@ export interface SimState {
    * `perch` is null, `path` is the rest of his trip with his current node first, and `to` is the
    * perch he is heading for (between a `mocha` input and the tick's Mocha phase, `perch` is still
    * the one he's about to leave). `stare` is the pushable he is making eye contact over (C3): he pushes
-   * it next tick. `floorNode` is for linked mode (#128).
+   * it next tick. **Linked** (一起, #128, D-92): `perch` is null, `floorNode` is the floor node he
+   * stands on, and `path` is the rest of his walk (`floorNode` first) or empty when he stands still.
    */
   mocha: { perch: Id | null; path: Id[]; to?: Id; stare?: Id; floorNode?: Id };
   creatures: Record<Id, string>;

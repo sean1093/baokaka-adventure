@@ -400,13 +400,18 @@ describe('candidateInputs', () => {
     expect(candidateInputs(deadEnd, staring)).not.toContainEqual({ t: 'pet' });
   });
 
-  test('carried or linked: no words; linked: a floor input per floor node; done: nothing', () => {
+  test('carried: no words; linked: no 一起 or 不要！, a floor input per link node but where Mocha stands; done: nothing', () => {
     const s = initialState(c1p2);
     const carried = { ...s, baby: { ...s.baby, mode: 'carried' as const } };
     expect(candidateInputs(c1p2, carried).some((i) => i.t === 'say')).toBe(false);
-    const linked = { ...s, baby: { ...s.baby, mode: 'linked' as const, linked: true } };
-    const floors = candidateInputs(c1p2, linked).filter((i) => i.t === 'floor');
-    expect(floors).toEqual(['L1', 'L2', 'L3', 'T1', 'T2', 'R1', 'R2', 'gapSlot'].map((node) => ({ t: 'floor', node })));
+    const linked: SimState = { ...s, baby: { ...s.baby, mode: 'linked', linked: true }, mocha: { perch: null, path: [], floorNode: 'L1' } };
+    const inputs = candidateInputs(c1p2, linked);
+    expect(inputs.filter((i) => i.t === 'say').map((i) => i.t === 'say' && i.word)).toEqual(['beep', 'bye', 'wow', 'hug', 'plane', 'whoosh']);
+    // The track slot (no baby edge) is nowhere anyone is led; Mocha's own node needs no tap
+    expect(inputs.filter((i) => i.t === 'floor')).toEqual(['L2', 'L3', 'T1', 'T2', 'R1', 'R2'].map((node) => ({ t: 'floor', node })));
+    expect(inputs.some((i) => i.t === 'mocha' || i.t === 'pet')).toBe(false);
+    const walking: SimState = { ...linked, mocha: { perch: null, path: ['L1', 'L2'], floorNode: 'L1' } };
+    expect(candidateInputs(c1p2, walking)).toContainEqual({ t: 'floor', node: 'L1' });
     expect(candidateInputs(c1p2, { ...s, done: true })).toEqual([]);
   });
 });
@@ -503,10 +508,10 @@ describe('helpers', () => {
         { t: 'mocha', perch: 'pillar' },
         { t: 'pet' },
         { t: 'say', word: 'beep' },
+        { t: 'floor', node: 'L2' },
         { t: 'none' },
       ]),
-    ).toEqual([{ wait: 2 }, { set: 'train', to: 'half' }, { tap: 'board' }, { mocha: 'pillar' }, { pet: true }, { say: 'beep' }, { wait: 1 }]);
-    expect(() => toSolutionSteps([{ t: 'floor', node: 'A' }])).toThrow(/floor/);
+    ).toEqual([{ wait: 2 }, { set: 'train', to: 'half' }, { tap: 'board' }, { mocha: 'pillar' }, { pet: true }, { say: 'beep' }, { floor: 'L2' }, { wait: 1 }]);
   });
 
   test('a solution folded to steps replays to done', () => {

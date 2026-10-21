@@ -314,14 +314,14 @@ describe('saying a word (step, § 3.3 phases 1 and 5)', () => {
     expect(s.baby).toMatchObject({ mode: 'carried', node: 'B', carriedBy: { id: 'auntie', k: 0 } });
   });
 
-  // TODO(#128): 一起 — linked mode for the rest of the page; Mocha hops down to his node.
-  test.skip('一起 enters linked mode (#128)', () => {
+  test('一起 enters linked mode (#128): Mocha hops down to his node (the rules in m4.test.ts)', () => {
     const def = page({ ...line('AB'), perches: [{ id: 'p', node: 'B' }], mocha: { start: 'p' } });
     const s = step(def, initialState(def), say('together')).state;
-    expect(s.baby.linked).toBe(true);
+    expect(s.baby).toMatchObject({ linked: true, mode: 'saying', node: 'A' });
+    expect(s.mocha).toEqual({ perch: null, path: [], floorNode: 'A' });
   });
 
-  test('抱抱 with no carrier: the event and hugNobody (arms up, Mocha purrs); 一起 is a stub for now', () => {
+  test('抱抱 with no carrier: the event and hugNobody (arms up, Mocha purrs); 一起 with no Mocha links nothing', () => {
     const def = page({ ...line('AB') });
     expect(step(def, initialState(def), say('hug')).events).toEqual([{ type: 'hug', id: 'A', at: [0, 0] }, { type: 'hugNobody' }]);
     expect(step(def, initialState(def), say('together')).state.baby.linked).toBe(false);

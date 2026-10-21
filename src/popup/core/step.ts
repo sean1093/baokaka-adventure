@@ -3,11 +3,11 @@ import { carrierIndex, carryMove, facingFor, hugCarrier } from './carrier';
 import { evalCond, holds, partState } from './cond';
 import { creaturePoint, moveCreature, skyPosition } from './creatures';
 import { EVENT_RADIUS, isSimEvent, type SimEvent } from './events';
-import { nodePos, type Point } from './graph';
-import { catLocked, buttonWeighed, mochaCommand, mochaPet, mochaSettled, mochaTick } from './mocha';
+import { dist2, nodePos, type Point } from './graph';
+import { catLocked, buttonWeighed, mochaCommand, mochaFloor, mochaLink, mochaNode, mochaPet, mochaSettled, mochaTick } from './mocha';
 import { compilePart, reactionTarget, tapTarget } from './presets';
 import { stableStringify, withPartState } from './state';
-import type { EventPredicate, Growth, Id, Input, PageDef, PartDef, ReactionOn, SimState } from './types';
+import type { EventPredicate, Growth, Id, Input, PageDef, PartDef, ReactionOn, SimState, Word } from './types';
 import { inReach, sayNo, wordAvailable, wordEvent } from './words';
 
 /**
@@ -21,20 +21,23 @@ import { inReach, sayNo, wordAvailable, wordEvent } from './words';
  *    stop whose `stateWhen` fails, emitting `jam`), `tap` (the preset's tap rule, same locks and
  *    jams; a turn also turns the part's `coupled` parts, one hop, `turn`), `mocha` / `pet`
  *    (`mocha.ts`), `say` (Baokaka enters `saying`; the word resolves in phase 5), `floor`
- *    (linked mode, #128: ignored for now).
+ *    (linked mode, #128: Mocha's walk over the floor, `mochaFloor`).
  * 2. **Cascade** of phase 1's events (`cascade`): FIFO; each § 3.2 event triggers, per part and
  *    per creature, its first matching reaction (conditions read the state before that event's
  *    transitions); a part entering a state queues `partEnter` and its `emit` events. More than
  *    `MAX_CASCADE` events in one cascade throws `CascadeOverflowError`.
  * 3. **Mocha** (`mochaTick`), then a cascade of what he did (arrival presses, `set`, landings).
- * 4. **Creatures.** Their moves and drops already happened in the cascades (`creatures.ts`).
+ * 4. **Creatures.** Their moves and drops already happened in the cascades (`creatures.ts`). In
+ *    linked mode `lonely` creatures follow the pair (`followPair`, #128).
  * 5. **Baby.** On a say tick: 不要！ refuses the target, any other word's event cascades from
  *    him (`words.ts`), and he stays `saying` — except 抱抱 next to a carrier, which picks him up
- *    (`carried`, `carrier.ts`; else `hugNobody`). While carried, the carrier walks one edge of her
+ *    (`carried`, `carrier.ts`; else `hugNobody`) — not while linked, when he holds on to Mocha; and
+ *    一起 links them (`link`: Mocha hops down to him, #128). While carried, the carrier walks one edge of her
  *    route, or sets him down at its end. Otherwise the decision loop (`babyTick`, ≤ 1 edge,
  *    `babyEnter`) with his weight on buttons attached to the nodes he leaves and enters; then a
  *    cascade of his events (a `cry` opens the balcony door now, and he sees it next tick).
  *    Finally `ride` if he ends the tick on a node attached to a part that carried him this tick.
+ *    Linked, the decision loop is `linkedTick` (`baby.ts`): he follows Mocha.
  * 6. **Arrival effects** (grab, eat, cuddle, watch) are inside `babyTick`; grabbing the goal sets `done`.
  * 7. **Learning and counters.** The page's `learns` fires once (`learn`); every mischief and line
  *    predicate counts its matching events (capped at its count), and `tick` advances.
@@ -299,13 +302,19 @@ function inputTap(def: PageDef, state: SimState, id: Id, events: SimEvent[]): Si
 }
 
 /**
- * Whether Baokaka can take a `say` now: not done, word available, and not `carried` (he is busy
- * being carried: words wait until she sets him down, #120, D-83) or `linked` (#128).
+ * Whether Baokaka can say `word` now: not done, the word available, and not `carried` (he is busy
+ * being carried: words wait until she sets him down, #120, D-83). Linked (#128, D-92), every word
+ * but 一起 (they already are) and 不要！ (he never refuses Mocha: he trusts you). The word ring
+ * (`game/words.ts`) and the solver offer exactly these.
  */
+export function sayable(def: PageDef, state: SimState, word: Word): boolean {
+  if (state.done || state.baby.mode === 'carried') return false;
+  if (state.baby.linked && (word === 'together' || word === 'no')) return false;
+  return wordAvailable(def, word, learned(state));
+}
+
 function canSay(def: PageDef, state: SimState, input: Input): boolean {
-  if (input.t !== 'say' || state.done) return false;
-  const mode = state.baby.mode;
-  return mode !== 'carried' && mode !== 'linked' && wordAvailable(def, input.word, learned(state));
+  return input.t === 'say' && sayable(def, state, input.word);
 }
 
 function phaseInput(def: PageDef, state: SimState, input: Input, events: SimEvent[]): SimState {
@@ -322,7 +331,11 @@ function phaseInput(def: PageDef, state: SimState, input: Input, events: SimEven
     }
     case 'say':
       return canSay(def, state, input) ? { ...state, baby: { ...state.baby, mode: 'saying' } } : state;
-    case 'floor': // TODO(#128): linked mode walks Mocha to the floor node.
+    case 'floor': {
+      const r = mochaFloor(def, state, input.node);
+      events.push(...r.events);
+      return r.state;
+    }
     case 'none':
       return state;
   }
@@ -418,6 +431,56 @@ function carry(def: PageDef, state: SimState, events: SimEvent[]): SimState {
   return babyWeight(def, s, null, s.baby.node, events);
 }
 
+// ——— Phase 4 and 5: linked mode (一起, #128) ———
+
+/**
+ * 一起's effect, after its `together` event cascaded (§ 2.4): Mocha hops down to his node
+ * (`mochaLink`: leaving his perch releases what he held) and they are linked for the rest of the
+ * page. He stays `saying` this tick; refusals are forgotten. Nothing when Mocha isn't on the page.
+ */
+function link(def: PageDef, state: SimState, events: SimEvent[]): SimState {
+  const r = mochaLink(def, state);
+  if (r.state === state) return state;
+  events.push(...r.events);
+  return { ...r.state, baby: { ...r.state.baby, linked: true, refused: [], target: 'mocha', lookCount: 0, reachTicks: 0 } };
+}
+
+/**
+ * Phase 4 in linked mode (§ 2.4, #128): each `lonely` creature on the page (咻咻) follows the pair
+ * — it moves to its position nearest Mocha (squared distance; ties keep it where it is, then go to
+ * the first position in data order), never onto Mocha's or Baokaka's node. A creature off the page
+ * stays away. No event: the view diffs positions, as for every creature move.
+ */
+export function followPair(def: PageDef, state: SimState): SimState {
+  if (!state.baby.linked) return state;
+  const lead = mochaNode(def, state);
+  const at = lead === null ? undefined : nodePos(def, state, lead);
+  if (at === undefined) return state;
+  let s = state;
+  for (const c of def.creatures) {
+    if (c.lonely !== true) continue;
+    const current = s.creatures[c.id];
+    if (current === undefined || c.positions[current] === 'offpage') continue;
+    const score = (pos: string): number => {
+      const node = c.positions[pos];
+      if (node === 'offpage' || node === lead || node === s.baby.node) return Infinity;
+      const p = nodePos(def, s, node);
+      return p === undefined ? Infinity : dist2(p, at);
+    };
+    let best = current;
+    let bestD = score(current);
+    for (const pos of Object.keys(c.positions)) {
+      const d = score(pos);
+      if (d < bestD) {
+        best = pos;
+        bestD = d;
+      }
+    }
+    if (best !== current) s = { ...s, creatures: { ...s.creatures, [c.id]: best } };
+  }
+  return s;
+}
+
 // ——— Phase 7: learning and counters ———
 
 /** The predicates the page counts: its mischief and its event lines. */
@@ -459,7 +522,8 @@ function phaseCounters(def: PageDef, state: SimState, log: SimEvent[]): SimState
   let s = state;
   const learns = def.learns;
   if (learns !== undefined && !learned(s)) {
-    const fired = 'event' in learns.when ? log.some((ev) => ev.type === (learns.when as { event: string }).event) : evalCond(def, s, learns.when);
+    const when = learns.when;
+    const fired = 'event' in when ? log.some((ev) => ev.type === when.event && (when.id === undefined || ev.id === when.id)) : evalCond(def, s, when);
     if (fired) {
       s = { ...s, counters: { ...s.counters, [LEARNED_KEY]: 1 } };
       const ev: SimEvent = { type: 'learn' };
@@ -506,7 +570,8 @@ export function step(def: PageDef, state: SimState, input: Input): StepResult {
   const mocha = mochaTick(def, s, input);
   s = run(mocha.state, mocha.events);
 
-  // 4. Creatures: their reactions already moved them in the cascades (creatures.ts).
+  // 4. Creatures: their reactions already moved them in the cascades (creatures.ts); lonely ones follow the pair.
+  s = followPair(def, s);
 
   // 5–6. Baby.
   const atMove = s;
@@ -517,9 +582,12 @@ export function step(def: PageDef, state: SimState, input: Input): StepResult {
     const refused = keepRefusals(def, state, s);
     if (refused.length !== s.baby.refused.length) s = { ...s, baby: { ...s.baby, refused } };
     if (ev === null) s = sayNo(s);
-    else if (input.word === 'hug') {
+    else if (input.word === 'hug' && !s.baby.linked) {
       const events: SimEvent[] = [];
       s = run(hugUp(def, s, events), events);
+    } else if (input.word === 'together') {
+      const events: SimEvent[] = [];
+      s = run(link(def, s, events), events);
     }
   } else if (s.baby.mode === 'carried') {
     const events: SimEvent[] = [];

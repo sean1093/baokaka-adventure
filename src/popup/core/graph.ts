@@ -8,13 +8,18 @@ import type { EdgeDef, EdgeKind, Growth, Id, PageDef, SimState } from './types';
  *
  * Rules:
  * - **Who walks.** Baokaka uses the edge kinds his growth stage allows (0 `crawl`, 1 + `climb`,
- *   2 + `cruise`, 3 + `walk`); Mocha uses `jump` and `squeeze` (linked-mode floor walking is #128).
+ *   2 + `cruise`, 3 + `walk`); Mocha uses `jump` and `squeeze` — except in linked mode (一起, #128),
+ *   when he walks the floor ahead of Baokaka (`lead`): every baby kind, whatever his growth.
  * - **Open edges.** An edge is open when its kind is allowed and its `when` holds. A `oneWay` edge
  *   only goes from `a` to `b`.
  * - **Blocked nodes (Baokaka only).** A node is blocked while a blocking creature (`blocks`
  *   defaults to true) stands on it, or while it is attached to a `gate` part that is `closed`
  *   (D-42). A blocked node can't be entered or crossed; the start node never counts as blocked
  *   (he is already there). Mocha is blocked only by the nodes his walker `avoid`s (#83, D-44).
+ * - **Linked mode** (`lead`, #128, D-92): Mocha leads on the floor. He is blocked where Baokaka is
+ *   (creatures, closed gates: he would walk him into a wall), and never steps on a node a page
+ *   doesn't let anyone stand on — only **link nodes** (`linkNodes`): a node a baby edge touches, at
+ *   height ≤ 1, not riding a pushable or a carrier. Lint `L18-linked` holds pages to it.
  * - **Shortest path.** BFS in edges. Among equally short paths the one whose sequence of edge
  *   indices (in the data, from the start) is lexicographically smallest wins — "ties broken by
  *   edge order in the data". It falls out of a BFS that expands each node's edges in data order.
@@ -33,7 +38,7 @@ import type { EdgeDef, EdgeKind, Growth, Id, PageDef, SimState } from './types';
  * `avoid` lists the nodes he won't step on this tick (perches he refuses, C7/C8, decided by
  * `mocha.ts`). As for Baokaka, the start node never counts.
  */
-export type Walker = { who: 'baby'; growth: Growth } | { who: 'cat'; avoid?: readonly Id[] };
+export type Walker = { who: 'baby'; growth: Growth } | { who: 'cat'; avoid?: readonly Id[] } | { who: 'lead' };
 
 export type Point = readonly [number, number];
 
@@ -57,6 +62,8 @@ const KIND_BIT: Readonly<Record<EdgeKind, number>> = { crawl: 1, climb: 2, cruis
 /** Edge kinds per growth stage (GDD § 2.5): each stage adds one kind. */
 const BABY_MASK: readonly number[] = [1, 3, 7, 15];
 const CAT_MASK = KIND_BIT.jump | KIND_BIT.squeeze;
+/** Every baby kind: Mocha leading in linked mode (#128). */
+const LEAD_MASK = BABY_MASK[3];
 
 /** The edge kinds a walker may use. */
 export function walkerKinds(walker: Walker): EdgeKind[] {
@@ -65,7 +72,7 @@ export function walkerKinds(walker: Walker): EdgeKind[] {
 }
 
 function kindMask(walker: Walker): number {
-  return walker.who === 'cat' ? CAT_MASK : BABY_MASK[walker.growth];
+  return walker.who === 'cat' ? CAT_MASK : walker.who === 'lead' ? LEAD_MASK : BABY_MASK[walker.growth];
 }
 
 /** A page's topology as typed arrays, built once per def. */
@@ -81,6 +88,8 @@ interface Compiled {
   readonly adjEdge: Int32Array;
   /** Nodes attached to a gate part: [node index, part id]. */
   readonly gateNodes: readonly (readonly [number, Id])[];
+  /** 1 for a link node (`linkNodes`): where linked mode may walk (#128). */
+  readonly link: Uint8Array;
   // BFS scratch, reused by every call on this page (the core is single-threaded and synchronous).
   readonly queue: Int32Array;
   readonly prev: Int32Array;
@@ -126,6 +135,17 @@ function compile(def: PageDef): Compiled {
   });
 
   const gates = new Set(def.parts.filter((p) => p.preset === 'gate').map((p) => p.id));
+  // Link nodes (#128): a baby edge touches it, height ≤ 1, and it rides no pushable or carrier
+  const link = new Uint8Array(n);
+  const unstable = new Set(def.parts.filter((p) => p.preset === 'pushable' || p.preset === 'carrier').map((p) => p.id));
+  edges.forEach((e, k) => {
+    if ((edgeKind[k] & LEAD_MASK) === 0) return;
+    for (const end of [e.a, e.b]) {
+      const i = index.get(end)!;
+      const node = def.nodes[i];
+      if (node.height <= 1 && !(node.attach !== undefined && unstable.has(node.attach.part))) link[i] = 1;
+    }
+  });
   const gateNodes = def.nodes.flatMap((node, i) => (node.attach && gates.has(node.attach.part) ? [[i, node.attach.part] as const] : []));
 
   const compiled: Compiled = {
@@ -137,6 +157,7 @@ function compile(def: PageDef): Compiled {
     adjTo,
     adjEdge,
     gateNodes,
+    link,
     queue: new Int32Array(n),
     prev: new Int32Array(n),
     dist: new Int32Array(n),
@@ -216,6 +237,24 @@ function avoidMask(g: Compiled, avoid: readonly Id[] | undefined): Uint8Array | 
 }
 
 /**
+ * The link nodes (GDD § 2.4 一起, #128, D-92), in node order: where linked mode may walk Mocha
+ * and Baokaka — a node some baby edge (`crawl`, `climb`, `cruise`, `walk`) touches, at height ≤ 1,
+ * not riding a pushable or a carrier. Everything else (a perch's high node, a cat-only ledge, a
+ * pushable, a carrier's arms) is somewhere a cat may sit but no one is led. The floor taps.
+ */
+export function linkNodes(def: PageDef): Id[] {
+  const g = compile(def);
+  return g.ids.filter((_, i) => g.link[i] === 1);
+}
+
+/** Whether `id` is a link node (`linkNodes`). */
+export function isLinkNode(def: PageDef, id: Id): boolean {
+  const g = compile(def);
+  const i = g.index.get(id);
+  return i !== undefined && g.link[i] === 1;
+}
+
+/**
  * The walk graph for one walker in one state. Build it once per tick (or per solver state) and
  * ask it as many questions as needed; it doesn't see later changes to `state`.
  */
@@ -237,7 +276,12 @@ export class WalkGraph {
       const when = g.edges[k].when;
       if (when === undefined || holds(def, state, when)) open[k] = 1;
     }
-    this.blocked = walker.who === 'baby' ? blockedMask(def, state, g) : avoidMask(g, walker.avoid);
+    if (walker.who === 'lead') {
+      // Blocked where he is, and never off the link nodes (#128)
+      const blocked = blockedMask(def, state, g);
+      for (let i = 0; i < blocked.length; i++) if (g.link[i] === 0) blocked[i] = 1;
+      this.blocked = blocked;
+    } else this.blocked = walker.who === 'baby' ? blockedMask(def, state, g) : avoidMask(g, walker.avoid);
   }
 
   /**
