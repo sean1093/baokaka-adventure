@@ -168,6 +168,23 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   // § 5.2 5-6 end
   'c5p6.end.1': { who: 'nar', text: '找到了！抓周寶物——蔥。' },
   'c5p6.end.2': { who: 'mocha', text: '蔥抓餅……加蛋。……我什麼都沒說。' },
+  // § 5.2 Ch6 「飛機睡著的時候」 02:50 (the chapter card)
+  'c6.intro.1': { who: 'pa', text: '松山機場站，到了。' },
+  'c6.intro.2': { who: 'nar', text: '晚上十一點以後，飛機都在睡覺。' },
+  'c6.intro.3': { who: 'npc', label: '塔台', text: '這裡是塔台，請保持安靜。Over。' },
+  // 6-1: the dozing cabin crew wakes to 抱抱 and carries him off the train
+  'c6p1.crew.1': { who: 'npc', label: '空服員姊姊', text: '嗯……到機場了？姊姊抱你下車。' },
+  // § 5.3 店員小哥's chapter 6 cameo (6-2: Mocha squeezes through the carousel's rubber curtain)
+  'c6p2.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c6p2.clerk.2': { who: 'mocha', text: '……行李轉盤也是你們的？' },
+  'c6p2.clerk.3': { who: 'clerk', text: '我們是連鎖的。' },
+  // § 5.2 6-5 塔台: the radio, and the 咻咻 beat in the tower's log
+  'c6p5.tower.1': { who: 'npc', label: '塔台', text: '剛剛有朵雲問：可以起飛嗎？' },
+  'c6p5.tower.2': { who: 'npc', label: '塔台', text: '我說不行。Over。' },
+  // 6-6: he rides the X-ray belt; the screen shows his silhouette and his bottle
+  'c6p6.xray.1': { who: 'mocha', text: 'X光說：寶寶一個，奶瓶一支。' },
+  // § 5.2 6-6 end
+  'c6p6.end.1': { who: 'nar', text: '找到了！抓周寶物——印章。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

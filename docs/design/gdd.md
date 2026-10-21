@@ -1252,14 +1252,16 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 
 #### Chapter 6 「飛機睡著的時候」 (松山機場, 02:50) · treasure 印章 · word 飛機！
 
+**Specified in full** (the § 4.3 format, node/edge sketches, the solver's numbers): [`docs/design/pages/c6.md`](pages/c6.md) (#123, D-86). The rows below are the outline, updated where the full spec changed it.
+
 | Page | Title | Key mechanic → aha | 淘氣 | Diff |
 |---|---|---|---|---|
-| 6-1 | 文湖線前窗 | Driverless front window: track-switch **tabs** choose a branch (the scene re-folds); 抱抱 a sleeping passenger. | Take the loop branch three times | 3 |
-| 6-2 | 行李轉盤 | The baggage carousel is a **loop**: ride a suitcase round to the bead. Mocha squeezes through the rubber curtain to press the start button. | Mocha rides three laps alone | 3 |
-| 6-3 | 看飛機 | **Learn 飛機！**: on the observation deck a sleeping plane's lights blink; he points: 「飛……飛機！」. Pigeons sitting on the gate button fly up, and the gate opens. | Say 飛機！ five times (the plane winks its lights) | 2 |
-| 6-4 | 空橋 | The jet bridge extends (**tab**) and swings (**wheel**) to the plane door. Roosting birds weigh down a seesaw; 飛機！ toggles them off and on. | Park the jet bridge at the wrong plane | 4 |
-| 6-5 | 塔台 | A searchlight **wheel** moves a light attractor. A radio prop: 「Over。」. Birds on the window ledges block perches (飛機！), and 哇！ powers the runway lights. | Talk on the radio three times: 「Over。」 | 4 |
-| 6-6 | 海關的印章 (spread) | Baokaka rides the X-ray **loop** conveyor (the screen shows his silhouette with a bottle). The stamp sits on the high counter (Mocha pushes it). 飛機！ the pigeons off the belt. | Stamp Mocha's paw (he glares) | 4 |
+| 6-1 | 文湖線前窗 | Driverless front window: a track-switch **tab** chooses the branch (the window re-folds: the depot loop or the airport), Mocha lures him to the front panel, 嗶！ starts the train, and 抱抱 a dozing cabin-crew 姊姊 to be lifted off onto the platform. Review. | Take the loop branch three times | 3 |
+| 6-2 | 行李轉盤 | The baggage carousel is a **loop**: ride a suitcase round to the bead. Mocha squeezes through the rubber curtain to press the start button (the 店員小哥 minds the hall), then turn the belt. | Mocha rides three laps alone | 3 |
+| 6-3 | 看飛機 | **Learn 飛機！**: Mocha on the window rail draws him to the glass, where a sleeping plane's lights blink; he points: 「飛……飛機！」. Pigeons sitting on the gate button fly up, and the gate opens. | Say 飛機！ five times (the plane winks its lights) | 2 |
+| 6-4 | 空橋 | The jet bridge extends (**tab**) and swings (**wheel**) to the plane door. Roosting birds weigh down the cab's gangplank (a seesaw): while it drags on the apron the cab can't swing; 飛機！ sends them off, and a second 飛機！ brings them back to tip it onto the door's sill. → *Birds are a weight: send them off, then call them back.* | Park the jet bridge at the wrong plane | 4 |
+| 6-5 | 塔台 | A searchlight **wheel** moves a light attractor (its pool on the catwalk's railing). A radio prop: 「Over。」. Pigeons dozing on the catwalk block his way and Mocha's hiding crate (飛機！); hide Mocha (or 不要！ him), follow the light, and 哇！ powers the runway lights. | Talk on the radio three times: 「Over。」 | 4 |
+| 6-6 | 海關的印章 (spread) | 飛機！ the pigeons out of the X-ray tray, 嗶！ wakes the scanner, and Baokaka rides the X-ray **loop** conveyor (the screen shows his silhouette with a bottle). The stamp sits on the high counter (Mocha pushes it). | Stamp Mocha's paw (he glares) | 4 |
 
 #### Chapter 7 「纜車上的月亮」 (貓空, 03:30) · treasure 芹菜 · growth 爬樓梯
 
@@ -1351,7 +1353,7 @@ Unlocked by collecting all 65 土地公 stickers. It's a gentle sunrise page on 
 
 The chapter card shows: 第N章｜title｜HH:MM｜下一站 (≤ 8 chars). The lines below play over the card or the first page. They are all skippable with a tap.
 
-**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines. #118 adds chapter 4's (`c4.intro.N`, `c4p4.clerk.N`, `c4p4.claw.N`, `c4p6.king.N`, `c4p6.end.1`); its card plays all three intro lines. #121 adds chapter 5's (`c5.intro.N`, `c5p2.clerk.N`, `c5p3.boss.N`, `c5p4.uncle.1`, `c5p6.vendor.N`, `c5p6.end.N`); its card plays all three intro lines, and its two end lines are one beat.
+**For engineers (#102, D-65).** These lines are `content/script.ts` (keys `p.intro.N`, `c0p3.join.N`, `c0p4.train.N`, `c1.intro.N`, `c1p1.pack.N`, `c1p5.clerk.N`, `c1p6.end.N`). Speech is stored without its outer 「」. The prologue's card plays P lines 1–5 and 0-1 opens on lines 6–12; chapter 1's card plays all four of its lines (`content/chapters.ts` `cardLines`). The prologue's 下一站 is 家. #106 and #107 wire the page beats (0-3, 0-4, 1-1, 1-5, 1-6) into their pages' `lines`. #114 adds chapter 2's (`c2.intro.N`, `c2p2.clerk.N`, `c2p6.end.N`, and § 5.3's `rec.pa.priority` on 2-1's 淘氣); its card plays all three intro lines. #116 adds chapter 3's (`c3.intro.N`, `c3p1.pack.N`, `c3p2.clerk.N`, `c3p6.prof.N`, `c3p6.end.1`); its card plays all three intro lines. #118 adds chapter 4's (`c4.intro.N`, `c4p4.clerk.N`, `c4p4.claw.N`, `c4p6.king.N`, `c4p6.end.1`); its card plays all three intro lines. #121 adds chapter 5's (`c5.intro.N`, `c5p2.clerk.N`, `c5p3.boss.N`, `c5p4.uncle.1`, `c5p6.vendor.N`, `c5p6.end.N`); its card plays all three intro lines, and its two end lines are one beat. #123 adds chapter 6's (`c6.intro.N`, `c6p1.crew.1`, `c6p2.clerk.N`, `c6p5.tower.N`, `c6p6.xray.1`, `c6p6.end.1`); its card plays all three intro lines.
 
 **P · 序章「度晬前一晚」 00:00** (card, then 0-1)
 
@@ -1464,9 +1466,11 @@ nar：晚上十一點以後，飛機都在睡覺。
 npc(塔台)：「這裡是塔台，請保持安靜。Over。」
 ```
 
-**6-5 塔台:** `npc(塔台)：「剛剛有朵雲問：可以起飛嗎？」`, `npc(塔台)：「我說不行。Over。」`
-
-**6-6 end:** `nar：找到了！抓周寶物——印章。`
+- **6-1 空服員姊姊** (抱抱: she wakes and lifts him off the train; #123): `npc(空服員姊姊)：「嗯……到機場了？姊姊抱你下車。」`
+- **6-2 店員小哥** (Mocha squeezes through onto the carousel's start button; #123): `clerk：「叮咚～歡迎光臨！」`, `mocha：「……行李轉盤也是你們的？」`, `clerk：「我們是連鎖的。」`
+- **6-5 塔台** (the radio's first 「Over。」; #123): `npc(塔台)：「剛剛有朵雲問：可以起飛嗎？」`, `npc(塔台)：「我說不行。Over。」`
+- **6-6 X光機** (he rides through the X-ray tunnel; #123): `mocha：「X光說：寶寶一個，奶瓶一支。」`
+- **6-6 end:** `nar：找到了！抓周寶物——印章。`
 
 **Ch7 「纜車上的月亮」 03:30 · 下一站 動物園**
 
