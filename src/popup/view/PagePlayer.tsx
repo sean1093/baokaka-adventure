@@ -11,7 +11,7 @@ import type { Id, Input, LineKey, PageDef, SimState, Word } from '../core/types'
 import { loadLines, type TalkLine } from '../content/script';
 import type { LearnKey } from '../content/words';
 import { PageSession, type SessionFrame, type TickSpeed } from '../game/session';
-import { EMPTY_TALK, MAX_PER_BEAT, advance, currentBeat, enqueue, firedLines, introLines, type TalkQueue } from '../game/talk';
+import { EMPTY_TALK, MAX_PER_BEAT, advance, currentBeat, enqueue, firedLines, introLines, splitBeat, type TalkQueue } from '../game/talk';
 import { cueKey, tutorialCue, type TutorialShow } from '../game/tutorial';
 import { WORD_MOTIF, firstUseLine, learnLines, learnedNow, ringWords, tutorialShow, tutorialWord } from '../game/words';
 import { FRESH_ATTEMPT, attemptResult, earnInAttempt, mischiefFired, type Attempt } from '../game/stickers';
@@ -472,7 +472,9 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   // The photo moment is a modal over the page (#183: a line left up under it was stranded under the
   // HUD): the beat waits under it and comes back after the shot
   const momentUp = moment !== null;
-  const talkView = useMemo(() => ({ beat: momentUp ? null : currentBeat(talk), serial: talk.serial, onAdvance }), [talk, onAdvance, momentUp]);
+  // A beat too big for the page (#197: three lines over his thought bubble at 375 × 667) is split
+  const onCrowded = useMemo(() => (beat: readonly TalkLine[], fit: number) => setTalk((q) => splitBeat(q, beat, fit)), []);
+  const talkView = useMemo(() => ({ beat: momentUp ? null : currentBeat(talk), serial: talk.serial, onAdvance, onCrowded }), [talk, onAdvance, onCrowded, momentUp]);
 
   const osReduced = useReducedMotion();
   const reduced = reducedProp ?? osReduced;

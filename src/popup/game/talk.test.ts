@@ -3,7 +3,7 @@ import { initialState, step } from '../core';
 import type { PageDef } from '../core/types';
 import type { ScriptLine, TalkLine } from '../content/script';
 import { pageById } from '../pages';
-import { EMPTY_TALK, MAX_PER_BEAT, advance, beatsOf, currentBeat, enqueue, firedLines, introLines } from './talk';
+import { EMPTY_TALK, MAX_PER_BEAT, advance, beatsOf, currentBeat, enqueue, firedLines, introLines, splitBeat } from './talk';
 
 /** The subtitle queue (#98; GDD § 2.13): beats of at most three lines, a tap advances, event lines fire once. */
 
@@ -42,6 +42,21 @@ describe('beats', () => {
     expect(currentBeat(q)?.length).toBe(2);
     q = advance(q);
     expect(currentBeat(q)?.map((l) => l.key)).toEqual(['t.9']);
+  });
+
+  test('a beat too big for the page is split where it stops fitting (#197), keeping its serial', () => {
+    const q = enqueue(enqueue(EMPTY_TALK, lines(3)), [line(9)]);
+    const beat = currentBeat(q)!;
+    const split = splitBeat(q, beat, 2);
+    expect(split.beats.map((b) => b.map((l) => l.key))).toEqual([['t.1', 't.2'], ['t.3'], ['t.9']]);
+    expect(split.serial).toBe(q.serial);
+    // The rest follow on the next tap, as a new beat
+    expect(currentBeat(advance(split))!.map((l) => l.key)).toEqual(['t.3']);
+    expect(advance(split).serial).toBe(q.serial + 1);
+    // A stale report (another beat is up now) or one that splits nothing changes nothing
+    expect(splitBeat(advance(q), beat, 1)).toEqual(advance(q));
+    expect(splitBeat(q, beat, 3)).toBe(q);
+    expect(splitBeat(q, beat, 0)).toBe(q);
   });
 
   test('queuing nothing changes nothing', () => {

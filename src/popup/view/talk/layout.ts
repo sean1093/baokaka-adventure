@@ -3,8 +3,11 @@ import type { BubbleShow } from '../art/placeholders';
 import { PAGE_W, type Pt } from '../geometry';
 import type { BarkShow } from './barks';
 import {
+  TALK_BOUNDS,
   TALK_FONT,
   barkCandidates,
+  clampInto,
+  overlap,
   pickBox,
   preferSide,
   stripCandidates,
@@ -63,6 +66,8 @@ export interface PlacedThought {
   readonly w: number;
   readonly h: number;
   readonly clear: boolean;
+  /** Folded small at his ear while a beat needs the room over his head (#197): it shows only what he wants */
+  readonly tucked: boolean;
 }
 
 export interface PlacedBark {
@@ -98,10 +103,19 @@ export interface TalkLayout {
   readonly subs: readonly PlacedSub[];
   /** 廣播姊姊's loudspeaker, when she speaks */
   readonly horn: Pt | null;
+  /**
+   * How many of the beat's lines (from its first) lay out clean together: no card over Baokaka, the
+   * goal, his thought bubble or another card (#197). Less than the beat's length when the page is too
+   * small for the whole beat at once (three lines at 375 × 667, or in 大字): the view asks the queue
+   * to split the beat there, so the rest follow on the next tap.
+   */
+  readonly fit: number;
 }
 
 /** The thought cloud's size at k = 1 (the art's 92 × 46, plus its bumps). */
 export const THOUGHT_SIZE = { w: 92, h: 46 } as const;
+/** The tucked cloud (#197): room for one icon or 「要！」 at the cloud's own text size. */
+export const THOUGHT_TUCK = { w: 60, h: 40 } as const;
 const CLOUD_PAD = 12;
 /** Speech text: line height and padding, × k. */
 const LINE_H = 1.32;
@@ -129,7 +143,8 @@ export function subtitleSize(text: string, label: string | null, k: number, maxW
   const rows = wrapText(text, (maxW - 2 * pad) / f);
   const textW = Math.max(...rows.map(textEm)) * f;
   const labelW = label === null ? 0 : (textEm(label) * TALK_FONT + 24) * k + 10;
-  const w = Math.min(maxW, Math.max(textW + 2 * pad, labelW + 8, 64 * k));
+  // A closing mark may hang past `maxW` (kinsoku): the card takes it in rather than let it spill (#197)
+  const w = Math.min(TALK_BOUNDS.w, Math.max(textW + 2 * pad, labelW + 8, 64 * k));
   // The tab rises over the card's top edge and hangs into it: room for both, so it never sits on the text
   const tab = label === null ? 0 : LABEL_H * k;
   return { rows, w, h: rows.length * f * LINE_H + 2 * pad + tab };
@@ -146,7 +161,103 @@ export function stripSize(lines: readonly TalkLine[], k: number): { rows: string
 /** The goal's box where it lies at `p` (the shiny hovers 14 units up in its cup of light). */
 export const goalBox = (p: Pt): Box => ({ x: p[0] - 22, y: p[1] - 38, w: 44, h: 42 });
 
+/**
+ * How a layout pass treats the thought bubble (#197). `over`: the first pass, the cloud over his head
+ * and the subtitles placed as before, keeping off it only where they can. When a beat's cards would
+ * still cover the cloud or him (three lines on a small book: 375 × 667, or 大字), the later passes
+ * make the cloud as hard to cover as he is and search the whole page for each card (`denseCandidates`):
+ * `firm` keeps the cloud over his head, `beside` moves it level with his head on the side with room,
+ * and `tucked`, the last resort, folds it into a small cloud at his ear (`THOUGHT_TUCK`) that shows
+ * only what he wants.
+ */
+export type CloudPlan = 'over' | 'firm' | 'beside' | 'tucked';
+const FULL_CLOUD: readonly CloudPlan[] = ['over', 'firm', 'beside'];
+const TUCKED: readonly CloudPlan[] = ['tucked'];
+
+/**
+ * Lays out everything said on the page (see above). A beat whose cards would cover the cloud or him
+ * tries the other plans; one too big for the page with the full cloud is split (`fit`) before the
+ * cloud is ever tucked: the next tap brings the rest.
+ */
 export function layoutTalk(scene: TalkScene): TalkLayout {
+  const beat = scene.beat ?? [];
+  const first = bestPlan(scene, FULL_CLOUD);
+  if (first.cost === 0 || beat.length === 0) return { ...first.layout, fit: beat.length };
+  for (const plans of [FULL_CLOUD, TUCKED]) {
+    for (let n = beat.length; n >= 1; n--) {
+      const part = n === beat.length && plans === FULL_CLOUD ? first : bestPlan({ ...scene, beat: beat.slice(0, n) }, plans);
+      if (part.cost !== 0) continue;
+      // The whole beat lays out clean (tucked), or the first n lines do and the queue splits it there
+      // (until it does, the whole beat as best it goes)
+      return n === beat.length ? { ...part.layout, fit: n } : { ...first.layout, fit: n };
+    }
+  }
+  // Not even one line clears him and the cloud: splitting would not help
+  const tucked = bestPlan(scene, TUCKED);
+  return { ...(tucked.cost < first.cost ? tucked : first).layout, fit: beat.length };
+}
+
+/** The first plan that lays the scene out clean, else the one that clashes least. */
+function bestPlan(scene: TalkScene, plans: readonly CloudPlan[]): { layout: Omit<TalkLayout, 'fit'>; cost: number } {
+  let best: { layout: Omit<TalkLayout, 'fit'>; cost: number } | null = null;
+  for (const plan of plans) {
+    // With no beat on the page nothing can cover the cloud: the first pass is the layout
+    if (best !== null && (scene.beat ?? []).length === 0) break;
+    // The cloud's first clear spot; then, after the first pass, each of its other spots that keeps
+    // off him and the goal, even over Mocha or a paw (they are drawn over it), until the cards fit
+    const tries: (number | undefined)[] = [undefined, ...(plan === 'over' ? [] : cloudSpots(scene, plan))];
+    for (const only of tries) {
+      const layout = arrange(scene, plan, only);
+      const cost = talkClash(layout, scene);
+      if (best === null || cost < best.cost) best = { layout, cost };
+      if (cost === 0) return best;
+    }
+  }
+  return best!;
+}
+
+/**
+ * What a layout's text cards (the subtitles and the narration strip) cover that they must not, as
+ * an area: Baokaka, the goal and one another a hundred times over, the thought bubble once. Zero for
+ * a clean layout (what `check:ui` asserts on every fixture, #197).
+ */
+export function talkClash(layout: Omit<TalkLayout, 'fit'>, scene: Pick<TalkScene, 'baby' | 'goal'>): number {
+  const cards = [...(layout.strip ? [layout.strip.box] : []), ...layout.subs.map((s) => s.box)];
+  let cost = 0;
+  for (const [i, c] of cards.entries()) {
+    if (scene.baby) cost += overlap(c, scene.baby.box) * 100;
+    if (scene.goal) cost += overlap(c, scene.goal) * 100;
+    if (layout.thought) cost += overlap(c, layout.thought.box);
+    for (const d of cards.slice(i + 1)) cost += overlap(c, d) * 100;
+  }
+  return cost;
+}
+
+/** Where a plan may put the cloud (`size` with its padding), in the order it tries them. */
+function cloudCandidates(baby: TalkActor, plan: CloudPlan, size: { w: number; h: number }, side: 1 | -1): Box[] {
+  if (plan === 'beside') return besideCandidates(baby, size, side);
+  if (plan === 'tucked') return barkCandidates(baby.head, size, side);
+  return thoughtCandidates(baby.head, size, side);
+}
+
+/** A plan's cloud spots that keep off him and the goal (indices into `cloudCandidates`). */
+function cloudSpots(scene: TalkScene, plan: CloudPlan): number[] {
+  const { baby, goal, k } = scene;
+  if (!baby || !scene.thought) return [];
+  const form = plan === 'tucked' ? THOUGHT_TUCK : THOUGHT_SIZE;
+  const size = { w: (form.w + CLOUD_PAD) * k, h: (form.h + CLOUD_PAD) * k };
+  const hard = goal ? [baby.box, goal] : [baby.box];
+  return cloudCandidates(baby, plan, size, preferSide(baby.at[0]))
+    .map((c, i) => [clampInto(c), i] as const)
+    .filter(([c]) => hard.every((h) => overlap(c, h) === 0))
+    .map(([, i]) => i);
+}
+
+/**
+ * Lays the scene out under `plan`. The cloud takes its first clear spot (keeping off Mocha and the
+ * marks too), or, given `only`, that one of its candidates.
+ */
+function arrange(scene: TalkScene, plan: CloudPlan, only?: number): Omit<TalkLayout, 'fit'> {
   const { k, baby, mocha, goal } = scene;
   const hard: Box[] = [];
   if (baby) hard.push(baby.box);
@@ -154,17 +265,23 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
   const soft: Box[] = [];
   if (mocha) soft.push(mocha.box);
   soft.push(...(scene.marks ?? []));
+  // After the first pass the cloud is as hard for the cards to cover as he is
+  const cardHard = [...hard];
+  const dense = plan !== 'over';
 
-  // 1. The thought bubble, over his head
+  // 1. The thought bubble, over his head (or beside it, or tucked at his ear)
   let thought: PlacedThought | null = null;
   let side: 1 | -1 = 1;
   if (baby && scene.thought) {
     side = preferSide(baby.at[0]);
-    const size = { w: (THOUGHT_SIZE.w + CLOUD_PAD) * k, h: (THOUGHT_SIZE.h + CLOUD_PAD) * k };
-    const pick = pickBox(thoughtCandidates(baby.head, size, side), { hard, soft });
+    const form = plan === 'tucked' ? THOUGHT_TUCK : THOUGHT_SIZE;
+    const size = { w: (form.w + CLOUD_PAD) * k, h: (form.h + CLOUD_PAD) * k };
+    const candidates = cloudCandidates(baby, plan, size, side);
+    const pick = pickBox(only === undefined ? candidates : [candidates[only]!], { hard, soft });
     const box = pick.box;
-    thought = { box, c: [box.x + box.w / 2, box.y + box.h / 2], w: THOUGHT_SIZE.w, h: THOUGHT_SIZE.h, clear: pick.clear };
+    thought = { box, c: [box.x + box.w / 2, box.y + box.h / 2], w: form.w, h: form.h, clear: pick.clear, tucked: plan === 'tucked' };
     soft.push(box);
+    if (plan !== 'over') cardHard.push(box);
     // The barks lean the other way from where the cloud went
     side = box.x + box.w / 2 >= baby.head[0] ? -1 : 1;
   }
@@ -186,7 +303,7 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
   let strip: PlacedStrip | null = null;
   if (narration.length > 0) {
     const size = stripSize(narration, k);
-    const pick = pickBox(stripCandidates(size), { hard, soft });
+    const pick = pickBox(stripCandidates(size), { hard: cardHard, soft });
     strip = { box: pick.box, rows: size.rows, lines: narration };
     soft.push(pick.box);
   }
@@ -202,7 +319,8 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
     else if (anchor === 'mocha' && mocha) [from, rides] = [mocha.head, 'mocha'];
     else if (anchor === 'tudigong' && scene.tudigong) from = [scene.tudigong[0], scene.tudigong[1] - 10];
     else if (anchor === 'speaker') from = horn = [HORN_AT[0] - 22, HORN_AT[1]];
-    const size = subtitleSize(line.text, line.label, k, from === null ? VOICE_MAX_W : SUB_MAX_W);
+    const maxW = from === null ? VOICE_MAX_W : SUB_MAX_W;
+    const size = subtitleSize(line.text, line.label, k, maxW);
     const own = rides === 'baby' ? [] : rides === 'mocha' && mocha ? [mocha.box] : [];
     let candidates: Box[];
     // An off-page voice may step further down the page, so a beat's lines keep their reading order
@@ -215,11 +333,62 @@ export function layoutTalk(scene: TalkScene): TalkLayout {
       candidates = [...subtitleCandidates(from, size, s), ...belowLeft(from, size), ...voiceCandidates(voiceTop, size)];
     }
     // A beat's earlier subtitles are as hard to cover as he is: one line never hides another (#122)
-    const pick = pickBox(candidates, { hard: [...hard, ...subs.map((x) => x.box)], soft: [...soft, ...own, ...(scene.touch ?? [])] });
-    subs.push({ line, box: pick.box, rows: size.rows, label: line.label, from, rides });
+    const avoid = { hard: [...cardHard, ...subs.map((x) => x.box)], soft: [...soft, ...own, ...(scene.touch ?? [])] };
+    const hardFree = (b: Box) => avoid.hard.every((h) => overlap(b, h) === 0);
+    // The later passes may take any open spot on the page, top first; only when none keeps off him,
+    // the goal, the cloud and the other cards do they wrap the line narrower and taller (#197)
+    let fitted = size;
+    let pick = pickBox(dense ? [...candidates, ...denseCandidates(voiceTop, size, from)] : candidates, avoid);
+    if (dense && !hardFree(pick.box)) {
+      let width = size.w;
+      for (const f of NARROWER) {
+        const narrow = subtitleSize(line.text, line.label, k, maxW * f);
+        if (narrow.w >= width - 1) continue;
+        width = narrow.w;
+        const p = pickBox(denseCandidates(voiceTop, narrow, from), avoid);
+        if (hardFree(p.box)) {
+          [pick, fitted] = [p, narrow];
+          break;
+        }
+      }
+    }
+    subs.push({ line, box: pick.box, rows: fitted.rows, label: line.label, from, rides });
     soft.push(pick.box);
   }
   return { thought, barks, strip, subs, horn };
+}
+
+/**
+ * Every spot on the page for a card of `size` (#197), top to bottom in `DENSE_STEP` rows: against
+ * the left edge, centred, against the right edge, and centred under its speaker when it has one.
+ */
+function denseCandidates(top: number, size: { w: number; h: number }, from: Pt | null): Box[] {
+  const xs = [TALK_BOUNDS.x, (PAGE_W - size.w) / 2, TALK_BOUNDS.x + TALK_BOUNDS.w - size.w];
+  if (from !== null) xs.push(from[0] - size.w / 2);
+  const out: Box[] = [];
+  for (let y = Math.max(TALK_BOUNDS.y, top - 8); y + size.h <= TALK_BOUNDS.y + TALK_BOUNDS.h; y += DENSE_STEP) {
+    for (const x of xs) out.push({ x, y, w: size.w, h: size.h });
+  }
+  return out;
+}
+const DENSE_STEP = 8;
+/** The narrower wraps a later pass may try for a card, as fractions of its usual width (#197). */
+const NARROWER = [0.72, 0.52];
+
+/**
+ * The thought bubble beside him (#197): level with his head and a little above or below it, on the
+ * side with room first, clear of his frame. A beat's cards then have the page over his head.
+ */
+function besideCandidates(baby: TalkActor, size: { w: number; h: number }, side: 1 | -1): Box[] {
+  const { box, head } = baby;
+  const out: Box[] = [];
+  for (const dy of [-0.5, -0.15, 0.2, -0.9]) {
+    for (const s of [side, -side]) {
+      const x = s > 0 ? box.x + box.w + 6 : box.x - 6 - size.w;
+      out.push({ x, y: head[1] + dy * size.h - size.h / 2, w: size.w, h: size.h });
+    }
+  }
+  return out;
 }
 
 /** Under and to the left of an anchor near the top right (the loudspeaker, a 土地公 up high), stepping down. */
