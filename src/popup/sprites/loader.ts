@@ -188,7 +188,7 @@ export class SpriteLoader {
     return !this.claimed.has(url) || [...this.scopes.values()].some((s) => s.has(url));
   }
 
-  /** How many decoded images the loader keeps referenced (tests, and `window.__popupImages` in dev). */
+  /** How many decoded images the loader keeps referenced (tests; `window.__popupImages()` in a dev console). */
   held(): number {
     return this.keep.size;
   }
@@ -212,7 +212,7 @@ export class SpriteLoader {
 
 /** The game's one loader. */
 export const spriteLoader = new SpriteLoader(typeof Image === 'undefined' ? () => Promise.reject(new Error('no Image')) : browserDecode);
-// QA (#136): `check:play` reads how many decoded images the game holds as it plays on through chapters
+// Dev (#136): `__popupImages()` in the console says how many decoded images the game holds right now
 if (import.meta.env.DEV && typeof window !== 'undefined') (window as { __popupImages?: () => number }).__popupImages = () => spriteLoader.held();
 
 /** The scale for this device (read once: a DPR change mid-session keeps the loaded set). */
