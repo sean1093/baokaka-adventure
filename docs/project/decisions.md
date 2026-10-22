@@ -1414,3 +1414,18 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 **Why.** Drawing the treasure into the frame is the only way his hands hold it (the composite could only lay it over a pose). Composing in photo space keeps `PhotoScene` trivial (one sprite at one point) and lets the artist compose each chapter's photo, including B's distance to the treasure. Baking at the print scale keeps the hero moment crisp.
 
 **Consequences.** The live B no longer slides in (`approach` only moves the composite): the frame is a composed photograph and the viewfinder's creep still moves. A new chapter adds its treasure to `ph_poses.TREASURES`, a `HOLD` and a `SPEC` row, then `bake_poses.py` and `npm run sync:sprites`. #193's next parts draw the chapter-card vignettes, the 目錄 station illustrations and the 月亮線 window strip.
+
+### D-103 · 2026-10-22 · The landmark vignettes: one drawing per chapter, a die-cut behind the chapter card and a medallion for the 目錄's station (#193, part 2)
+
+**Context.** D-78 § 9 and D-80 § 6 left a landmark vignette on the chapter card "if wanted". #122 added a 目錄 station illustration per chapter (the map drew every station as the same disc). The card's text sizes and contrast must not change (R5, R6), and no lettering may go into the art.
+
+**Decision.**
+1. **One drawing per chapter** (`env/art/vignettes.ts`): the prologue's 家 (two old 公寓, his window lit), 台北車站's 重簷 hall, the 大安 amphitheatre shell, 傅鐘 between the palms, 紅樓 with a neon sign, 士林's awnings under a bulb string, 松山's tower and an origami jet, a 貓空 gondola over the tea terraces, 北投's green-roofed library with its steam, 淡江大橋, and 101 over the 信義 skyline. Each is drawn in a 150 × 70 space in its chapter kit's colours and graded like the chapter's backdrops (chapter 10's kit is already in screen colours). Baked as screen art twice (`npm run bake:popup`).
+2. **On the card** (`vignette-card-<N>`): the landmark as a die-cut pop-up (the sprite bake's standee filter: warm-white border, cut line, shadow). It stands *behind* the card and rises over the card's top edge between the strings, left of where the time chip lifts. Nothing on the card moves, so its words keep their sizes and contrast. What floats (cables, steam, mist, bulbs on a wire, fireflies) is drawn over the die-cut, never inside its border. 尾聲's card shows 家 again; 番外 has none (its postcard is its picture).
+3. **On the 目錄** (`vignette-map-<N>`): an open station is the landmark in a round medallion against the chapter's night sky (stars, the moon), with a ring (foil when the chapter is complete, cream with the ribbon's red edge when it is open) and the chapter's number on a foil tag. A locked station stays the padlocked dimple, so it gives nothing away. The medallions load with the map (`useScreenReady`).
+4. **Cost.** 11 cut-outs at 3.7–6.8 KB and 11 medallions at 1.5–2.4 KB (@2x). The first load is still ≈ 1.4 MB of 2.5 MB.
+5. **Fixtures.** `chapter-card-c2` … `chapter-card-c9` join `-p`, `-c1` and `-c10`. While the card's vignette loads, its image is marked `data-sprites="loading"`, so stills wait for it.
+
+**Why.** A drawing behind the card is the only place that changes nothing on the card. Sharing one drawing between the card and the map gives each chapter one recognisable picture, and keeps the cost small.
+
+**Consequences.** A new chapter adds a `LANDMARKS` row. Part 3 draws the 月亮線 window strip.

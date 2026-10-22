@@ -2077,6 +2077,26 @@ export const POPUP_XIANGSHAN = {
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 
+
+/**
+ * The chapters' landmark vignettes (#193, `src/popup/env/art/vignettes.ts`): the few colours their
+ * chapter kits don't have. Graded with their chapter like the backdrops.
+ */
+export const POPUP_VIGNETTE = {
+  // 家: the old 公寓's tiled walls, an unlit pane, the rooftop water tank, a pot plant on his sill
+  homeTile: '#B8A898',
+  homeTileDeep: '#8C7C74',
+  paneDark: '#3A3456',
+  tank: '#C8CCD8',
+  tankDeep: '#8E92A8',
+  pot: '#B0603E',
+  leaf: '#4E8A5A',
+  // 傅鐘's belfry, open to the night
+  belfry: '#2A2A4E',
+  // The 公寓's iron window grilles and roof stand
+  grille: '#3E3448',
+} as const;
+
 /**
  * Foil gradients (bible § 3.1 燙金 / 銀箔): the only things allowed to sparkle. `gold` is the
  * diagonal foil, `goldH` the horizontal trim, `coin` the radial coin, `silver` the cool metal.

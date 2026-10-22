@@ -1,6 +1,8 @@
-import { useMemo, type CSSProperties } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import { POPUP as C } from '../../../art/palette';
-import { chapterInfo, chapterName, UI } from '../../content';
+import { chapterInfo, chapterName, ENDING_CHAPTER, UI } from '../../content';
+import { VIGNETTE_CARD } from '../../env/art/vignettes';
+import { screenImage } from '../../env/loader';
 import type { TalkLine } from '../../content/script';
 import { labelTab, speechCard, stripCard } from '../talk/art';
 import { textEm, wrapText } from '../talk/place';
@@ -23,6 +25,10 @@ import { TapMark } from './TapMark';
  *
  * Every word is ≥ 20 px at ≥ 7:1 on its own paper (R5). It takes no touches: the shell's
  * full-screen tap layer advances the lines and skips the turn.
+ *
+ * **The landmark vignette** (#193, D-103): the chapter's landmark, a baked die-cut pop-up
+ * (`vignette-card-<N>`, `env/art/vignettes.ts`), stands behind the card and rises over its top edge
+ * between the strings, so nothing on the card moves or changes size; the turn swings it with the card.
  */
 
 /** The card's box, CSS px (the strings from the top of the screen to the card). */
@@ -45,6 +51,14 @@ const TILE_H = 40;
 
 const SERIF = "'Noto Serif TC', serif";
 const ROUND = "'Chiron GoRound TC', sans-serif";
+
+/** Where the landmark vignette stands: its box's left and top, its foot 6 px behind the card's top edge. */
+const VIGNETTE_AT = { x: 50, y: CARD.y + 6 - (VIGNETTE_CARD.h - 6) } as const;
+
+/** The vignette a chapter's card shows: its own; 尾聲 is home again (家); none for a chapter without one. */
+export function cardVignette(chapter: number): string | null {
+  return screenImage(`vignette-card-${chapter === ENDING_CHAPTER ? 0 : chapter}`)?.url ?? null;
+}
 
 /** The landmark's font size: 36 px (bible § 7), smaller only when a long name would crowd the seal. */
 export function landmarkSize(landmark: string): number {
@@ -157,6 +171,8 @@ export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1, n
   const title = titleLayout(info.title, s);
   // The chip's top: on the title row, or lifted to straddle the card's top edge (大字, a long title)
   const chipTop = title.chipUp ? CARD.y - 22 : CARD.y + 12;
+  const vignette = cardVignette(chapter);
+  const [vignetteReady, setVignetteReady] = useState(false);
   return (
     <div
       className="cb-card"
@@ -167,6 +183,21 @@ export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1, n
       data-card-soon={next !== undefined ? '' : undefined}
     >
       <div className="cb-tilt" aria-hidden="true">
+        {vignette !== null && (
+          // Behind the card's paper (the svg below draws over its foot). Until it has loaded, the
+          // fixture's screenshot waits (`data-sprites`, as for the character frames)
+          <img
+            src={vignette}
+            alt=""
+            draggable={false}
+            className="absolute block"
+            style={{ left: u(VIGNETTE_AT.x), top: u(VIGNETTE_AT.y), width: u(VIGNETTE_CARD.w), height: u(VIGNETTE_CARD.h) }}
+            onLoad={() => setVignetteReady(true)}
+            onError={() => setVignetteReady(true)}
+            data-card-vignette={chapter}
+            data-sprites={vignetteReady ? 'ready' : 'loading'}
+          />
+        )}
         <svg width={u(BOARD_W)} height={u(BOARD_H + STRING_TOP)} viewBox={`0 ${-STRING_TOP} ${BOARD_W} ${BOARD_H + STRING_TOP}`} style={{ top: -u(STRING_TOP) }} className="absolute left-0 top-0 block overflow-visible" dangerouslySetInnerHTML={{ __html: art }} />
         {/* The spine: the chapter, set vertically */}
         <span className="cb-spine" style={{ left: u(CARD.x), top: u(CARD.y), width: u(SPINE_W - 5), height: u(CARD.h), fontFamily: SERIF, color: C.sealGlyph }}>

@@ -409,6 +409,8 @@ Each chapter has **2 dominant hues + 1 accent**, a **signature material**, and a
 
 *Engineers' note (#102, D-65):* `src/popup/view/hud/ChapterBoard.tsx` is a cream card on two strings of twine with foil eyelets. It hangs from above the screen's top edge and is tilted −1.2°. The chapter is set vertically in 22 px cream serif on a deep seal-red spine, with a bright red band along the fold. Next come the title in 22 px red serif, the time on a navy chip (Fredoka 20 px), the landmark in 36 px serif (smaller only for a six-character name) and the 翻 seal. The board is a navy panel with a gold frame. 「下一站」 is in cream, with one split-flap tile per character: gold glyphs on two-tone navy halves with a hinge line. The turn drops the card (overshoot, two swings, ≈ 0.8 s) and flips the tiles in 70 ms apart while it swings. The lines hang under it: narration on a washi strip, speech on a die-cut card with the speaker's tab (寶咖咖 and 摩卡 are named here, as they hang from no one). Under reduced motion it fades. Proofs: `docs/screenshots/102/`.
 
+*Engineers' note (#193, D-103):* each chapter's landmark stands behind its card as a baked die-cut pop-up (`env/art/vignettes.ts`), rising over the card's top edge between the strings. The same drawing is the 目錄's station medallion, set against the chapter's night sky in a foil or cream ring with the chapter's number on a foil tag. Proofs: `docs/screenshots/193/`.
+
 **Subtitles:** small die-cut speech bubbles on springs, ≤ 30 chars, 18–21 px (GDD).
 
 **Sticker card** (after the page fold): a little kraft card where the three stickers **slap on** with a squash, one at a time, 200 ms apart.
