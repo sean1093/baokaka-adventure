@@ -249,10 +249,22 @@ export interface PageDef {
   /** page E only */
   priorityOverride?: Partial<Record<Kind, number>>;
   /**
+   * Page E only (GDD § 4.4, #135): **Mocha is the goal**. Instead of a `goal` attractor, his own
+   * candidate (kind `mocha`) completes the page: arriving at him he grabs his tail (`grab`, id
+   * `'mocha'`) and the page is done. While he travels between perches Baokaka keeps wanting him, at
+   * the perch he is heading for, so nothing else ever becomes the target.
+   */
+  mochaGoal?: true;
+  /**
    * `pause`: the world holds while the line is on the page (#128: a story beat the simulation waits
    * for, GDD § 5.2's 10-6 first steps); the next tick runs once it has been read.
    */
-  lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey; pause?: boolean }[] };
+  lines?: {
+    intro?: LineKey[];
+    /** The world holds while the intro is up, too (page E's family cheering before he sets off, #135) */
+    introPause?: boolean;
+    onEvent?: { when: EventPredicate; line: LineKey; pause?: boolean }[];
+  };
   /** baked art key */
   backdrop: string;
   /**

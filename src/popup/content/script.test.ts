@@ -3,7 +3,8 @@ import { contrastRatio } from '../../art/contrast';
 import { POPUP } from '../../art/palette';
 import { MAX_LINE_CHARS, lintPage, textLength } from '../core/lint';
 import { PAGES, pageById } from '../pages';
-import { CHAPTERS, SOON_LINES, cardLines, endGroups, endLines, hasNextChapter } from './chapters';
+import { BONUS_CHAPTER, CHAPTERS, ENDING_CHAPTER, SOON_LINES, cardLines, chapterInfo, chapterLine, chapterName, endGroups, endLines, hasNextChapter } from './chapters';
+import { CREDITS, CREDITS_DEDICATION, DAWN_BEATS, POST_BEATS } from './credits';
 import { UI } from './ui';
 import { SPEAKER_INK } from '../view/talk/Talk';
 import { BABY_BARKS, MOCHA_BARKS } from './barks';
@@ -74,7 +75,9 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
     // Chapter 10's end is two beats (#133): 「一起。」 with Mocha's translation, then the sunrise and 廣播姊姊
     expect(endGroups(10)).toEqual([['c10p6.end.1', 'c10p6.end.2'], ['c10p6.end.3', 'c10p6.end.4']]);
     expect(endGroups(1)).toEqual([endLines(1)]);
-    expect(endGroups(11)).toEqual([]);
+    expect(endGroups(12)).toEqual([]);
+    // Page E (#135): his first word, then his second, in six beats
+    expect(endGroups(11).map((g) => g.length)).toEqual([2, 1, 2, 2, 1, 2]);
     expect(SOON_LINES.map((k) => SCRIPT[k].who)).toEqual(['nar']);
     expect(hasNextChapter(1)).toBe(true);
     expect(hasNextChapter(10)).toBe(false);
@@ -92,7 +95,7 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
       expect(SCRIPT[`${prefix}.${n + 1}`]).toBeUndefined();
     }
     // Baokaka says only his words (§ 5.1)
-    const vocabulary = ['要！', '不要！', '抱抱', 'ㄋㄟㄋㄟ', '喵喵', '哇！', '這個！', '好吃！', '好看！', '掰掰', '一起', 'ㄅㄚ！', '嗶！', '飛機！', '咻——', '……哇。', '掰掰！', '抱抱！', '飛……飛機！', '咻——！', '……一起。', '抱抱。', '一起。', '一起！'];
+    const vocabulary = ['要！', '不要！', '抱抱', 'ㄋㄟㄋㄟ', '喵喵', '哇！', '這個！', '好吃！', '好看！', '掰掰', '一起', 'ㄅㄚ！', '嗶！', '飛機！', '咻——', '……哇。', '掰掰！', '抱抱！', '飛……飛機！', '咻——！', '……一起。', '抱抱。', '一起。', '一起！', '……摩卡。', '咻咻！'];
     for (const [key, line] of Object.entries(SCRIPT)) if (line.who === 'baby') expect(vocabulary, key).toContain(line.text);
   });
 
@@ -121,5 +124,22 @@ describe('lint rule 10 reads content/script.ts', () => {
     expect(lintPage({ ...def, lines: { intro: ['c1.intro.1'] } }, SCRIPT).errors).toEqual([]);
     const errors = lintPage({ ...def, lines: { intro: ['c1.intro.99'], onEvent: [{ when: { type: 'ride' }, line: 'nope.line' }] } }, SCRIPT).errors;
     expect(errors.map((e) => e.ids[0])).toEqual(['c1.intro.99', 'nope.line']);
+  });
+
+  test('尾聲 and 番外 (#135): named, timed and lined, outside the 月亮線\'s eleven stations', () => {
+    expect(CHAPTERS.map((c) => c.chapter)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(chapterName(ENDING_CHAPTER)).toBe('尾聲');
+    expect(chapterName(BONUS_CHAPTER)).toBe('番外');
+    expect(chapterInfo(ENDING_CHAPTER)).toMatchObject({ title: '抓周', landmark: '家', time: '10:00', pages: 1 });
+    expect(chapterInfo(BONUS_CHAPTER)).toMatchObject({ title: '象山的日出', landmark: '象山' });
+    expect(chapterLine(ENDING_CHAPTER, 1)).toBe('尾聲');
+    expect(cardLines(ENDING_CHAPTER)).toEqual(['e.intro.1']);
+    // § 5.5 exactly: the dawn, the family, the first words, the post-credits
+    expect(SCRIPT['e.dawn.2'].text).toBe('哎唷，摩卡真乖，顧規暝。');
+    expect(SCRIPT['e.end.2']).toEqual({ who: 'baby', text: '……摩卡。' });
+    expect(SCRIPT['e.end.8'].text).toBe('第二個字，也不是爸爸！');
+    expect(SCRIPT['e.post.6']).toEqual({ who: 'pa', text: '下一站：兩歲。' });
+    for (const key of [...DAWN_BEATS.flat(), ...POST_BEATS.flat(), ...endLines(ENDING_CHAPTER), 'e.credits.pack']) expect(SCRIPT[key], key).toBeDefined();
+    for (const t of [...CREDITS.flatMap((c) => [c.role, ...c.names]), CREDITS_DEDICATION]) expect(textLength(t)).toBeLessThanOrEqual(MAX_LINE_CHARS);
   });
 });

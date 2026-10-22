@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
-import { POPUP, POPUP_AIRPORT, POPUP_BEITOU, POPUP_CAMPUS, POPUP_MAOKONG, POPUP_MARKET, POPUP_NEON, POPUP_PARK, POPUP_STAGE, POPUP_TAMSUI, POPUP_101 } from '../../../art/palette';
+import { POPUP, POPUP_AIRPORT, POPUP_BEITOU, POPUP_CAMPUS, POPUP_MAOKONG, POPUP_MARKET, POPUP_NEON, POPUP_PARK, POPUP_STAGE, POPUP_TAMSUI, POPUP_101, POPUP_HOME_DAY, POPUP_ENDING_SCENES } from '../../../art/palette';
 import {
   MARIGOLD_DELTA_E,
   PART_PRESETS,
@@ -112,6 +112,9 @@ describe('ΔE (CIE76) and the reserved marigold', () => {
       ...Object.fromEntries(Object.entries(POPUP_TAMSUI).map(([k, v]) => [`tamsui.${k}`, v])),
       // Chapter 10's kit (#134): the peach, the sun's glow, the cake, the lanterns, 咻咻
       ...Object.fromEntries(Object.entries(POPUP_101).map(([k, v]) => [`t101.${k}`, v])),
+      // 尾聲's kit (#135): the sunlight on the boards, the honey wainscot, the red 抓周盤, the family
+      ...Object.fromEntries(Object.entries(POPUP_HOME_DAY).map(([k, v]) => [`day.${k}`, v])),
+      ...Object.fromEntries(Object.entries(POPUP_ENDING_SCENES).map(([k, v]) => [`scenes.${k}`, v])),
     } as Record<string, unknown>;
     const near = Object.entries(named)
       .filter(([, v]) => typeof v === 'string' && isNearMarigold(v))

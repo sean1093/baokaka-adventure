@@ -9,8 +9,9 @@
  */
 export { SCRIPT, SPEAKERS, loadLine, loadLines, type ScriptLine, type Speaker, type SpeakerAnchor, type TalkLine } from './script';
 export { BABY_BARKS, MOCHA_BARKS, type BabyBark, type MochaBark } from './barks';
-export { CHAPTERS, SOON_LINES, cardLines, chapterInfo, chapterLine, chapterName, endGroups, endLines, hasNextChapter, stickersIn, type ChapterInfo } from './chapters';
+export { BONUS_CHAPTER, CHAPTERS, ENDING_CHAPTER, EXTRA_CHAPTERS, SOON_LINES, cardLines, chapterInfo, chapterLine, chapterName, endGroups, endLines, hasNextChapter, stickersIn, type ChapterInfo } from './chapters';
 export { UI } from './ui';
 export { HINT_LINES, HINT_LINE_MAX, type HintLineKey } from './hints';
 export { GROWTH_KEY, LEARN_BEATS, WORD_LABEL, cardLine, learnLineKeys, type GrowthKey, type LearnBeat, type LearnKey } from './words';
-export { ALBUM_CHAPTERS, CHAPTER_NOTES, ENDING_NOTES, NOTE_NAME, NOTE_POOL, NOTE_SPEAKERS, albumChapter, type AlbumChapter, type ChapterNotes, type NoteSpeaker } from './album';
+export { ALBUM_CHAPTERS, CHAPTER_NOTES, ENDING_LEAF_CHAPTER, ENDING_NOTES, NOTE_NAME, NOTE_POOL, NOTE_SPEAKERS, albumChapter, type AlbumChapter, type ChapterNotes, type NoteSpeaker } from './album';
+export { CAMEO_ROLE, CREDITS, CREDITS_DEDICATION, CREDITS_TITLE, DAWN_BEATS, POST_BEATS, type Credit } from './credits';

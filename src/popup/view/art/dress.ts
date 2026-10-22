@@ -27,6 +27,7 @@ export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'car
   | 'zooPlatform' | 'zooPlaza' | 'gondolaDeck' | 'teaTerrace' | 'teaDeck' | 'chahai' | 'cabinBench' | 'cabinRack' | 'cabinGlass' | 'gardenPath' | 'gardenPathJar' | 'gardenTerrace'
   | 'carSeat' | 'carBodyBeitou' | 'valleyBoardwalk' | 'valleyRock' | 'bathBoardwalk' | 'libraryLoft' | 'libraryStacks' | 'bathDeck' | 'bathStep' | 'hallFloor' | 'bantaiCounter'
   | 'mrtSeat' | 'windowSill' | 'oldStreetLane' | 'arcadeStep' | 'eggCounter' | 'pierDeck' | 'ferryDeck' | 'wharfBoardwalk' | 'wharfPier' | 'bridgeWalkway' | 'towerBase' | 'quay' | 'boatDeck'
+  | 'playmatDay'
   | 'observatoryFloor' | 'ticketHall' | 'plaza101' | 'atriumBalcony' | 'damperCase' | 'roofTerrace' | 'roofStep' | 'skyDeck' | 'railFooting';
 
 /** The near-corner foreground card. */
@@ -165,6 +166,8 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c10/roof-party': { ledge: [{ below: 440, style: 'roofStep' }, { below: 999, style: 'roofTerrace' }], ownPosts: ['lamp', 'gift'], foreground: null, crossing: 'none' },
   // The outdoor deck at first light: the railing's footing (its rail is the backdrop's, at his chest), the open deck
   'c10/observation-deck': { ledge: [{ below: 470, style: 'railFooting' }, { below: 999, style: 'skyDeck' }], ownPosts: ['scope'], foreground: null },
+  // 尾聲 (#135): the 巧拼 in the morning sun; the sofa's arm, the sill and the 抓周盤 are the backdrop's
+  'end/zhuazhou-day': { ledge: 'playmatDay', ownPosts: ['sofaArm', 'sill', 'tray'], foreground: null },
   'c10/xinyi-line': { ledge: [{ below: 450, style: 'windowSill' }, { below: 999, style: 'carBodyXinyi' }], ownPosts: ['rack1', 'rack2'], foreground: null, crossing: 'none' },
 };
 

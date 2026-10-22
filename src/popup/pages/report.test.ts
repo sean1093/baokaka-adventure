@@ -103,7 +103,8 @@ describe('judge', () => {
   test('allowTrivial makes a trivial page pass', () => {
     const r = judge({ ...c1p2, allowTrivial: true }, CLEAN, solved({ trivial: true, par: 0 }), { replayOk: true });
     expect(r.failures).toEqual([]);
-    expect(r.warnings).toEqual(["par 0 is outside difficulty 2's band 2–3"]);
+    // Par 0 is what a trivial page has (page E, #135): no band warning
+    expect(r.warnings).toEqual([]);
   });
 
   test('lint errors fail, lint warnings and par out of band only warn', () => {

@@ -1,4 +1,4 @@
-import { chapterInfo } from '../content/chapters';
+import { ENDING_CHAPTER, chapterInfo } from '../content/chapters';
 import type { Id } from '../core/types';
 import { registry as gameRegistry, type PageRegistry } from '../pages';
 import { isChapterUnlocked, isUnlocked, type SaveV1 } from './progress';
@@ -84,9 +84,15 @@ export function opensChapter(id: Id, reg: PageRegistry = gameRegistry): boolean 
   return chapter !== undefined && reg.pages.find((p) => p.chapter === chapter)?.id === id;
 }
 
-/** The chapter the 目錄 opens at: the chapter of the page to resume. */
+/**
+ * The 目錄's station for a chapter: its own, but 家 (the prologue's) for page E, the morning at home
+ * (#135: 尾聲 has no station of its own; it is listed on 家's strip).
+ */
+export const stationOf = (chapter: number): number => (chapter === ENDING_CHAPTER ? 0 : chapter);
+
+/** The chapter the 目錄 opens at: the station of the page to resume. */
 export function homeChapter(save: SaveV1, reg: PageRegistry = gameRegistry): number {
-  return reg.chapterOf(resumeTarget(save, reg)) ?? 0;
+  return stationOf(reg.chapterOf(resumeTarget(save, reg)) ?? 0);
 }
 
 const page = (id: Id, run = 0): Base => ({ kind: 'page', id, run });
@@ -132,7 +138,7 @@ export function navigate(state: NavState, action: NavAction, save: SaveV1, reg: 
       return base.kind === 'page' ? { base: page(base.id, base.run + 1), layer: null } : state;
     case 'next':
       if (action.id === null || reg.pageById(action.id) === undefined) {
-        return { base: COVER.base, layer: { kind: 'contents', chapter: base.kind === 'page' ? (reg.chapterOf(base.id) ?? 0) : homeChapter(save, reg) } };
+        return { base: COVER.base, layer: { kind: 'contents', chapter: base.kind === 'page' ? stationOf(reg.chapterOf(base.id) ?? 0) : homeChapter(save, reg) } };
       }
       return { base: page(action.id), layer: null };
   }

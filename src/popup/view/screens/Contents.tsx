@@ -2,10 +2,11 @@ import { useMemo } from 'react';
 import { POPUP as C, withAlpha } from '../../../art/palette';
 import { useSvgIds } from '../../../art/useSvgIds';
 import { kitCtx, kitDefs } from '../../art';
-import { CHAPTERS, chapterInfo, chapterName, loadLine, SOON_LINES, stickersIn, UI } from '../../content';
+import { CHAPTERS, ENDING_CHAPTER, chapterInfo, chapterName, loadLine, SOON_LINES, stickersIn, UI } from '../../content';
 import type { Id, PageDef } from '../../core/types';
 import { MAP_SHEET } from '../../env/art/screens';
 import { backdropImage, screenImage } from '../../env/loader';
+import { stationOf } from '../../game/nav';
 import { isChapterUnlocked, isUnlocked, type SaveV1 } from '../../game/progress';
 import type { PageRegistry } from '../../pages';
 import { deviceScale, frameUrl, spriteDef } from '../../sprites';
@@ -99,25 +100,30 @@ export function chapterComplete(save: SaveV1, chapter: number): boolean {
   return Array.from({ length: pages }, (_, i) => save.pages[pageIdOf(chapter, i + 1)]?.solved === true).every(Boolean);
 }
 
-type PageCard = { readonly index: number; readonly id: Id; readonly def?: PageDef; readonly open: boolean; readonly solved: boolean; readonly mischief: boolean; readonly tudigong: boolean; readonly title?: string };
+type PageCard = { readonly index: number; readonly id: Id; readonly def?: PageDef; readonly open: boolean; readonly solved: boolean; readonly mischief: boolean; readonly tudigong: boolean; readonly title?: string; readonly mark?: string };
 
+function pageCard(save: SaveV1, reg: PageRegistry, chapter: number, index: number, mark?: string): PageCard {
+  const id = pageIdOf(chapter, index);
+  const def = reg.pageById(id);
+  const r = save.pages[id];
+  return {
+    index,
+    id,
+    def,
+    open: def !== undefined && isUnlocked(save, id, reg),
+    solved: r?.solved === true,
+    mischief: r?.mischief === true,
+    tudigong: r?.tudigong === true,
+    title: def?.title ?? chapterInfo(chapter).pageTitles?.[index - 1],
+    mark,
+  };
+}
+
+/** A station's strip: its pages; 家 (the prologue's) ends with page E 「抓周」, the morning at home (#135). */
 function pageCards(save: SaveV1, reg: PageRegistry, chapter: number): PageCard[] {
-  const info = chapterInfo(chapter);
-  return Array.from({ length: info.pages }, (_, i) => {
-    const id = pageIdOf(chapter, i + 1);
-    const def = reg.pageById(id);
-    const r = save.pages[id];
-    return {
-      index: i + 1,
-      id,
-      def,
-      open: def !== undefined && isUnlocked(save, id, reg),
-      solved: r?.solved === true,
-      mischief: r?.mischief === true,
-      tudigong: r?.tudigong === true,
-      title: def?.title ?? info.pageTitles?.[i],
-    };
-  });
+  const cards = Array.from({ length: chapterInfo(chapter).pages }, (_, i) => pageCard(save, reg, chapter, i + 1));
+  if (chapter === 0 && reg.pageById(pageIdOf(ENDING_CHAPTER, 1)) !== undefined) cards.push(pageCard(save, reg, ENDING_CHAPTER, 1, chapterName(ENDING_CHAPTER)));
+  return cards;
 }
 
 /** The 花磚 endpaper behind the 目錄 (bible § 3.1: the menu background), dimmed so the map leads. */
@@ -141,7 +147,8 @@ export function Contents({ save, registry: reg, chapter, locked, bonus = false, 
     return { url: frameUrl(def.files[0], deviceScale()), w: def.size[0], h: def.size[1] };
   }, []);
   const ready = useScreenReady(['map-sheet'], head.url ? [head.url] : []);
-  const resumeChapter = reg.chapterOf(resumeId) ?? 0;
+  // Page E is listed on 家's strip (#135): its bookmark is 家's station
+  const resumeChapter = stationOf(reg.chapterOf(resumeId) ?? 0);
   // How far the line runs: to the furthest open station
   const reach = CHAPTERS.filter((c) => isChapterUnlocked(save, c.chapter, reg)).reduce((n, c) => Math.max(n, c.chapter), 0);
   const showBonus = bonus && bonusOpen;
@@ -376,7 +383,7 @@ function PageThumb({ card, current, onPlay }: { card: PageCard; current: boolean
       type="button"
       disabled={!card.open}
       onClick={() => onPlay(card.id)}
-      aria-label={`${card.index}${card.title ? `「${card.title}」` : ''}${card.solved ? '，解開' : ''}${card.open ? '' : '，還沒開'}`}
+      aria-label={`${card.mark ?? card.index}${card.title ? `「${card.title}」` : ''}${card.solved ? '，解開' : ''}${card.open ? '' : '，還沒開'}`}
       data-page-card={card.id}
       data-solved={card.solved ? '' : undefined}
       data-current={current ? '' : undefined}
@@ -416,8 +423,8 @@ function PageThumb({ card, current, onPlay }: { card: PageCard; current: boolean
           </svg>
         )}
       </span>
-      <span className="font-num text-[20px] font-semibold leading-[24px]" style={{ color: C.ink }}>
-        {card.index}
+      <span className={`${card.mark ? 'font-body font-black' : 'font-num font-semibold'} whitespace-nowrap text-[20px] leading-[24px]`} style={{ color: card.mark ? C.sealInk : C.ink }}>
+        {card.mark ?? card.index}
       </span>
     </button>
   );
@@ -449,8 +456,8 @@ function MischiefList({ cards }: { cards: readonly PageCard[] }) {
               </>
             )}
           </svg>
-          <span className="font-num text-[20px] font-semibold leading-[24px]" style={{ color: C.ink }}>
-            {card.index}
+          <span className="whitespace-nowrap font-num text-[20px] font-semibold leading-[24px]" style={{ color: C.ink }}>
+            {card.mark ?? card.index}
           </span>
           <span className="text-[20px] font-bold leading-[24px]" style={{ color: card.mischief ? C.ink : C.inkSoft }}>
             <span className="sr-only">{`${UI.contents.mischief}：`}</span>

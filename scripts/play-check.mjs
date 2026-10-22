@@ -28,7 +28,9 @@
  * `photo-spread-c6` plays 6-6 into chapter 7's card and 7-1 (#125), `photo-spread-c7` plays 7-6 into
  * chapter 8's card and 8-1 (#129), `photo-spread-c8` plays 8-6 into chapter 9's card and 9-1 (#131),
  * `photo-spread-c9` plays 9-6 into chapter 10's card and 10-1 (#133), and `photo-spread-c10` plays
- * 10-6 (一起, the first steps, the hug) through the album and the four end lines to the 目錄.
+ * 10-6 (一起, the first steps, the hug) through the album and the four end lines, the 05:30 scene and
+ * page E's card into page E (#135); `ending` plays page E in the shell through his first words, the
+ * 抓周 photo, the credits and the post-credits to the cover.
  * A `drag` through more than two points follows them in turn (1-4's turntable is turned on its rim).
  * `{ heard: [cues] }` checks the shell played those sounds (#105; the dev build lists them in
  * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
@@ -1539,6 +1541,61 @@ const SCENARIOS = {
     { tapEl: '[data-end-next]' },
     // The 抓周 tray's nine coins are chapters 1–9's treasures (`treasuresFound`): the 金鎖片 adds none
     { expect: '[data-sticker-card]', absent: '[data-tray-fill]', timeout: 5_000 },
+    // 05:30, home (#135): 阿嬤 up, Mocha asleep on the full tray — two beats — then page E's card and page E
+    { expect: '[data-screen="dawn-scene"][data-screen-ready]', timeout: 8_000 },
+    { tapEl: '[data-story-next]' },
+    { tapEl: '[data-story-next]' },
+  ],
+  // 尾聲 in the shell (#135): page E — the cheers, Mocha to the sunny sill, he crawls past the
+  // treasures (each line held), the photo moment, the tail; his first word and his second; the 抓周
+  // photo into the album; the sticker card; the credits (skipped); the 土地公; the cover
+  ending: [
+    { readTalk: true },
+    { tap: [300, 258] },
+    { settle: 1200 },
+    { readTalk: true },
+    { expect: '[data-photo-moment]', timeout: 15_000 },
+    { tapEl: '[data-shutter]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { expect: '[data-end-layer] [data-card-line="baby"]', timeout: 8_000 },
+    { tapEl: '[data-end-next]' },
+    { tapEl: '[data-end-next]' },
+    { tapEl: '[data-end-next]' },
+    { tapEl: '[data-end-next]' },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-end-layer] [data-card-line="nar"]', timeout: 3_000 },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-screen="album"] [data-album-note="mocha"]', timeout: 10_000 },
+    { expect: '[data-album-word="first"]' },
+    { tapEl: '[data-button="keep"]' },
+    { expect: '[data-sticker-card]', timeout: 5_000 },
+    { expect: '[data-screen="credits"][data-screen-ready]', timeout: 10_000 },
+    { tapEl: '[data-credits-next]' },
+    { expect: '[data-credits-print]', timeout: 3_000 },
+    { tapEl: '[data-button="skip"]' },
+    { expect: '[data-screen="shrine-scene"][data-screen-ready]', timeout: 8_000 },
+    { tapEl: '[data-story-next]' },
+    { tapEl: '[data-story-next]' },
+    { tapEl: '[data-story-next]' },
+    { tapEl: '[data-story-next]' },
+  ],
+  // Page E 「抓周」 (#135): trivially solvable — the cheers held, then with no input he crawls past the
+  // treasures (爸爸's and 阿嬤's lines held) to Mocha on the sofa's arm: the photo moment, the tail
+  c11p1: [
+    { readTalk: true },
+    { settle: 900 },
+    { readTalk: true },
+    { expect: '[data-photo-moment]', timeout: 15_000 },
+    { tapEl: '[data-shutter]', paused: true },
+    { settle: 1000 },
+    { readTalk: true },
+    { settle: 1000 },
+    { readTalk: true },
+    { settle: 1000 },
+    { readTalk: true },
   ],
   // The whole album (#113, GDD § 2.9 album screen), live from the cover's 相簿 at chapter 2: the page
   // arrows turn a leaf at a time (3 with its photo, 4 a placeholder), a one-finger swipe across the
@@ -1568,7 +1625,7 @@ const SCENARIOS = {
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-popup-page="c7p1"]', 'photo-spread-c7': '[data-popup-page="c8p1"]', 'photo-spread-c8': '[data-popup-page="c9p1"]', 'photo-spread-c9': '[data-popup-page="c10p1"]', 'photo-spread-c10': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-popup-page="c7p1"]', 'photo-spread-c7': '[data-popup-page="c8p1"]', 'photo-spread-c8': '[data-popup-page="c9p1"]', 'photo-spread-c9': '[data-popup-page="c10p1"]', 'photo-spread-c10': '[data-popup-page="c11p1"]', ending: '[data-screen="cover"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
 const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
 
@@ -1586,6 +1643,7 @@ const SCENARIO_URLS = {
   'photo-spread-c8': '#/pagelab?fixture=spread-shell-c8',
   'photo-spread-c9': '#/pagelab?fixture=spread-shell-c9',
   'photo-spread-c10': '#/pagelab?fixture=spread-shell-c10',
+  ending: '#/pagelab?fixture=page-e-shell',
   'prologue-card': '#/',
   'album-flip': '#/pagelab?fixture=album-multi',
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',
@@ -1703,20 +1761,25 @@ async function run(page, base, id, kind, viewport, shots) {
     } else if (stepDef.absent && !stepDef.expect) {
       if (await page.$(stepDef.absent)) throw new Error(`${stepDef.absent} should not be there`);
     } else if (stepDef.readTalk) {
-      // Tap the subtitle beat on the page until none is left (a tap on a bubble or the strip is the next beat)
-      for (let i = 0; i < 8; i++) {
-        const bubble = await page.$('[data-subtitle], [data-narration]');
-        if (!bubble) break;
-        await page.waitForTimeout(350);
-        // On its words (a bubble's box also spans its spring)
-        const el = (await bubble.$('text')) ?? bubble;
-        const box = await el.boundingBox();
-        if (!box) break;
-        await input.down([box.x + box.width / 2, box.y + box.height / 2]);
-        await page.waitForTimeout(60);
-        await input.up();
+      // Tap the subtitle beat on the page until none is left (a tap on a bubble or the strip is the next beat).
+      // A line the world holds for can follow the one just read a tick later (page E's cheers, then 「……經過了書。」,
+      // #135): a bubble back after the pause is read on too, a few times at most
+      for (let pass = 0, i = 0; pass < 3; pass++) {
+        for (; i < 8 * (pass + 1); i++) {
+          const bubble = await page.$('[data-subtitle], [data-narration]');
+          if (!bubble) break;
+          await page.waitForTimeout(350);
+          // On its words (a bubble's box also spans its spring)
+          const el = (await bubble.$('text')) ?? bubble;
+          const box = await el.boundingBox();
+          if (!box) break;
+          await input.down([box.x + box.width / 2, box.y + box.height / 2]);
+          await page.waitForTimeout(60);
+          await input.up();
+        }
+        await page.waitForTimeout(300);
+        if (!(await page.$('[data-subtitle], [data-narration]'))) break;
       }
-      await page.waitForTimeout(300);
       if (await page.$('[data-subtitle], [data-narration]')) throw new Error('the page\'s lines did not clear');
       await shot('read');
     } else if (stepDef.showMe) {

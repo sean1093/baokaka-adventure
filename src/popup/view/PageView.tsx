@@ -345,6 +345,8 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const mochaOn = !linked && (state.mocha.perch !== null || state.mocha.path.length > 0);
   const attractors = def.attractors.map((a) => {
     if (state.consumed.includes(a.id) || (a.goal && state.done)) return null;
+    // Drawn in the backdrop (page E's treasures on the 抓周盤, #135): nothing live
+    if (a.art === 'baked') return null;
     if (!holds(def, state, a.visibleWhen)) return null;
     const node = attractorNode(def, state, a);
     const p = node === null ? undefined : drawnNodePos(def, prev, state, node, ms, reduced, preview);

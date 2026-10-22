@@ -1921,6 +1921,133 @@ export const POPUP_101 = {
   tear: '#9ED0F6',
 } as const;
 
+/**
+ * 尾聲's kit (page E 「抓周」, 10:00 at home; the bonus page's dawn on 象山; #135): the only
+ * daytime page. The prologue's home (`POPUP_HOME`, painted for midnight) in sunlight — rose washi
+ * walls gone pale, honey boards, the teal sofa, the red 抓周盤 — and the family in their party
+ * clothes. **Screen colours** (D-99): page E's backdrop pre-divides the 10:00 grade (`ungradeSvg`).
+ * Every colour stays ≥ ΔE 12 from marigold (`affordance.test.ts`).
+ */
+export const POPUP_HOME_DAY = {
+  // The walls: pale rose washi in daylight, the wainscot honey, the skirting
+  wallTop: '#EBCFC6',
+  wallMid: '#F2DACF',
+  wallLow: '#F5E2D4',
+  wallPrint: '#FFF6EC',
+  wainscot: '#B87A52',
+  wainscotLit: '#D49A6C',
+  wainscotDeep: '#8C5638',
+  skirting: '#6E4230',
+  // Floorboards in the sun, their seams, the sun's patches through the window
+  board: '#D59C6C',
+  boardLight: '#E6B486',
+  boardSeam: '#A4704A',
+  sunPatch: '#FFF1D6',
+  // The sky over the lane at 10:00, a summer cloud, the houses across the lane
+  sky: '#8FCBEA',
+  skyLow: '#D8EEF6',
+  cloud: '#FFFFFF',
+  house: '#D8CBBE',
+  houseShade: '#B4A698',
+  houseTrim: '#8A7C74',
+  ironGrille: '#5E6E7C',
+  tree: '#6FA86E',
+  treeDeep: '#4C845A',
+  // The shrine across the lane: its red roof, its cream niche, the incense
+  shrineRoof: '#C2372E',
+  shrineWall: '#EEDCC0',
+  shrineNiche: '#7A3A2A',
+  // The teal sofa in daylight
+  sofa: '#4E8A8E',
+  sofaLight: '#74ACAA',
+  sofaDeep: '#336A70',
+  // Window frames and furniture wood
+  teak: '#9A6040',
+  teakDeep: '#6C3E28',
+  pine: '#E2BC8E',
+  // Curtains (花布 in the sun)
+  floralGround: '#9C4468',
+  floral: '#D8607A',
+  floralLight: '#F3A8B8',
+  floralLeaf: '#4E9070',
+  // The 抓周盤: red lacquer, its gold rim (foil), its shadow
+  lacquer: '#C2333C',
+  lacquerLight: '#E25C5A',
+  lacquerDeep: '#86202C',
+  // 巧拼 play-mat in daylight
+  matPink: '#F2B4B0',
+  matMint: '#A8DCC2',
+  matSky: '#AECCF0',
+  matLilac: '#D2BEEA',
+  matCream: '#F4E8D0',
+  matCut: '#8A6E86',
+  // The family in their party clothes: 阿嬤's red cardigan and grey perm, 媽媽's rose blouse and
+  // ponytail, 爸爸's blue polo (his phone up)
+  grandmaTop: '#B6303C',
+  grandmaTopDeep: '#82222E',
+  grandmaHair: '#C8C2CE',
+  grandmaSlacks: '#4E4658',
+  momTop: '#E88C9E',
+  momTopDeep: '#C46A80',
+  momSkirt: '#6E86B8',
+  hair: '#2A2228',
+  dadTop: '#4E78B8',
+  dadTopDeep: '#36588E',
+  dadSlacks: '#8C7C66',
+  phone: '#2C3040',
+  // The birthday table: 紅蛋, 紅龜粿, the cake's cream, the candle
+  redEgg: '#D8434A',
+  cake: '#FBEFE0',
+  cakeShade: '#E8D2BC',
+  berry: '#C8384A',
+} as const;
+
+/**
+ * 尾聲's two story scenes (screen art, never graded; #135): 05:30 at home — the room's lilac night
+ * at first light, the dawn over the rooftops and 101, 阿嬤's quilted robe, Mocha's printed fur — and
+ * the post-credits 土地公 shrine in a summer 西北雨 — the rain sky, the wet paving, the statue's gold
+ * robe and white beard, the red 印泥.
+ */
+export const POPUP_ENDING_SCENES = {
+  cloud: '#FFFFFF',
+  dawnLight: '#FFD8B0',
+  statueSkin: '#F0C8A0',
+  inkRed: '#D02A2A',
+  statueGold: '#C8963C',
+  dawnWallTop: '#3A3460',
+  beard: '#FBFBF6',
+  cloudBlush: '#F2A0A8',
+  statueBlush: '#E8909A',
+  slipper: '#C86A7A',
+  robe: '#8C7CB4',
+  statueGoldDeep: '#8A6424',
+  robeDeep: '#6A5C92',
+  statueHat: '#2E2A34',
+  dawnSkyLow: '#FFD2A6',
+  rainSkyLow: '#F6EEDC',
+  dawnSkyMid: '#E8A0A8',
+  inkPad: '#E8584E',
+  rainSkyMid: '#D6E6EE',
+  cloudSwirl: '#D6E2F2',
+  pavingLight: '#C8C4C4',
+  catFur: '#A89A8C',
+  dawnBoardLight: '#A88272',
+  paving: '#9A9AA6',
+  rainSky: '#8EB4D8',
+  pavingSeam: '#8A8A96',
+  dawnBoard: '#8A6A62',
+  dawnWallLow: '#6A5680',
+  catFurDark: '#5E5248',
+  dawnSeam: '#5E4450',
+  dawnSkyTop: '#5A5AA0',
+  dawnSilhouette: '#4A4070',
+  catCollar: '#3E6AB8',
+  dawnRoofs: '#3E3462',
+  dawnDoor: '#2A2448',
+} as const;
+
+
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 

@@ -187,7 +187,7 @@ export function AlbumPage({ chapter, def, shots, chosen = shots.length - 1, stic
             /* The word learned, big (a blind-embossed 「？」 before the line reaches the chapter); the chapter's stickers */
             <div className="flex min-w-0 flex-1 flex-col items-center gap-2 pt-1">
               <span className="text-[20px] font-bold" style={{ color: C.inkSoft }}>
-                {UI.album.learned}
+                {entry.firstWord !== undefined && !locked ? UI.album.firstWord : UI.album.learned}
               </span>
               {locked ? (
                 <span className="relative flex items-center justify-center" style={{ width: 112, height: 72 }} data-album-word="">
@@ -198,6 +198,17 @@ export function AlbumPage({ chapter, def, shots, chosen = shots.length - 1, stic
                   </svg>
                   <span className="absolute font-serif text-[36px] font-black leading-none" style={{ color: C.ink }}>
                     ？
+                  </span>
+                </span>
+              ) : entry.firstWord !== undefined ? (
+                /* The 抓周 photo (#135): his first word, a little red heart stamped by it */
+                <span className="relative flex items-center justify-center" style={{ width: 112, height: 72 }}>
+                  <svg className="absolute -left-2 -top-1 -rotate-12" width={30} height={30} viewBox="-15 -15 30 30" aria-hidden="true">
+                    <circle r={13} fill={C.seal} />
+                    <path d="M0 6.5C-7 2 -7.5 -2.5 -5.5 -4.5C-3.6 -6.4 -1.2 -5.6 0 -3.6C1.2 -5.6 3.6 -6.4 5.5 -4.5C7.5 -2.5 7 2 0 6.5Z" fill={C.sealGlyph} />
+                  </svg>
+                  <span className="ml-3 font-serif text-[44px] font-black leading-none" style={{ color: C.sealInk }} data-album-word="first">
+                    {entry.firstWord}
                   </span>
                 </span>
               ) : (

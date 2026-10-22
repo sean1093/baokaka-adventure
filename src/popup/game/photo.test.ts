@@ -186,4 +186,17 @@ describe('the album\'s pages', () => {
     expect(spreadPage(10, registry)?.id).toBe('c10p6');
   });
 
+
+  test('page E (#135): the treasure is Mocha himself, always in the frame; the 抓周 photo takes § 5.6 row E whatever the frame', () => {
+    const pageE = registry.pageById('c11p1')!;
+    expect(pageE.spread).toBe(true);
+    expect(spreadPage(11, registry)?.id).toBe('c11p1');
+    const { state } = replay(pageE, [{ wait: 2 }]);
+    expect(photoReady(pageE, state)).toBe(true);
+    expect(mochaInFrame(pageE, initialState(pageE))).toBe(true);
+    for (const frame of ['A', 'B', 'C'] as const) {
+      expect(albumNotes(11, { frame, mocha: true }).map((n) => n.text)).toEqual([CHAPTER_NOTES[11].grandma, CHAPTER_NOTES[11].mom, CHAPTER_NOTES[11].dad, CHAPTER_NOTES[11].mocha]);
+    }
+    expect(CHAPTER_NOTES[11].dad).toBe('……第三個字一定是爸爸。');
+  });
 });

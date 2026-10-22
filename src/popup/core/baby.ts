@@ -1,7 +1,7 @@
 import { holds, partState } from './cond';
 import type { Bark, SimEvent } from './events';
 import { dist2, nodePos, walkGraph, type Point, type WalkGraph } from './graph';
-import { mochaAttractorNode, mochaNode } from './mocha';
+import { findPerch, mochaAttractorNode, mochaNode, perchHidesMocha } from './mocha';
 import type { AttractorDef, BabyMode, Growth, Id, Kind, PageDef, SimState } from './types';
 
 /**
@@ -12,7 +12,9 @@ import type { AttractorDef, BabyMode, Growth, Id, Kind, PageDef, SimState } from
  * - **Candidates** (§ 2.2.1): page attractors whose `visibleWhen` and `activeWhen` hold, that
  *   are not consumed or refused, and that are somewhere on the page; plus Mocha (id `'mocha'`,
  *   priority 2) while he is settled on a perch that doesn't hide him, at the perch's `reachNode`
- *   (`mochaAttractorNode`, `mocha.ts`: a `hidesMocha` perch or a `box` node hides him, C9).
+ *   (`mochaAttractorNode`, `mocha.ts`: a `hidesMocha` perch or a `box` node hides him, C9). On page
+ *   E (`mochaGoal`, #135) he is the goal, and still a candidate while he travels (at the perch he
+ *   is heading for).
  * - **Target** (§ 2.2.2): candidates sorted by priority, reachable first, path length, squared
  *   straight-line distance from Baokaka, then id (code-unit order). Unreachable candidates tie on
  *   path length. Decoys always count as unreachable: he never grabs one.
@@ -20,7 +22,7 @@ import type { AttractorDef, BabyMode, Growth, Id, Kind, PageDef, SimState } from
  *   reachable node nearest an unreachable one; once there, `reaching` (facing the target, 「要！要！」
  *   every 4 ticks). Facing is the direction of the last move.
  * - **Arrival** (§ 3.3 phase 6, same tick as the move): shiny → `grabbing` (consumed; the goal
- *   sets `done`), snack → `eating` (consumed), Mocha → `cuddling`, light → `watching` (both last
+ *   sets `done`), Mocha as page E's goal → `cuddling`, a `grab` of his tail (id `'mocha'`) and `done`, snack → `eating` (consumed), Mocha → `cuddling`, light → `watching` (both last
  *   while the target stays). The first arrival clears `refused`.
  * - **Nothing to want** (§ 2.2.5): `looking` for 2 ticks, then `crying`, emitting `cry`
  *   (radius 220) each tick, until any candidate appears (silently: no bark on comfort). When he
@@ -129,6 +131,17 @@ export function attractorNode(def: PageDef, state: SimState, a: AttractorDef): I
   return a.node;
 }
 
+/**
+ * Where a travelling Mocha will be wanted (page E, `mochaGoal`): the `reachNode` (else the node) of
+ * the perch he is heading for; null when he isn't travelling or that perch hides him.
+ */
+function mochaHeadingNode(def: PageDef, state: SimState): Id | null {
+  const to = state.mocha.perch === null ? state.mocha.to : undefined;
+  const perch = to === undefined ? undefined : findPerch(def, to);
+  if (perch === undefined || perchHidesMocha(def, perch)) return null;
+  return perch.reachNode ?? perch.node;
+}
+
 /** An attractor's node if it is visible, active and not consumed (refusal aside); else null. */
 function availableNode(def: PageDef, state: SimState, a: AttractorDef): Id | null {
   if (state.consumed.includes(a.id)) return null;
@@ -146,8 +159,10 @@ export function candidates(def: PageDef, state: SimState): Candidate[] {
     if (node === null) continue;
     out.push({ id: a.id, kind: a.kind, node, height: a.height ?? 0, decoy: a.decoy === true, goal: a.goal === true });
   }
-  const mocha = mochaAttractorNode(def, state);
-  if (mocha !== null && !refused.includes(MOCHA)) out.push({ id: MOCHA, kind: 'mocha', node: mocha, height: 0, decoy: false, goal: false });
+  const goal = def.mochaGoal === true;
+  // Page E (`mochaGoal`): travelling, he is still wanted, at the perch he is heading for
+  const mocha = mochaAttractorNode(def, state) ?? (goal ? mochaHeadingNode(def, state) : null);
+  if (mocha !== null && !refused.includes(MOCHA)) out.push({ id: MOCHA, kind: 'mocha', node: mocha, height: 0, decoy: false, goal });
   return out;
 }
 
@@ -336,6 +351,10 @@ export function babyTick(def: PageDef, state: SimState, opts: BabyOptions = {}):
       consumed = [...consumed, target.id];
       events.push({ type: 'grab', id: target.id });
       done = target.goal;
+    } else if (target.kind === 'mocha' && target.goal) {
+      // Page E (#135): he grabs Mocha's tail, and that is the page
+      events.push({ type: 'grab', id: MOCHA });
+      done = true;
     } else if (target.kind === 'snack') {
       consumed = [...consumed, target.id];
       events.push({ type: 'eat', id: target.id });

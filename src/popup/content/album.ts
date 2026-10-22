@@ -16,7 +16,7 @@ export const NOTE_NAME: Readonly<Record<NoteSpeaker, string>> = { grandma: '阿�
 
 export type ChapterNotes = Readonly<Record<NoteSpeaker, string>>;
 
-/** § 5.6: the Frame A notes per chapter (1–10), and the ending's photo (`ENDING_NOTES`). */
+/** § 5.6: the Frame A notes per chapter (1–10), and the ending's 抓周 photo (11, `ENDING_NOTES`: every frame). */
 export const CHAPTER_NOTES: Readonly<Record<number, ChapterNotes>> = {
   1: { grandma: '嘴巴開開，雞腿比臉還大！', mom: '第一次搭捷運，就這麼開心。', dad: '這個手勢……是在說『爸』吧？', mocha: '我在左下角。很帥。' },
   2: { grandma: '會畫圖喔，以後當畫家！', mom: '大安森林公園，我們常去散步。', dad: '這個嘴型，很接近『爸爸』了。', mocha: '松鼠搶鏡頭。不予置評。' },
@@ -28,10 +28,12 @@ export const CHAPTER_NOTES: Readonly<Record<number, ChapterNotes>> = {
   8: { grandma: '算盤！會算錢，好！', mom: '臉被溫泉蒸得紅通通。', dad: '一、二、三……算到爸爸了嗎？', mocha: '我的腳沒碰到水。重點。' },
   9: { grandma: '當醫生，照顧別人，好囡仔。', mom: '他站起來了！站起來了！', dad: '站起來，是要走向爸爸吧？', mocha: '我扶著他。照片沒拍到。' },
   10: { grandma: '金鎖片戴上，平平安安。', mom: '第一步……我哭了。', dad: '走向……一朵雲？', mocha: '他說『一起』。我翻譯的。' },
+  // § 5.6 row E (#135): the 抓周 photo, the album's last page
+  11: { grandma: '抓周抓到貓，是什麼意思？', mom: '意思是，他很愛摩卡。', dad: '……第三個字一定是爸爸。', mocha: '……喵。' },
 };
 
-/** § 5.6 row E: the 抓周 photo's notes (#135 shows them). */
-export const ENDING_NOTES: ChapterNotes = { grandma: '抓周抓到貓，是什麼意思？', mom: '意思是，他很愛摩卡。', dad: '……第三個字一定是爸爸。', mocha: '……喵。' };
+/** § 5.6 row E: the 抓周 photo's notes (the album's last page, chapter 11's row; #135). */
+export const ENDING_NOTES: ChapterNotes = CHAPTER_NOTES[11];
 
 /** § 5.6 shared pool (Frames B and C): 阿嬤, 媽媽, 爸爸, and 摩卡 in (`mochaIn`) or out of (`mochaOut`) the frame. */
 export const NOTE_POOL = {
@@ -48,6 +50,11 @@ export interface AlbumChapter {
   readonly treasure: string;
   /** The word or growth stage learned in the chapter, printed big (`LEARN_BEATS[word].title`) */
   readonly word: LearnKey;
+  /**
+   * The 抓周 photo's page (#135): instead of a word learned, his **first word**, printed big under
+   * 「第一個字」 — 「摩卡」.
+   */
+  readonly firstWord?: string;
 }
 
 /** § 4.2: chapters 1–10. Chapter 10 learns 一起 and takes 第一步; the album prints the word. */
@@ -62,7 +69,12 @@ export const ALBUM_CHAPTERS: Readonly<Record<number, AlbumChapter>> = {
   8: { treasure: '算盤', word: 'whoosh' },
   9: { treasure: '聽診器', word: 'cruise' },
   10: { treasure: '金鎖片', word: 'together' },
+  // 尾聲, the 抓周 photo (§ 2.8: the album's eleventh photo): he picked Mocha; his first word
+  11: { treasure: '摩卡', word: 'together', firstWord: '摩卡' },
 };
+
+/** The ending's leaf (#135): the 抓周 photo, after the ten chapters. */
+export const ENDING_LEAF_CHAPTER = 11;
 
 /** A chapter's album entry (chapter 1's for one without a photo page). */
 export const albumChapter = (chapter: number): AlbumChapter => ALBUM_CHAPTERS[chapter] ?? ALBUM_CHAPTERS[1];

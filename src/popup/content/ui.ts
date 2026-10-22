@@ -28,7 +28,7 @@ export const UI = {
    * #113 (D-76): the 「淘氣大王」 cover's ribbon (§ 2.8 names it); not in § 5.7, accessible names only:
    * the page arrows (上一頁 / 下一頁) and the cover leaf's name (封面).
    */
-  album: { title: '寶咖咖一歲的相簿', learned: '學會了', back: '返回', stickers: '已收集', mischiefKing: '淘氣大王', prev: '上一頁', next: '下一頁', cover: '封面' },
+  album: { title: '寶咖咖一歲的相簿', learned: '學會了', firstWord: '第一個字', back: '返回', stickers: '已收集', mischiefKing: '淘氣大王', prev: '上一頁', next: '下一頁', cover: '封面' },
   /**
    * § 5.7 Settings (#104). Not in § 5.7 (D-67): the gyro tilt's name (書本傾斜), the switches'
    * 關／開 (§ 2.11's options), 長輩模式's one-line summary, the note on the rows it holds, 減少動態's
@@ -46,4 +46,9 @@ export const UI = {
   },
   /** § 5.7 Bonus (#135) */
   bonus: '象山的日出',
+  /**
+   * 尾聲 (#135; not in § 5.7, D-100): the credits' skip, and the accessible names of the story
+   * scenes before page E and after the credits
+   */
+  ending: { skip: '跳過', dawn: '清晨五點半', post: '巷口的小廟', credits: '謝謝收看', next: '下一句' },
 } as const;

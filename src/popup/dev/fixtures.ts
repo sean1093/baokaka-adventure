@@ -97,6 +97,8 @@ export interface PopupFixture {
      * cover and 「象山的日出」 as if the book were finished (the game's 65 by default)
      */
     readonly rewardTotal?: number;
+    /** One of 尾聲's screens up (#135): the 05:30 scene, the credits, the post-credits — at a beat / card */
+    readonly scene?: { readonly kind: 'dawn' | 'credits' | 'post'; readonly at?: number };
   };
 }
 
@@ -156,6 +158,9 @@ const ON_SPREAD_C9: NavState = { base: { kind: 'page', id: 'c9p6', run: 0 }, lay
 const AT_SPREAD_C10 = (['c10p1', 'c10p2', 'c10p3', 'c10p4', 'c10p5'] as const).reduce((s, id) => completePage(s, id, { moves: 4 }), C9_DONE);
 const C10_DONE = keepPhoto(completePage(AT_SPREAD_C10, 'c10p6', { moves: 3 }), 10, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 19, 21, 10) });
 const ON_SPREAD_C10: NavState = { base: { kind: 'page', id: 'c10p6', run: 0 }, layer: null };
+// 尾聲 (#135): page E open (the book's ten chapters done), then done with its 抓周 photo and its 淘氣
+const ON_PAGE_E: NavState = { base: { kind: 'page', id: 'c11p1', run: 0 }, layer: null };
+const E_DONE = keepPhoto(completePage(C10_DONE, 'c11p1', { mischief: true, moves: 1 }), 11, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 20, 2, 0) });
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -349,6 +354,69 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     screen: { nav: ON_SPREAD_C10, save: C10_DONE, endLinesOf: 10 },
     note: 'Chapter 10\'s end (GDD § 5.2 10-6; #133): after the album, over the finished spread (dimmed), the first beat of the four end lines — Baokaka\'s 「一起。」 and Mocha\'s translation 「他說：『一起過生日。』」, then 「太陽，從山的後面出來了。」 and 廣播姊姊\'s 「本列車直達：寶咖咖的家。」. Live, the taps lead to the sticker card and the 目錄 (the tray\'s nine coins are chapters 1–9\'s).',
+  },
+  {
+    name: 'ending-dawn',
+    page: 'c10p6',
+    steps: [],
+    screen: { nav: ON_SPREAD_C10, save: C10_DONE, scene: { kind: 'dawn' } },
+    note: '05:30, home (GDD § 5.5; #135), after chapter 10\'s end and its sticker card: the living room at first light — the dawn and 101 through the window, a little white cloud at peace — 阿嬤 in from the hall in her robe, a hand at her back, smiling at the 抓周盤 complete on her table, Mocha asleep across it. 「清晨五點半。阿嬤起床了。」「哎唷，摩卡真乖，顧規暝。」; a tap, 「摩卡睜開一隻眼睛。」「……喵。」; then page E\'s card.',
+  },
+  {
+    name: 'page-e-shell',
+    page: 'c11p1',
+    steps: [],
+    screen: { nav: ON_PAGE_E, save: C10_DONE },
+    note: 'Page E in the game shell (#135): play it live — the family\'s cheers (held), Mocha anywhere, he crawls past every treasure (爸爸, 阿嬤, 媽媽: 「……經過了…」), the photo moment as he takes Mocha\'s tail, his first word and his second (the end lines), the 抓周 photo into the album (the last page), the sticker card, the credits over the album photos, the 土地公 after them, the cover (`check:play` scenario `ending`).',
+  },
+  {
+    name: 'page-e-end',
+    page: 'c11p1',
+    steps: [{ wait: 'goal' }],
+    screen: { nav: ON_PAGE_E, save: E_DONE, endLinesOf: 11 },
+    note: 'Page E\'s end (GDD § 5.5; #135): over the finished page, the narration 「寶咖咖抓住了——摩卡的尾巴。」 and his first word, 「……摩卡。」; tapped on: 「全家人，都叫了起來！」, 爸爸 「第一個字……不是爸爸。」 and Mocha 「眼睛……進沙子了。」, the little wind and 「咻咻！」, 爸爸 「第二個字，也不是爸爸！」, the two birthdays.',
+  },
+  {
+    name: 'album-e',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(11), save: E_DONE },
+    note: 'The album\'s last page (GDD § 2.8, § 5.6 row E; #135): 尾聲 「抓周」 10:00 — the 抓周 photo (Frame A: both hands round Mocha\'s tail as it shoots up), 「摩卡」 under it, 「第一個字」 摩卡 big by a red heart, page E\'s stickers, and the four notes: 阿嬤 「抓周抓到貓，是什麼意思？」, 媽媽 「意思是，他很愛摩卡。」, 爸爸 「……第三個字一定是爸爸。」, 摩卡 「……喵。」',
+  },
+  {
+    name: 'contents-ending',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 0 } }, save: E_DONE },
+    note: 'The 目錄 after the ending (#135): the 家 station\'s strip — the prologue\'s four pages, then page E 「抓周」 marked 尾聲, solved with its 淘氣; its 淘氣 「讓摩卡坐在抓周盤上」 in the list.',
+  },
+  {
+    name: 'credits',
+    page: 'c11p1',
+    steps: [],
+    screen: { nav: ON_PAGE_E, save: E_DONE, scene: { kind: 'credits', at: 1 } },
+    note: 'The credits (GDD § 2.13 item 8; #135) roll over the player\'s own album photos: chapter 1\'s print drifting onto the navy endpapers, 第一章 便當的味道 under it, and the first credit — 主演 寶咖咖. A card every 4.2 s, a tap for the next, 「跳過」 to end; reduced motion: fades only.',
+  },
+  {
+    name: 'credits-cameo',
+    page: 'c11p1',
+    steps: [],
+    screen: { nav: ON_PAGE_E, save: E_DONE, scene: { kind: 'credits', at: 7 } },
+    note: 'The 背包客\'s cameo in the credits (GDD § 4.1; #135): chapter 7\'s print, and at the foot of 101 at last, map up in both hands, 「I found it!」 — 找了一整晚的101 · 背包客.',
+  },
+  {
+    name: 'credits-end',
+    page: 'c11p1',
+    steps: [],
+    screen: { nav: ON_PAGE_E, save: E_DONE, scene: { kind: 'credits', at: 11 } },
+    note: 'The credits\' last card (#135): the 抓周 photo, and 「寶咖咖，一歲生日快樂。」',
+  },
+  {
+    name: 'post-credits',
+    page: 'c11p1',
+    steps: [],
+    screen: { nav: ON_PAGE_E, save: E_DONE, scene: { kind: 'post' } },
+    note: 'Post-credits (GDD § 5.5; #135): the little 土地公 shrine at the mouth of the lane in a summer 西北雨 — the statue smiling, a dab of red 印泥 on his fingertip, a stamp card full of his stamps on the altar, 咻咻 playing in the rain over the roofs. 「巷口的小廟裡，土地公的手指上，」「沾著一點點，蓋章的印泥。」; then 「呵呵，囡仔，慢慢仔大。」, the summer rain, and 廣播姊姊: 「下一站：兩歲。」',
   },
   {
     name: 'album-c1-retake',
@@ -1824,6 +1892,29 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [{ wait: 1 }, { say: 'no' }, { wait: 3 }, { say: 'together' }, { floor: 'Q1' }, { wait: 'settle' }, { floor: 'Q2' }, { wait: 'settle' }, { floor: 'Q3' }, { wait: 'settle' }, { floor: 'Q4' }, { wait: 'settle' }],
     show: { talk: ['c10p5.mocha.1'] },
     note: '10-5\'s 淘氣: led round 咻咻\'s table, all four corners — the cake\'s candles are lit: 「繞一圈。……蠟燭都亮了。」',
+  },
+  {
+    name: 'page-e',
+    page: 'c11p1',
+    steps: [],
+    show: { talk: ['e.cheer.1', 'e.cheer.2', 'e.cheer.3'] },
+    note: 'Page E 「抓周」 as it opens (GDD § 4.4, § 5.5; #135): the living room at ten on the birthday morning, the only daytime page — the 「度晬快樂」 banner, the clock at ten, the window onto the lane with the 土地公 shrine, 阿嬤, 媽媽 and 爸爸 (filming) behind the 巧拼, the red 抓周盤 in front with all ten treasures round the 金鎖片, Mocha on the sofa\'s arm. The family cheers for their pick (爸爸 「書！拿書！」, 阿嬤 「算盤啦，會賺錢！」, 媽媽 「拿什麼都好，慢慢來。」): the world waits while they do.',
+    expect: { mode: 'idle' },
+  },
+  {
+    name: 'page-e-passing',
+    page: 'c11p1',
+    steps: [{ wait: 2 }],
+    show: { talk: ['e.pass.1'] },
+    note: 'Page E (#135): wanting Mocha above everything (his thought bubble is the cat), Baokaka crawls past the 書, the 畫筆 and the 麥克風 — 爸爸: 「……經過了書。」 (held).',
+    expect: { mode: 'moving' },
+  },
+  {
+    name: 'page-e-tray',
+    page: 'c11p1',
+    steps: [{ mocha: 'tray' }, { wait: 1 }],
+    note: 'Page E\'s 淘氣 (#135): Mocha sat in the middle of the 抓周盤 among the treasures — 「讓摩卡坐在抓周盤上」 — and he still gets his tail grabbed: 「這個！」 and the sparkle, at the tray\'s edge.',
+    expect: { event: 'grab' },
   },
   {
     name: 'c10p6-spread',
