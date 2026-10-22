@@ -1108,3 +1108,19 @@ Format:
   - Perf at 4× CPU throttle: c5p1 59.6 fps, c8p1 58.5, c1p1 55.2.
 - **Payload.** 5-1 is the highest at 326 of 350 KB.
 - **Decision.** D-104.
+
+### 2026-10-22 · Staff engineer · #68 Font payload: self-hosted subsets of the game's text
+- **Fonts.** Chiron GoRound TC 700/900, Noto Serif TC 700/900 and Fredoka 500/600/700 are now self-hosted WOFF2 subsets of the game's own text (`src/fonts/`). The Google Fonts link is gone from `index.html`, so the site has no external runtime resource. Same faces and weights, same look.
+- **Pipeline.** `npm run fonts` has two steps:
+  - `scripts/fonts/charset.ts` collects every string literal, template and JSX text in the shipped source (1,049 characters) and slices it by play order;
+  - `scripts/fonts/subset.py` (fonttools) instances and subsets the google/fonts variable fonts, which are pinned and hash-checked, and writes the files, `fonts.css`, `dev.css` and `fonts.json`.
+  
+  `npm run fonts:session` records what a first session shows; that becomes slice 0.
+- **Test.** `src/fonts/fonts.test.ts` reads every WOFF2 cmap. It fails on a character the source prints that some weight has no file for, and on a range that promises a missing glyph.
+- **Payload** (`check:prod`, which now gates fonts):
+  - fonts for the cover + page 0-1 went from 1636 KB in 18 files to 149 KB in 5;
+  - render-blocking font CSS went from 141 KB to 0 KB external (+4.5 KB gzip in the app CSS);
+  - first load went from 818 KB to 589 KB, and 開始 → 0-1 from +1676 KB to +634 KB.
+- **Licenses.** OFL 1.1, no Reserved Font Names. The license texts are in `public/fonts/`.
+- **Decision.** D-105 (supersedes D-17's Google Fonts). Art direction § 7.1 *Loading* is marked superseded.
+- **Follow-ups.** #136 can count fonts as done in its perf audit. A new character in any text now needs `npm run fonts` (Python + fonttools) before the tests pass.
