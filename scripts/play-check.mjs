@@ -1068,8 +1068,8 @@ const SCENARIOS = {
     { readTalk: true },
     { settle: 1500 },
     { readTalk: true },
-    // The photo of the first steps: Mocha beside him, 咻咻 and the 金鎖片 in the frame
-    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    // The photo of the first steps: Mocha beside him, 咻咻 and the 金鎖片 in the frame (three held steps first)
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 20_000 },
     { tapEl: '[data-shutter]', paused: true },
     { settle: 1500 },
     { readTalk: true },
@@ -1517,8 +1517,8 @@ const SCENARIOS = {
     { readTalk: true },
     { settle: 1500 },
     { readTalk: true },
-    // The photo of the first steps: Mocha beside him, 咻咻 and the 金鎖片 in the frame
-    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    // The photo of the first steps: Mocha beside him, 咻咻 and the 金鎖片 in the frame (three held steps first)
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 20_000 },
     { tapEl: '[data-shutter]', paused: true },
     { settle: 1500 },
     { readTalk: true },
