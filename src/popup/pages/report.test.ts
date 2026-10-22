@@ -5,6 +5,7 @@ import type { PageDef } from '../core/types';
 import { PAGES, pageById } from './index';
 import {
   CI_BUDGET_MS,
+  CI_BUDGET_STATES,
   displayWidth,
   formatDetails,
   formatSummary,
@@ -52,6 +53,12 @@ const issue = (severity: 'error' | 'warning', code: string): LintIssue => ({
   page: 'c1p2',
   ids: [],
   message: `c1p2: ${code} happened`,
+});
+
+describe('the budget as work (D-98)', () => {
+  test('60 s at the calibrated 7,000 states a second', () => {
+    expect(CI_BUDGET_STATES).toBe(420_000);
+  });
 });
 
 describe('judge', () => {
