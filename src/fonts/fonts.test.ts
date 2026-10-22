@@ -194,6 +194,12 @@ describe('self-hosted font subsets (#68)', () => {
     expect(html).not.toMatch(/fonts\.(googleapis|gstatic)\.com/);
   });
 
+  it('keeps every punctuation mark and symbol in the first file (Chrome trims CJK punctuation spacing only within one file)', () => {
+    for (const face of GAME_FACES.filter((f) => !f.file.endsWith('-0.woff2'))) {
+      expect(show([...face.range].filter((p) => !/\p{Script=Han}/u.test(String.fromCodePoint(p)))), face.file).toBe('');
+    }
+  });
+
   /** Characters in `chars` that some weight of a CJK family has no face for. */
   const uncovered = (chars: Iterable<string>, faces: readonly Face[]) => {
     const out: string[] = [];

@@ -3,8 +3,9 @@
  * the files the browser fetches. Writes `src/fonts/charset.json`, which `scripts/fonts/subset.py`
  * (step 2) turns into WOFF2 files and their `@font-face` rules.
  *
- *   - `slices[0]`: printable ASCII and what a first session shows (`src/fonts/first-session.txt`,
- *     recorded by `scripts/fonts/first-session.mjs`): the cover and page 0-1 need this file alone.
+ *   - `slices[0]`: printable ASCII, every punctuation mark and symbol, and what a first session
+ *     shows (`src/fonts/first-session.txt`, recorded by `scripts/fonts/first-session.mjs`): the
+ *     cover and page 0-1 need this file alone.
  *   - `slices[1…]`: the rest of the game's characters, in play order (the chapter that first prints
  *     them, then the most used first), `SLICE` to a file, so a chapter pulls a file or two.
  *   - `dev`: characters only the dev tools print (the art lab and its RPG drawings, PageLab):
@@ -27,7 +28,12 @@ const read = (re: RegExp) => Object.fromEntries(files.filter((f) => re.test(f)).
 
 const game = charStats(read(GAME_SOURCES));
 const dev = charStats(read(DEV_SOURCES));
-const firstSession = new Set([...ALWAYS, ...readFileSync(resolve(ROOT, 'src/fonts/first-session.txt'), 'utf8').replace(/\n$/, '')]);
+const recorded = readFileSync(resolve(ROOT, 'src/fonts/first-session.txt'), 'utf8').replace(/\n$/, '');
+// Punctuation and symbols all go into the first file too: Chrome trims the space between CJK
+// punctuation (「」，。『』 …, `text-spacing-trim`) only between glyphs of one font file, so they
+// must never be split across slices (as Google Fonts keeps them together too)
+const symbols = [...game.keys()].filter((c) => !/\p{Script=Han}/u.test(c));
+const firstSession = new Set([...ALWAYS, ...recorded, ...symbols]);
 
 const rest = [...game]
   .filter(([c]) => !firstSession.has(c))

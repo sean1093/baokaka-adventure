@@ -11,55 +11,55 @@
           "file": "chiron-700-0.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 37456
+          "bytes": 41228
         },
         {
           "file": "chiron-700-1.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 28812
+          "bytes": 29736
         },
         {
           "file": "chiron-700-2.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 29920
+          "bytes": 30440
         },
         {
           "file": "chiron-700-3.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 27724
+          "bytes": 30272
         },
         {
           "file": "chiron-700-4.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 32292
+          "bytes": 34064
         },
         {
           "file": "chiron-700-5.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 33024
+          "bytes": 34644
         },
         {
           "file": "chiron-700-6.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 33520
+          "bytes": 33808
         },
         {
           "file": "chiron-700-7.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 34368
+          "bytes": 33312
         },
         {
           "file": "chiron-700-8.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 24448
+          "bytes": 13388
         },
         {
           "file": "chiron-700-dev.woff2",
@@ -71,55 +71,55 @@
           "file": "chiron-900-0.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 36128
+          "bytes": 39452
         },
         {
           "file": "chiron-900-1.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 27440
+          "bytes": 28092
         },
         {
           "file": "chiron-900-2.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 28540
+          "bytes": 29092
         },
         {
           "file": "chiron-900-3.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 26536
+          "bytes": 28940
         },
         {
           "file": "chiron-900-4.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 30588
+          "bytes": 32288
         },
         {
           "file": "chiron-900-5.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 30952
+          "bytes": 32668
         },
         {
           "file": "chiron-900-6.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 31760
+          "bytes": 31900
         },
         {
           "file": "chiron-900-7.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 32608
+          "bytes": 31760
         },
         {
           "file": "chiron-900-8.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 23032
+          "bytes": 12728
         },
         {
           "file": "chiron-900-dev.woff2",
@@ -140,55 +140,55 @@
           "file": "noto-serif-700-0.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 33448
+          "bytes": 35932
         },
         {
           "file": "noto-serif-700-1.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 23696
+          "bytes": 24724
         },
         {
           "file": "noto-serif-700-2.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 25128
+          "bytes": 25640
         },
         {
           "file": "noto-serif-700-3.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 23800
+          "bytes": 25496
         },
         {
           "file": "noto-serif-700-4.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 26908
+          "bytes": 28720
         },
         {
           "file": "noto-serif-700-5.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 27680
+          "bytes": 28904
         },
         {
           "file": "noto-serif-700-6.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 27828
+          "bytes": 27684
         },
         {
           "file": "noto-serif-700-7.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 28192
+          "bytes": 28040
         },
         {
           "file": "noto-serif-700-8.woff2",
           "weight": 700,
           "dev": false,
-          "bytes": 19988
+          "bytes": 10968
         },
         {
           "file": "noto-serif-700-dev.woff2",
@@ -200,55 +200,55 @@
           "file": "noto-serif-900-0.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 33296
+          "bytes": 35816
         },
         {
           "file": "noto-serif-900-1.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 23756
+          "bytes": 24820
         },
         {
           "file": "noto-serif-900-2.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 25036
+          "bytes": 25496
         },
         {
           "file": "noto-serif-900-3.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 23848
+          "bytes": 25600
         },
         {
           "file": "noto-serif-900-4.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 26932
+          "bytes": 28712
         },
         {
           "file": "noto-serif-900-5.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 27636
+          "bytes": 28876
         },
         {
           "file": "noto-serif-900-6.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 27852
+          "bytes": 27712
         },
         {
           "file": "noto-serif-900-7.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 28132
+          "bytes": 27960
         },
         {
           "file": "noto-serif-900-8.woff2",
           "weight": 900,
           "dev": false,
-          "bytes": 19968
+          "bytes": 10936
         },
         {
           "file": "noto-serif-900-dev.woff2",
