@@ -4,7 +4,7 @@ import { dieCut } from '../../view/art/creatures';
 import { tudigong, vFold } from '../../view/art/placeholders';
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, floorWiden } from '../../view/geometry';
 import type { BackdropDraw, PartSource } from '../sources';
-import { FLOOR_RECT, bakedFlap, bookCues, calmMoon, floorPage, flapSize, kraftBack, lin, paperFace, paperFibres, rad, standingPage } from './common';
+import { FLOOR_RECT, bakedFlap, bookCues, calmMoon, floorPage, flapSize, kraftBack, lin, paperFace, paperFibres, rad, standingPage, windowView } from './common';
 
 /** The page block under the floor page (a thick old book). */
 const block = () => {
@@ -73,7 +73,7 @@ export const departureBoard: PartSource = {
 // ——— Chapter 1's page art (#108): 台北車站 at 00:20 ———
 
 /** The station's gradient defs, shared by the chapter's backdrops. */
-function stationDefs(ctx: KitCtx): string {
+export function stationDefs(ctx: KitCtx): string {
   return `<defs>`
     + lin(ctx, 'sandWall', [[0, mixHex(T.sandShade, T.navy, 0.42)], [0.5, mixHex(T.sand, T.navy, 0.3)], [1, mixHex(T.sandLight, T.navy, 0.18)]])
     + lin(ctx, 'sandWallDim', [[0, mixHex(T.sandShade, C.shadow, 0.35)], [1, mixHex(T.sand, C.shadow, 0.15)]])
@@ -192,9 +192,9 @@ const car: BackdropDraw = (ctx) => {
     const r = seeded(seed + 5);
     for (let i = 0; i < 7; i++) streaks += `M${f1(g.x + r() * g.w)} ${f1(g.y + g.h * (0.55 + r() * 0.4))}h${f1(10 + r() * 26)}`;
     return `<clipPath id="${id}"><rect x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" rx="10"/></clipPath><g clip-path="url(#${id})">`
-      + `<rect x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" fill="${ref(ctx, 'sky')}"/>` + pinholes(ctx, g.x, g.y, g.w, 40, Math.round(g.w / 8), seed)
-      + `<path d="${sk.d}" fill="${mixHex(T.navyDeep, C.shadow, 0.2)}"/>${sk.windows}`
-      + `<path d="${streaks}" stroke="${C.lamp}" stroke-width="1.4" stroke-linecap="round" opacity=".45"/>`
+      + windowView(`<rect x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" fill="${ref(ctx, 'sky')}"/>` + pinholes(ctx, g.x, g.y, g.w, 40, Math.round(g.w / 8), seed)
+        + `<path d="${sk.d}" fill="${mixHex(T.navyDeep, C.shadow, 0.2)}"/>${sk.windows}`
+        + `<path d="${streaks}" stroke="${C.lamp}" stroke-width="1.4" stroke-linecap="round" opacity=".45"/>`, g.x, g.y, g.w, g.h)
       + `<path d="M${g.x} ${g.y + g.h * 0.6}L${g.x + g.w * 0.5} ${g.y}H${g.x + g.w * 0.66}L${g.x} ${g.y + g.h}Z" fill="${C.cutRim}" opacity=".07"/></g>`
       + `<rect x="${g.x - 3}" y="${g.y - 3}" width="${g.w + 6}" height="${g.h + 6}" rx="12" fill="none" stroke="${ref(ctx, 'steelG')}" stroke-width="5"/>`;
   };
@@ -245,7 +245,7 @@ const car: BackdropDraw = (ctx) => {
     + ceiling + route
     // The car's blue band under the windows, running the car's length
     + `<rect x="-20" y="270" width="${PAGE_W + 40}" height="10" fill="${T.bannan}"/><rect x="-20" y="281" width="${PAGE_W + 40}" height="2" fill="${T.bannanDeep}"/>`
-    + view(winA, 3) + view(winB, 8) + t101
+    + view(winA, 3) + view(winB, 8) + windowView(t101, 0, 0, 0, 0)
     + poster + rack + prioSign + door
     + `<rect x="-20" y="${GUTTER_Y - 30}" width="${PAGE_W + 40}" height="30" fill="${C.shadow}" opacity=".08"/>`;
   // The benches on the floor page, against the wall: blue, then the teal 博愛座; dark under them

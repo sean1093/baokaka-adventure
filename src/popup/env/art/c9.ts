@@ -5,7 +5,7 @@ import { ironEggGrannyArt } from '../../view/art/tamsui';
 import type { BackdropDraw, CutoutSource, PartSource } from '../sources';
 import { clerk } from './c1';
 import { steamPlume } from './c8';
-import { FLOOR_RECT, bakedFlap, bookCues, calmMoon, floorPage, kraftBack, lin, rad, standingPage } from './common';
+import { FLOOR_RECT, bakedFlap, bookCues, calmMoon, floorPage, kraftBack, lin, rad, standingPage, windowView } from './common';
 
 /**
  * Chapter 9 (淡水・漁人碼頭・淡江大橋, 04:40) environment art, drawn in the kit's paper language and
@@ -82,7 +82,7 @@ function dawnSky(ctx: KitCtx, horizon: number, { seed = 9, stars = 30, glow = [3
 }
 
 /** Long vellum cloud strips lit from below by the dawn: (x, y) the strip's foot centre, `w` its length. */
-function dawnClouds(ctx: KitCtx, list: readonly (readonly [number, number, number])[]): string {
+export function dawnClouds(ctx: KitCtx, list: readonly (readonly [number, number, number])[]): string {
   let body = '';
   let lit = '';
   for (const [x, y, w] of list) {
@@ -113,7 +113,7 @@ function guanyinPath(x0: number, x1: number, base: number, h: number): string {
 }
 
 /** 觀音山 in two layers of card with a band of lit mist between, the far shore (八里) at its foot. */
-function guanyin(ctx: KitCtx, x0: number, x1: number, base: number, h: number, { lights = 7, seed = 3 } = {}): string {
+export function guanyin(ctx: KitCtx, x0: number, x1: number, base: number, h: number, { lights = 7, seed = 3 } = {}): string {
   const back = guanyinPath(x0 - 30, x1 + 40, base, h);
   const front = guanyinPath(x0 + (x1 - x0) * 0.25, x1 + 80, base + 4, h * 0.42);
   const r = seeded(seed);
@@ -132,7 +132,7 @@ function guanyin(ctx: KitCtx, x0: number, x1: number, base: number, h: number, {
  * sheen streaks"): the teal water from y0 to y1, short ripples catching the light, the dawn's peach
  * broken in a column of ripples under `glowX`, and two diagonal sheen streaks of glassine over it all.
  */
-function seaWater(ctx: KitCtx, x0: number, y0: number, x1: number, y1: number, seed: number, { glowX = null as number | null, dense = 1 } = {}): string {
+export function seaWater(ctx: KitCtx, x0: number, y0: number, x1: number, y1: number, seed: number, { glowX = null as number | null, dense = 1 } = {}): string {
   const r = seeded(seed);
   let ripples = '';
   const n = Math.round(((x1 - x0) * (y1 - y0)) / 520 * dense);
@@ -325,7 +325,7 @@ function farBoat(ctx: KitCtx, x: number, y: number, s: number, flip = false): st
 }
 
 /** Mangroves (紅樹林) along a bank from x0 to x1 at y: low round crowns over a tangle of stilt roots in the water. */
-function mangroves(x0: number, x1: number, y: number, seed: number, h = 14): string {
+export function mangroves(x0: number, x1: number, y: number, seed: number, h = 14): string {
   const r = seeded(seed);
   let crowns = '';
   let roots = '';
@@ -399,7 +399,7 @@ const tamsuiLine: BackdropDraw = (ctx) => {
   const wins: [number, number][] = [[14, 112], [152, 112]];
   const clip = ctx.id('c9win');
   const winPath = wins.map(([x, w]) => `M${x + 10} ${winTop}h${w - 20}a10 10 0 0 1 10 10v${winBottom - winTop - 20}a10 10 0 0 1 -10 10h${20 - w}a10 10 0 0 1 -10 -10v${20 - winBottom + winTop}a10 10 0 0 1 10 -10z`).join('');
-  const outside = `<clipPath id="${clip}"><path d="${winPath}"/></clipPath><g clip-path="url(#${clip})">${riverView(ctx, 0, winTop, 290, winBottom)}`
+  const outside = `<clipPath id="${clip}"><path d="${winPath}"/></clipPath><g clip-path="url(#${clip})">${windowView(riverView(ctx, 0, winTop, 290, winBottom), 0, winTop, 290, winBottom - winTop)}`
     + wins.map(([x, w]) => `<path d="M${x + w * 0.15} ${winBottom}L${x + w * 0.45} ${winTop}H${x + w * 0.55}L${x + w * 0.25} ${winBottom}Z" fill="${C.glassine}" opacity=".1"/>`).join('') + `</g>`
     + `<path d="${winPath}" fill="none" stroke="${W.steelDeep}" stroke-width="5"/><path d="${winPath}" fill="none" stroke="${W.steel}" stroke-width="1.4" transform="translate(-.8 -.8)" opacity=".7"/>`;
   // The wall: cream card warming in the dawn, the line's red band under the windows, a steel kick panel

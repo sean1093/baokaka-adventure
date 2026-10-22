@@ -5,7 +5,7 @@ import { cleanerUncleArt } from '../../view/art/taipei101';
 import { ungradeSvg } from '../grade';
 import type { BackdropDraw, PartSource } from '../sources';
 import { clerk } from './c1';
-import { FLOOR_RECT, bookCues, bunting, floorPage, lin, rad, standingPage } from './common';
+import { FLOOR_RECT, bookCues, bunting, floorPage, lin, rad, standingPage, windowView } from './common';
 
 /**
  * Chapter 10 (台北101, 05:10) environment art, drawn in the kit's paper language and baked by
@@ -317,7 +317,7 @@ const xinyiLine: BackdropDraw = (ctx) => {
   const wins: [number, number][] = [[12, 92], [186, 100]];
   const clip = ctx.id('c10win');
   const winPath = wins.map(([x, w]) => `M${x + 10} ${winTop}h${w - 20}a10 10 0 0 1 10 10v${winBottom - winTop - 20}a10 10 0 0 1 -10 10h${20 - w}a10 10 0 0 1 -10 -10v${20 - winBottom + winTop}a10 10 0 0 1 10 -10z`).join('');
-  const outside = `<clipPath id="${clip}"><path d="${winPath}"/></clipPath><g clip-path="url(#${clip})">${xinyiView(ctx, 0, winTop, 300, winBottom, 111)}`
+  const outside = `<clipPath id="${clip}"><path d="${winPath}"/></clipPath><g clip-path="url(#${clip})">${windowView(xinyiView(ctx, 0, winTop, 300, winBottom, 111), 0, winTop, 300, winBottom - winTop)}`
     + wins.map(([x, w]) => `<path d="M${x + w * 0.15} ${winBottom}L${x + w * 0.45} ${winTop}H${x + w * 0.55}L${x + w * 0.25} ${winBottom}Z" fill="${C.glassine}" opacity=".12"/>`).join('') + `</g>`
     + `<path d="${winPath}" fill="none" stroke="${K.steelDeep}" stroke-width="5"/><path d="${winPath}" fill="none" stroke="${K.steelLight}" stroke-width="1.4" transform="translate(-.8 -.8)" opacity=".7"/>`;
   // The wall: cream card, the line's red band under the windows, a steel kick panel; the dawn pouring in

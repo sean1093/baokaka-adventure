@@ -16,6 +16,8 @@ import { C10_BACKDROPS, C10_PARTS } from './art/c10';
 import { END_BACKDROPS } from './art/end';
 import { BONUS_BACKDROPS, BONUS_PARTS } from './art/bonus';
 import { SCREEN_ART, type ScreenSource } from './art/screens';
+import { stripSource } from './art/strips';
+import { WINDOW_STRIPS, frameKey, stripKey } from './windowStrips';
 import type { EnvBox } from './manifest';
 
 /**
@@ -54,6 +56,12 @@ export interface CutoutSource {
   readonly chapter: number;
   readonly box: EnvBox;
   readonly draw: (ctx: KitCtx) => string;
+  /**
+   * Baked through the window matte (#193, a 月亮線 car's frame): drawn twice, its windows' view
+   * replaced once by white and once by black (`WINDOW_MATTE`), and the windows cut out with the
+   * alpha the two renders differ by
+   */
+  readonly matte?: boolean;
 }
 
 /** A backdrop drawing in page units (the stage defs are emitted for it). */
@@ -134,9 +142,17 @@ export function partSources(pages: readonly Pick<PageDef, 'parts'>[]): [string, 
 }
 
 /** The cut-out keys the registered pages place that have a drawing. */
-export function cutoutSources(pages: readonly Pick<PageDef, 'cutouts'>[]): [string, CutoutSource][] {
+export function cutoutSources(pages: readonly Pick<PageDef, 'cutouts' | 'backdrop' | 'chapter'>[]): [string, CutoutSource][] {
   const keys = new Set(pages.flatMap((p) => (p.cutouts ?? []).map((c) => c.art)));
-  return Object.entries(CUTOUT_SOURCES).filter(([key]) => keys.has(key));
+  const own = Object.entries(CUTOUT_SOURCES).filter(([key]) => keys.has(key));
+  // The 月亮線 window strips (#193): a moving car's strip, and its backdrop with the windows cut out
+  const strips: [string, CutoutSource][] = [];
+  for (const b of backdropSources(pages)) {
+    const s = WINDOW_STRIPS[b.key];
+    if (s === undefined || b.placeholder) continue;
+    strips.push([stripKey(b.key), stripSource(s)], [frameKey(b.key), { chapter: b.chapter, box: s.band, draw: b.draw, matte: true }]);
+  }
+  return [...own, ...strips];
 }
 
 /** The screens' art (#97), by key: always baked. */

@@ -1,4 +1,5 @@
 import { LIFT, kitCtx, kitDefs, liftShadow } from '../art';
+import { WINDOW_MATTE } from './art/common';
 import { envGrade, gradeSvg, keepColours } from './grade';
 import { DRAGGED, type EnvBox } from './manifest';
 import type { BackdropSource, CutoutSource, PartSource, ScreenSource } from './sources';
@@ -72,7 +73,26 @@ export function cutoutSvg(src: CutoutSource): string {
   return gradeSvg(kitDefs(ctx) + src.draw(ctx), envGrade(src.chapter), keepColours(src.chapter));
 }
 
-export const cutoutHash = (key: string, src: CutoutSource, svg = cutoutSvg(src)): string => envHash('cutout', key, svg, src.box, ENCODE.part);
+/** The two mattes a 月亮線 car's frame is rendered over (#193; `rgb()`, so the chapter grade leaves them alone). */
+export const MATTES = ['rgb(255,255,255)', 'rgb(0,0,0)'] as const;
+
+/** A matte cut-out's two renders (`WINDOW_MATTE` set for each): over white, then over black. */
+export function matteSvgs(src: CutoutSource): [string, string] {
+  const at = (fill: string) => {
+    WINDOW_MATTE.fill = fill;
+    try {
+      return cutoutSvg(src);
+    } finally {
+      WINDOW_MATTE.fill = null;
+    }
+  };
+  return [at(MATTES[0]), at(MATTES[1])];
+}
+
+/** What a cut-out's hash reads: its SVG, or both matte renders. */
+const cutoutKeySvg = (src: CutoutSource): string => (src.matte ? matteSvgs(src).join('') : cutoutSvg(src));
+
+export const cutoutHash = (key: string, src: CutoutSource, svg = cutoutKeySvg(src)): string => envHash('cutout', key, svg, src.box, ENCODE.part);
 
 /** Room around a part's authored box for its shadow before the crop. */
 export const PART_PAD = 16;

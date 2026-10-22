@@ -1,0 +1,18 @@
+/*
+ * The 月亮線 window strip (#193, `WindowStrip.tsx`): the view slides left one period, linear, for
+ * ever — a transform only. `[data-still]` (gestures.css) stops it for screenshots.
+ */
+.ws-run {
+  animation-name: ws-slide;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes ws-slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(var(--ws-period)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-run { animation: none; }
+}

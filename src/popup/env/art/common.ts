@@ -52,6 +52,20 @@ export function bookCues(ctx: KitCtx): string {
 }
 
 /**
+ * The 月亮線 window strip's matte (#193, D-104): while a car's frame overlay is baked, what its
+ * windows show outside is replaced by a flat matte, once white and once black (`rgb()`, so the
+ * chapter grade leaves it alone); the bake compares the two to cut the windows out with exact alpha
+ * (whatever hangs in front of them — a strap, a frame, the glass's sheen — keeps its own). `null`:
+ * draw the view (the backdrop itself, and every other bake).
+ */
+export const WINDOW_MATTE: { fill: string | null } = { fill: null };
+
+/** A car window's view outside, or the matte over its area while the strip's frame is baked. */
+export function windowView(view: string, x: number, y: number, w: number, h: number): string {
+  return WINDOW_MATTE.fill === null ? view : `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${WINDOW_MATTE.fill}"/>`;
+}
+
+/**
  * The moon, kept calm for the squint test (#140's note; bible § 4.2): a backlit vellum disc with
  * embossed craters and a foil ring, one small halo, and a vellum cloud drifting over its lower half.
  */
