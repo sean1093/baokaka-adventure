@@ -22,6 +22,7 @@
     "check:ui:big": "UI_TEXT=big node scripts/ui-check.mjs --serve --popup",
     "check:play": "node scripts/play-check.mjs --serve",
     "check:prod": "node scripts/prod-check.mjs --build",
+    "check:perf": "node scripts/perf-check.mjs --build",
     "qa": "npm run visual && npm run check:ui && npm run check:play"
   },
   "dependencies": {

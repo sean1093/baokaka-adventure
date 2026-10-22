@@ -24,6 +24,10 @@
  *                  (#197: at 375×667 a three-line beat hid his 「要！」 cloud). `layoutTalk` lays the
  *                  beat out to keep them clear and splits a beat too big for the page; this checks
  *                  what is drawn.
+ *   A11y           (#136) the document is `lang="zh-Hant"` and has a `<title>`; every control on
+ *                  screen has an accessible name (aria-label, its label or its text) and every button
+ *                  carries an icon (`<svg>` / `<img>`; `data-icon-text` marks a choice whose words are
+ *                  its picture), GDD § 2.11 "icons on all buttons".
  *   Reduced motion under `prefers-reduced-motion: reduce`, with the fixture live, no running CSS or
  *                  Web Animations animation changes anything but opacity (fades are allowed).
  *   Flashing       with the fixture live and motion on, no animation flashes above 3 Hz (opacity or
@@ -269,6 +273,64 @@ function collect({ waivers, artText, minText, minTextBig }) {
   const hitless = document.querySelector('[data-pagelab-fixture] [data-specimen-hitless]') !== null
     || (document.querySelector('[data-hit]') === null && document.querySelector('[data-pagelab-fixture] [data-screen]') !== null);
   return { texts, hits, art, hitless };
+}
+
+/**
+ * Screen-reader basics and R5's "icons on every button" (#136; GDD § 2.11), in the browser: the
+ * document is `lang="zh-Hant"` with a `<title>`; every control on screen (a button, a link, a
+ * switch, a slider, a tab) has an accessible name, and every button carries an icon (an `<svg>` or
+ * an `<img>` inside it, or it is one), so it reads without reading. A control can say its icon is
+ * its words (`data-icon-text`: a segmented choice whose options are the words 慢 / 普通 / 快, a
+ * volume's digits).
+ */
+export function a11yAudit() {
+  // On screen (a see-through tap layer, e.g. the chapter card's 「下一句」, is a control too: it needs a
+  // name, but it draws nothing, so no icon)
+  const present = (el) => {
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) return false;
+    for (let n = el; n instanceof Element; n = n.parentElement) {
+      const s = getComputedStyle(n);
+      if (s.display === 'none' || s.visibility === 'hidden') return false;
+    }
+    return true;
+  };
+  const drawn = (el) => {
+    for (let n = el; n instanceof Element; n = n.parentElement) if (Number(getComputedStyle(n).opacity) === 0) return false;
+    return true;
+  };
+  const nameOf = (el) => {
+    const label = el.getAttribute('aria-label');
+    if (label?.trim()) return label.trim();
+    const by = el.getAttribute('aria-labelledby');
+    if (by) {
+      const text = by.split(/\s+/).map((id) => document.getElementById(id)?.textContent ?? '').join(' ').trim();
+      if (text) return text;
+    }
+    if (el.id) {
+      const lab = document.querySelector(`label[for="${el.id}"]`);
+      if (lab?.textContent?.trim()) return lab.textContent.trim();
+    }
+    const wrap = el.closest('label');
+    if (wrap?.textContent?.trim()) return wrap.textContent.trim();
+    const title = el.querySelector(':scope > title')?.textContent ?? el.getAttribute('title');
+    if (title?.trim()) return title.trim();
+    return (el.textContent ?? '').trim();
+  };
+  const modal = document.querySelector('[aria-modal="true"]');
+  const controls = [];
+  for (const el of document.querySelectorAll('button, a[href], input, select, [role="button"], [role="link"], [role="switch"], [role="tab"], [role="slider"], [role="radio"]')) {
+    if (!present(el) || (modal && !modal.contains(el)) || el.closest('[data-pagelab-chrome]')) continue;
+    const name = nameOf(el);
+    const button = el.matches('button, [role="button"]') && drawn(el);
+    const icon = el.matches('svg, img') || el.querySelector('svg, img, [data-icon]') !== null || el.closest('[data-icon-text]') !== null;
+    controls.push({ tag: el.tagName.toLowerCase(), role: el.getAttribute('role'), name: name.slice(0, 20), named: name.length > 0, button, icon });
+  }
+  return {
+    lang: document.documentElement.lang,
+    title: document.title.trim(),
+    controls,
+  };
 }
 
 /** What covers the perch paws and the hint halo (see "Marks seen" above), in the page. */
@@ -518,6 +580,7 @@ export async function checkPopup(browser, base, viewports, report) {
     for await (const [page, name] of freshPages(open, fixtures)) {
       await openPopupFixture(page, base, name);
       await page.waitForTimeout(300);
+      const audit = await page.evaluate(a11yAudit);
       const marks = await page.evaluate(coveredMarks);
       const talk = await page.evaluate(talkCover, TALK_SLACK);
       const { texts, hits, art, hitless } = await page.evaluate(collect, {
@@ -566,6 +629,11 @@ export async function checkPopup(browser, base, viewports, report) {
       if (talk.unmarked) report.fail(`${label} talk clear: a subtitle drew no [data-subtitle-card] (the check cannot see it)`);
       else if (talk.over.length > 0) report.fail(`${label} talk clear: ${talk.over.join('; ')}`);
       else if (talk.cards > 0) pass(report, `${label}: ${talk.cards} subtitle cards clear of his thought bubble and him`);
+      const unnamed = audit.controls.filter((c) => !c.named).map((c) => `<${c.tag}${c.role ? ` role=${c.role}` : ''}>`);
+      const iconless = audit.controls.filter((c) => c.button && !c.icon).map((c) => `「${c.name}」`);
+      const doc = [audit.lang === 'zh-Hant' ? null : `lang="${audit.lang}"`, audit.title ? null : 'no <title>'].filter(Boolean);
+      if (unnamed.length === 0 && iconless.length === 0 && doc.length === 0) pass(report, `${label}: ${audit.controls.length} controls named, every button with an icon, zh-Hant, titled`);
+      else report.fail(`${label} a11y: ${[...doc, ...(unnamed.length ? [`no accessible name: ${unnamed.join(', ')}`] : []), ...(iconless.length ? [`buttons without an icon: ${iconless.join(', ')}`] : [])].join('; ')}`);
       if (viewport.name === REFERENCE_VIEWPORT) {
         const grown = hits.filter((h) => h.grown && !h.waived && !h.covered).map((h) => `"${h.label}"`);
         if (grown.length === 0) pass(report, `${label}: every page hit shape is ≥ ${MIN_HIT_PX} px after the book scale (none grown)`);

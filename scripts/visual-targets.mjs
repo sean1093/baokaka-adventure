@@ -128,6 +128,3 @@ export const popupFixtureTarget = (name) => ({
   waitFor: `[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) :is(svg[data-page], [data-screen-ready])`,
   artlab: true,
 });
-
-/** The fixture the --perf run walks around in. */
-export const PERF_FIXTURE = 'world';
