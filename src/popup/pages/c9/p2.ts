@@ -12,8 +12,7 @@ import { definePage } from '../../core/define';
  *
  * Mocha sits on the 鐵蛋 shop's signboard from the start (#137: the walk to him is the page, so there is
  * no opening hop): Baokaka sets off at once, but passing the 阿給 shop he sees the 招財貓 and reaches
- * for it. Pull its shutter down (or
- * 不要！): he turns back to Mocha, and the 背包客 is in the way. 掰掰: he waves back and gets up (「Excuse me… where is 101?」, Mocha: 「你從淡水走過去？……加油。」),
+ * for it. Pull its shutter down (or 不要！): he turns back to Mocha, and the 背包客 is in the way. 掰掰: he waves back and gets up (「Excuse me… where is 101?」, Mocha: 「你從淡水走過去？……加油。」),
  * and Baokaka climbs up to the 鐵蛋 shop under Mocha. Open its shutter: the bead on the counter, out
  * of reach. 抱抱: the 阿婆 wakes and lifts him up (「來，阿婆抱你看鐵蛋。」). The 淘氣: both shutters up
  * at once.

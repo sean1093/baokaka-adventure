@@ -1,3 +1,4 @@
+import { BONUS_CHAPTER, ENDING_CHAPTER } from '../content/chapters';
 import { SCRIPT } from '../content/script';
 import { lintPage, type LintResult } from '../core/lint';
 import { replay } from '../core/replay';
@@ -292,10 +293,10 @@ export function reportFailed(rows: readonly PageReport[], totalMs: number, budge
   return totalMs >= budgetMs || rows.some((r) => r.failures.length > 0);
 }
 
-/** A page's short label in play order: `1-4`, `E` for page E (chapter 11), `B` for the bonus page (chapter 12). */
+/** A page's short label in play order: `1-4`, `E` for page E (`ENDING_CHAPTER`), `B` for the bonus page (`BONUS_CHAPTER`). */
 export function pageLabel(r: Pick<PageReport, 'id' | 'chapter'>): string {
-  if (r.chapter === 11) return 'E';
-  if (r.chapter === 12) return 'B';
+  if (r.chapter === ENDING_CHAPTER) return 'E';
+  if (r.chapter === BONUS_CHAPTER) return 'B';
   return `${r.chapter}-${/p(\d+)$/.exec(r.id)?.[1] ?? '?'}`;
 }
 
@@ -326,7 +327,7 @@ export function formatCurve(rows: readonly PageReport[]): string {
   const chapters = [...new Set(rows.map((r) => r.chapter))];
   const byChapter = chapters.map((c) => {
     const rs = rows.filter((r) => r.chapter === c);
-    const name = c === 0 ? 'P' : c === 11 ? 'E' : c === 12 ? 'B' : String(c);
+    const name = c === 0 ? 'P' : c === ENDING_CHAPTER ? 'E' : c === BONUS_CHAPTER ? 'B' : String(c);
     return { name, rs, diff: mean(rs.map((r) => r.difficulty)), par: mean(rs.map((r) => r.par ?? 0)), states: rs.reduce((a, r) => a + r.states, 0) };
   });
   out.push(
