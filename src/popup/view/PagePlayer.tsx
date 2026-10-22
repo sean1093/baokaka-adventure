@@ -433,7 +433,7 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       if (!usedRef.current.includes(word)) {
         usedRef.current = [...usedRef.current, word];
         setUsed(usedRef.current);
-        const joke = firstUseLine(def, word);
+        const joke = firstUseLine(def, word, frame.state.baby.linked);
         if (joke !== null) lines.push(...loadLines([joke]));
       }
       onSayRef.current?.(word, WORD_MOTIF[word]);

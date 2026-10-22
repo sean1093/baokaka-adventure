@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { REDUCE_MOTION_CLASS, ReducedMotionContext, usePrefersReducedMotion } from '../../../components/motion';
-import { SOON_LINES, cardLines, chapterName, endLines, hasNextChapter, loadLines, UI } from '../../content';
+import { SOON_LINES, cardLines, chapterName, endGroups, hasNextChapter, loadLines, UI } from '../../content';
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
 import { COVER, chapterStickers, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
@@ -122,6 +122,10 @@ const SPEEDS: readonly TickSpeed[] = ['slow', 'normal', 'fast'];
 export const GRAB_HOLD_MS = 900;
 /** Events that may unlock WebAudio: the first that counts as a user activation wins (#105) */
 const UNLOCK_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'keydown'] as const;
+
+/** A chapter's end lines as beats: each of its groups starts a beat (#133), split further to fit the card. */
+const endQueue = (chapter: number, perBeat: number): TalkQueue =>
+  endGroups(chapter).reduce((q, group) => enqueue(q, loadLines(group), perBeat), EMPTY_TALK);
 /** The chapter card hangs this far below the safe area's top (#102) */
 const BOARD_TOP = 14;
 
@@ -378,7 +382,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   }, [base, reg, opening, startTurn]);
 
   // ——— The chapter's end (#107): its lines over the finished spread, then the tray's new coin ———
-  const [endTalk, setEndTalk] = useState<TalkQueue>(() => (endLinesOf === undefined ? EMPTY_TALK : enqueue(EMPTY_TALK, loadLines(endLines(endLinesOf)), cardPerBeat)));
+  const [endTalk, setEndTalk] = useState<TalkQueue>(() => (endLinesOf === undefined ? EMPTY_TALK : endQueue(endLinesOf, cardPerBeat)));
   const endTalkRef = useRef(endTalk);
   endTalkRef.current = endTalk;
   // A fixture's end lines (#107) fill the tray when tapped through, as the game's do
@@ -417,10 +421,10 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
           sinkRef.current([{ cue: 'dropCoin', delay: 0.35 }, { cue: 'sparkle', delay: 0.45 }]);
           endTimer.current = window.setTimeout(resolve, reduced ? TRAY_FILL_MS / 2 : TRAY_FILL_MS);
         };
-        const lines = loadLines(endLines(chapter));
-        if (lines.length === 0) return fill();
+        const queue = endQueue(chapter, cardPerBeatRef.current);
+        if (queue.beats.length === 0) return fill();
         endDone.current = fill;
-        setEndTalk(enqueue(EMPTY_TALK, lines, cardPerBeatRef.current));
+        setEndTalk(queue);
       }),
     [reduced],
   );

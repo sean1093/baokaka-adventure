@@ -9,7 +9,7 @@
  */
 export { SCRIPT, SPEAKERS, loadLine, loadLines, type ScriptLine, type Speaker, type SpeakerAnchor, type TalkLine } from './script';
 export { BABY_BARKS, MOCHA_BARKS, type BabyBark, type MochaBark } from './barks';
-export { CHAPTERS, SOON_LINES, cardLines, chapterInfo, chapterLine, chapterName, endLines, hasNextChapter, stickersIn, type ChapterInfo } from './chapters';
+export { CHAPTERS, SOON_LINES, cardLines, chapterInfo, chapterLine, chapterName, endGroups, endLines, hasNextChapter, stickersIn, type ChapterInfo } from './chapters';
 export { UI } from './ui';
 export { HINT_LINES, HINT_LINE_MAX, type HintLineKey } from './hints';
 export { GROWTH_KEY, LEARN_BEATS, WORD_LABEL, cardLine, learnLineKeys, type GrowthKey, type LearnBeat, type LearnKey } from './words';

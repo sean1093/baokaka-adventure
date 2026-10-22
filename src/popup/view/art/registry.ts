@@ -76,6 +76,8 @@ const CREATURES: Readonly<Record<string, CreatureArt>> = {
   // 淡水 (#132, `tamsui.ts`): 9-1's sparrows on the sill, the gulls on 9-5's cables and 9-6's boat (origami)
   'c9/sparrows': sparrows,
   'c9/gulls': gulls,
+  // 台北101 (#133): 10-1's sleeping commuter wears 2-1's commuter until the chapter's art (#134)
+  'c10/commuter': commuter,
 };
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';

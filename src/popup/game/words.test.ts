@@ -88,6 +88,10 @@ describe('the learn beat and the one-time translation', () => {
     expect(firstUseLine(later, 'beep')).toBe('learn.beep.mocha');
     // A word with no follow-up says nothing more on its own learn page (its beat just played)
     expect(firstUseLine({ ...c1p3, learns: { word: 'bye', when: { event: 'beep' } } }, 'bye')).toBeNull();
+    // Linked (一起, #133): 一起's own translation, then none — 10-6's 抱抱 is 咻咻's, not 「載我一程」
+    expect(firstUseLine(later, 'together', true)).toBe('learn.together.mocha');
+    expect(firstUseLine(later, 'hug', true)).toBeNull();
+    expect(firstUseLine(later, 'hug')).toBe('learn.hug.mocha');
   });
 });
 

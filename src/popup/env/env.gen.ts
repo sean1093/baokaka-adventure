@@ -758,6 +758,84 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "6dba7a3af1872a30"
+    },
+    "c10/xinyi-line": {
+      "file": "backdrops/c10/xinyi-line",
+      "bytes": 102748,
+      "chapter": 10,
+      "grade": [1.515, 1.368, 1.185],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "d4842e509be0eb5b"
+    },
+    "c10/elevator": {
+      "file": "backdrops/c10/elevator",
+      "bytes": 102748,
+      "chapter": 10,
+      "grade": [1.515, 1.368, 1.185],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "d4842e509be0eb5b"
+    },
+    "c10/tower-sections": {
+      "file": "backdrops/c10/tower-sections",
+      "bytes": 102748,
+      "chapter": 10,
+      "grade": [1.515, 1.368, 1.185],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "d4842e509be0eb5b"
+    },
+    "c10/damper": {
+      "file": "backdrops/c10/damper",
+      "bytes": 102748,
+      "chapter": 10,
+      "grade": [1.515, 1.368, 1.185],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "d4842e509be0eb5b"
+    },
+    "c10/roof-party": {
+      "file": "backdrops/c10/roof-party",
+      "bytes": 102748,
+      "chapter": 10,
+      "grade": [1.515, 1.368, 1.185],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "d4842e509be0eb5b"
+    },
+    "c10/observation-deck": {
+      "file": "backdrops/c10/observation-deck",
+      "bytes": 102748,
+      "chapter": 10,
+      "grade": [1.515, 1.368, 1.185],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "d4842e509be0eb5b"
     }
   },
   "parts": {
@@ -3928,6 +4006,50 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "666edd84a9b49574"
+    },
+    "c10/balloons": {
+      "preset": "blowable",
+      "box": {
+        "x": -31,
+        "y": -90,
+        "w": 63,
+        "h": 126
+      },
+      "states": {
+        "down": {
+          "file": "parts/c10/balloons.down",
+          "bytes": 5610
+        },
+        "up": {
+          "file": "parts/c10/balloons.up",
+          "bytes": 6512
+        }
+      },
+      "source": "4c7b130c335953eb"
+    },
+    "c10/damper": {
+      "preset": "blowable",
+      "box": {
+        "x": -126,
+        "y": -171,
+        "w": 212,
+        "h": 251
+      },
+      "states": {
+        "left": {
+          "file": "parts/c10/damper.left",
+          "bytes": 10738
+        },
+        "centre": {
+          "file": "parts/c10/damper.centre",
+          "bytes": 8198
+        },
+        "right": {
+          "file": "parts/c10/damper.right",
+          "bytes": 10672
+        }
+      },
+      "source": "a800cc99410ce3c5"
     }
   },
   "cutouts": {

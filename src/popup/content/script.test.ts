@@ -3,7 +3,7 @@ import { contrastRatio } from '../../art/contrast';
 import { POPUP } from '../../art/palette';
 import { MAX_LINE_CHARS, lintPage, textLength } from '../core/lint';
 import { PAGES, pageById } from '../pages';
-import { CHAPTERS, SOON_LINES, cardLines, endLines, hasNextChapter } from './chapters';
+import { CHAPTERS, SOON_LINES, cardLines, endGroups, endLines, hasNextChapter } from './chapters';
 import { UI } from './ui';
 import { SPEAKER_INK } from '../view/talk/Talk';
 import { BABY_BARKS, MOCHA_BARKS } from './barks';
@@ -70,7 +70,11 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
     expect(endLines(7)).toEqual(['c7p6.end.1']);
     expect(endLines(8)).toEqual(['c8p6.end.1']);
     expect(endLines(9)).toEqual(['c9p6.end.1']);
-    expect(endLines(10)).toEqual([]);
+    expect(endLines(10)).toEqual(['c10p6.end.1', 'c10p6.end.2', 'c10p6.end.3', 'c10p6.end.4']);
+    // Chapter 10's end is two beats (#133): 「一起。」 with Mocha's translation, then the sunrise and 廣播姊姊
+    expect(endGroups(10)).toEqual([['c10p6.end.1', 'c10p6.end.2'], ['c10p6.end.3', 'c10p6.end.4']]);
+    expect(endGroups(1)).toEqual([endLines(1)]);
+    expect(endGroups(11)).toEqual([]);
     expect(SOON_LINES.map((k) => SCRIPT[k].who)).toEqual(['nar']);
     expect(hasNextChapter(1)).toBe(true);
     expect(hasNextChapter(10)).toBe(false);
