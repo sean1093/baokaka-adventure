@@ -68,3 +68,35 @@ None of these was fixed in #110. The sheet's part C has a line for each.
 | 10 | **Fixed** | A tap on a perch Mocha can't reach shakes the paw, and Mocha turns to it and says 「喵？」. On first play, 4 s after the car comes down, Mocha taps his paw on the panel, shimmers once and asks 「再按一次？」. |
 | 11 | **Fixed** (cheap) | The pigeon faces the 雞腿 once it lands beside it. Whether that reads as "wants it" is still a watch-point. |
 | 12 | **Fixed** | No line shows under the photo moment, and a bubble riding a character never leaves the page. |
+
+## Later chapters (#137), 2026-10-22
+
+The engineer on #137 played a sample of the later chapters the same way, to look for confusing pages before the family beta (#138): the **production build** (`vite preview`) at **390 × 844** (2× DPR, touch through CDP, Chromium), each page entered from the cover's 「繼續」 with a save that had every earlier page solved, played **from screenshots**, touching what looked touchable, 提示 only when stuck. 13 pages: 7-4 → 8-5 in a row, then 9-4 → 9-6 and 10-3 → 10-4. The same limits apply as above (the player had read the GDD outlines; silent; a model's think time per step), and a few of its screenshots were lost mid-run, so the touch counts for 7-4 – 8-4 are from its command log. Screenshots: [`docs/screenshots/137/`](../screenshots/137/).
+
+| Page | Par | Gestures | 提示 | What happened |
+|---|---|---|---|---|
+| 7-4 水晶車廂 | 3 | 6 | — | Opened all three clouds before the one that mattered, 哇！ the lamp, folded the seat (twice). |
+| 7-5 大茶壺 | 4 | 7 | — | Sent Mocha across before the pool was drained (he won't: wet, C7), then turned the teapot both ways to find the levels. |
+| 7-6 菜園的芹菜 | 4 | 5 | — | 不要！ the moon, Mocha into the basket, 抱抱 the bear, Mocha to the fence post; the photo. |
+| 8-1 新北投支線 | 3 | 3 | — | Par play. |
+| 8-2 地熱谷 | 4 | 5 | — | One valve the wrong way first. |
+| 8-3 呼呼 | 2 | 2 | — | The learn beat and 咻—— read at once. |
+| 8-4 北投圖書館 | 4 | 4 | — | Par play. |
+| 8-5 大浴池 | 5 | ≈ 8 | L1, L2 | Two drags on the tap wheel did nothing (a direction it couldn't go, or too short to reach the next stop); L2's arrow showed the turn. Half → full → half again then read naturally. [01](../screenshots/137/01-c8p5-l2-turn-hint.jpg), [02](../screenshots/137/02-c8p5-full-tub-drifts.jpg) |
+| 9-4 漁人碼頭 | 4 | 6 | — | Tapped the kiosk's paw at high tide first (the stones under water: Mocha can't); the dial's dawn showed the stones. [03](../screenshots/137/03-c9p4-low-tide-stones.jpg) |
+| 9-5 淡江大橋 | 4 | 4 | — | 飛機！ the gulls, then Sol Sol La read straight off the 維修平台 sign. Clear. |
+| 9-6 碼頭的聽診器 | 5 | ≈ 6 | L1, L2, L3 | Mocha into the basket and 咻—— swung it aboard; a second 咻—— did nothing. L2 「試試看說話」 names no word (by design: L3 shows it); L3 said 飛機！ to the gulls. [04](../screenshots/137/04-c9p6-l2-say-something.jpg), [05](../screenshots/137/05-c9p6-photo.jpg) |
+| 10-3 八節 | 5 | 3 + 4 | L1, L2, L3 ×4 | Turned the crank, put Mocha on the upper rim and cranked again: a step backwards (L1 sent Mocha back to the window-washer's cradle). The sections' facets and ledges are hard to read as one machine; L3 finished it. [06](../screenshots/137/06-c10p3-hint-undo-mocha.jpg) |
+| 10-4 阻尼球 | 5 | 1 + 3 | L1, L2, L3 ×3 | The first 咻—— swung the sphere (with Mocha) out to the far side, not back to him; that each 咻—— moves it one stop on, and from the far side all the way back, is only learned by trying. [07](../screenshots/137/07-c10p4-l2-say-again.jpg) |
+
+**The pattern:** every par-5 page it played needed 提示 (8-5, 9-6, 10-3, 10-4), and no page at par ≤ 4 did. The difficulty curve ([`docs/project/difficulty.md`](../project/difficulty.md)) has 5 pages at par 5, all in chapters 8–10 (8-5, 8-6, 9-6, 10-3, 10-4); a sixth, 9-2, sat in a page-2 slot and #137 tuned it to par 4 ([08](../screenshots/137/08-c9p2-tuned-start.jpg), [09](../screenshots/137/09-c9p2-tuned-cat.jpg)).
+
+**Friction to watch in the beta** (none was a bug; nothing cheap to fix without guessing):
+
+| # | Where | What | Severity |
+|---|---|---|---|
+| 13 | 8-5, 9-4, 7-5 (wheels that set a level) | Which way the wheel turns the level up or down is learned by trying; a turn past the last stop does nothing visible. | Medium |
+| 14 | 10-4 | The pendulum's rule (one stop on per 咻——, then all the way back) is discovered, not shown. | Medium |
+| 15 | 10-3 | The three sections, their ledges and which one Mocha holds read as separate things; the hardest page of the book (by design, D-97). | Medium |
+| 16 | 9-6 (any L2 on a word) | L2 says 「試試看說話」 without the word; L3 shows it. | Low |
+| 17 | Sticker card → next page | The card turns to the next page on its own after a few seconds; a tap meant for the card that lands just after it left acts on the new page (here, on 10-4's sphere perch). A guard would need a design call on how long to ignore the first touch. | Low |
