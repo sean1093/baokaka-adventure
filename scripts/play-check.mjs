@@ -27,7 +27,8 @@
  * and 5-1 (#121), `photo-spread-c5` plays 5-6 into chapter 6's card and 6-1 (#123),
  * `photo-spread-c6` plays 6-6 into chapter 7's card and 7-1 (#125), `photo-spread-c7` plays 7-6 into
  * chapter 8's card and 8-1 (#129), `photo-spread-c8` plays 8-6 into chapter 9's card and 9-1 (#131),
- * and `photo-spread-c9` plays 9-6 through chapter 10's 「未完待續」 card to the 目錄.
+ * `photo-spread-c9` plays 9-6 into chapter 10's card and 10-1 (#133), and `photo-spread-c10` plays
+ * 10-6 (一起, the first steps, the hug) through the album and the four end lines to the 目錄.
  * A `drag` through more than two points follows them in turn (1-4's turntable is turned on its rim).
  * `{ heard: [cues] }` checks the shell played those sounds (#105; the dev build lists them in
  * `window.__popupSounds`): `prologue-card` hears the board drop, flip, lift and the pop-ups land.
@@ -946,6 +947,142 @@ const SCENARIOS = {
     { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
     { tapEl: '[data-shutter]', paused: true },
   ],
+  // Chapter 10 「離天空最近的地方」 (#133). 10-1 「信義線」: 廣播姊姊's line, Mocha along the racks to the
+  // front (he stops at the door between the cars), 嗶！ (it opens), 掰掰 (the sleeper's legs tucked
+  // up), and under the front window 咻—— (the balloons up: 101 and 「ㄅㄚ！」), the bead off the sill
+  c10p1: [
+    { readTalk: true },
+    { wait: 'cuddling' },
+    { tap: [300, 372] },
+    { settle: 1500 },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="beep"]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="bye"]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { wait: 'cuddling' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+    { expect: '[data-subtitle], [data-narration]', timeout: 6_000 },
+    { readTalk: true },
+  ],
+  // 10-2 「37秒電梯」: Mocha into the car at 89F (it takes him down; Baokaka crawls in), a tap on Mocha
+  // (up: the 37 seconds and the 店員小哥 at 89F), then 抱抱 (the 清潔阿伯 carries him to the window)
+  c10p2: [
+    { wait: 'reaching' },
+    { tap: [236, 198] },
+    { settle: 2500 },
+    { wait: 'cuddling' },
+    { tapEl: '[data-actor="mocha"]' },
+    { expect: '[data-subtitle], [data-narration]', timeout: 6_000 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+  ],
+  // 10-3 「八節」: the crank tapped round twice (all three sections turn), Mocha onto the top rim, the
+  // crank once (the bottom comes with it), Mocha onto the bottom rim, the crank once (the top comes
+  // with it): the ledges in line, and he climbs to the bead
+  c10p3: [
+    { wait: 'reaching' },
+    { tap: [66, 374] },
+    { settle: 500 },
+    { tap: [66, 374] },
+    { settle: 500 },
+    { tap: [344, 300] },
+    { settle: 1500 },
+    { tap: [66, 374] },
+    { settle: 500 },
+    { tap: [344, 420] },
+    { settle: 1500 },
+    { tap: [66, 374] },
+  ],
+  // 10-4 「阻尼球」: Mocha onto the sphere, then 咻—— four times: out with the cat, back to him (he
+  // climbs on), the centre, out to the far side (he climbs off to the bead)
+  c10p4: [
+    { wait: 'reaching' },
+    { tap: [218, 432] },
+    { settle: 2000 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+    { settle: 1200 },
+    { readTalk: true },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+    { settle: 2500 },
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+    { settle: 1200 },
+    { readTalk: true },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+  ],
+  // 10-5 「咻咻的派對」: the party's lines, 不要！ to Mocha (he cries: the learn beat and 一起's card),
+  // 一起 (Mocha hops down), the puddle tapped (Mocha walks through it for him; 咻咻 comes down), 抱抱
+  c10p5: [
+    { readTalk: true },
+    { wait: 'cuddling' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="no"]', paused: true },
+    { settle: 1200 },
+    { readTalk: true },
+    { expect: '[data-word-card], [data-subtitle], [data-narration]', timeout: 15_000 },
+    { readTalk: true },
+    { tapEl: '[data-word-card]', paused: true, optional: true },
+    { readTalk: true },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="together"]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { tap: [160, 486] },
+    { settle: 2500 },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+  ],
+  // 10-6 「離天空最近的地方」: to the rail's end, 一起, the deck's far side tapped (Mocha waits there;
+  // the first steps, each line holding the world), 抱抱 (咻咻 lets go of the 金鎖片), the photo
+  // moment, 咔嚓, the grab
+  c10p6: [
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="together"]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { tap: [298, 480] },
+    { expect: '[data-subtitle], [data-narration]', timeout: 8_000 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    // The photo of the first steps: Mocha beside him, 咻咻 and the 金鎖片 in the frame
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    // 咻咻 lets go: its lines hold the world until read, then he picks up the 金鎖片
+    { expect: '[data-subtitle], [data-narration]', timeout: 6_000 },
+    { readTalk: true },
+  ],
   // A tap anywhere reads the lines on (#183): 1-1's opening announcements, cleared by a tap on the
   // sway tab — which must not move it — then the map's punchline cleared by a tap on empty floor
   'talk-anywhere-c1p1': [
@@ -1357,9 +1494,51 @@ const SCENARIOS = {
     { tapEl: '[data-end-next]' },
     { expect: '[data-tray-fill="9"]', timeout: 3_000 },
     { expect: '[data-sticker-card]', timeout: 5_000 },
-    { expect: '[data-chapter-board="10"][data-card-soon]', timeout: 8_000 },
-    { expect: '[data-card-talk] [data-card-line="nar"]', timeout: 6_000 },
+    // Chapter 10 is built (#133): its card, 廣播姊姊 first, then 10-1 opens
+    { expect: '[data-chapter-board="10"]', absent: '[data-card-soon]', timeout: 8_000 },
+    { expect: '[data-card-talk] [data-card-line="pa"]', timeout: 6_000 },
     { tapEl: '[data-card-next]' },
+  ],
+  // Chapter 10's spread (#133) in the game shell: 10-6 played through the first steps (the photo moment
+  // frames them, Mocha beside him; 咔嚓), the hug, the album, 放進相簿, the four end lines, the sticker
+  // card, the 目錄 (no chapter after 10: page E is #135's; the tray's nine coins are full already)
+  'photo-spread-c10': [
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="together"]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { tap: [298, 480] },
+    { expect: '[data-subtitle], [data-narration]', timeout: 8_000 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    // The photo of the first steps: Mocha beside him, 咻咻 and the 金鎖片 in the frame
+    { expect: '[data-photo-moment][data-photo-mocha]', timeout: 10_000 },
+    { tapEl: '[data-shutter]', paused: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { settle: 1500 },
+    { readTalk: true },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="hug"]', paused: true },
+    { expect: '[data-subtitle], [data-narration]', timeout: 6_000 },
+    { readTalk: true },
+    { expect: '[data-screen="album"] [data-album-note="mocha"]', timeout: 10_000 },
+    { tapEl: '[data-button="keep"]' },
+    // 「一起。」「他說：『一起過生日。』」, then the sun and 廣播姊姊's 「本列車直達：寶咖咖的家。」
+    { expect: '[data-end-layer] [data-card-line="baby"]', timeout: 5_000 },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-end-layer] [data-card-line="pa"]', timeout: 5_000 },
+    { tapEl: '[data-end-next]' },
+    // The 抓周 tray's nine coins are chapters 1–9's treasures (`treasuresFound`): the 金鎖片 adds none
+    { expect: '[data-sticker-card]', absent: '[data-tray-fill]', timeout: 5_000 },
   ],
   // The whole album (#113, GDD § 2.9 album screen), live from the cover's 相簿 at chapter 2: the page
   // arrows turn a leaf at a time (3 with its photo, 4 a placeholder), a one-finger swipe across the
@@ -1389,7 +1568,7 @@ const SCENARIOS = {
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-popup-page="c7p1"]', 'photo-spread-c7': '[data-popup-page="c8p1"]', 'photo-spread-c8': '[data-popup-page="c9p1"]', 'photo-spread-c9': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-popup-page="c7p1"]', 'photo-spread-c7': '[data-popup-page="c8p1"]', 'photo-spread-c8': '[data-popup-page="c9p1"]', 'photo-spread-c9': '[data-popup-page="c10p1"]', 'photo-spread-c10': '[data-screen="contents"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
 const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
 
@@ -1406,6 +1585,7 @@ const SCENARIO_URLS = {
   'photo-spread-c7': '#/pagelab?fixture=spread-shell-c7',
   'photo-spread-c8': '#/pagelab?fixture=spread-shell-c8',
   'photo-spread-c9': '#/pagelab?fixture=spread-shell-c9',
+  'photo-spread-c10': '#/pagelab?fixture=spread-shell-c10',
   'prologue-card': '#/',
   'album-flip': '#/pagelab?fixture=album-multi',
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',

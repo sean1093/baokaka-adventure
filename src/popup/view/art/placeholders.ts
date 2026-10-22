@@ -518,7 +518,8 @@ export function origamiBird(ctx: KitCtx): string {
  * vest, under his red 員外帽 (#123); `叢林帽` is chapter 7's khaki jungle hat (a zookeeper's pith
  * helmet, its brim all round and a leaf-green band; #125); `毛巾` is chapter 8's folded white bath towel on
  * his head, the way the hot-spring 阿伯 wear it (#129); `船長帽` is chapter 9's white captain's cap with a
- * navy peak and a gold anchor badge (#131).
+ * navy peak and a gold anchor badge (#131); `清潔帽` is chapter 10's pale-blue cotton cleaner's cap with a
+ * short peak and a white band, the kind 101's cleaning crew wear (#133, a placeholder until #134).
  */
 export function tudigong(ctx: KitCtx, hat = ''): string {
   const face = `<circle r="7.5" fill="${S.skin}"/>`
@@ -528,7 +529,11 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
     + `<circle cx="-4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/><circle cx="4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/>`;
   // Chapter 5's 鴨舌帽 (#121; #122): a night-market duck-bill cap worn peak forward — a two-tone crown
   // (a cream front panel, a vermilion back), a button on top, a long dark peak jutting out
-  const cap = hat === '船長帽'
+  const cap = hat === '清潔帽'
+    // Chapter 10's 清潔帽 (#133): a soft pale-blue cotton cap, a white band, a short peak
+    ? `<path d="M-8.2 -3.2q-.6 -7 8.2 -7.4q8.8 .4 8.2 7.4z" fill="${C.noteSky}"/><path d="M-8.4 -4.2h16.8v1.8h-16.8z" fill="${C.standeeCard}"/>`
+      + `<path d="M3.4 -2.6q5.4 -.4 8 1.4l-8 .5z" fill="${mixHex(C.noteSky, C.printDark, 0.35)}"/><circle cx="0" cy="-10.4" r="1.1" fill="${C.standeeCard}"/>`
+    : hat === '船長帽'
     // Chapter 9's 船長帽 (#131): a white captain's cap, a navy band and peak, a gold anchor badge
     ? `<path d="M-8.4 -3.4q-1 -6.6 8.4 -7q9.4 .4 8.4 7z" fill="${C.standeeCard}"/><path d="M-8.6 -4.4h17.2v2.2h-17.2z" fill="${C.nightCardDeep}"/>`
       + `<path d="M3 -2.4q7 -.6 10.6 1.8l-10.6 .6z" fill="${C.printDark}"/><path d="M0 -8.4v3M-1.6 -6.8h3.2M-1.8 -5.6q1.8 1.6 3.6 0" stroke="${C.gold}" stroke-width=".9" fill="none" stroke-linecap="round"/>`

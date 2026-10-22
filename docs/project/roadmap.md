@@ -84,7 +84,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [130](https://github.com/sean1093/baokaka-adventure/issues/130) | Chapter 8 art: 北投 pop-up pages, parts, creatures, 土地公 (頭上一條毛巾) and the 算盤 photo | art, content, m4 | #129, #126 | done (#206) |
 | [131](https://github.com/sean1093/baokaka-adventure/issues/131) | Chapter 9 pages: 「河的盡頭是海」 淡水・漁人碼頭・淡江大橋 — full specs, then data for 9-1…9-6, solver-green | content, m4 | #127, #129 | done (#207) |
 | [132](https://github.com/sean1093/baokaka-adventure/issues/132) | Chapter 9 art: 淡水・漁人碼頭・淡江大橋 pop-up pages, parts, creatures, 土地公 (船長帽) and the 聽診器 photo | art, content, m4 | #131, #130 | done (#208) |
-| [133](https://github.com/sean1093/baokaka-adventure/issues/133) | Chapter 10 pages: 「離天空最近的地方」 台北101 — full specs, then data for 10-1…10-6, solver-green | content, m4 | #128, #131 | todo |
+| [133](https://github.com/sean1093/baokaka-adventure/issues/133) | Chapter 10 pages: 「離天空最近的地方」 台北101 — full specs, then data for 10-1…10-6, solver-green | content, m4 | #128, #131 | in progress |
 | [134](https://github.com/sean1093/baokaka-adventure/issues/134) | Chapter 10 art: 台北101 pop-up pages, parts, creatures, 土地公 (清潔帽) and the 金鎖片 photo | art, content, m4 | #133, #132 | todo |
 | [135](https://github.com/sean1093/baokaka-adventure/issues/135) | Ending: page E 「抓周」, 05:30 home scene, credits over album photos, post-credits 土地公, bonus page 「象山的日出」 | content, art, ui, m4 | #133, #134, #113 | todo |
 | **M5 · Polish and release** | | | | |

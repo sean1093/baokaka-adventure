@@ -115,6 +115,15 @@ describe('mochaInFrame: +M (§ 2.9)', () => {
     expect(mochaInFrame(spread, { ...onAwning, mocha: { ...onAwning.mocha, perch: null, path: ['clockTop', 'canopyTop'], to: 'canopy' } })).toBe(false);
     expect(mochaInFrame({ ...spread, photoRect: undefined }, onAwning)).toBe(false);
   });
+
+  test('linked (一起, #133): standing still on a floor node in the frame he is in it; walking he is not', () => {
+    const steps = registry.pageById('c10p6')!;
+    const waiting = states(steps, steps.solution.slice(0, -1)).at(-1)!;
+    expect(waiting.mocha).toMatchObject({ perch: null, floorNode: 'G', path: [] });
+    expect(mochaInFrame(steps, waiting)).toBe(true);
+    expect(mochaInFrame(steps, { ...waiting, mocha: { ...waiting.mocha, floorNode: 'S2', path: ['S2', 'G'] } })).toBe(false);
+    expect(mochaInFrame(steps, { ...waiting, mocha: { ...waiting.mocha, floorNode: 'R2' } })).toBe(false);
+  });
 });
 
 describe('albumNotes (§ 5.6)', () => {
@@ -174,7 +183,7 @@ describe('the album\'s pages', () => {
     expect(spreadPage(7, registry)?.id).toBe('c7p6');
     expect(spreadPage(8, registry)?.id).toBe('c8p6');
     expect(spreadPage(9, registry)?.id).toBe('c9p6');
-    expect(spreadPage(10, registry)).toBeUndefined();
+    expect(spreadPage(10, registry)?.id).toBe('c10p6');
   });
 
 });

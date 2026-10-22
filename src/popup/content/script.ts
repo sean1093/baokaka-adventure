@@ -276,6 +276,34 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c9p5.mocha.1': { who: 'mocha', text: '生日快樂……明天才是啦。' },
   // § 5.2 9-6 end
   'c9p6.end.1': { who: 'nar', text: '找到了！抓周寶物——聽診器。' },
+  // § 5.2 Ch10 「離天空最近的地方」 05:10: the card plays 1–2; 10-1 plays 3–4 as the balloons lift off
+  // the car's front window and 101 is in it (「He says ㄅㄚ！ at the 101 view」, § 4.4)
+  'c10.intro.1': { who: 'pa', text: '下一站，台北101。' },
+  'c10.intro.2': { who: 'nar', text: '101，是台北最高的地方。' },
+  'c10.intro.3': { who: 'baby', text: 'ㄅㄚ！' },
+  'c10.intro.4': { who: 'mocha', text: '對，101。咻咻在最上面。' },
+  // 10-1: 哇！ at the 101 in the window (the 淘氣)
+  'c10p1.mocha.1': { who: 'mocha', text: '……他在跟101打招呼。' },
+  // 10-2: the first ride up with him (the 37 seconds), then § 5.3's 店員小哥 chapter 10 cameo at 89F
+  'c10p2.ride.1': { who: 'nar', text: '三十七秒，從五樓到八十九樓。' },
+  'c10p2.clerk.1': { who: 'clerk', text: '叮咚～歡迎光臨！' },
+  'c10p2.clerk.2': { who: 'mocha', text: '……101也是你們的？' },
+  'c10p2.clerk.3': { who: 'clerk', text: '我們在101也有分店。' },
+  // 10-2: the 清潔阿伯 lifts him across the open floor to the window (抱抱)
+  'c10p2.uncle.1': { who: 'npc', label: '清潔阿伯', text: '來，阿伯抱你去窗邊看。' },
+  // 10-3: every section in line, the 101 smiles (the 淘氣)
+  'c10p3.mocha.1': { who: 'mocha', text: '……整棟歪一邊。101在笑。' },
+  // 10-4: five swings of the damper (the 淘氣)
+  'c10p4.mocha.1': { who: 'mocha', text: '……我暈了。' },
+  // 10-5 咻咻的派對: the page opens on the sad party (§ 5.2 10-5)
+  'c10p5.party.1': { who: 'nar', text: '頂樓上，有一個小小的派對。' },
+  'c10p5.party.2': { who: 'shushu', text: '這些……都是咻咻吹來的。' },
+  'c10p5.party.3': { who: 'shushu', text: '可是，沒有人來。' },
+  // 10-5: hugged, 咻咻 lets go of the bead and floats up toward the deck
+  'c10p5.hug.1': { who: 'shushu', text: '……你們，來了？' },
+  'c10p5.hug.2': { who: 'nar', text: '小雲放下珠珠，飄到更高的地方。' },
+  // 10-5: all four of the cake's candles lit, led round 咻咻 (the 淘氣)
+  'c10p5.mocha.1': { who: 'mocha', text: '繞一圈。……蠟燭都亮了。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

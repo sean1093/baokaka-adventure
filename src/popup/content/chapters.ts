@@ -37,7 +37,7 @@ export const CHAPTERS: readonly ChapterInfo[] = [
   { chapter: 7, title: '纜車上的月亮', landmark: '貓空', station: '貓空', time: '03:30', next: '動物園', pages: 6, pageTitles: ['往動物園', '纜車站', '茶園階梯', '水晶車廂', '大茶壺', '菜園的芹菜'] },
   { chapter: 8, title: '熱呼呼的煙', landmark: '北投', station: '北投', time: '04:00', next: '新北投', pages: 6, pageTitles: ['新北投支線', '地熱谷', '呼呼', '北投圖書館', '大浴池', '澡堂的算盤'] },
   { chapter: 9, title: '河的盡頭是海', landmark: '淡水', station: '淡水', time: '04:40', next: '淡水', pages: 6, pageTitles: ['往淡水', '淡水老街', '渡輪', '漁人碼頭', '淡江大橋', '碼頭的聽診器'] },
-  { chapter: 10, title: '離天空最近的地方', landmark: '台北101', station: '101', time: '05:10', next: '台北101', pages: 6 },
+  { chapter: 10, title: '離天空最近的地方', landmark: '台北101', station: '101', time: '05:10', next: '台北101', pages: 6, pageTitles: ['信義線', '37秒電梯', '八節', '阻尼球', '咻咻的派對', '離天空最近的地方'] },
 ];
 
 /**
@@ -58,6 +58,8 @@ const CARD_LINES: Readonly<Record<number, readonly LineKey[]>> = {
   7: ['c7.intro.1', 'c7.intro.2', 'c7.intro.3'],
   8: ['c8.intro.1', 'c8.intro.2', 'c8.intro.3'],
   9: ['c9.intro.1', 'c9.intro.2', 'c9.intro.3'],
+  // Chapter 10's last two lines (「ㄅㄚ！」 and Mocha's) play on 10-1, as 101 comes into the window
+  10: ['c10.intro.1', 'c10.intro.2'],
 };
 
 /** The chapter card's lines (none for a chapter not written yet). */
@@ -78,10 +80,33 @@ const END_LINES: Readonly<Record<number, readonly LineKey[]>> = {
   7: ['c7p6.end.1'],
   8: ['c8p6.end.1'],
   9: ['c9p6.end.1'],
+  10: ['c10p6.end.1', 'c10p6.end.2', 'c10p6.end.3', 'c10p6.end.4'],
 };
+
+/**
+ * Where a chapter's end lines break into beats, when not simply as many as fit (#133): chapter 10's
+ * four are two beats — 「一起。」 and Mocha's one exact translation together, then the sunrise and
+ * 廣播姊姊's 「本列車直達：寶咖咖的家。」
+ */
+const END_BEATS: Readonly<Record<number, readonly number[]>> = { 10: [2, 2] };
 
 /** A chapter's end lines (none for a chapter not written yet). */
 export const endLines = (chapter: number): readonly LineKey[] => END_LINES[chapter] ?? [];
+
+/** A chapter's end lines in their groups: each group starts a beat (one group unless `END_BEATS` splits them). */
+export function endGroups(chapter: number): readonly (readonly LineKey[])[] {
+  const lines = endLines(chapter);
+  const sizes = END_BEATS[chapter];
+  if (sizes === undefined) return lines.length > 0 ? [lines] : [];
+  const groups: LineKey[][] = [];
+  let i = 0;
+  for (const n of sizes) {
+    groups.push(lines.slice(i, i + n));
+    i += n;
+  }
+  if (i < lines.length) groups.push(lines.slice(i));
+  return groups;
+}
 
 /**
  * The lines under the next chapter's card while that chapter isn't built yet (#107, D-70): the card

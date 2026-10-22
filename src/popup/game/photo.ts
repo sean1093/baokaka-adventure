@@ -88,11 +88,17 @@ export function photoReady(def: PageDef, state: SimState): boolean {
   return target !== null && target.id === treasure && target.approach !== null && target.steps >= 1 && target.steps <= PHOTO_EDGES;
 }
 
-/** § 2.9 +M: Mocha is settled on a perch inside the spread's `photoRect`. */
+/**
+ * § 2.9 +M: Mocha is settled on a perch inside the spread's `photoRect` — or, linked (一起, #128),
+ * standing still on a floor node inside it (#133: 10-6's photo of the first steps, Mocha beside him).
+ */
 export function mochaInFrame(def: PageDef, state: SimState): boolean {
   const rect = def.photoRect;
-  if (rect === undefined || state.mocha.perch === null) return false;
-  const node = mochaNode(def, state);
+  if (rect === undefined) return false;
+  const { perch, floorNode, path } = state.mocha;
+  const linked = perch === null && floorNode !== undefined && path.length === 0;
+  if (perch === null && !linked) return false;
+  const node = linked ? floorNode : mochaNode(def, state);
   const at = node === null ? undefined : nodePos(def, state, node);
   return at !== undefined && at[0] >= rect.x && at[0] <= rect.x + rect.w && at[1] >= rect.y && at[1] <= rect.y + rect.h;
 }

@@ -39,9 +39,12 @@ export const learnLines = (key: LearnKey): LineKey[] => learnLineKeys(LEARN_BEAT
  * The Mocha translation shown the first time a word is said on a page (§ 2.4: one-time, per word
  * per page). On its learn page the translation was just part of the learn beat, so it is the
  * follow-up there when there is one (嗶！: 「……閘門真的開了。」), else nothing; on any other page,
- * the translation itself.
+ * the translation itself. Linked (一起 said), none: the page's own lines speak for the words.
  */
-export function firstUseLine(def: PageDef, word: Word): LineKey | null {
+export function firstUseLine(def: PageDef, word: Word, linked = false): LineKey | null {
+  // Linked (一起, #133): he walks beside him now, and the page's own lines speak — no joke
+  // (10-6's 抱抱 to 咻咻 is the book's last beat, not 「載我一程」)
+  if (linked && word !== 'together') return null;
   const b = LEARN_BEATS[word];
   return def.learns?.word === word ? b.then : b.mocha;
 }
