@@ -159,15 +159,18 @@ export interface CliArgs {
   readonly page?: string;
   readonly chapter?: number;
   readonly json: boolean;
+  /** Print the difficulty curve as Markdown (`formatCurve`) instead of the table */
+  readonly curve: boolean;
   readonly cap?: number;
 }
 
-/** Parses `--page <id>`, `--chapter <n>`, `--json` and `--cap <n>` (also as `--flag=value`). Throws on anything else. */
+/** Parses `--page <id>`, `--chapter <n>`, `--json`, `--curve` and `--cap <n>` (also as `--flag=value`). Throws on anything else. */
 export function parseArgs(argv: readonly string[]): CliArgs {
   let page: string | undefined;
   let chapter: number | undefined;
   let cap: number | undefined;
   let json = false;
+  let curve = false;
   const int = (flag: string, v: string | undefined, min: number): number => {
     if (v === undefined || !/^\d+$/.test(v) || Number(v) < min) throw new Error(`${flag} needs an integer ≥ ${min}, got ${v ?? 'nothing'}`);
     return Number(v);
@@ -194,11 +197,15 @@ export function parseArgs(argv: readonly string[]): CliArgs {
         if (eq >= 0) throw new Error('--json takes no value');
         json = true;
         break;
+      case '--curve':
+        if (eq >= 0) throw new Error('--curve takes no value');
+        curve = true;
+        break;
       default:
-        throw new Error(`unknown argument '${arg}' (options: --page <id>, --chapter <n>, --json, --cap <n>)`);
+        throw new Error(`unknown argument '${arg}' (options: --page <id>, --chapter <n>, --json, --curve, --cap <n>)`);
     }
   }
-  return { page, chapter, json, cap };
+  return { page, chapter, json, curve, cap };
 }
 
 /** Terminal columns a string takes: East Asian wide/fullwidth characters count 2. */
@@ -283,4 +290,67 @@ export function formatSummary(rows: readonly PageReport[], totalMs: number, budg
 /** True when the run should exit 1: any failing page, or the total over the budget. */
 export function reportFailed(rows: readonly PageReport[], totalMs: number, budgetMs = CI_BUDGET_MS): boolean {
   return totalMs >= budgetMs || rows.some((r) => r.failures.length > 0);
+}
+
+/** A page's short label in play order: `1-4`, `E` for page E (chapter 11), `B` for the bonus page (chapter 12). */
+export function pageLabel(r: Pick<PageReport, 'id' | 'chapter'>): string {
+  if (r.chapter === 11) return 'E';
+  if (r.chapter === 12) return 'B';
+  return `${r.chapter}-${/p(\d+)$/.exec(r.id)?.[1] ?? '?'}`;
+}
+
+const mean = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
+const fixed = (x: number) => (Math.round(x * 100) / 100).toFixed(2);
+
+/**
+ * The difficulty curve as Markdown (#137, `npm run solve -- --curve`, pasted into
+ * `docs/project/difficulty.md`): two Mermaid `xychart-beta` charts (par as bars and the designed
+ * difficulty as a line, per page in play order; then the chapter means), the per-chapter table
+ * (pages, mean difficulty, mean par, states) and the per-page table (difficulty, band, par,
+ * states). Unsolved pages chart as 0.
+ */
+export function formatCurve(rows: readonly PageReport[]): string {
+  const labels = rows.map((r) => `"${pageLabel(r)}"`).join(', ');
+  const top = Math.max(7, ...rows.map((r) => r.par ?? 0));
+  const out: string[] = [
+    '```mermaid',
+    'xychart-beta',
+    '    title "Par (bars) and designed difficulty (line), every page in play order"',
+    `    x-axis [${labels}]`,
+    `    y-axis "moves / difficulty" 0 --> ${top}`,
+    `    bar [${rows.map((r) => r.par ?? 0).join(', ')}]`,
+    `    line [${rows.map((r) => r.difficulty).join(', ')}]`,
+    '```',
+    '',
+  ];
+  const chapters = [...new Set(rows.map((r) => r.chapter))];
+  const byChapter = chapters.map((c) => {
+    const rs = rows.filter((r) => r.chapter === c);
+    const name = c === 0 ? 'P' : c === 11 ? 'E' : c === 12 ? 'B' : String(c);
+    return { name, rs, diff: mean(rs.map((r) => r.difficulty)), par: mean(rs.map((r) => r.par ?? 0)), states: rs.reduce((a, r) => a + r.states, 0) };
+  });
+  out.push(
+    '```mermaid',
+    'xychart-beta',
+    '    title "Chapter means: par (bars) and designed difficulty (line)"',
+    `    x-axis [${byChapter.map((c) => `"${c.name}"`).join(', ')}]`,
+    '    y-axis "mean" 0 --> 5',
+    `    bar [${byChapter.map((c) => fixed(c.par)).join(', ')}]`,
+    `    line [${byChapter.map((c) => fixed(c.diff)).join(', ')}]`,
+    '```',
+    '',
+    '| Chapter | Pages | Mean difficulty | Mean par | Pars in order | States |',
+    '|---|---|---|---|---|---|',
+    ...byChapter.map((c) => `| ${c.name} | ${c.rs.length} | ${fixed(c.diff)} | ${fixed(c.par)} | ${c.rs.map((r) => r.par ?? '-').join(' · ')} | ${c.states.toLocaleString('en-US')} |`),
+    '',
+    '| Page | Title | Difficulty | Band | Par | States |',
+    '|---|---|---|---|---|---|',
+    ...rows.map((r) => {
+      const par = r.par === null ? '-' : r.parInBand ? String(r.par) : `**${r.par}** (out of band)`;
+      return `| ${pageLabel(r)} | ${r.title} | ${r.difficulty} | ${r.band[0]}–${r.band[1]} | ${par} | ${r.states.toLocaleString('en-US')} |`;
+    }),
+    '',
+    `Total: ${rows.length} pages, ${rows.reduce((a, r) => a + r.states, 0).toLocaleString('en-US')} states of the ${CI_BUDGET_STATES.toLocaleString('en-US')} budget.`,
+  );
+  return out.join('\n');
 }

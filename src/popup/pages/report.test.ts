@@ -7,10 +7,12 @@ import {
   CI_BUDGET_MS,
   CI_BUDGET_STATES,
   displayWidth,
+  formatCurve,
   formatDetails,
   formatSummary,
   formatTable,
   judge,
+  pageLabel,
   PAR_BAND,
   parseArgs,
   reportFailed,
@@ -177,19 +179,45 @@ describe('summary and exit status', () => {
   });
 });
 
+describe('the difficulty curve (#137)', () => {
+  const row = (id: string, par: number | null, states = 100) => {
+    const def = pageById(id) as PageDef;
+    return judge(def, CLEAN, solved({ par, statesExplored: states, solvable: par !== null }), { replayOk: true });
+  };
+
+  test('labels pages in play order, page E and the bonus page by letter', () => {
+    expect([row('c0p3', 1), row('c10p6', 3), row('c11p1', 0), row('c12p1', 2)].map(pageLabel)).toEqual(['0-3', '10-6', 'E', 'B']);
+  });
+
+  test('charts par against difficulty per page and per chapter, then tabulates both', () => {
+    const md = formatCurve([row('c0p3', 1, 23), row('c1p1', 1, 73), row('c1p2', 2, 182)]);
+    expect(md).toContain('x-axis ["0-3", "1-1", "1-2"]');
+    expect(md).toContain('bar [1, 1, 2]');
+    expect(md).toContain('line [2, 1, 2]');
+    expect(md).toContain('x-axis ["P", "1"]');
+    expect(md).toContain('bar [1.00, 1.50]');
+    expect(md).toContain('| P | 1 | 2.00 | 1.00 | 1 | 23 |');
+    expect(md).toContain('| 1 | 2 | 1.50 | 1.50 | 1 · 2 | 255 |');
+    expect(md).toContain('| 0-3 | 摩卡起床 | 2 | 2–3 | **1** (out of band) | 23 |');
+    expect(md).toContain('| 1-2 | 月台的縫 | 2 | 2–3 | 2 | 182 |');
+    expect(md).toContain(`Total: 3 pages, 278 states of the ${CI_BUDGET_STATES.toLocaleString('en-US')} budget.`);
+  });
+});
+
 describe('parseArgs and selectPages', () => {
   test.each<[string[], object]>([
-    [[], { json: false }],
-    [['--json'], { json: true }],
-    [['--page', 'c1p2'], { page: 'c1p2', json: false }],
-    [['--page=c1p2', '--json'], { page: 'c1p2', json: true }],
-    [['--chapter', '1'], { chapter: 1, json: false }],
-    [['--chapter=0', '--cap', '5000'], { chapter: 0, cap: 5000, json: false }],
+    [[], { json: false, curve: false }],
+    [['--json'], { json: true, curve: false }],
+    [['--curve'], { json: false, curve: true }],
+    [['--page', 'c1p2'], { page: 'c1p2', json: false, curve: false }],
+    [['--page=c1p2', '--json'], { page: 'c1p2', json: true, curve: false }],
+    [['--chapter', '1'], { chapter: 1, json: false, curve: false }],
+    [['--chapter=0', '--cap', '5000'], { chapter: 0, cap: 5000, json: false, curve: false }],
   ])('%j', (argv, expected) => {
     expect(JSON.parse(JSON.stringify(parseArgs(argv)))).toEqual(expected);
   });
 
-  test.each([[['--chapter']], [['--chapter', 'one']], [['--cap', '0']], [['--page']], [['--page', '--json']], [['--json=1']], [['c1p2']], [['--verbose']]])(
+  test.each([[['--chapter']], [['--chapter', 'one']], [['--cap', '0']], [['--page']], [['--page', '--json']], [['--json=1']], [['--curve=1']], [['c1p2']], [['--verbose']]])(
     'rejects %j',
     (argv) => {
       expect(() => parseArgs(argv)).toThrow();
