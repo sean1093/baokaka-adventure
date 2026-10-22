@@ -50,5 +50,28 @@ export const PRESET_Z: Readonly<Record<PartPreset, Z>> = {
 /** Tilt parallax per depth (bible § 2.3; the tilt itself is polish, #136). */
 export const PARALLAX: Readonly<Record<Z, number>> = { 0: 0, 1: 0.15, 2: 0.3, 3: 0.5, 4: 0.7, 5: 1 };
 
+/** Each layer's depth (the table above). */
+export const LAYER_Z: Readonly<Record<LayerId, Z>> = {
+  backdrop: 0,
+  strip: 0,
+  cutouts: 2,
+  'parts-mid': 3,
+  floor: 4,
+  'parts-near': 4,
+  creatures: 4,
+  actors: 4,
+  fx: 4,
+  foreground: 5,
+  hit: 4,
+};
+
+/**
+ * A layer's tilt parallax (#136), as a share of `TILT_SHIFT_PX`: its depth's `PARALLAX` relative to
+ * the play plane (z4: the ledges, the touchables, the characters and the hit layer), which stays
+ * where the gestures' maths puts it. The backdrop slides the other way, the foreground card a
+ * little further; between them the pop-ups separate as the book leans.
+ */
+export const layerParallax = (id: LayerId): number => PARALLAX[LAYER_Z[id]] - PARALLAX[4];
+
 /** GDD § 3.9: at most this many animated DOM/SVG nodes on a page. */
 export const ANIMATED_NODE_BUDGET = 150;

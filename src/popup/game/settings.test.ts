@@ -147,6 +147,32 @@ describe('減少動態, the gyro tilt and low power', () => {
     expect(gappy.push(Number.NaN)).toBe(false);
   });
 
+  test('it recovers once after 10 s of smooth frames, and the second time stays on (#136)', () => {
+    const watch = new FrameWatch();
+    expect(feed(watch, 25, LOW_POWER.windowMs + 50)).toBe(true);
+    // Smooth, but not for long enough yet
+    expect(feed(watch, 16.7, LOW_POWER.recoverMs - 500)).toBe(true);
+    expect(feed(watch, 16.7, 1000)).toBe(false);
+    expect(watch.latched).toBe(false);
+    // Still slow-ish with low power on: no recovery (frames over 17.5 ms on average)
+    const edge = new FrameWatch();
+    feed(edge, 25, LOW_POWER.windowMs + 50);
+    expect(feed(edge, 18.5, 30_000)).toBe(true);
+    // The second slowdown keeps it on for good
+    expect(feed(watch, 25, LOW_POWER.windowMs + 50)).toBe(true);
+    expect(watch.latched).toBe(true);
+    expect(feed(watch, 16.7, 60_000)).toBe(true);
+  });
+
+  test('a stall while on does not end it early, and a gap starts the recovery over', () => {
+    const watch = new FrameWatch();
+    feed(watch, 25, LOW_POWER.windowMs + 50);
+    feed(watch, 16.7, LOW_POWER.recoverMs - 2000);
+    watch.push(LOW_POWER.gapMs + 1);
+    expect(feed(watch, 16.7, LOW_POWER.recoverMs - 500)).toBe(true);
+    expect(feed(watch, 16.7, 1000)).toBe(false);
+  });
+
   test('mostly slow frames averaging over 20 ms latch; a mix averaging under does not', () => {
     const over = new FrameWatch();
     const under = new FrameWatch();

@@ -11,8 +11,9 @@ import type { Settings } from './progress';
  *   what the player had, with nothing to snapshot. While it is on, changes to the settings it holds
  *   are dropped (`elderPatch`), and the settings screen shows those rows locked.
  * - **減少動態** follows the system until the player sets it (`reduceMotion: null`).
- * - **Low power** (bible § 9.3): `FrameWatch` latches once the mean frame time stays over 20 ms for
- *   2 s; then tilt and confetti are dropped and the sparkles halved.
+ * - **Low power** (bible § 9.3): `FrameWatch` turns it on once the mean frame time stays over 20 ms
+ *   for 2 s; then tilt and confetti are dropped and the sparkles halved. It turns off once after
+ *   10 s of smooth frames (#136), and the second time it stays on.
  * - **震動**: `HAPTICS` holds the short pulses for a snap, a push and a sticker.
  */
 
@@ -98,47 +99,81 @@ export const LOW_POWER = {
   windowMs: 2000,
   /** A gap this long (a background tab, a pause) starts the measure over */
   gapMs: 250,
+  /** Low power ends (#136) once the frames of this long average under `recoverFrameMs` … */
+  recoverMs: 10_000,
+  recoverFrameMs: 17.5,
+  /** … with at most this share of them slow */
+  recoverSlowShare: 0.1,
+  /** It ends this many times a session at most; the next time it stays on (no flapping) */
+  recoveries: 1,
 } as const;
 
 /**
- * Watches frame times and latches low power once the frames of the last `windowMs` average more
- * than `frameMs` and most of them are slower than it (a sustained slowdown, not one stall). Feed it each frame's duration; it never unlatches (a session that struggled once
- * stays light).
+ * Watches frame times and turns low power on once the frames of the last `windowMs` average more
+ * than `frameMs` and most of them are slower than it (a sustained slowdown, not one stall). Feed it
+ * each frame's duration.
+ *
+ * It recovers (#136): while low power is on it keeps watching, and once a full `recoverMs` of
+ * frames (with low power's lighter page) averages under `recoverFrameMs` with few slow ones, it
+ * turns off: a phone that struggled through one heavy moment (a page fold, a cold cache, a burst of
+ * background work) gets its full page back. It turns off at most `recoveries` times a session; the
+ * next slowdown keeps it on for good, so a phone on the edge never flips back and forth.
  */
 export class FrameWatch {
   private readonly frames: number[] = [];
   private total = 0;
   /** Frames in the window slower than `frameMs` */
   private slow = 0;
-  private latched = false;
+  private on = false;
+  private recovered = 0;
 
   get low(): boolean {
-    return this.latched;
+    return this.on;
+  }
+
+  /** Whether it is on for good (it has recovered as often as it may) */
+  get latched(): boolean {
+    return this.on && this.recovered >= LOW_POWER.recoveries;
+  }
+
+  private reset() {
+    this.frames.length = 0;
+    this.total = 0;
+    this.slow = 0;
   }
 
   /** One frame of `dt` ms. Returns whether low power is on. */
   push(dt: number): boolean {
     if (this.latched) return true;
-    if (!Number.isFinite(dt) || dt <= 0) return false;
+    if (!Number.isFinite(dt) || dt <= 0) return this.on;
     if (dt >= LOW_POWER.gapMs) {
-      this.frames.length = 0;
-      this.total = 0;
-      this.slow = 0;
-      return false;
+      this.reset();
+      return this.on;
     }
     this.frames.push(dt);
     this.total += dt;
     if (dt > LOW_POWER.frameMs) this.slow++;
-    // Keep just the last window
-    while (this.frames.length > 1 && this.total - this.frames[0] >= LOW_POWER.windowMs) {
+    // Keep just the last window (the longer recovery window while on)
+    const windowMs = this.on ? LOW_POWER.recoverMs : LOW_POWER.windowMs;
+    while (this.frames.length > 1 && this.total - this.frames[0] >= windowMs) {
       const old = this.frames.shift() ?? 0;
       this.total -= old;
       if (old > LOW_POWER.frameMs) this.slow--;
     }
-    // Sustained, not a stall: the window's mean is over the limit and so are most of its frames
-    const full = this.total >= LOW_POWER.windowMs;
-    if (full && this.total / this.frames.length > LOW_POWER.frameMs && this.slow * 2 > this.frames.length) this.latched = true;
-    return this.latched;
+    if (this.total < windowMs) return this.on;
+    const mean = this.total / this.frames.length;
+    if (!this.on) {
+      // Sustained, not a stall: the window's mean is over the limit and so are most of its frames
+      if (mean > LOW_POWER.frameMs && this.slow * 2 > this.frames.length) {
+        this.on = true;
+        this.reset();
+      }
+    } else if (mean < LOW_POWER.recoverFrameMs && this.slow <= this.frames.length * LOW_POWER.recoverSlowShare) {
+      this.on = false;
+      this.recovered++;
+      this.reset();
+    }
+    return this.on;
   }
 }
 

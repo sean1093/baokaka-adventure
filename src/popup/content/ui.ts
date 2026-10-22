@@ -51,4 +51,6 @@ export const UI = {
    * scenes before page E and after the credits
    */
   ending: { skip: '跳過', dawn: '清晨五點半', post: '巷口的小廟', credits: '謝謝收看', next: '下一句' },
+  /** The phone held sideways (#136; not in § 5.7): the guard over the game until it is upright again */
+  upright: '請把手機轉直，再繼續玩喔',
 } as const;

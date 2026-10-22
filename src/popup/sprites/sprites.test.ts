@@ -8,6 +8,7 @@ import { eventsBetween, frameAt, frameOfStep, manualClock, rafClock, stepAt } fr
 import { bundledFiles, chapterGradeKey, floorUrl, frameUrl, pageSprites, payloadBytes, shownStem, spriteDef, SpriteLoader, SpriteGrade, spriteUrls } from './loader';
 import { fromAnchor, framePoint, gradedStem, isMirrored, pickScale, spriteTransform, toPage, validateManifest, type SpriteAnimDef, type SpriteDef } from './manifest';
 import { gradeKey, isIdentity, standeeGrade } from '../env/grade';
+import { pageArtUrls } from '../env/loader';
 import { PAGES } from '../pages';
 import { SpriteAnim, spriteHead } from './SpriteAnim';
 import { SPRITE_IDS, SPRITE_MANIFEST } from './sprites.gen';
@@ -373,6 +374,60 @@ describe('the loader', () => {
     expect(changes).toBe(3);
     await loader.load('a');
     expect(calls).toHaveLength(3);
+  });
+});
+
+describe('bounded decoded memory (#136)', () => {
+  test('a claim lets go of what its scope held before, unless another scope holds it; released images stay ready', async () => {
+    const loader = new SpriteLoader(async (url) => url);
+    loader.claim('page-art', ['a', 'b']);
+    loader.claim('page-sprites', ['s1', 'b']);
+    await loader.preload(['a', 'b', 's1', 'cover']);
+    expect(loader.held()).toBe(4);
+    // The next page: a and b go (b stays: the sprites hold it), c comes in
+    expect(loader.claim('page-art', ['c'])).toBe(1);
+    expect(loader.held()).toBe(3);
+    expect(loader.ready(['a'])).toBe(true);
+    // A URL loaded outside any scope (the cover) is never let go
+    loader.claim('page-sprites', []);
+    expect(loader.held()).toBe(1);
+    expect(loader.ready(['cover', 'b', 's1'])).toBe(true);
+    // Back to a: decoded again in the background, without ever showing as loading
+    loader.claim('page-art', ['a']);
+    const states: (string | undefined)[] = [];
+    loader.subscribe(() => states.push(loader.state('a')));
+    await loader.preload(['a']);
+    expect(states).toEqual([]);
+    expect(loader.held()).toBe(2);
+  });
+
+  test('an image that arrives after its page moved on is not kept', async () => {
+    let finish: (v: unknown) => void = () => {};
+    const loader = new SpriteLoader((url) => (url === 'slow' ? new Promise((r) => (finish = r)) : Promise.resolve(url)));
+    loader.claim('page-art', ['slow']);
+    const p = loader.load('slow');
+    loader.claim('page-art', ['next']);
+    finish('slow');
+    await p;
+    expect(loader.ready(['slow'])).toBe(true);
+    expect(loader.held()).toBe(0);
+  });
+
+  test('playing the whole book page by page keeps one page and one chapter decoded', async () => {
+    const loader = new SpriteLoader(async (url) => url);
+    let most = 0;
+    for (const def of PAGES) {
+      const art = pageArtUrls(def);
+      const sprites = pageSprites(def.chapter).flatMap((id) => spriteUrls(id, 3, undefined, chapterGradeKey(def.chapter)));
+      loader.claim('page-art', art);
+      loader.claim('page-sprites', sprites);
+      await loader.preload([...art, ...sprites]);
+      expect(loader.held()).toBe(new Set([...art, ...sprites]).size);
+      most = Math.max(most, loader.held());
+    }
+    // Without the claims every page's bitmaps and every grade's frames would still be held
+    const everything = new Set(PAGES.flatMap((def) => [...pageArtUrls(def), ...pageSprites(def.chapter).flatMap((id) => spriteUrls(id, 3, undefined, chapterGradeKey(def.chapter)))]));
+    expect(most).toBeLessThan(everything.size / 4);
   });
 });
 

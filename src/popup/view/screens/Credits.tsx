@@ -12,6 +12,7 @@ import { PHOTO_H, PHOTO_W, PhotoScene, photoSprites } from '../photo/PhotoScene'
 import { useSpritesPreload } from '../../sprites';
 import { Endpaper } from './Contents';
 import { cardShadow } from './paper';
+import { SkipIcon } from './icons';
 
 /**
  * The credits (GDD § 2.13 item 8, § 4.1; #135): they roll over the album's photos — the player's own
@@ -131,10 +132,11 @@ export function Credits({ photos, registry: reg, reduced, still = false, startSl
       <button
         type="button"
         onClick={finish}
-        className="kit-press absolute right-3 flex min-h-[56px] min-w-[88px] items-center justify-center rounded-[12px] px-4 text-[20px] font-black"
+        className="kit-press absolute right-3 flex min-h-[56px] min-w-[88px] items-center justify-center gap-1 rounded-[12px] pl-2 pr-4 text-[20px] font-black"
         style={{ top: 'calc(12px + env(safe-area-inset-top))', backgroundColor: withAlpha(C.page, 0.94), color: C.ink, boxShadow: cardShadow(0.6) }}
         data-button="skip"
       >
+        <SkipIcon />
         {UI.ending.skip}
       </button>
     </div>

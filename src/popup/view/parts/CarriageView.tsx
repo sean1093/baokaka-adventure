@@ -5,7 +5,8 @@ import { carriageArt } from '../art/carriages';
 import type { PartPreview } from '../gestures';
 import { drawnNodePos } from '../interp';
 import { CARRIAGE_REACH, type Carriage } from '../stage';
-import { ArtG, r2 } from './common';
+import { r2 } from './common';
+import { liveArt } from '../art/creatures';
 
 /**
  * The carriage a part moves (bible § 4 linked parts: the train a tab moves): a card under the nodes
@@ -36,12 +37,10 @@ export function CarriageView({ def, prev, state, carriage: c, ctx, ms, reduced, 
   const w = spread.max - spread.min + 2 * CARRIAGE_REACH;
   // Its own drawing by the part's art key (#108: the train, the bento cart), else the placeholder card
   const key = def.parts.find((p) => p.id === c.part)?.art ?? '';
-  const html = useMemo(() => carriageArt(key)(ctx, w, true), [ctx, w, key]);
+  const html = useMemo(() => liveArt(() => carriageArt(key)(ctx, w, true)), [ctx, w, key]);
   const x = leadPos[0] - (spread.lead - spread.min) - CARRIAGE_REACH;
   return (
-    <g data-carriage={c.part} data-anim="" transform={`translate(${r2(x)} ${r2(leadPos[1])})`}>
-      <ArtG html={html} />
-    </g>
+    <g data-carriage={c.part} data-anim="" transform={`translate(${r2(x)} ${r2(leadPos[1])})`} dangerouslySetInnerHTML={{ __html: html }} />
   );
 }
 
@@ -54,8 +53,6 @@ export function RiderView({ def, prev, state, node, html, ms, reduced, preview =
   const at = drawnNodePos(def, prev, state, node, ms, reduced, preview);
   if (at === undefined) return null;
   return (
-    <g data-rider={node} data-anim="" transform={`translate(${r2(at[0])} ${r2(at[1])})`}>
-      <ArtG html={html} />
-    </g>
+    <g data-rider={node} data-anim="" transform={`translate(${r2(at[0])} ${r2(at[1])})`} dangerouslySetInnerHTML={{ __html: html }} />
   );
 }

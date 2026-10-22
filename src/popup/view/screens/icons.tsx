@@ -53,6 +53,13 @@ export const ResumeIcon = () => (
   </svg>
 );
 
+/** 跳過 (#136: the credits' skip): two play marks, fast-forward. */
+export const SkipIcon = () => (
+  <svg {...box}>
+    <path d="M6 10l11 8l-11 8z M18 10l11 8l-11 8z" fill={C.seal} stroke={C.ink} strokeWidth={2} strokeLinejoin="round" />
+  </svg>
+);
+
 /** 封面: the closed book with its gold title plate. */
 export const CoverIcon = () => (
   <svg {...box}>

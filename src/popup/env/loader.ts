@@ -106,10 +106,12 @@ export function usePageArt(def: Pick<PageDef, 'backdrop' | 'parts' | 'cutouts'>,
   useEffect(() => {
     let live = true;
     setDone(loader.settled(urls));
+    const after = next ? backdropImage(next.backdrop) : null;
+    // This page's bitmaps and the next backdrop stay decoded; the page before lets go of its own (#136)
+    loader.claim('page-art', after ? [...urls, after.url] : urls);
     void loader.preload(urls).then(() => {
       if (!live) return;
       setDone(true);
-      const after = next ? backdropImage(next.backdrop) : null;
       if (after) void loader.load(after.url);
     });
     return () => {

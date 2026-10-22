@@ -109,6 +109,9 @@ export class SpriteLoader {
   private readonly pending = new Map<string, Promise<void>>();
   private readonly keep = new Map<string, unknown>();
   private readonly subs = new Set<() => void>();
+  private readonly scopes = new Map<string, ReadonlySet<string>>();
+  /** Every URL a scope ever held */
+  private readonly claimed = new Set<string>();
   private serial = 0;
 
   constructor(private readonly decode: Decode = browserDecode) {}
@@ -132,13 +135,19 @@ export class SpriteLoader {
   load(url: string): Promise<void> {
     const known = this.pending.get(url);
     if (known) return known;
-    this.states.set(url, 'loading');
+    // A released image (`claim`) stays ready, so whatever shows it keeps drawing: it is only decoded again
+    const again = this.states.get(url) === 'ready';
+    if (!again) this.states.set(url, 'loading');
     const p = this.decode(url).then(
       (kept) => {
-        this.keep.set(url, kept);
-        this.set(url, 'ready');
+        // A page that moved on before its image arrived has let go of it already
+        if (this.keeps(url)) this.keep.set(url, kept);
+        else this.pending.delete(url);
+        if (!again) this.set(url, 'ready');
       },
-      () => this.set(url, 'error'),
+      () => {
+        if (!again) this.set(url, 'error');
+      },
     );
     this.pending.set(url, p);
     return p;
@@ -146,6 +155,42 @@ export class SpriteLoader {
 
   preload(urls: readonly string[]): Promise<void> {
     return Promise.all(urls.map((u) => this.load(u))).then(() => undefined);
+  }
+
+  /**
+   * Bounded decoded memory (#136): a page holds what it draws under a scope (`'page-art'`, its
+   * bitmaps and the next page's backdrop; `'page-sprites'`, its chapter's frames in its grade), and
+   * each claim lets go of the decoded images the scope held before that no scope holds now. Without
+   * it every backdrop and every chapter's graded frames stayed decoded for the whole session (a full
+   * book is hundreds of MB of bitmaps, more than a phone's tab is given). A released URL stays
+   * `ready`: an `<image>` still showing it (the old page under a turn) keeps drawing, and the
+   * browser decodes it again if it is shown later; a preload decodes it again ahead of time. URLs
+   * loaded outside a scope (the cover, the album, the credits) are kept as before.
+   */
+  claim(scope: string, urls: readonly string[]): number {
+    const before = this.scopes.get(scope);
+    const now = new Set(urls);
+    this.scopes.set(scope, now);
+    for (const url of now) this.claimed.add(url);
+    if (before === undefined) return 0;
+    let released = 0;
+    for (const url of before) {
+      if (now.has(url) || [...this.scopes.values()].some((s) => s !== now && s.has(url))) continue;
+      if (!this.keep.delete(url)) continue;
+      this.pending.delete(url);
+      released++;
+    }
+    return released;
+  }
+
+  /** Whether a decoded `url` is kept: it is in a scope now, or it was never claimed by one. */
+  private keeps(url: string): boolean {
+    return !this.claimed.has(url) || [...this.scopes.values()].some((s) => s.has(url));
+  }
+
+  /** How many decoded images the loader keeps referenced (tests, and `window.__popupImages` in dev). */
+  held(): number {
+    return this.keep.size;
   }
 
   /** Changes whenever any URL settles (for `useSyncExternalStore`). */
@@ -167,6 +212,8 @@ export class SpriteLoader {
 
 /** The game's one loader. */
 export const spriteLoader = new SpriteLoader(typeof Image === 'undefined' ? () => Promise.reject(new Error('no Image')) : browserDecode);
+// QA (#136): `check:play` reads how many decoded images the game holds as it plays on through chapters
+if (import.meta.env.DEV && typeof window !== 'undefined') (window as { __popupImages?: () => number }).__popupImages = () => spriteLoader.held();
 
 /** The scale for this device (read once: a DPR change mid-session keeps the loaded set). */
 export function deviceScale(): Scale {
@@ -188,7 +235,7 @@ export function useFramesReady(urls: readonly string[], loader: SpriteLoader = s
  * Preloads sprites (every frame, plus the floor ellipse) and reports `true` once all of it has
  * settled (decoded, or failed: the placeholder stays and the game goes on).
  */
-export function useSpritesPreload(ids: readonly string[], loader: SpriteLoader = spriteLoader, grade?: string): boolean {
+export function useSpritesPreload(ids: readonly string[], loader: SpriteLoader = spriteLoader, grade?: string, scope?: string): boolean {
   const key = ids.join(',');
   const urls = useMemo(() => {
     const scale = deviceScale();
@@ -199,11 +246,12 @@ export function useSpritesPreload(ids: readonly string[], loader: SpriteLoader =
   useEffect(() => {
     let live = true;
     setDone(loader.settled(urls));
+    if (scope !== undefined) loader.claim(scope, urls);
     void loader.preload(urls).then(() => live && setDone(true));
     return () => {
       live = false;
     };
-  }, [urls, loader]);
+  }, [urls, loader, scope]);
   return done;
 }
 
@@ -213,5 +261,5 @@ export function useSpritesPreload(ids: readonly string[], loader: SpriteLoader =
  */
 export function usePagePreload(chapter: number, loader: SpriteLoader = spriteLoader): boolean {
   const ids = useMemo(() => pageSprites(chapter), [chapter]);
-  return useSpritesPreload(ids, loader, chapterGradeKey(chapter));
+  return useSpritesPreload(ids, loader, chapterGradeKey(chapter), 'page-sprites');
 }

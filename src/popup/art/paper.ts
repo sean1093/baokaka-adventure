@@ -13,8 +13,8 @@ import { f1, f2, filterAttr, ref, seeded, translate, type KitCtx } from './svg';
  * With filters (PageLab, bake) it is kit.js `filter="url(#zN)"`. Without (the in-game path) the
  * same read comes from flat copies of `outline`, the piece's silhouette with no `fill` of its own:
  * a two-step soft shadow, a tight contact shadow and the 1 px top-left cut-edge rim, all offsets
- * from the depth filter's formula, under the body. Four extra nodes for a one-element outline
- * (eight when it needs a wrapping group), no filter.
+ * from the depth filter's formula, under the body. Four extra nodes for a one-element outline;
+ * a longer outline is drawn once and the other three copies are `<use>` of it. No filter.
  */
 export function depth(ctx: KitCtx, z: Depth, body: string, outline: string): string {
   if (ctx.filters) return `<g${filterAttr(ctx, `z${z}`)}>${body}</g>`;
@@ -22,16 +22,33 @@ export function depth(ctx: KitCtx, z: Depth, body: string, outline: string): str
   const cdx = 0.5 + z * 0.25, cdy = 0.8 + z * 0.45;
   // A single self-closing outline element takes the copy's attributes itself: one node per copy, not two
   const single = /^<([a-zA-Z]+)((?:(?!\/>)[^<>])*)\/>$/.exec(outline.trim());
+  // A several-element outline is drawn once, under an id, and the other copies are `<use>` of it
+  // (#136: one element a copy, against the animated-node budget; the same pixels)
+  const id = single ? null : outlineId(outline);
+  let first = true;
   const copy = (fill: string, opacity: number, x: number, y: number) => {
     const attrs = `fill="${fill}" opacity="${f2(opacity)}" transform="${translate(x, y)}"`;
     if (single && !/\b(fill|opacity|transform)=/.test(single[2])) return `<${single[1]}${single[2]} ${attrs}/>`;
-    return `<g ${attrs}>${outline}</g>`;
+    if (id === null) return `<g ${attrs}>${outline}</g>`;
+    if (!first) return `<use href="#${id}" ${attrs}/>`;
+    first = false;
+    return `<g ${attrs}><g id="${id}">${outline}</g></g>`;
   };
   return copy(C.shadow, 0.1 + z * 0.015, sdx, sdy)
     + copy(C.shadow, 0.12 + z * 0.015, sdx / 2, sdy / 2)
     + copy(C.shadow, 0.45, cdx, cdy)
     + copy(C.cutRim, 0.42, -1, -1)
     + body;
+}
+
+/**
+ * An id for a silhouette drawn once and reused with `<use>` (#136): a hash of its markup, so the
+ * same silhouette twice on a page shares one id over identical content.
+ */
+export function outlineId(outline: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < outline.length; i++) h = Math.imul(h ^ outline.charCodeAt(i), 0x01000193);
+  return `ol${(h >>> 0).toString(36)}`;
 }
 
 /**

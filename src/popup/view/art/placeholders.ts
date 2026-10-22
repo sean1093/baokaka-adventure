@@ -803,15 +803,15 @@ export const bubbleText = (t: string, x: number, y: number, size: number, fill: 
 export function thoughtContent(ctx: KitCtx, show: BubbleShow, tucked = false): string {
   switch (show.kind) {
     case 'want': {
+      // Where the icon sits: tucked (#197) the icon alone, in a cloud the size of a 60 × 40 one (his
+      // reaching pose says 「要！」); reaching, left of 「要！」; else a little larger. One group with
+      // the whole transform (#136: every element in the bubble counts against the animated budget)
+      const at = tucked ? '' : show.reach ? `${translate(-22, 0)} ` : 'scale(1.25) ';
       // A chapter treasure is drawn as itself (about 40 units across: halved to the icons' 22)
-      const icon = show.treasure !== undefined ? `<g transform="scale(.56)" data-bubble-treasure="${show.treasure}">${treasureArt(ctx, show.treasure)}</g>`
-        : show.decoy !== undefined ? `<g transform="scale(.7)" data-bubble-decoy="${show.decoy}">${decoyArt(ctx, show.decoy || undefined)}</g>`
-        : bubbleIcon(ctx, show.target);
-      // Tucked (#197): the icon alone, in a cloud the size of a 60 × 40 one (his reaching pose says 「要！」)
-      if (tucked) return icon;
-      return show.reach
-        ? `<g transform="${translate(-22, 0)}">${icon}</g><g data-reach="">${bubbleText('要！', 13, 0, 22, C.sealInk)}</g>`
-        : `<g transform="scale(1.25)">${icon}</g>`;
+      const icon = show.treasure !== undefined ? `<g transform="${at}scale(.56)" data-bubble-treasure="${show.treasure}">${treasureArt(ctx, show.treasure)}</g>`
+        : show.decoy !== undefined ? `<g transform="${at}scale(.7)" data-bubble-decoy="${show.decoy}">${decoyArt(ctx, show.decoy || undefined)}</g>`
+        : at === '' ? bubbleIcon(ctx, show.target) : `<g transform="${at.trim()}">${bubbleIcon(ctx, show.target)}</g>`;
+      return show.reach && !tucked ? `${icon}<g data-reach="">${bubbleText('要！', 13, 0, 22, C.sealInk)}</g>` : icon;
     }
     case 'text':
       return bubbleText(show.text, 0, 0, tucked ? 22 : 26, C.ink);

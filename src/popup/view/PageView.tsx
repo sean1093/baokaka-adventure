@@ -45,6 +45,7 @@ import { Fireflies } from './Fireflies';
 import { WindowStrip } from './WindowStrip';
 import { attractorArt, chapterSky, decoyArt, firstFootprint, floorMark, spine, perchMark, perchPost, rail, ramp, spotPool, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
+import { liveArt } from './art/creatures';
 import { riderArt } from './art/riders';
 import { puddle } from './art/creatures';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
@@ -254,7 +255,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   // What rides a loop's slots (#124: suitcases, a tray), drawn at their nodes over the belt
   const slotRiders = useMemo(() => def.parts.filter((p) => p.preset === 'loop').flatMap((p) => def.nodes.filter((n) => n.attach?.part === p.id).flatMap((n) => {
     const art = riderArt(p.art, n.id);
-    return art === null ? [] : [{ node: n.id, html: art(ctx) }];
+    return art === null ? [] : [{ node: n.id, html: liveArt(() => art(ctx)) }];
   })), [def, ctx]);
   const lookOf = (part: PageDef['parts'][number]): PartLook | undefined => {
     const marigold = wearsMarigold(part);

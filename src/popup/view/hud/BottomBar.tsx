@@ -35,6 +35,8 @@ export interface BottomBarProps {
   readonly stickers?: readonly [boolean, boolean, boolean];
   readonly leftHand?: boolean;
   readonly scale?: number;
+  /** CSS px from the bottom of the screen: the safe-area inset (#136) */
+  readonly bottom?: number;
   /** 大字 (#104): 1, or 1.25 */
   readonly textScale?: number;
   /** The portrait glows (the first-use tutorial, #99) */
@@ -89,7 +91,7 @@ function BarButton({ label, onClick, children, testId, textScale = 1 }: { label:
   );
 }
 
-export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, textScale = 1, glow = false, retryGlow = false, reduced = false, onPortrait, onHint, onRetry, onMenu, pop = null }: BottomBarProps) {
+export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, bottom = 0, textScale = 1, glow = false, retryGlow = false, reduced = false, onPortrait, onHint, onRetry, onMenu, pop = null }: BottomBarProps) {
   const ids = useSvgIds('bar');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('bar'), id: ids }), [ids]);
   const head = useMemo(() => {
@@ -179,8 +181,8 @@ export function BottomBar({ stickers = NONE, leftHand = false, scale = 1, textSc
   );
   return (
     <div
-      className="absolute bottom-0 left-1/2 select-none"
-      style={{ width: 390, height: BAR_H, transform: `translateX(-50%) scale(${scale})`, transformOrigin: '50% 100%' }}
+      className="absolute left-1/2 select-none"
+      style={{ bottom, width: 390, height: BAR_H, transform: `translateX(-50%) scale(${scale})`, transformOrigin: '50% 100%' }}
       data-slot="bottom-bar"
       data-left-hand={leftHand ? '' : undefined}
     >

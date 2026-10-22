@@ -115,28 +115,22 @@ export function ThoughtBubble({ ctx, show, was, appeared, placed, head, offset, 
   const inClass = changed ? (reduced ? 'tb-fade-in tb-late' : 'tb-inflate tb-late') : undefined;
   return (
     <g data-bubble={show.kind} data-bubble-tucked={tucked ? '' : undefined} data-anim="" transform={`translate(${r2(offset[0])} ${r2(offset[1])})`}>
-      {/* The wobble turns the spring and the cloud about his head; keyed so a change replays it */}
-      <g transform={`translate(${r2(head[0])} ${r2(head[1])})`}>
-        <g key={changed && !reduced ? `w:${key}` : 'w'} className={changed && !reduced ? 'tb-wobble' : undefined}>
-          <g transform={`translate(${r2(-head[0])} ${r2(-head[1])})`}>
-            <ArtG html={spring} />
-            <g transform={`translate(${r2(cx)} ${r2(cy)}) scale(${k})`}>
-              <g key={appeared && !still ? `a:${key}` : 'a'} className={appeared && !still ? (reduced ? 'tb-fade-in' : 'tb-inflate') : undefined}>
-                {spot && (
-                  <g data-bubble-spotlight="">
-                    <ArtG html={spot} className={reduced || still ? undefined : 'tb-spot'} />
-                  </g>
-                )}
-                <g data-bubble-cloud="">
-                  <ArtG html={cloud} />
-                </g>
-                {changed && old && <ArtG key={`o:${wasKey}`} html={old} className={reduced ? 'tb-fade-out' : 'tb-pop'} />}
-                <g key={`n:${key}`} className={inClass}>
-                  <g className={pulse ? 'tb-pulse' : undefined}>
-                    <ArtG html={now} />
-                  </g>
-                </g>
+      {/* The wobble turns the spring and the cloud about his head (its transform origin); keyed so a
+          change replays it. One group each where a group is needed: every element here counts
+          against the animated-node budget (#136) */}
+      <g key={changed && !reduced ? `w:${key}` : 'w'} className={changed && !reduced ? 'tb-wobble' : undefined} style={{ transformOrigin: `${r2(head[0])}px ${r2(head[1])}px` }}>
+        <ArtG html={spring} />
+        <g transform={`translate(${r2(cx)} ${r2(cy)}) scale(${k})`}>
+          <g key={appeared && !still ? `a:${key}` : 'a'} className={appeared && !still ? (reduced ? 'tb-fade-in' : 'tb-inflate') : undefined}>
+            {spot && (
+              <g data-bubble-spotlight="">
+                <ArtG html={spot} className={reduced || still ? undefined : 'tb-spot'} />
               </g>
+            )}
+            <g data-bubble-cloud="" dangerouslySetInnerHTML={{ __html: cloud }} />
+            {changed && old && <ArtG key={`o:${wasKey}`} html={old} className={reduced ? 'tb-fade-out' : 'tb-pop'} />}
+            <g key={`n:${key}`} className={inClass}>
+              <g className={pulse ? 'tb-pulse' : undefined} dangerouslySetInnerHTML={{ __html: now }} />
             </g>
           </g>
         </g>
@@ -163,6 +157,8 @@ function pointerPath(box: { x: number; y: number; w: number; h: number }, to: Pt
   return `M${r2(a[0])} ${r2(a[1])}L${r2(b[0])} ${r2(b[1])}|M${head(1)}L${r2(b[0])} ${r2(b[1])}L${head(-1)}`;
 }
 
+const escapeText = (t: string): string => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
 /** A bark bubble beside the speaker's head: pops in, holds, fades out (a fade under reduced motion). */
 export function BarkBubble({ placed, offset, k, reduced }: { placed: PlacedBark; offset: Pt; k: number; reduced: boolean }) {
   const { box, to, bark } = placed;
@@ -171,32 +167,15 @@ export function BarkBubble({ placed, offset, k, reduced }: { placed: PlacedBark;
   const baby = bark.who === 'baby';
   const [line, arrow] = bark.point ? pointerPath(box, bark.point).split('|') : [];
   const within = rideWithin(box, offset);
+  const html = useMemo(() => {
+    const point = line ? `<g data-bark-point="" fill="none" stroke="${C.chalk}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="${line}" stroke-dasharray="2 7"/><path d="${arrow}"/></g>` : '';
+    const words = `<text x="${r2(box.x + box.w / 2)}" y="${r2(box.y + box.h / 2 + f * 0.36)}" text-anchor="middle" font-family="${SERIF.replace(/"/g, "'")}" font-weight="900" font-size="${r2(f)}" fill="${baby ? C.sealInk : C.ink}" stroke="${C.standeeCard}" stroke-width="${r2(3 * k)}" paint-order="stroke" stroke-linejoin="round">${escapeText(bark.text)}</text>`;
+    return point + card + words;
+  }, [line, arrow, card, box, f, k, baby, bark.text]);
   return (
     <g data-bark={bark.who} data-bark-kind={bark.bark} data-anim="" transform={`translate(${r2(within[0])} ${r2(within[1])})`}>
-      <g key={`${bark.who}:${bark.tick}:${bark.bark}`} className={reduced ? 'tb-bark-fade' : 'tb-bark'}>
-        {line && (
-          <g data-bark-point="" fill="none" stroke={C.chalk} strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round">
-            <path d={line} strokeDasharray="2 7" />
-            <path d={arrow} />
-          </g>
-        )}
-        <ArtG html={card} />
-        <text
-          x={r2(box.x + box.w / 2)}
-          y={r2(box.y + box.h / 2 + f * 0.36)}
-          textAnchor="middle"
-          fontFamily={SERIF}
-          fontWeight={900}
-          fontSize={r2(f)}
-          fill={baby ? C.sealInk : C.ink}
-          stroke={C.standeeCard}
-          strokeWidth={r2(3 * k)}
-          paintOrder="stroke"
-          strokeLinejoin="round"
-        >
-          {bark.text}
-        </text>
-      </g>
+      {/* Its card, pointer and words as one group's markup (every element counts against the animated budget, #136) */}
+      <g key={`${bark.who}:${bark.tick}:${bark.bark}`} className={reduced ? 'tb-bark-fade' : 'tb-bark'} dangerouslySetInnerHTML={{ __html: html }} />
     </g>
   );
 }
@@ -310,9 +289,7 @@ function SubtitleArt({ sub, f, k }: { sub: PlacedSub; f: number; k: number }) {
     <>
       {spring && <ArtG html={spring} />}
       {/* The card and its tab (what `check:ui` keeps off his thought bubble and him, #197) */}
-      <g data-subtitle-card="">
-        <ArtG html={art} />
-      </g>
+      <g data-subtitle-card="" dangerouslySetInnerHTML={{ __html: art }} />
       {label !== null && (
         // A halo in the tab's own ink keeps the name ≥ 7:1 wherever its glyphs overhang the tab (#108: lighter page art)
         <text x={r2(card.x + 10 + 12 * k)} y={r2(box.y + (LABEL_H * k) / 2 + f * 0.36)} fontFamily={SERIF} fontWeight={900} fontSize={r2(f)} fill={C.sealGlyph} stroke={SPEAKER_INK[sub.line.who]} strokeWidth={r2(3 * k)} paintOrder="stroke" strokeLinejoin="round">

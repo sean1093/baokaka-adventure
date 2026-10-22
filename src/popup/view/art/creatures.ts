@@ -1,5 +1,6 @@
 import { POPUP as C, POPUP_101 as K, POPUP_STAGE as S, POPUP_STATION as T } from '../../../art/palette';
 import { depth, softEllipse, type KitCtx } from '../../art';
+import { outlineId } from '../../art/paper';
 
 /**
  * Creature and cast art (#108; bible § 5): drawn live, feet at the origin, facing +x, flat fills
@@ -15,9 +16,45 @@ import { depth, softEllipse, type KitCtx } from '../../art';
  * the print. `outline` is the figure's silhouette (no fills of its own); `print` is drawn over the card.
  */
 export function dieCut(outline: string, print: string): string {
+  const id = sharing ? outlineId(outline) : null;
+  if (id !== null) {
+    return `<g fill="${C.standeeCard}" stroke="${C.standeeCut}" stroke-width="7.4" stroke-linejoin="round"><g id="${id}">${outline}</g></g>`
+      + `<use href="#${id}" fill="${C.standeeCard}" stroke="${C.standeeCard}" stroke-width="6.2" stroke-linejoin="round"/>`
+      + print;
+  }
   return `<g fill="${C.standeeCard}" stroke="${C.standeeCut}" stroke-width="7.4" stroke-linejoin="round">${outline}</g>`
     + `<g fill="${C.standeeCard}" stroke="${C.standeeCard}" stroke-width="6.2" stroke-linejoin="round">${outline}</g>`
     + print;
+}
+
+/**
+ * Shared outlines (#136, the animated-node budget). A die-cut repeats its silhouette for each of
+ * its layers (the dropped shadow, the cut line, the card border): a three-dancer group was 21
+ * elements of outline alone. Drawn live on the page, the silhouette is drawn once, in the cut
+ * line's layer under an id, and the other layers are `<use>` of it (one element each; what they
+ * show is identical pixel for pixel). The id is a hash of the silhouette, so two copies of one
+ * figure on a page share an id over identical content. The bake never turns this on (its SVG,
+ * and so its source hashes, stay as they were).
+ */
+let sharing = false;
+
+/** Draws live art with shared outlines (see above). */
+export function liveArt(draw: () => string): string {
+  const was = sharing;
+  sharing = true;
+  try {
+    return draw();
+  } finally {
+    sharing = was;
+  }
+}
+
+/** The dropped shadow under a die-cut figure (`figure`): its silhouette, or a `<use>` of it when shared. */
+export function cutShadow(outline: string): string {
+  const id = sharing ? outlineId(outline) : null;
+  return id !== null
+    ? `<use href="#${id}" fill="${C.shadow}" opacity=".3" transform="translate(1.8 2.8)"/>`
+    : `<g fill="${C.shadow}" opacity=".3" transform="translate(1.8 2.8)">${outline}</g>`;
 }
 
 /** The origami pigeon (bible § 5, proof A): three folded facets, a teal neck, a beak, a bead eye. */

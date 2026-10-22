@@ -11,8 +11,8 @@ exports[`PageView layers and budget > node counts per layer (1-2 is far below th
     "elements": 134,
   },
   "creatures": {
-    "animated": 13,
-    "elements": 14,
+    "animated": 12,
+    "elements": 13,
   },
   "cutouts": {
     "animated": 0,
@@ -20,7 +20,7 @@ exports[`PageView layers and budget > node counts per layer (1-2 is far below th
   },
   "floor": {
     "animated": 0,
-    "elements": 77,
+    "elements": 56,
   },
   "foreground": {
     "animated": 0,
@@ -35,12 +35,12 @@ exports[`PageView layers and budget > node counts per layer (1-2 is far below th
     "elements": 5,
   },
   "parts-mid": {
-    "animated": 21,
-    "elements": 22,
+    "animated": 20,
+    "elements": 21,
   },
   "parts-near": {
-    "animated": 29,
-    "elements": 49,
+    "animated": 28,
+    "elements": 48,
   },
   "strip": {
     "animated": 0,

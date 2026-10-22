@@ -7,6 +7,7 @@ import { pageById } from './pages';
 import { PlaytestLog } from './game/playtest';
 import { PagePlayer } from './view/PagePlayer';
 import { GameShell } from './view/screens/GameShell';
+import { UprightGuard } from './view/screens/UprightGuard';
 
 /**
  * 翻翻台北 Pop-Up Taipei, the site's game at `#/` since the routing switch (#109; `#/popup`, its
@@ -61,6 +62,14 @@ export default function PopupGame({ farewell = false }: PopupGameProps) {
   const script = useMemo(() => (def && demo && ticks === 0 ? demoScript(def) : undefined), [def, demo, ticks]);
   const metrics = params.get('debug') === 'metrics';
   const playtest = useMemo(() => (metrics ? new PlaytestLog() : null), [metrics]);
-  if (def) return <PagePlayer key={`${def.id}-${ticks}-${demo}`} def={def} from={from} speed={speed} paused={params.get('paused') === '1'} script={script} tutorials={params.get('tutorial') === '1'} />;
-  return <GameShell farewell={farewell} playtest={playtest} />;
+  return (
+    <>
+      {def ? (
+        <PagePlayer key={`${def.id}-${ticks}-${demo}`} def={def} from={from} speed={speed} paused={params.get('paused') === '1'} script={script} tutorials={params.get('tutorial') === '1'} />
+      ) : (
+        <GameShell farewell={farewell} playtest={playtest} />
+      )}
+      <UprightGuard />
+    </>
+  );
 }
