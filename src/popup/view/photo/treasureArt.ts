@@ -5,7 +5,7 @@ import { albumChapter } from '../../content/album';
 /**
  * The chapter treasures as the spread and the photo draw them (GDD § 2.9, § 4.2; #103), flat SVG
  * in local units centred on (0, 0), about 40 units across. 雞腿 (chapter 1), 畫筆 (chapter 2,
- * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119), 蔥 (chapter 5, #122), 印章 (chapter 6, #124), 芹菜 (chapter 7, #126), 算盤 (chapter 8, #130) and 聽診器 (chapter 9, #132) are drawn; the other chapters' treasures are a foil token with the treasure's first
+ * #115), 書 (chapter 3, #117), 麥克風 (chapter 4, #119), 蔥 (chapter 5, #122), 印章 (chapter 6, #124), 芹菜 (chapter 7, #126), 算盤 (chapter 8, #130) and 聽診器 (chapter 9, #132) and 金鎖片 (chapter 10, #134) are drawn; the other chapters' treasures are a foil token with the treasure's first
  * character until their chapters' art issues draw them. Treasures are foil-trimmed (bible § 3.1: foil is the treasure's stock) and
  * never marigold (reserved for touchables). The caller's defs must hold `foil`.
  */
@@ -199,6 +199,24 @@ function stethoscope(ctx: KitCtx): string {
     + sparkle(ctx, 19, -12, 4);
 }
 
+/**
+ * 金鎖片 (chapter 10, #134; 平平安安, the 度晬 blessing): a gold 長命鎖 on its red cord — the lock plate
+ * in the 如意 cloud shape, foil, 「平安」 stamped on it, three little gold bells hung from its foot;
+ * a glint. Few elements (it is drawn in 咻咻's cloud, on the page and in his bubble).
+ */
+function goldLock(ctx: KitCtx): string {
+  const plate = 'M-14 -6Q-19 -6 -18 -1Q-17 4 -12 4Q-12 10 -6 10Q-2 10 0 7Q2 10 6 10Q12 10 12 4Q17 4 18 -1Q19 -6 14 -6Q12 -12 6 -12H-6Q-12 -12 -14 -6Z';
+  return `<ellipse cx="0" cy="20" rx="15" ry="2.6" fill="${C.shadow}" opacity=".28"/>`
+    // The red cord looped over the top
+    + `<path d="M-9 -11Q-12 -24 0 -24Q12 -24 9 -11" stroke="${C.hatRed}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+    + `<path d="${plate}" fill="${ref(ctx, 'foil')}"/><path d="${plate}" fill="none" stroke="${C.goldDeep}" stroke-width="1"/>`
+    + `<text data-art-text="" x="0" y="2.6" text-anchor="middle" font-family="'Noto Serif TC', serif" font-weight="900" font-size="8" fill="${C.foilInk}">平安</text>`
+    // Three little bells on short chains
+    + `<path d="M-7 10v4M0 9v5M7 10v4" stroke="${C.goldDeep}" stroke-width=".8"/>`
+    + `<path d="M-9.4 14a2.4 2.6 0 0 1 4.8 0zM-2.4 15a2.4 2.6 0 0 1 4.8 0zM4.6 14a2.4 2.6 0 0 1 4.8 0z" fill="${ref(ctx, 'foil')}"/>`
+    + sparkle(ctx, 16, -16, 4);
+}
+
 /** A treasure not drawn yet: a foil token with its first character. */
 function token(ctx: KitCtx, name: string): string {
   return `<ellipse cx="1" cy="17" rx="15" ry="3" fill="${C.shadow}" opacity=".28"/>`
@@ -217,6 +235,7 @@ export function treasureArt(ctx: KitCtx, chapter: number): string {
   if (chapter === 7) return celery(ctx);
   if (chapter === 8) return abacus(ctx);
   if (chapter === 9) return stethoscope(ctx);
+  if (chapter === 10) return goldLock(ctx);
   return token(ctx, albumChapter(chapter).treasure);
 }
 

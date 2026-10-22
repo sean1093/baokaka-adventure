@@ -81,6 +81,16 @@ const HEX = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
  * Bakes a grade into an SVG string: every `#RGB` / `#RRGGBB` colour multiplied by `by`, except
  * those in `keep` (compared upper-case). Pure; identity grades return the input unchanged.
  */
+/**
+ * The inverse of the bake's grade for a chapter's backdrop (D-99, chapter 10): every colour the
+ * bake would grade divided by the chapter's grade, so a drawing authored in **screen colours** lands
+ * back on them after `gradeSvg`. Lets a chapter's backdrops and its parts (never graded) share one kit.
+ */
+export function ungradeSvg(svg: string, chapter: number): string {
+  const g = envGrade(chapter);
+  return gradeSvg(svg, [1 / g[0], 1 / g[1], 1 / g[2]], keepColours(chapter));
+}
+
 export function gradeSvg(svg: string, by: Rgb, keep: ReadonlySet<string> = new Set()): string {
   if (isIdentity(by)) return svg;
   return svg.replace(HEX, (match, hex: string) => {

@@ -10,6 +10,7 @@ import { nightHerons } from './airport';
 import { pangolin, sleepingBear, teaFarmer } from './maokong';
 import { eggBasket } from './beitou';
 import { gulls, sparrows } from './tamsui';
+import { sleepyCommuter } from './taipei101';
 import { busker, dancers, karaokeKing } from './ximen';
 
 /**
@@ -76,8 +77,8 @@ const CREATURES: Readonly<Record<string, CreatureArt>> = {
   // 淡水 (#132, `tamsui.ts`): 9-1's sparrows on the sill, the gulls on 9-5's cables and 9-6's boat (origami)
   'c9/sparrows': sparrows,
   'c9/gulls': gulls,
-  // 台北101 (#133): 10-1's sleeping commuter wears 2-1's commuter until the chapter's art (#134)
-  'c10/commuter': commuter,
+  // 台北101 (#134, `taipei101.ts`): 10-1's 上班族 asleep on the 月亮線
+  'c10/commuter': sleepyCommuter,
 };
 
 export type ArtKind = 'part' | 'backdrop' | 'creature' | 'cutout';

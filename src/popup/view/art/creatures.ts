@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_STAGE as S, POPUP_STATION as T } from '../../../art/palette';
+import { POPUP as C, POPUP_101 as K, POPUP_STAGE as S, POPUP_STATION as T } from '../../../art/palette';
 import { depth, softEllipse, type KitCtx } from '../../art';
 
 /**
@@ -31,36 +31,69 @@ export function origamiPigeon(ctx: KitCtx): string {
       + `<path d="M-6 -15L-1 -1" stroke="${C.cutRim}" stroke-width=".7" opacity=".7"/><circle cx="11.4" cy="-16.6" r="1" fill="${C.ink}"/>`, `<path d="${body}"/>`);
 }
 
-/** 咻咻's cloud outline (the prologue's peeking cloud, `shushuPeek`, at creature size), centred on the origin. */
-const SHUSHU_CLOUD = 'M-22 9q-13 0 -13 -11q0 -11 13 -11q2 -14 18 -14q13 0 18 11q13 -2 14 11q2 14 -13 14z';
+/** 咻咻's cloud body (cast sheet: a pillow-sized puff, its top crowned with bumps), centred on the origin. */
+const SHUSHU_CLOUD = 'M-26 12q-13 0 -13 -12q0 -11 11 -12q0 -14 14 -16q6 -11 18 -8q10 -8 20 1q12 0 13 13q11 3 9 15q-1 10 -13 10q-6 6 -17 4q-8 6 -20 2q-10 6 -22 3z';
+/** Its wispy tail of wind, trailing behind (−x). */
+const SHUSHU_WISP = 'M-36 2q-10 -2 -16 4M-38 -8q-8 -4 -14 0';
+
+/** One of 咻咻's big anime eyes (cast sheet): white, a blue iris with its pupil, two highlights; looking up at them. */
+function shushuEye(x: number, y: number, k = 1): string {
+  return `<ellipse cx="${x}" cy="${y}" rx="${4.8 * k}" ry="${5.8 * k}" fill="${C.cutRim}"/>`
+    + `<ellipse cx="${x + 0.6 * k}" cy="${y - 0.6 * k}" rx="${3.8 * k}" ry="${4.8 * k}" fill="${K.eye}"/>`
+    + `<ellipse cx="${x + 0.6 * k}" cy="${y + 1.4 * k}" rx="${2.6 * k}" ry="${2.4 * k}" fill="${K.eyeLight}" opacity=".8"/>`
+    + `<circle cx="${x + 0.8 * k}" cy="${y - 1.2 * k}" r="${1.9 * k}" fill="${C.ink}"/>`
+    + `<circle cx="${x - 0.8 * k}" cy="${y - 2.6 * k}" r="${1.4 * k}" fill="${C.cutRim}"/><circle cx="${x + 2 * k}" cy="${y + 1.6 * k}" r="${0.7 * k}" fill="${C.cutRim}"/>`
+    + `<ellipse cx="${x}" cy="${y}" rx="${4.8 * k}" ry="${5.8 * k}" fill="none" stroke="${C.ink}" stroke-width="${0.9 * k}"/>`;
+}
 
 /**
- * 咻咻 (GDD § 4.1; #128), the baby typhoon, as a creature: a little paper cloud with a face, feet
- * (its float point) at the origin. Up in its rain cloud (`pos` 'cloud' or 'sky') it is lilac grey,
- * eyes shut tight, and drizzles on whatever is under it; anywhere else — down on the floor,
- * following the pair (`lonely`) — a small white cloud hovering over its own soft shadow, looking up
- * at them with a tear still on its cheek.
+ * 咻咻 (GDD § 4.1; #128; its final look by #134 after the cast sheet,
+ * `docs/art/options/d-anime/cast-sheet.png`), the baby typhoon, as a creature: a pillow-sized puff
+ * of cloud with big glossy anime eyes, a blush, a typhoon's swirl on its side and a wisp of wind
+ * trailing behind; its float point (feet) at the origin, facing +x. Three forms:
+ * - **crying**, up in its rain cloud (`pos` 'cloud' or 'sky'): rain grey, brows tipped up, tears
+ *   streaming from both eyes, rain drizzling on whatever is under it;
+ * - **lonely**, anywhere else (down at the party, following the pair): pale blue-grey, hovering
+ *   over its soft shadow, looking up at them, one tear still on its cheek;
+ * - **calm** once hugged (`calm`, `up`): white and soft (「小雲，慢慢變白、變軟了。」), eyes curved
+ *   happy, a smile, little sparkles.
+ * Flat fills (it moves: no filters, GDD § 3.9).
  */
 export function shushuCloud(ctx: KitCtx, pos?: string): string {
   const raining = pos === 'cloud' || pos === 'sky';
+  const calm = pos === 'calm' || pos === 'up';
   const lift = raining ? 0 : -40;
-  const body = raining ? S.rainCloud : C.vellum;
-  const shade = raining ? S.rainCloudDeep : C.printLilac;
+  const body = raining ? S.rainCloud : calm ? K.cloudCalm : K.cloud;
+  const shade = raining ? S.rainCloudDeep : calm ? K.cloudCalmShade : K.cloudShade;
+  const deep = calm ? K.cloudShade : K.cloudDeep;
+  // The underside's shade (a lower bulge), the swirl (the eye of the typhoon), the rim light on top
+  const under = 'M-30 4q4 8 14 8q10 6 22 2q11 2 17 -4q12 0 13 -10q-4 8 -14 7q-6 6 -17 3q-9 5 -20 1q-10 3 -15 -7z';
+  const swirl = 'M-24 2q0 -8 8 -8q7 0 7 6q0 5 -5 5q-4 0 -4 -3.4';
   const eyes = raining
-    ? `<path d="M2 -4q2.6 2.2 5.2 0M11 -4q2.6 2.2 5.2 0" stroke="${C.ink}" stroke-width="1.5" stroke-linecap="round" fill="none"/>`
-    : `<circle cx="4.6" cy="-4.4" r="1.9" fill="${C.ink}"/><circle cx="13.4" cy="-3.8" r="1.9" fill="${C.ink}"/><circle cx="5.2" cy="-5.1" r=".6" fill="${C.cutRim}"/><circle cx="14" cy="-4.5" r=".6" fill="${C.cutRim}"/>`;
-  const tear = `<path d="M17.6 -0.6q1.8 2.8 0 4.2q-1.8 -1.4 0 -4.2z" fill="${S.drizzle}" stroke="${shade}" stroke-width=".5"/>`;
-  let drizzle = '';
-  if (raining) for (const [x, y, l] of [[-24, 18, 16], [-12, 24, 22], [0, 18, 18], [12, 26, 20], [24, 18, 14]] as const) drizzle += `M${x} ${y}l-3 ${l}`;
-  return (raining ? '' : softEllipse(ctx, 0, 1, 20, 3.4, 'shadow', 0.3))
+    // Crying (cast sheet's 哭哭咻咻): eyes squeezed, brows up, tears streaming down
+    ? `<path d="M2 -4q3 -2.6 6 0M14 -4q3 -2.6 6 0" stroke="${C.ink}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`
+      + `<path d="M1 -10l6 -2.4M21 -10l-6 -2.4" stroke="${deep}" stroke-width="1.2" stroke-linecap="round"/>`
+      + `<path d="M4 -2v14M18 -2v14" stroke="${K.tear}" stroke-width="2.6" stroke-linecap="round" opacity=".9"/>`
+      + `<path d="M9 4q2 -2 4 0" stroke="${C.ink}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`
+    : calm
+      ? `<path d="M1.6 -4q3.4 -4 6.8 0M13.6 -4q3.4 -4 6.8 0" stroke="${C.ink}" stroke-width="1.6" stroke-linecap="round" fill="none"/>`
+        + `<path d="M7.6 2q3.4 4 6.8 0z" fill="${S.blush}" stroke="${C.ink}" stroke-width="1" stroke-linejoin="round"/>`
+      : shushuEye(4.6, -4.6, 0.92) + shushuEye(17, -4.2, 0.92)
+        + `<path d="M8.6 3.4q2.4 -1.4 4.8 0" stroke="${C.ink}" stroke-width="1" fill="none" stroke-linecap="round"/>`
+        + `<path d="M21.6 0.4q1.8 2.8 0 4.2q-1.8 -1.4 0 -4.2z" fill="${K.tear}" stroke="${C.cutRim}" stroke-width=".5"/>`;
+  let rain = '';
+  if (raining) for (const [x, y, l] of [[-26, 18, 16], [-14, 24, 22], [-2, 18, 18], [10, 26, 20], [22, 18, 14], [32, 22, 12]] as const) rain += `M${x} ${y}l-3 ${l}`;
+  const sparkles = calm ? `<path d="M-30 -30l1.6 4l4 1.6l-4 1.6l-1.6 4l-1.6 -4l-4 -1.6l4 -1.6zM34 -26l1.2 3l3 1.2l-3 1.2l-1.2 3l-1.2 -3l-3 -1.2l3 -1.2z" fill="${C.lampHot}" opacity=".9"/>` : '';
+  return (raining ? '' : softEllipse(ctx, 0, 1, 22, 3.6, 'shadow', 0.28))
     + `<g transform="translate(0 ${lift})">`
-    + (raining ? `<path d="${drizzle}" stroke="${S.drizzle}" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="5 4" opacity=".85"/>` : '')
-    + depth(ctx, 2, `<path d="${SHUSHU_CLOUD}" fill="${body}"/>`
-      + `<path d="M-14 4q0 -9 9 -9q8 0 8 6q0 5 -5 5q-3 0 -3 -3" stroke="${shade}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`
-      + `<path d="M-30 1q2 -8 10 -8" stroke="${C.cutRim}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".7"/>`
-      + eyes + `<circle cx="1.6" cy="1.4" r="2.6" fill="${S.blush}" opacity=".55"/><circle cx="17" cy="2" r="2.4" fill="${S.blush}" opacity=".55"/>`
-      + (raining ? '' : tear), `<path d="${SHUSHU_CLOUD}"/>`)
-    + `</g>`;
+    + (raining ? `<path d="${rain}" stroke="${S.drizzle}" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="5 4" opacity=".85"/>` : '')
+    + `<path d="${SHUSHU_WISP}" stroke="${body}" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".8"/>`
+    + depth(ctx, 2, `<path d="${SHUSHU_CLOUD}" fill="${body}"/><path d="${under}" fill="${shade}" opacity=".7"/>`
+      + `<path d="${swirl}" stroke="${shade}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`
+      + `<path d="M-30 -2q1 -10 12 -11M-8 -26q8 -6 16 -2" stroke="${C.cutRim}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/>`
+      + `<ellipse cx="-0.6" cy="2.4" rx="3.2" ry="2" fill="${S.blush}" opacity=".6"/><ellipse cx="23.4" cy="2.6" rx="3" ry="1.9" fill="${S.blush}" opacity=".6"/>`
+      + eyes, `<path d="${SHUSHU_CLOUD}"/>`)
+    + sparkles + `</g>`;
 }
 
 /** A rain puddle on the floor page (#128: 咻咻's tears, 10-5), centred on a node's floor point. */

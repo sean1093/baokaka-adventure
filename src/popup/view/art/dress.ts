@@ -26,7 +26,8 @@ export type LedgeStyle = 'brick' | 'rug' | 'playmat' | 'crib' | 'carBody' | 'car
   | 'carBodyWenhu' | 'terminalFloor' | 'deckBoards' | 'bridgeFloor' | 'catwalk'
   | 'zooPlatform' | 'zooPlaza' | 'gondolaDeck' | 'teaTerrace' | 'teaDeck' | 'chahai' | 'cabinBench' | 'cabinRack' | 'cabinGlass' | 'gardenPath' | 'gardenPathJar' | 'gardenTerrace'
   | 'carSeat' | 'carBodyBeitou' | 'valleyBoardwalk' | 'valleyRock' | 'bathBoardwalk' | 'libraryLoft' | 'libraryStacks' | 'bathDeck' | 'bathStep' | 'hallFloor' | 'bantaiCounter'
-  | 'mrtSeat' | 'windowSill' | 'oldStreetLane' | 'arcadeStep' | 'eggCounter' | 'pierDeck' | 'ferryDeck' | 'wharfBoardwalk' | 'wharfPier' | 'bridgeWalkway' | 'towerBase' | 'quay' | 'boatDeck';
+  | 'mrtSeat' | 'windowSill' | 'oldStreetLane' | 'arcadeStep' | 'eggCounter' | 'pierDeck' | 'ferryDeck' | 'wharfBoardwalk' | 'wharfPier' | 'bridgeWalkway' | 'towerBase' | 'quay' | 'boatDeck'
+  | 'observatoryFloor' | 'ticketHall' | 'plaza101' | 'atriumBalcony' | 'damperCase' | 'roofTerrace' | 'roofStep' | 'skyDeck' | 'railFooting';
 
 /** The near-corner foreground card. */
 export type ForegroundCard = 'plant' | 'blocks' | 'luggage' | 'shrub' | 'azalea';
@@ -153,6 +154,18 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   'c9/tamkang-bridge': { ledge: 'bridgeWalkway', ledgeSplit: { x: 220, style: 'towerBase' }, ownPosts: ['lamp', 'beam'], foreground: null, crossing: 'none' },
   // The quay on the left page, the fishing boat's deck on the right (the derrick's basket is the way across)
   'c9/fishing-harbour': { ledge: [{ below: 435, style: 'boatDeck' }, { below: 999, style: 'quay' }], ownPosts: ['lamp', 'wheelhouse'], foreground: null, crossing: 'none' },
+  // 台北101 (#134): the 月亮線 car — the front window's sill over the car's red-banded body (the racks are the backdrop's; the door is the way on)
+  // 101's express elevator: the 89F observatory's floor over the 5F ticket hall (the car is the way up; the 清潔阿伯 the way across)
+  'c10/elevator': { ledge: [{ below: 300, style: 'observatoryFloor' }, { below: 999, style: 'ticketHall' }], ownPosts: ['shelf', 'counter'], foreground: null, crossing: 'none' },
+  // The podium's roof terrace at the tower's foot; the sections' ledges ride them (their art is the carriage: no pit, no rails)
+  'c10/tower-sections': { ledge: 'plaza101', ownPosts: ['beam', 'rimLow', 'rimTop'], foreground: null, crossing: 'none', trackPit: false },
+  // 88F's viewing balconies round the damper's atrium, the display case (the sphere is the way across)
+  'c10/damper': { ledge: [{ below: 440, style: 'damperCase' }, { below: 999, style: 'atriumBalcony' }], ownPosts: ['rail', 'mount'], foreground: null, crossing: 'none' },
+  // 咻咻's party on the roof: the back of the table's ring a low step, the terrace's wet tiles (the cake is the backdrop's table's)
+  'c10/roof-party': { ledge: [{ below: 440, style: 'roofStep' }, { below: 999, style: 'roofTerrace' }], ownPosts: ['lamp', 'gift'], foreground: null, crossing: 'none' },
+  // The outdoor deck at first light: the railing's footing (its rail is the backdrop's, at his chest), the open deck
+  'c10/observation-deck': { ledge: [{ below: 470, style: 'railFooting' }, { below: 999, style: 'skyDeck' }], ownPosts: ['scope'], foreground: null },
+  'c10/xinyi-line': { ledge: [{ below: 450, style: 'windowSill' }, { below: 999, style: 'carBodyXinyi' }], ownPosts: ['rack1', 'rack2'], foreground: null, crossing: 'none' },
 };
 
 const NONE: StageDress = {};

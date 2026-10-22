@@ -168,6 +168,23 @@ describe('art registry fallback', () => {
     expect(new Set(drawn).size).toBe(drawn.length);
   });
 
+  test('chapter 10\'s cast, 咻咻\'s three forms and the sections\' ledges (#134): own art, no filters, never marigold', async () => {
+    const { carriageArt } = await import('./carriages');
+    const ctx = kitCtx('t');
+    const drawn: string[] = [];
+    for (const [key, positions] of [['c10/commuter', ['aisle', 'seat']], ['common/shushu', ['cloud', 'q1', 'calm']]] as const) {
+      expect(creatureArt(key), key).not.toBe(origamiBird);
+      for (const pos of positions) drawn.push(creatureArt(key)(ctx, pos));
+    }
+    for (const key of ['c10/tower-section', 'c10/section-crank']) drawn.push(carriageArt(key)(ctx, 52, false));
+    for (const svg of drawn) {
+      expect(svg).not.toMatch(/\bfilter=/);
+      expect(lintMarkup(svg, { page: 'c10', touchable: () => false, expected: [], where: 'c10' })).toEqual([]);
+    }
+    // The two ledge keys share one drawing; everything else differs
+    expect(new Set(drawn).size).toBe(drawn.length - 1);
+  });
+
   test('each missing key is logged once (per kind) in dev', () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     partArt('x/one', 'flap');

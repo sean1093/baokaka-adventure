@@ -58,8 +58,9 @@ export default definePage({
     // Every press of the panel sends the car to the other floor
     { id: 'elevator', preset: 'lift', states: ['5F', '89F'], initial: '89F', hit: { x: 180, y: 200, w: 60, h: 300 },
       react: [{ on: { type: 'partEnter', id: 'panel', state: 'down' }, to: 'toggle' }], art: 'c10/elevator' },
-    // The car's panel rides with the car, under Mocha's seat
-    { id: 'panel', preset: 'button', ridesOn: 'E', hit: { x: 208, y: 394, w: 56, h: 56 }, art: 'c10/elevator-panel' },
+    // The car's panel rides with the car, under Mocha's seat (its hit authored where the car starts,
+    // at 89F, as a riding part's is: #134 moved it from the 5F place, where it drew 224 below the car)
+    { id: 'panel', preset: 'button', ridesOn: 'E', hit: { x: 208, y: 170, w: 56, h: 56 }, art: 'c10/elevator-panel' },
     // The altitude dial over the shaft: the car turns it (5 … 89), nobody else
     { id: 'altimeter', preset: 'section', states: ['5F', '89F'], initial: '89F', hit: { x: 182, y: 120, w: 56, h: 56 }, art: 'c10/altimeter',
       react: [

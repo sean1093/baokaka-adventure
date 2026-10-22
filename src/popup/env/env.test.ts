@@ -1,7 +1,8 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
-import { kitCtx } from '../art';
+import { POPUP, POPUP_101 } from '../../art/palette';
+import { deltaEHex, kitCtx } from '../art';
 import { initialState, withPartState } from '../core';
 import type { PageDef } from '../core/types';
 import { PAGES, pageById } from '../pages';
@@ -12,7 +13,7 @@ import { PageView } from '../view/PageView';
 import { PAGE_VIEW_BOX } from '../view/geometry';
 import { backdropHash, cutoutHash, envHash, partHash, screenHash } from './bake';
 import { ENV_MANIFEST } from './env.gen';
-import { envGrade, gradeKey, gradeSvg, isIdentity, keepColours, standeeGrade } from './grade';
+import { envGrade, gradeKey, gradeSvg, isIdentity, keepColours, standeeGrade, ungradeSvg } from './grade';
 import { backdropImage, bundledEnvFiles, cutoutImage, envUrl, pageArtUrls, partImage, screenImage } from './loader';
 import { ENV_SCALE, envFile, manifestFiles, validateEnvManifest, type EnvManifest } from './manifest';
 import { FIRST_LOAD_BUDGET, PAGE_ART_BUDGET, firstLoad, formatReport, pageArt } from './report';
@@ -429,6 +430,40 @@ describe('sources', () => {
     expect(Object.keys(M.parts['c9/iron-egg-granny']?.states ?? {})).toEqual(expect.arrayContaining(['idle', 'carrying', 'back', 'done']));
     expect(new Set(['dawn', 'noon', 'sunset'].map((s) => partImage('c9/tide', s)?.url)).size).toBe(3);
     expect(lintMarkup(CUTOUT_SOURCES['c9/tune-plate'].draw(kitCtx('t', { filters: true })), { page: 'c9', touchable: () => false, expected: [], where: 'tune-plate' })).toEqual([]);
+  });
+
+  test('chapter 10 (#134): every art key resolves to its own art — no live placeholder, no placeholder stage', () => {
+    const c10 = PAGES.filter((p) => p.chapter === 10);
+    expect(c10.map((p) => p.id)).toEqual(['c10p1', 'c10p2', 'c10p3', 'c10p4', 'c10p5', 'c10p6']);
+    for (const b of backdropSources(c10)) {
+      expect(b.placeholder, b.key).toBe(false);
+      expect(lintMarkup(b.draw(kitCtx('t', { filters: true })), { page: b.key, touchable: () => false, expected: [], where: b.key }), b.key).toEqual([]);
+    }
+    for (const p of c10) {
+      expect(pageArt(p, M).placeholders, p.id).toEqual([]);
+      for (const part of p.parts) expect(isPlaceholder(part.art), `${p.id} ${part.art}`).toBe(false);
+      for (const c of p.creatures) expect(hasCreatureArt(c.art), `${p.id} ${c.art}`).toBe(true);
+    }
+    // One drawing for the altitude dial, the sections' medallion and the crank (the view turns them)
+    expect(partImage('c10/altimeter', '89F')?.url).toBe(partImage('c10/altimeter', '5F')?.url);
+    for (const state of ['1', '2']) {
+      expect(partImage('c10/tower-section', state)?.url, state).toBe(partImage('c10/tower-section', '0')?.url);
+      expect(partImage('c10/section-crank', state)?.url, state).toBe(partImage('c10/section-crank', '0')?.url);
+    }
+    // The 清潔阿伯 is baked per look (D-85); the cake lights a candle a state; the sphere swings (a bitmap per stop)
+    expect(Object.keys(M.parts['c10/cleaner-uncle']?.states ?? {})).toEqual(expect.arrayContaining(['idle', 'carrying', 'back', 'done']));
+    expect(new Set(['0', '1', '2', '3', '4'].map((s) => partImage('c10/cake', s)?.url)).size).toBe(5);
+    expect(new Set(['left', 'centre', 'right'].map((s) => partImage('c10/damper', s)?.url)).size).toBe(3);
+  });
+
+  test('chapter 10\'s backdrops are authored in screen colours (D-99): the bake\'s grade lands them back on the kit', () => {
+    const svg = `<rect fill="${POPUP_101.violet}"/><rect fill="${POPUP_101.peach}"/>`;
+    const back = gradeSvg(ungradeSvg(svg, 10), envGrade(10), keepColours(10));
+    const hexes = [...back.matchAll(/#[0-9A-F]{6}/g)].map((m) => m[0]);
+    expect(hexes).toHaveLength(2);
+    for (const [i, h] of hexes.entries()) expect(deltaEHex(h, [POPUP_101.violet, POPUP_101.peach][i])).toBeLessThan(1);
+    // Lights, foil and the sky are never graded, so never ungraded either
+    expect(ungradeSvg(`<rect fill="${POPUP.lamp}"/>`, 10)).toBe(`<rect fill="${POPUP.lamp}"/>`);
   });
 
   test('4-3\'s shadow (the 淘氣\'s art) shows only while Mocha hides behind the lit second sign (#119)', () => {

@@ -761,7 +761,7 @@ export const ENV_MANIFEST: EnvManifest = {
     },
     "c10/xinyi-line": {
       "file": "backdrops/c10/xinyi-line",
-      "bytes": 102748,
+      "bytes": 116736,
       "chapter": 10,
       "grade": [1.515, 1.368, 1.185],
       "box": {
@@ -770,11 +770,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "d4842e509be0eb5b"
+      "source": "f67dd5627dc423ff"
     },
     "c10/elevator": {
       "file": "backdrops/c10/elevator",
-      "bytes": 102748,
+      "bytes": 127098,
       "chapter": 10,
       "grade": [1.515, 1.368, 1.185],
       "box": {
@@ -783,11 +783,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "d4842e509be0eb5b"
+      "source": "0d63d1866680d062"
     },
     "c10/tower-sections": {
       "file": "backdrops/c10/tower-sections",
-      "bytes": 102748,
+      "bytes": 134396,
       "chapter": 10,
       "grade": [1.515, 1.368, 1.185],
       "box": {
@@ -796,11 +796,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "d4842e509be0eb5b"
+      "source": "9f4ecbf49b2fcaeb"
     },
     "c10/damper": {
       "file": "backdrops/c10/damper",
-      "bytes": 102748,
+      "bytes": 204482,
       "chapter": 10,
       "grade": [1.515, 1.368, 1.185],
       "box": {
@@ -809,11 +809,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "d4842e509be0eb5b"
+      "source": "72439144229fc550"
     },
     "c10/roof-party": {
       "file": "backdrops/c10/roof-party",
-      "bytes": 102748,
+      "bytes": 119356,
       "chapter": 10,
       "grade": [1.515, 1.368, 1.185],
       "box": {
@@ -822,11 +822,11 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "d4842e509be0eb5b"
+      "source": "f993080f6cc037a6"
     },
     "c10/observation-deck": {
       "file": "backdrops/c10/observation-deck",
-      "bytes": 102748,
+      "bytes": 70960,
       "chapter": 10,
       "grade": [1.515, 1.368, 1.185],
       "box": {
@@ -835,7 +835,7 @@ export const ENV_MANIFEST: EnvManifest = {
         "w": 450,
         "h": 688
       },
-      "source": "d4842e509be0eb5b"
+      "source": "7034f371daeadf78"
     }
   },
   "parts": {
@@ -4007,49 +4007,227 @@ export const ENV_MANIFEST: EnvManifest = {
       },
       "source": "666edd84a9b49574"
     },
+    "c10/cake": {
+      "preset": "section",
+      "box": {
+        "x": -32,
+        "y": -28,
+        "w": 70,
+        "h": 69
+      },
+      "pivot": [0, 0],
+      "states": {
+        "0": {
+          "file": "parts/c10/cake.0",
+          "bytes": 4666
+        },
+        "1": {
+          "file": "parts/c10/cake.1",
+          "bytes": 4628
+        },
+        "2": {
+          "file": "parts/c10/cake.2",
+          "bytes": 4536
+        },
+        "3": {
+          "file": "parts/c10/cake.3",
+          "bytes": 4452
+        },
+        "4": {
+          "file": "parts/c10/cake.4",
+          "bytes": 4384
+        }
+      },
+      "source": "1683d7e9ebe7771c"
+    },
+    "c10/tower-section": {
+      "preset": "section",
+      "box": {
+        "x": -27,
+        "y": -23,
+        "w": 60,
+        "h": 59
+      },
+      "pivot": [0, 0],
+      "states": {
+        "0": {
+          "file": "parts/c10/tower-section.0",
+          "bytes": 3904
+        }
+      },
+      "source": "e03315e3d202108f"
+    },
+    "c10/section-crank": {
+      "preset": "wheel",
+      "box": {
+        "x": -43,
+        "y": -36,
+        "w": 91,
+        "h": 84
+      },
+      "pivot": [0, 0],
+      "states": {
+        "0": {
+          "file": "parts/c10/section-crank.0",
+          "bytes": 5072
+        }
+      },
+      "lifted": {
+        "0": {
+          "file": "parts/c10/section-crank.0.lifted",
+          "bytes": 6198
+        }
+      },
+      "source": "daf69211ac675ede"
+    },
+    "c10/elevator": {
+      "preset": "lift",
+      "box": {
+        "x": -38,
+        "y": -99,
+        "w": 83,
+        "h": 127
+      },
+      "states": {
+        "5F": {
+          "file": "parts/c10/elevator.5F",
+          "bytes": 3326
+        },
+        "89F": {
+          "file": "parts/c10/elevator.89F",
+          "bytes": 3326
+        }
+      },
+      "source": "6b197998371017b5"
+    },
+    "c10/elevator-panel": {
+      "preset": "button",
+      "box": {
+        "x": -13,
+        "y": -2,
+        "w": 30,
+        "h": 55
+      },
+      "states": {
+        "up": {
+          "file": "parts/c10/elevator-panel.up",
+          "bytes": 2004
+        },
+        "down": {
+          "file": "parts/c10/elevator-panel.down",
+          "bytes": 2116
+        }
+      },
+      "source": "21ef6c60870a35d5"
+    },
+    "c10/altimeter": {
+      "preset": "section",
+      "box": {
+        "x": -28,
+        "y": -24,
+        "w": 61,
+        "h": 61
+      },
+      "pivot": [0, 0],
+      "states": {
+        "5F": {
+          "file": "parts/c10/altimeter.5F",
+          "bytes": 4856
+        }
+      },
+      "source": "658e816854812fe5"
+    },
+    "c10/cleaner-uncle": {
+      "preset": "carrier",
+      "box": {
+        "x": -50,
+        "y": -153,
+        "w": 114,
+        "h": 169
+      },
+      "states": {
+        "idle": {
+          "file": "parts/c10/cleaner-uncle.idle",
+          "bytes": 9386
+        },
+        "carrying": {
+          "file": "parts/c10/cleaner-uncle.carrying",
+          "bytes": 7266
+        },
+        "back": {
+          "file": "parts/c10/cleaner-uncle.back",
+          "bytes": 7576
+        },
+        "done": {
+          "file": "parts/c10/cleaner-uncle.done",
+          "bytes": 7604
+        }
+      },
+      "source": "8ba96db849be1864"
+    },
+    "c10/car-door": {
+      "preset": "gate",
+      "box": {
+        "x": -32,
+        "y": -144,
+        "w": 70,
+        "h": 207
+      },
+      "states": {
+        "closed": {
+          "file": "parts/c10/car-door.closed",
+          "bytes": 2386
+        },
+        "open": {
+          "file": "parts/c10/car-door.open",
+          "bytes": 1386
+        }
+      },
+      "source": "3aca5f6956c06b37"
+    },
     "c10/balloons": {
       "preset": "blowable",
       "box": {
-        "x": -31,
-        "y": -90,
-        "w": 63,
-        "h": 126
+        "x": -41,
+        "y": -200,
+        "w": 84,
+        "h": 193
       },
       "states": {
         "down": {
           "file": "parts/c10/balloons.down",
-          "bytes": 5610
+          "bytes": 9850
         },
         "up": {
           "file": "parts/c10/balloons.up",
-          "bytes": 6512
+          "bytes": 5792
         }
       },
-      "source": "4c7b130c335953eb"
+      "source": "56c46331e4ef8eef"
     },
     "c10/damper": {
       "preset": "blowable",
       "box": {
-        "x": -126,
+        "x": -130,
         "y": -171,
-        "w": 212,
-        "h": 251
+        "w": 229,
+        "h": 285
       },
       "states": {
         "left": {
           "file": "parts/c10/damper.left",
-          "bytes": 10738
+          "bytes": 19650
         },
         "centre": {
           "file": "parts/c10/damper.centre",
-          "bytes": 8198
+          "bytes": 8882
         },
         "right": {
           "file": "parts/c10/damper.right",
-          "bytes": 10672
+          "bytes": 18898
         }
       },
-      "source": "a800cc99410ce3c5"
+      "source": "319851f6e1a7fb87"
     }
   },
   "cutouts": {
