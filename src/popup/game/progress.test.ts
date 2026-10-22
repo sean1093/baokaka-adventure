@@ -14,6 +14,7 @@ import {
   freshSave,
   isChapterUnlocked,
   isStoredSave,
+  isBonusUnlocked,
   isUnlocked,
   keepPhoto,
   loadSave,
@@ -485,5 +486,28 @@ describe('the RPG saves', () => {
   test('an RPG save never leaks into the new save', () => {
     const { storage } = fakeStorage({ 'baokaka.quest.v6': JSON.stringify({ version: 6, run: { chapter: 3 } }) });
     expect(loadSave(storage, GAME)).toEqual(freshSave(GAME));
+  });
+
+  test('the bonus page 「象山的日出」 (#135): outside the order, open once every 土地公 of the book is found', () => {
+    const bonus = registry.bonus[0];
+    expect(bonus.id).toBe('c12p1');
+    expect(registry.pages.some((p) => p.id === bonus.id)).toBe(false);
+    expect(registry.pageById('c12p1')?.chapter).toBe(12);
+    const done = registry.pages.reduce((s, p) => completePage(s, p.id), freshSave(registry));
+    // Finishing page E never opens it
+    expect(isUnlocked(done, 'c12p1')).toBe(false);
+    expect(isBonusUnlocked(done)).toBe(false);
+    const allTudigong = registry.pages.reduce((s, p) => earnSticker(s, p.id, 'tudigong'), done);
+    expect(isBonusUnlocked(allTudigong)).toBe(true);
+    expect(isUnlocked(allTudigong, 'c12p1')).toBe(true);
+    // One short is not enough
+    const { c5p3: _gone, ...rest } = allTudigong.pages;
+    expect(isBonusUnlocked({ ...allTudigong, pages: { ...rest, c5p3: { solved: true } } })).toBe(false);
+    // Solving it is kept, and moves neither furthest nor the page to resume; a reload keeps it
+    const solved = completePage(allTudigong, 'c12p1', { mischief: true });
+    expect(solved.pages.c12p1).toEqual({ solved: true, mischief: true });
+    expect([solved.furthest, solved.current]).toEqual([allTudigong.furthest, allTudigong.current]);
+    expect(openPage(solved, 'c12p1').current).toBe(allTudigong.current);
+    expect(decodeSave(encodeSave(solved)).pages.c12p1).toEqual({ solved: true, mischief: true });
   });
 });

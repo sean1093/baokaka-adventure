@@ -5,7 +5,7 @@ import { POPUP, POPUP_101 } from '../../art/palette';
 import { deltaEHex, kitCtx } from '../art';
 import { initialState, withPartState } from '../core';
 import type { PageDef } from '../core/types';
-import { PAGES, pageById } from '../pages';
+import { ALL_PAGES as PAGES, pageById } from '../pages';
 import { lintMarkup } from '../view/affordance/lint';
 import { backdropArt, backdropBitmap, cutoutBitmap, hasCreatureArt, isPlaceholder, partArt, partBitmap } from '../view/art/registry';
 import { placeholderBackdrop } from '../view/art/placeholders';

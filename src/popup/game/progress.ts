@@ -115,10 +115,26 @@ export function freshSave(reg: PageRegistry = gameRegistry, settings: Settings =
   return { v: 1, pages: {}, photos: {}, furthest: first, current: first, settings: { ...settings } };
 }
 
-/** The page's position in play order, or -1 for an unknown id. */
+/** The page's position in play order, or -1 for an unknown id (or a post-game page: outside the order). */
 function orderOf(reg: PageRegistry, id: Id): number {
   return reg.pages.findIndex((p) => p.id === id);
 }
+
+/** A post-game page (#135: the bonus page 「象山的日出」), outside the play order. */
+const isBonusPage = (reg: PageRegistry, id: Id): boolean => reg.bonus.some((p) => p.id === id);
+
+/**
+ * The bonus page 「象山的日出」 is open (GDD § 2.8; #135): every 土地公 of the book's pages is found —
+ * the play order's pages only (the bonus page's own never counts), all 65 of them, so a half-built
+ * registry never opens it. Read off the save, never stored (D-64).
+ */
+export function isBonusUnlocked(save: SaveV1, reg: PageRegistry = gameRegistry, total = BOOK_PAGES): boolean {
+  if (reg.pages.length < total) return false;
+  return reg.pages.every((p) => save.pages[p.id]?.tudigong === true);
+}
+
+/** The book's pages (§ 4.2): the prologue's 4, 6 per chapter, page E — what the § 2.8 rewards count. */
+export const BOOK_PAGES = 65;
 
 // ---------------------------------------------------------------------------------------------
 // The stored form: pack, guard, migrate
@@ -248,7 +264,12 @@ export function decodeSave(stored: StoredV1, reg: PageRegistry = gameRegistry): 
   for (const [id, code] of Object.entries(stored.pages)) {
     const i = orderOf(reg, id);
     const record = unpackPage(code);
-    if (i < 0 || record === undefined) continue;
+    if (record === undefined) continue;
+    // A post-game page keeps its record; it is outside the order (#135)
+    if (i < 0) {
+      if (isBonusPage(reg, id)) pages[id] = record;
+      continue;
+    }
     pages[id] = record;
     if (record.solved) reached = Math.max(reached, Math.min(i + 1, reg.pages.length - 1));
   }
@@ -284,8 +305,12 @@ export function saveNow(save: SaveV1, storage: StorageLike | null = browserStora
 // ---------------------------------------------------------------------------------------------
 // Progress rules (pure: each returns a new save, or the same one when nothing changes)
 
-/** Whether a page can be played: it exists and is at or before the furthest unlocked page. */
+/**
+ * Whether a page can be played: it exists and is at or before the furthest unlocked page — or it is
+ * a post-game page whose reward is earned (#135: 「象山的日出」, every 土地公).
+ */
 export function isUnlocked(save: SaveV1, id: Id, reg: PageRegistry = gameRegistry): boolean {
+  if (isBonusPage(reg, id)) return isBonusUnlocked(save, reg);
   const i = orderOf(reg, id);
   return i >= 0 && i <= orderOf(reg, save.furthest);
 }
@@ -319,6 +344,8 @@ export function completePage(save: SaveV1, id: Id, result: PageResult = {}, reg:
   if (moves !== undefined && Number.isInteger(moves) && moves >= 0 && moves <= 9999) {
     record.bestPar = old.bestPar === undefined ? moves : Math.min(old.bestPar, moves);
   }
+  // A post-game page is outside the order: solving it moves neither `furthest` nor the page to resume (#135)
+  if (isBonusPage(reg, id)) return { ...save, pages: { ...save.pages, [id]: record } };
   const next = reg.nextPage(id);
   const nextId = next?.id ?? id;
   const furthest = orderOf(reg, nextId) > orderOf(reg, save.furthest) ? nextId : save.furthest;
@@ -354,7 +381,8 @@ export function updateSettings(save: SaveV1, patch: Partial<Settings>): SaveV1 {
 
 /** A page opened from the 目錄 or the cover: it becomes the page to resume. Locked pages can't be opened. */
 export function openPage(save: SaveV1, id: Id, reg: PageRegistry = gameRegistry): SaveV1 {
-  return save.current === id || !isUnlocked(save, id, reg) ? save : { ...save, current: id };
+  // A post-game page never becomes the page 「繼續」 opens (#135)
+  return save.current === id || !isUnlocked(save, id, reg) || isBonusPage(reg, id) ? save : { ...save, current: id };
 }
 
 /** 設定 → 「重新開始」 (the 3-second hold is #104's UI): a new game that keeps the settings (D-55). */

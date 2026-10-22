@@ -64,6 +64,7 @@ import c10p4 from './c10/p4';
 import c10p5 from './c10/p5';
 import c10p6 from './c10/p6';
 import pageE from './end/e';
+import xiangshan from './bonus/xiangshan';
 
 /**
  * `src/popup/pages/`: the pages, as data (GDD § 2.1, § 3.4). One folder per chapter (`c0/` …
@@ -96,9 +97,18 @@ const AUTHORED: readonly PageDef[] = [c0p1, c0p2, c0p3, c0p4, c1p1, c1p2, c1p3, 
   // 尾聲 (chapter 11): page E 「抓周」, the interactive ending (#135)
   pageE];
 
+/**
+ * Post-game pages (GDD § 2.8, § 4.4; #135): outside the linear order — never `furthest`, never a
+ * reward's count — opened from the 目錄 once unlocked (the bonus page 「象山的日出」: every 土地公).
+ * They set their own `words` and `baby.growth`.
+ */
+const BONUS: readonly PageDef[] = [xiangshan];
+
 export interface PageRegistry {
   /** Every page in play order, with the order-dependent defaults filled in. */
   readonly pages: readonly PageDef[];
+  /** The post-game pages, outside the play order (#135: 「象山的日出」) */
+  readonly bonus: readonly PageDef[];
   /** The page with this id, or undefined. */
   pageById(id: Id): PageDef | undefined;
   /** The page after this one in play order (across chapters), or null after the last or for an unknown id. */
@@ -114,7 +124,7 @@ const maxGrowth = (a: Growth, b: Growth): Growth => (a >= b ? a : b);
  * Builds a registry from pages in play order. Throws when two pages share an id or the order isn't
  * strictly increasing by (chapter, index) — authoring mistakes `pages.test.ts` reports at once.
  */
-export function buildRegistry(authored: readonly PageDef[]): PageRegistry {
+export function buildRegistry(authored: readonly PageDef[], bonus: readonly PageDef[] = []): PageRegistry {
   const byId = new Map<Id, number>();
   const pages: PageDef[] = [];
   const words: Word[] = [];
@@ -136,11 +146,18 @@ export function buildRegistry(authored: readonly PageDef[]): PageRegistry {
     if (learned?.growth !== undefined) growth = maxGrowth(growth, learned.growth);
   });
 
+  const extra = new Map<Id, PageDef>();
+  for (const def of bonus) {
+    if (byId.has(def.id) || extra.has(def.id)) throw new Error(`page registry: duplicate page id '${def.id}'`);
+    extra.set(def.id, { ...def, words: def.words ?? [], baby: { ...def.baby, growth: def.baby.growth ?? growth } });
+  }
+
   return {
     pages,
+    bonus: [...extra.values()],
     pageById: (id) => {
       const i = byId.get(id);
-      return i === undefined ? undefined : pages[i];
+      return i === undefined ? extra.get(id) : pages[i];
     },
     nextPage: (id) => {
       const i = byId.get(id);
@@ -148,18 +165,22 @@ export function buildRegistry(authored: readonly PageDef[]): PageRegistry {
     },
     chapterOf: (id) => {
       const i = byId.get(id);
-      return i === undefined ? undefined : pages[i].chapter;
+      return i === undefined ? extra.get(id)?.chapter : pages[i].chapter;
     },
   };
 }
 
-const REGISTRY = buildRegistry(AUTHORED);
+const REGISTRY = buildRegistry(AUTHORED, BONUS);
 
 /** The game's registry, for code that takes one as a parameter (`game/progress.ts`). */
 export const registry: PageRegistry = REGISTRY;
 
 /** Every page in play order (prologue first), defaults filled in. */
 export const PAGES: readonly PageDef[] = REGISTRY.pages;
+/** The post-game pages (#135), outside the play order. */
+export const BONUS_PAGES: readonly PageDef[] = REGISTRY.bonus;
+/** Every page there is — the play order, then the post-game pages — for what proves or bakes them all. */
+export const ALL_PAGES: readonly PageDef[] = [...REGISTRY.pages, ...REGISTRY.bonus];
 export const pageById = REGISTRY.pageById;
 export const nextPage = REGISTRY.nextPage;
 export const chapterOf = REGISTRY.chapterOf;

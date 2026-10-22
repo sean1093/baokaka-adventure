@@ -75,7 +75,9 @@ describe('the prologue and chapter 1 (#102, GDD § 5.2)', () => {
     // Chapter 10's end is two beats (#133): 「一起。」 with Mocha's translation, then the sunrise and 廣播姊姊
     expect(endGroups(10)).toEqual([['c10p6.end.1', 'c10p6.end.2'], ['c10p6.end.3', 'c10p6.end.4']]);
     expect(endGroups(1)).toEqual([endLines(1)]);
-    expect(endGroups(12)).toEqual([]);
+    expect(endGroups(13)).toEqual([]);
+    // 番外 (#135): the 土地公's stamp
+    expect(endGroups(12)).toEqual([['x.stamp.1', 'x.stamp.2']]);
     // Page E (#135): his first word, then his second, in six beats
     expect(endGroups(11).map((g) => g.length)).toEqual([2, 1, 2, 2, 1, 2]);
     expect(SOON_LINES.map((k) => SCRIPT[k].who)).toEqual(['nar']);

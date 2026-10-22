@@ -2,7 +2,7 @@
 // Lints, replays and solves each registered page and prints one row per page plus the total runtime
 // against the 60 s CI budget. Exits 1 on any failing page, on a page over its state cap (at once,
 // naming the page) or when the total is over budget. The logic lives in src/popup/pages/report.ts.
-import { PAGES } from '../src/popup/pages';
+import { ALL_PAGES as PAGES } from '../src/popup/pages';
 import {
   CI_BUDGET_MS,
   formatDetails,

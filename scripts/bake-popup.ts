@@ -41,7 +41,7 @@ import { envGrade } from '../src/popup/env/grade';
 import { ENV_SCALE, envFile, type BackdropEntry, type CutoutEntry, type EnvBox, type EnvFile, type EnvManifest, type PartEntry, type ScreenEntry } from '../src/popup/env/manifest';
 import { formatReport } from '../src/popup/env/report';
 import { SCREEN_SOURCES, backdropSources, cutoutSources, partSources } from '../src/popup/env/sources';
-import { PAGES } from '../src/popup/pages';
+import { ALL_PAGES as PAGES } from '../src/popup/pages';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'src/popup/assets/env');

@@ -4,7 +4,7 @@ import { lintPage, type LintResult } from '../core/lint';
 import { replay } from '../core/replay';
 import { solve, toSolutionSteps, type SolveResult } from '../core/solver';
 import type { PageDef } from '../core/types';
-import { PAGES } from './index';
+import { ALL_PAGES as PAGES } from './index';
 import { CI_BUDGET_MS, CI_BUDGET_STATES, formatDetails, formatTable, judge, PAR_BAND } from './report';
 
 /**

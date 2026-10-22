@@ -81,7 +81,7 @@ export function isFirstLaunch(save: SaveV1, reg: PageRegistry = gameRegistry): b
  */
 export function opensChapter(id: Id, reg: PageRegistry = gameRegistry): boolean {
   const chapter = reg.chapterOf(id);
-  return chapter !== undefined && reg.pages.find((p) => p.chapter === chapter)?.id === id;
+  return chapter !== undefined && [...reg.pages, ...reg.bonus].find((p) => p.chapter === chapter)?.id === id;
 }
 
 /**
@@ -137,6 +137,10 @@ export function navigate(state: NavState, action: NavAction, save: SaveV1, reg: 
     case 'retry':
       return base.kind === 'page' ? { base: page(base.id, base.run + 1), layer: null } : state;
     case 'next':
+      // Done with a post-game page (#135): back to the 目錄 at its postcard
+      if (action.id === null && base.kind === 'page' && reg.bonus.some((p) => p.id === base.id)) {
+        return { base: COVER.base, layer: { kind: 'contents', chapter: 10, bonus: true } };
+      }
       if (action.id === null || reg.pageById(action.id) === undefined) {
         return { base: COVER.base, layer: { kind: 'contents', chapter: base.kind === 'page' ? stationOf(reg.chapterOf(base.id) ?? 0) : homeChapter(save, reg) } };
       }

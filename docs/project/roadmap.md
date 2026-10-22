@@ -86,7 +86,7 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [132](https://github.com/sean1093/baokaka-adventure/issues/132) | Chapter 9 art: 淡水・漁人碼頭・淡江大橋 pop-up pages, parts, creatures, 土地公 (船長帽) and the 聽診器 photo | art, content, m4 | #131, #130 | done (#208) |
 | [133](https://github.com/sean1093/baokaka-adventure/issues/133) | Chapter 10 pages: 「離天空最近的地方」 台北101 — full specs, then data for 10-1…10-6, solver-green | content, m4 | #128, #131 | done (#209) |
 | [134](https://github.com/sean1093/baokaka-adventure/issues/134) | Chapter 10 art: 台北101 pop-up pages, parts, creatures, 土地公 (清潔帽) and the 金鎖片 photo | art, content, m4 | #133, #132 | done (#212) |
-| [135](https://github.com/sean1093/baokaka-adventure/issues/135) | Ending: page E 「抓周」, 05:30 home scene, credits over album photos, post-credits 土地公, bonus page 「象山的日出」 | content, art, ui, m4 | #133, #134, #113 | in progress (#213: page E, credits, post-credits; bonus page next) |
+| [135](https://github.com/sean1093/baokaka-adventure/issues/135) | Ending: page E 「抓周」, 05:30 home scene, credits over album photos, post-credits 土地公, bonus page 「象山的日出」 | content, art, ui, m4 | #133, #134, #113 | done (#213, #214) |
 | **M5 · Polish and release** | | | | |
 | [68](https://github.com/sean1093/baokaka-adventure/issues/68) | Font payload: cut the CJK web-font download (self-hosted subset or text= subsetting) | qa, ui, chore, m5 | #135 | todo |
 | [193](https://github.com/sean1093/baokaka-adventure/issues/193) | Cross-chapter art follow-ups: per-chapter photo frames, 哇！ pose, chapter-card landmark vignette, scrolling 月亮線 window strip | art, m5 | #119 (ideally #134), #135 | todo |

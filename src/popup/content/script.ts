@@ -342,6 +342,7 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'x.intro.1': { who: 'nar', text: '象山。爬了好多好多階梯。' },
   'x.intro.2': { who: 'nar', text: '從這裡看101，剛剛好。' },
   'x.stamp.1': { who: 'uncle', text: '呵呵，囡仔，慢慢仔大。' },
+  'x.stamp.2': { who: 'nar', text: '土地公蓋了最後一個章：「台北走透透」。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { POPUP as C, withAlpha } from '../../../art/palette';
 import { useSvgIds } from '../../../art/useSvgIds';
 import { kitCtx, kitDefs } from '../../art';
-import { CHAPTERS, ENDING_CHAPTER, chapterInfo, chapterName, loadLine, SOON_LINES, stickersIn, UI } from '../../content';
+import { BONUS_CHAPTER, CHAPTERS, ENDING_CHAPTER, chapterInfo, chapterName, loadLine, SOON_LINES, stickersIn, UI } from '../../content';
 import type { Id, PageDef } from '../../core/types';
 import { MAP_SHEET } from '../../env/art/screens';
 import { backdropImage, screenImage } from '../../env/loader';
@@ -34,7 +34,7 @@ import { useTextScale } from '../textSize';
  *   line hasn't reached with its padlock and line. A chapter opens as its pages are registered.
  * - **「象山的日出」** (GDD § 2.8, § 5.7; #113): once every 土地公 is found, a postcard of the sunrise
  *   over 象山 is taped onto the map's free corner, a dotted gold branch running to it from 101.
- *   Tapped, it names itself; the bonus page itself comes with #135 (until then its 「未完待續」 line).
+ *   Tapped, its panel holds the bonus page's card (#135): tap it to play 番外 「象山的日出」.
  */
 
 export interface ContentsProps {
@@ -155,6 +155,8 @@ export function Contents({ save, registry: reg, chapter, locked, bonus = false, 
   const shown = locked ?? chapter;
   const info = chapterInfo(shown);
   const cards = useMemo(() => pageCards(save, reg, chapter), [save, reg, chapter]);
+  // The bonus page's card (#135): open once the postcard is (every 土地公)
+  const bonusCards = useMemo(() => reg.bonus.map((def) => ({ ...pageCard(save, reg, def.chapter, def.index, chapterName(def.chapter)), open: bonus && isUnlocked(save, def.id, reg) })), [save, reg, bonus]);
   const total = routeLength(STATIONS.length - 1) + 119;
   const big = useTextScale() > 1;
 
@@ -286,16 +288,38 @@ export function Contents({ save, registry: reg, chapter, locked, bonus = false, 
 
         {/* The chapter's card: its name, the stickers collected, the page strip (or the locked line) */}
         {showBonus ? (
+          /* 「象山的日出」 (#135): its page, to play — or, before it is built, the 未完待續 line */
           <section className="relative mt-3 w-full rounded-[10px] px-3 pb-3 pt-2" style={CREAM_CARD} data-panel="bonus" aria-live="polite">
-            <h2 className="font-serif text-[24px] font-black tracking-[0.06em]">{UI.bonus}</h2>
-            <p className="mt-2 flex items-center gap-2 rounded-[8px] px-3 py-3 text-[20px] font-bold" style={{ backgroundColor: C.pageDark }} data-bonus-line="">
-              <svg width={28} height={28} viewBox="-14 -14 28 28" aria-hidden="true" className="shrink-0">
-                <path d="M-11 5a11 11 0 0 1 22 0z" fill={C.gold} stroke={C.goldDeep} strokeWidth={1.2} />
-                <path d="M-13 6H13" stroke={C.ink} strokeWidth={2} strokeLinecap="round" />
-                <path d="M0 -12v3M-9 -8l2 2M9 -8l-2 2" stroke={C.goldDeep} strokeWidth={2} strokeLinecap="round" />
-              </svg>
-              {loadLine(SOON_LINES[0])?.text}
-            </p>
+            <h2 className="flex items-baseline gap-2">
+              <span className="text-[20px] font-black" style={{ color: C.sealInk }}>
+                {chapterName(BONUS_CHAPTER)}
+              </span>
+              <span className="font-serif text-[24px] font-black tracking-[0.06em]">{UI.bonus}</span>
+            </h2>
+            {bonusCards.length > 0 ? (
+              <>
+                <p className="text-[20px] font-bold" style={{ color: C.inkSoft }}>
+                  {chapterInfo(BONUS_CHAPTER).landmark} · {chapterInfo(BONUS_CHAPTER).time}
+                </p>
+                <ol className="mt-2 flex gap-[4px]" data-strip="">
+                  {bonusCards.map((card) => (
+                    <li key={card.id}>
+                      <PageThumb card={card} current={false} onPlay={onPlay} />
+                    </li>
+                  ))}
+                </ol>
+                <MischiefList cards={bonusCards} />
+              </>
+            ) : (
+              <p className="mt-2 flex items-center gap-2 rounded-[8px] px-3 py-3 text-[20px] font-bold" style={{ backgroundColor: C.pageDark }} data-bonus-line="">
+                <svg width={28} height={28} viewBox="-14 -14 28 28" aria-hidden="true" className="shrink-0">
+                  <path d="M-11 5a11 11 0 0 1 22 0z" fill={C.gold} stroke={C.goldDeep} strokeWidth={1.2} />
+                  <path d="M-13 6H13" stroke={C.ink} strokeWidth={2} strokeLinecap="round" />
+                  <path d="M0 -12v3M-9 -8l2 2M9 -8l-2 2" stroke={C.goldDeep} strokeWidth={2} strokeLinecap="round" />
+                </svg>
+                {loadLine(SOON_LINES[0])?.text}
+              </p>
+            )}
           </section>
         ) : (
         <section className="relative mt-3 w-full rounded-[10px] px-3 pb-3 pt-2" style={CREAM_CARD} data-panel={shown} aria-live="polite">
@@ -423,7 +447,7 @@ function PageThumb({ card, current, onPlay }: { card: PageCard; current: boolean
           </svg>
         )}
       </span>
-      <span className={`${card.mark ? 'font-body font-black' : 'font-num font-semibold'} whitespace-nowrap text-[20px] leading-[24px]`} style={{ color: card.mark ? C.sealInk : C.ink }}>
+      <span className={`${card.mark ? 'font-body font-black' : 'font-num font-semibold'} whitespace-nowrap text-[20px] leading-[24px]`} style={{ color: C.ink }}>
         {card.mark ?? card.index}
       </span>
     </button>

@@ -4,7 +4,7 @@ import { candidateInputs } from '../core/solver';
 import { initialState } from '../core/state';
 import { step } from '../core/step';
 import type { PageDef, SimState } from '../core/types';
-import { PAGES } from './index';
+import { ALL_PAGES as PAGES } from './index';
 
 /**
  * #100's acceptance test: on every registered page, pressing 提示 at level 3 ("show me", GDD § 2.7)

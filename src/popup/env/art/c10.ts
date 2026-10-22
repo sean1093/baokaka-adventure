@@ -84,7 +84,7 @@ function dawnSky101(ctx: KitCtx, x0: number, y0: number, x1: number, y1: number,
 }
 
 /** Long vellum cloud strips lit from below by the dawn: (x, y) a strip's foot centre, `w` its length. */
-function dawnClouds(ctx: KitCtx, list: readonly (readonly [number, number, number])[], gold = 0): string {
+export function dawnClouds(ctx: KitCtx, list: readonly (readonly [number, number, number])[], gold = 0): string {
   let body = '';
   let lit = '';
   for (const [x, y, w] of list) {
@@ -99,7 +99,7 @@ function dawnClouds(ctx: KitCtx, list: readonly (readonly [number, number, numbe
 }
 
 /** The hills east of the city (象山 and the 四獸山), in two layers of card from x0 to x1 standing on `base`. */
-function eastHills(ctx: KitCtx, x0: number, x1: number, base: number, h: number, seed: number): string {
+export function eastHills(ctx: KitCtx, x0: number, x1: number, base: number, h: number, seed: number): string {
   const r = seeded(seed);
   const ridge = (lift: number, amp: number, step: number) => {
     let d = `M${x0} ${base + 30}L${x0} ${f1(base - lift)}`;
@@ -121,7 +121,7 @@ function eastHills(ctx: KitCtx, x0: number, x1: number, base: number, h: number,
  * 信義's towers round 101 seen across the basin, from x0 to x1 standing on `base`: flat card blocks
  * in two depths, a few windows still lit, their right faces catching the peach.
  */
-function xinyiSkyline(ctx: KitCtx, x0: number, x1: number, base: number, h: number, seed: number, { lit = 0.18 } = {}): string {
+export function xinyiSkyline(ctx: KitCtx, x0: number, x1: number, base: number, h: number, seed: number, { lit = 0.18 } = {}): string {
   const r = seeded(seed);
   let far = '';
   let near = '';
@@ -801,8 +801,8 @@ const SUN = { x: 300, y: 312, r: 30, horizon: 336 } as const;
  * The sunrise (the book's last dawn; bible § 3.1: the sun is foil): a foil disc clearing the hills,
  * its halo in two blurs, long vellum rays fanning up across the sky, a hot rim where it meets the ridge.
  */
-function sunrise(ctx: KitCtx): string {
-  const { x, y, r } = SUN;
+export function sunrise(ctx: KitCtx, at: { readonly x: number; readonly y: number; readonly r: number } = SUN): string {
+  const { x, y, r } = at;
   let rays = '';
   for (const [a, w] of [[-78, 5], [-58, 7], [-38, 6], [-18, 8], [4, 7], [26, 6], [48, 7], [70, 5]] as const) {
     const t = (a * Math.PI) / 180;
@@ -822,7 +822,7 @@ function sunrise(ctx: KitCtx): string {
 }
 
 /** A flock of origami birds flying into the sunrise (chapter 1's pigeons, come to see), each `[x, y, s]`. */
-function dawnBirds(list: readonly (readonly [number, number, number])[]): string {
+export function dawnBirds(list: readonly (readonly [number, number, number])[]): string {
   const bird = 'M-2 0L-14 -9L-4 -4L0 -6L4 -4L14 -9L2 0Z';
   let body = '';
   let tips = '';

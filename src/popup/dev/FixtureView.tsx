@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { POPUP } from '../../art/palette';
-import { PAGES } from '../pages';
+import { ALL_PAGES as PAGES } from '../pages';
 import { PagePlayer } from '../view/PagePlayer';
 import { AffordanceSheet } from './AffordanceSheet';
 import { POPUP_FIXTURES, fixtureFrame, fixtureStore, popupFixture } from './fixtures';

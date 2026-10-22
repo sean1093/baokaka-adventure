@@ -178,4 +178,15 @@ describe('the HUD and the bar read the save', () => {
     // Done with page E: the 目錄 at 家
     expect(navigate({ base: { kind: 'page', id: 'c11p1', run: 0 }, layer: null }, { t: 'next', id: null }, atE).layer).toEqual({ kind: 'contents', chapter: 0 });
   });
+
+  test('the bonus page (#135): opened with its card, done back to the 目錄 at its postcard', () => {
+    expect(opensChapter('c12p1')).toBe(true);
+    const start: SaveV1 = { ...fresh, furthest: 'c11p1' };
+    const all: SaveV1 = { ...start, pages: Object.fromEntries(registry.pages.map((p) => [p.id, { solved: true as const, tudigong: true as const }])) };
+    expect(navigate({ base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 10, bonus: true } }, { t: 'play', id: 'c12p1' }, all).base).toEqual({ kind: 'page', id: 'c12p1', run: 0 });
+    // Not before every 土地公
+    const before = { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 10, bonus: true } } as const;
+    expect(navigate(before, { t: 'play', id: 'c12p1' }, { ...fresh, furthest: 'c11p1' })).toBe(before);
+    expect(navigate({ base: { kind: 'page', id: 'c12p1', run: 0 }, layer: null }, { t: 'next', id: null }, all).layer).toEqual({ kind: 'contents', chapter: 10, bonus: true });
+  });
 });

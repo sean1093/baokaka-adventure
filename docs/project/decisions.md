@@ -1369,3 +1369,31 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 **Why.** Mocha as the goal by a page flag keeps the attractor model (static nodes) intact and the rule exact; staying wanted while he hops keeps the story true in every reachable state (the solver proves 0 dead ends, no treasure consumed in the unit test). Cards for the credits meet the reduced-motion rule (opacity only) and the 48 px / 20 px rules with no scrolling text.
 
 **Consequences.** Page E costs 19 solver states. #136 audits the new screens; #137 sees page E's par 0 (allowed). PR 2 adds the bonus page (chapter 12) and its unlock.
+
+### D-101 · 2026-10-22 · The bonus page 「象山的日出」: a post-game page outside the order, a leaf 咻咻 blows (#135, part 2)
+
+**Context.** GDD § 2.8 and § 4.4 give the bonus page, which all 65 土地公 unlock, as a gentle sunrise on the 象山 trail with 咻咻 as a breeze to ride ("blowable leaves"). The 土地公 gives the 「台北走透透」 stamp. #93 asked that the bonus page stay out of the linear `furthest` order, so that finishing page E never unlocks it. #113's 目錄 postcard showed a 未完待續 panel until now.
+
+**Decision.**
+1. **Post-game pages in the registry** (`pages/index.ts` `BONUS`, `registry.bonus`, `ALL_PAGES`):
+   - `pageById` and `chapterOf` know them.
+   - `pages`, `nextPage`, `furthest` and the § 2.8 reward counts don't.
+   - The bonus page sets its own `words` (`['whoosh']`) and growth.
+   - The solver proof, the hint test, the bake, the art report and the lab cover `ALL_PAGES`. The sprite sync doesn't: 番外's standee grade is identity at 05:30.
+2. **Progress** (`progress.ts`):
+   - `isBonusUnlocked(save)` is true when every page of the 65-page book has its 土地公. It is read off the save, never stored.
+   - `isUnlocked` and `earnSticker` follow it.
+   - `completePage` of the bonus page records the solve and stickers but moves neither `furthest` nor `current`, and `openPage` never makes it the page to resume.
+   - `decodeSave` keeps its record.
+3. **The page** (`c12p1`, 番外, chapter 12, 05:30):
+   - Baokaka sits on a huge fallen leaf at the gully's edge. The leaf is a `blowable` (`near` · `mid` · `far`). 咻—— (咻咻's breeze, drawn on the leaf part) blows it a stop at a time across the gully, then he climbs the 六巨石 boulder to the bead.
+   - Par 2, 24 states, no traps.
+   - 淘氣: Mocha rides the leaf with him.
+   - 土地公: on the boulders in a 登山帽.
+   - When the bead is his, the end lines are the 土地公's stamp: 「呵呵，囡仔，慢慢仔大。」 and 「土地公蓋了最後一個章：「台北走透透」。」 (`x.stamp.2`, not in § 5: a narration line of my own). Then the sticker card, then the 目錄 at the postcard.
+4. **The 目錄's postcard panel** holds the bonus page's card (番外, 象山 · 05:30) and its 淘氣. Tapping the card plays the page, with 番外's chapter card first. The 未完待續 line stays only as the fallback for a registry without the page.
+5. **Art** (`env/art/bonus.ts`, `POPUP_XIANGSHAN`, in screen colours through `ungradeSvg(…, 12)`): the sun clearing the hills behind 101 (chapter 10's `tower101`, `sunrise`, `eastHills`, `xinyiSkyline`, now exported), the trail's trees, stone steps and rail, the gully of ferns, the boulders and the trail sign. The colour clock gains 番外's dawn (chapter 12, 05:30), outside the night's time order.
+
+**Why.** Holding the bonus page outside the order keeps every existing rule (linear unlocks, the rewards' counts, resume) untouched while letting the shell, the solver and the art pipeline treat it like any page.
+
+**Consequences.** A debug save opens it: the fixture `contents-bonus-open` (every 土地公 found) and `check:play`'s `bonus-open` scenario, which plays from the postcard to the solve and back to the 目錄.

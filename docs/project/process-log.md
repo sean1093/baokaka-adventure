@@ -1068,3 +1068,11 @@ Format:
 - **QA.** `npm test`, build, solve (65 green, 23.5 s), `check:play` (all scenarios, in chunks), `check:ui` (+big) on the new fixtures, visual baselines.
 - **Decision.** D-100.
 - **Next (part 2).** The bonus page 「象山的日出」 (chapter 12, outside the linear order, `isBonusUnlocked`), the postcard opening it, fixture `bonus-xiangshan`.
+
+### 2026-10-22 · Staff engineer · #135 Ending, part 2: the bonus page 「象山的日出」
+- **Registry.** Post-game pages (`registry.bonus`, `ALL_PAGES`) sit outside the order. `isBonusUnlocked` is true once all 65 土地公 are found. The bonus page never moves `furthest` or `current`, and its save record survives a reload.
+- **Page** `c12p1` (番外, 05:30): a fallen leaf that 咻咻's breeze (咻——) blows across a gully to the 六巨石. Par 2 (24 states), 0 traps. 淘氣: Mocha rides the leaf. 土地公: 登山帽. When the page ends, he stamps 「台北走透透」 (end lines). The 目錄's postcard panel opens the page.
+- **Art.** `env/art/bonus.ts` (`POPUP_XIANGSHAN`) draws the sunrise behind 101, the trail and the leaf, with 咻咻 as the breeze. Page art is 135 KB of 350.
+- **QA.** `npm test`; `check:play` `c12p1` and `bonus-open`; `check:ui` (+big) on the bonus fixtures. 「番外」 / 「尾聲」 under a page card were at 6.9:1 in seal ink, so they now use ink. Visual baselines updated.
+- **Decision.** D-101.
+- **Follow-ups.** #136 audits the ending's screens; #137 sees page E's par 0 and the bonus page's par 2.

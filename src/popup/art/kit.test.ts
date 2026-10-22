@@ -273,10 +273,11 @@ describe('palette', () => {
     }
   });
 
-  test('the chapter colour clock covers 序, 1–10 and E in time order (bible § 3.3)', () => {
-    expect(POPUP_CHAPTER_CLOCK.map((sky) => sky.label)).toEqual(['序', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'E']);
-    expect(POPUP_CHAPTER_CLOCK.map((sky) => sky.chapter)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-    const minutes = POPUP_CHAPTER_CLOCK.map((sky) => Number(sky.time.slice(0, 2)) * 60 + Number(sky.time.slice(3)));
+  test('the chapter colour clock covers 序, 1–10 and E in time order, then the bonus page\'s sunrise (bible § 3.3; #135)', () => {
+    expect(POPUP_CHAPTER_CLOCK.map((sky) => sky.label)).toEqual(['序', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'E', '象']);
+    expect(POPUP_CHAPTER_CLOCK.map((sky) => sky.chapter)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    // The night's clock runs to page E; 番外 is another morning
+    const minutes = POPUP_CHAPTER_CLOCK.filter((sky) => sky.chapter <= 11).map((sky) => Number(sky.time.slice(0, 2)) * 60 + Number(sky.time.slice(3)));
     for (let i = 1; i < minutes.length; i++) expect(minutes[i]).toBeGreaterThan(minutes[i - 1]);
     for (const sky of POPUP_CHAPTER_CLOCK) {
       expect(sky.top).toMatch(HEX);

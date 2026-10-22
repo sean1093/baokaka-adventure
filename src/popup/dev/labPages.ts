@@ -3,7 +3,7 @@ import { M3_TOYS, toyPlane } from '../core/fixtures/m3';
 import { LINKED_TOYS } from '../core/fixtures/linked';
 import { M4_TOYS, toyPinwheel } from '../core/fixtures/m4';
 import type { Id, PageDef } from '../core/types';
-import { PAGES, pageById } from '../pages';
+import { BONUS_PAGES, PAGES, pageById } from '../pages';
 
 /**
  * The pages PageLab lists: every registered page, then lab-only fixtures that are deliberately
@@ -71,7 +71,7 @@ const ring7: PageDef = { ...toyPinwheel, id: 'lab-ring7', title: '七個字', wo
 export const LAB_FIXTURES: readonly PageDef[] = [...brokenC1p2, ...words, ...M2_TOYS, ring4, ...M3_TOYS, ring6, ...M4_TOYS, ring7, ...LINKED_TOYS];
 
 /** Every page the lab lists, registered pages first. */
-export const LAB_PAGES: readonly PageDef[] = [...PAGES, ...LAB_FIXTURES];
+export const LAB_PAGES: readonly PageDef[] = [...PAGES, ...BONUS_PAGES, ...LAB_FIXTURES];
 
 /** A registered page or a lab fixture by id. */
 export function labPageById(id: Id): PageDef | undefined {

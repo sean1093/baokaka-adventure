@@ -1582,6 +1582,41 @@ const SCENARIOS = {
     { tapEl: '[data-story-next]' },
     { tapEl: '[data-story-next]' },
   ],
+  // The bonus page 「象山的日出」 (#135): on the leaf, 咻—— (咻咻's breeze) twice blows it across the gully;
+  // he crawls off and climbs to the bead
+  c12p1: [
+    { readTalk: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+    { settle: 1200 },
+    { readTalk: true },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+    { settle: 1200 },
+    { readTalk: true },
+  ],
+  // The bonus page from the 目錄 (#135): every 土地公 found, the 「象山的日出」 postcard, its card, the page
+  'bonus-open': [
+    { tapEl: '[data-button="bonus"]' },
+    { expect: '[data-panel="bonus"] [data-page-card="c12p1"]:not([disabled])', timeout: 3_000 },
+    { tapEl: '[data-page-card="c12p1"]' },
+    // 番外's card (象山 · 05:30), its two lines; then the page: 咻—— twice, the bead
+    { expect: '[data-card-next]', timeout: 8_000 },
+    { tapEl: '[data-card-next]' },
+    { tapEl: '[data-card-next]', optional: true },
+    { wait: 'reaching' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+    { settle: 1200 },
+    { readTalk: true },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+    // The 土地公 stamps the card: 「呵呵，囡仔，慢慢仔大。」, then 「台北走透透」; the sticker card; the 目錄 at the postcard
+    { expect: '[data-end-layer] [data-card-line="uncle"]', timeout: 10_000 },
+    { tapEl: '[data-end-next]' },
+    { expect: '[data-sticker-card]', timeout: 5_000 },
+  ],
   // Page E 「抓周」 (#135): trivially solvable — the cheers held, then with no input he crawls past the
   // treasures (爸爸's and 阿嬤's lines held) to Mocha on the sofa's arm: the photo moment, the tail
   c11p1: [
@@ -1625,9 +1660,9 @@ const SCENARIOS = {
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-popup-page="c7p1"]', 'photo-spread-c7': '[data-popup-page="c8p1"]', 'photo-spread-c8': '[data-popup-page="c9p1"]', 'photo-spread-c9': '[data-popup-page="c10p1"]', 'photo-spread-c10': '[data-popup-page="c11p1"]', ending: '[data-screen="cover"]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-popup-page="c7p1"]', 'photo-spread-c7': '[data-popup-page="c8p1"]', 'photo-spread-c8': '[data-popup-page="c9p1"]', 'photo-spread-c9': '[data-popup-page="c10p1"]', 'photo-spread-c10': '[data-popup-page="c11p1"]', ending: '[data-screen="cover"]', 'bonus-open': '[data-screen="contents"] [data-panel="bonus"] [data-page-card="c12p1"][data-solved]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
-const SCENARIO_READY = { 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
+const SCENARIO_READY = { 'bonus-open': '[data-screen="contents"][data-screen-ready]', 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
 
 /** Scenarios that start somewhere other than `#/popup?page=<id>`: a PageLab stage, live. */
 const SCENARIO_URLS = {
@@ -1644,6 +1679,8 @@ const SCENARIO_URLS = {
   'photo-spread-c9': '#/pagelab?fixture=spread-shell-c9',
   'photo-spread-c10': '#/pagelab?fixture=spread-shell-c10',
   ending: '#/pagelab?fixture=page-e-shell',
+  // A query of its own: a hash-only change from the scenario before would not reload the page
+  'bonus-open': '?bonus#/pagelab?fixture=contents-bonus-open',
   'prologue-card': '#/',
   'album-flip': '#/pagelab?fixture=album-multi',
   'tutorial-c0p1': '#/popup?page=c0p1&tutorial=1',
