@@ -7,6 +7,8 @@ import { KitSection } from './KitSection';
 import { LabWorkspace } from './LabWorkspace';
 import { SpriteReport } from './SpriteReport';
 import { labHash, parseLabParams, type LabParams } from './labParams';
+// The characters only the dev tools print get their own font slice (#68, D-105)
+import '../../fonts/dev.css';
 
 /**
  * PageLab, `#/pagelab` (GDD § 3.10; dev builds only — App never loads this chunk in production).

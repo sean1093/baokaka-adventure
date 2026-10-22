@@ -5,6 +5,8 @@ import { retireRpgSave } from './popup/game/progress';
 import { cleanupLegacyStorage } from './shared/legacy';
 import { installRouteRedirect } from './shared/route';
 import { browserStorage } from './shared/storage';
+// The self-hosted web fonts (#68, D-105): subsets of the game's own text, fetched per slice
+import './fonts/fonts.css';
 // The kit first, so Tailwind utilities (in index.css) can adjust a kit class where a screen needs to
 import './components/kit.css';
 import './index.css';

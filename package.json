@@ -14,6 +14,8 @@
     "sync:sprites": "vite-node scripts/sync-sprites.ts",
     "bake:popup": "vite-node scripts/bake-popup.ts",
     "art:report": "vite-node scripts/art-report.ts",
+    "fonts": "vite-node scripts/fonts/charset.ts && python3 scripts/fonts/subset.py",
+    "fonts:session": "npm run build && node scripts/fonts/first-session.mjs",
     "visual": "node scripts/visual-check.mjs --serve",
     "visual:update": "node scripts/visual-check.mjs --serve --update",
     "check:ui": "node scripts/ui-check.mjs --serve",

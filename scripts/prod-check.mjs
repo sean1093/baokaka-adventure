@@ -17,6 +17,9 @@
  *              returning one (0-1 solved): 「繼續」 → page 0-2. No console errors anywhere.
  *   - farewell an old RPG save (`baokaka.quest.v6`) is deleted at boot and the cover says
  *              「寶咖咖的新冒險開始了！」 once; the next boot says nothing.
+ *   - fonts    (#68) external font stylesheets (render-blocking) ≤ 60 KB, and the font files the
+ *              cover and page 0-1 pull (after `document.fonts.ready`) ≤ 250 KB; each request is
+ *              listed in the report.
  *
  * Report only (GDD § M1 budgets, printed, never failing): the bytes transferred until the cover is
  * ready (first load, budget 2.5 MB) and the time until the cover, then page 0-1, is interactive on
@@ -33,7 +36,10 @@ const { values: args } = parseArgs({ options: { build: { type: 'boolean' }, url:
 
 const VIEWPORT = { width: 390, height: 844 };
 const FOUR_G = { offline: false, latency: 170, downloadThroughput: (9e6 / 8) | 0, uploadThroughput: (9e6 / 8) | 0 };
-const BUDGET = { firstLoadBytes: 2.5 * 1024 * 1024, interactiveMs: 3000 };
+const BUDGET = { firstLoadBytes: 2.5 * 1024 * 1024, interactiveMs: 3000, fontCssBytes: 60 * 1024, fontBytes: 250 * 1024 };
+/** An external font stylesheet (Google Fonts' `css2`, before #68 self-hosted the fonts) */
+const FONT_CSS = /^https:\/\/fonts\.googleapis\.com\//;
+const sum = (list) => list.reduce((n, f) => n + f.bytes, 0);
 const COVER_READY = '[data-screen="cover"][data-screen-ready]';
 const PAGE_READY = '[data-popup-page="c0p1"][data-sprites="ready"] [data-actor="baby"]';
 const FAREWELL = '寶咖咖的新冒險開始了！';
@@ -105,7 +111,22 @@ async function checkPlay(browser, base) {
     await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
     await cdp.send('Network.emulateNetworkConditions', FOUR_G);
     let bytes = 0;
-    cdp.on('Network.loadingFinished', (e) => (bytes += e.encodedDataLength));
+    // Font traffic (#68): the font files, and any external font stylesheet (render-blocking)
+    const fontRequests = new Map();
+    const fonts = [];
+    cdp.on('Network.requestWillBeSent', (e) => {
+      if (e.type === 'Font' || FONT_CSS.test(e.request.url)) fontRequests.set(e.requestId, { url: e.request.url, css: e.type !== 'Font' });
+    });
+    cdp.on('Network.loadingFinished', (e) => {
+      bytes += e.encodedDataLength;
+      const font = fontRequests.get(e.requestId);
+      if (font) fonts.push({ ...font, bytes: e.encodedDataLength });
+    });
+    // Every font face the screen asked for has arrived (after the timing, so it does not change it)
+    const fontsSettled = async () => {
+      await page.evaluate(() => document.fonts.ready);
+      return fonts.splice(0);
+    };
 
     const t0 = Date.now();
     await page.goto(new URL('#/', base).href, { waitUntil: 'commit' });
@@ -113,6 +134,7 @@ async function checkPlay(browser, base) {
     report.coverMs = Date.now() - t0;
     report.coverBytes = bytes;
     ok(`cover on first launch (「開始」) in ${report.coverMs} ms, ${kb(report.coverBytes)} transferred`);
+    report.coverFonts = await fontsSettled();
 
     const t1 = Date.now();
     await page.click('[data-button="start"]');
@@ -120,6 +142,12 @@ async function checkPlay(browser, base) {
     report.pageMs = Date.now() - t1;
     report.pageBytes = bytes;
     ok(`開始 → page 0-1 renders with its characters in ${report.pageMs} ms (${kb(report.pageBytes)} in total)`);
+    report.pageFonts = await fontsSettled();
+    const cssBytes = sum([...report.coverFonts, ...report.pageFonts].filter((f) => f.css));
+    const fileBytes = sum([...report.coverFonts, ...report.pageFonts].filter((f) => !f.css));
+    if (cssBytes > BUDGET.fontCssBytes) fail('font payload', `render-blocking font stylesheets ${kb(cssBytes)} > ${kb(BUDGET.fontCssBytes)}`);
+    else if (fileBytes > BUDGET.fontBytes) fail('font payload', `font files for the cover and page 0-1 ${kb(fileBytes)} > ${kb(BUDGET.fontBytes)}`);
+    else ok(`font payload: ${kb(cssBytes)} of external font stylesheets, ${kb(fileBytes)} of font files for the cover and page 0-1`);
 
     if (errors.length) throw new Error(`console errors: ${errors.join(' | ')}`);
     ok('no console errors on the first launch');
@@ -199,6 +227,11 @@ async function main() {
       console.log(`  first load (to the cover)   ${kb(report.coverBytes)} of ${kb(BUDGET.firstLoadBytes)}${report.coverBytes > BUDGET.firstLoadBytes ? '  OVER' : ''}`);
       console.log(`  cover interactive           ${report.coverMs} ms of ${BUDGET.interactiveMs}${report.coverMs > BUDGET.interactiveMs ? '  OVER' : ''}`);
       if (report.pageMs !== undefined) console.log(`  開始 → page 0-1 interactive  ${report.pageMs} ms (${kb(report.pageBytes - report.coverBytes)} more)`);
+      for (const [step, list] of [['cover', report.coverFonts], ['page 0-1', report.pageFonts]]) {
+        if (!list) continue;
+        console.log(`  fonts, ${step}: ${kb(sum(list))} in ${list.length} request(s)`);
+        for (const f of list) console.log(`    ${kb(f.bytes).padStart(8)}  ${f.css ? '(css) ' : ''}${f.url.replace(/^.*\//, '').slice(0, 72)}`);
+      }
     }
   } finally {
     await browser.close();

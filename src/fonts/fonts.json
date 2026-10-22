@@ -1,0 +1,309 @@
+{
+  "generatedBy": "npm run fonts (scripts/fonts/subset.py)",
+  "families": {
+    "Chiron GoRound TC": {
+      "weights": [
+        700,
+        900
+      ],
+      "files": [
+        {
+          "file": "chiron-700-0.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 41228
+        },
+        {
+          "file": "chiron-700-1.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 29736
+        },
+        {
+          "file": "chiron-700-2.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 30440
+        },
+        {
+          "file": "chiron-700-3.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 30272
+        },
+        {
+          "file": "chiron-700-4.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 34064
+        },
+        {
+          "file": "chiron-700-5.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 34644
+        },
+        {
+          "file": "chiron-700-6.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 33808
+        },
+        {
+          "file": "chiron-700-7.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 33312
+        },
+        {
+          "file": "chiron-700-8.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 13388
+        },
+        {
+          "file": "chiron-700-dev.woff2",
+          "weight": 700,
+          "dev": true,
+          "bytes": 90752
+        },
+        {
+          "file": "chiron-900-0.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 39452
+        },
+        {
+          "file": "chiron-900-1.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 28092
+        },
+        {
+          "file": "chiron-900-2.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 29092
+        },
+        {
+          "file": "chiron-900-3.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 28940
+        },
+        {
+          "file": "chiron-900-4.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 32288
+        },
+        {
+          "file": "chiron-900-5.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 32668
+        },
+        {
+          "file": "chiron-900-6.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 31900
+        },
+        {
+          "file": "chiron-900-7.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 31760
+        },
+        {
+          "file": "chiron-900-8.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 12728
+        },
+        {
+          "file": "chiron-900-dev.woff2",
+          "weight": 900,
+          "dev": true,
+          "bytes": 84956
+        }
+      ],
+      "missing": "✗❗❚⟲"
+    },
+    "Noto Serif TC": {
+      "weights": [
+        700,
+        900
+      ],
+      "files": [
+        {
+          "file": "noto-serif-700-0.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 35932
+        },
+        {
+          "file": "noto-serif-700-1.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 24724
+        },
+        {
+          "file": "noto-serif-700-2.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 25640
+        },
+        {
+          "file": "noto-serif-700-3.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 25496
+        },
+        {
+          "file": "noto-serif-700-4.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 28720
+        },
+        {
+          "file": "noto-serif-700-5.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 28904
+        },
+        {
+          "file": "noto-serif-700-6.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 27684
+        },
+        {
+          "file": "noto-serif-700-7.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 28040
+        },
+        {
+          "file": "noto-serif-700-8.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 10968
+        },
+        {
+          "file": "noto-serif-700-dev.woff2",
+          "weight": 700,
+          "dev": true,
+          "bytes": 76812
+        },
+        {
+          "file": "noto-serif-900-0.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 35816
+        },
+        {
+          "file": "noto-serif-900-1.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 24820
+        },
+        {
+          "file": "noto-serif-900-2.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 25496
+        },
+        {
+          "file": "noto-serif-900-3.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 25600
+        },
+        {
+          "file": "noto-serif-900-4.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 28712
+        },
+        {
+          "file": "noto-serif-900-5.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 28876
+        },
+        {
+          "file": "noto-serif-900-6.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 27712
+        },
+        {
+          "file": "noto-serif-900-7.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 27960
+        },
+        {
+          "file": "noto-serif-900-8.woff2",
+          "weight": 900,
+          "dev": false,
+          "bytes": 10936
+        },
+        {
+          "file": "noto-serif-900-dev.woff2",
+          "weight": 900,
+          "dev": true,
+          "bytes": 76252
+        }
+      ],
+      "missing": "✗❗❚⟲"
+    },
+    "Fredoka": {
+      "weights": [
+        500,
+        600,
+        700
+      ],
+      "files": [
+        {
+          "file": "fredoka-500-0.woff2",
+          "weight": 500,
+          "dev": false,
+          "bytes": 10780
+        },
+        {
+          "file": "fredoka-500-dev.woff2",
+          "weight": 500,
+          "dev": true,
+          "bytes": 1088
+        },
+        {
+          "file": "fredoka-600-0.woff2",
+          "weight": 600,
+          "dev": false,
+          "bytes": 10976
+        },
+        {
+          "file": "fredoka-600-dev.woff2",
+          "weight": 600,
+          "dev": true,
+          "bytes": 1120
+        },
+        {
+          "file": "fredoka-700-0.woff2",
+          "weight": 700,
+          "dev": false,
+          "bytes": 10588
+        },
+        {
+          "file": "fredoka-700-dev.woff2",
+          "weight": 700,
+          "dev": true,
+          "bytes": 1100
+        }
+      ],
+      "missing": null
+    }
+  }
+}

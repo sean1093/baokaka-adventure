@@ -16,6 +16,8 @@ import { StageSection } from './StageSection';
 import { TokensSection } from './TokensSection';
 import { UiKitSection } from './UiKitSection';
 import './artlab.css';
+// The characters only the dev tools print get their own font slice (#68, D-105)
+import '../fonts/dev.css';
 
 /**
  * The art lab, `#/artlab` (dev builds only; App never loads this chunk in production). A dev tool:

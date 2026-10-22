@@ -78,6 +78,7 @@ Resolved by the planner; issues repeat the relevant ones.
 
 ### D-17 · 2026-10-18 · Fonts are the only external runtime resource
 **Decision.** Google Fonts (Chiron GoRound TC body, Noto Serif TC for names/titles only, Fredoka numerals) with `display=swap` and subsetting where possible; everything else is bundled. Exact families and weights follow the latest `art-direction.md`.
+**Superseded by D-105 (#68):** the same families and weights are now self-hosted subsets; the site has no external runtime resource.
 
 ### D-18 · 2026-10-18 · Visual QA tooling uses Playwright as a dev dependency
 **Decision.** Add `playwright` (or `@playwright/test`) and `pixelmatch`/`pngjs` as dev dependencies, using the preinstalled Chromium at `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers` locally. Screenshots are attached to PRs. Baseline diffs run locally and are **never** part of the deploy workflow (keeps deploys fast and deterministic). The art direction (§ 8.6 *Visual QA*) asks for the check to run in CI for art PRs; that can be added later as a separate, non-blocking workflow once baselines are stable (after M3).
@@ -1463,3 +1464,40 @@ Open: how a live layer can pass *behind* what hangs in front of a window (straps
 **Why.** Matting the frame from two renders works on any backdrop, whatever crosses its windows. The strip is two small bitmaps and one transform, which is cheap at 4× CPU throttle (≈ 55–60 fps on 1-1, 5-1 and 8-1).
 
 **Consequences.** A new moving car adds a `WINDOW_STRIPS` row, a tile in `TILES`, and `windowView()` round its view.
+
+### D-105 · 2026-10-22 · Self-hosted font subsets cut to the game's text, sliced by play order (#68; supersedes D-17's Google Fonts)
+
+**Context.** The Google Fonts link (D-17, D-27) cost a 141 KB render-blocking stylesheet and ≈ 1.6 MB of unicode-range slices for the cover and page 0-1 (measured by `npm run check:prod`: 330 KB on the cover, 1447 KB more after 「開始」). Google's slices group glyphs by general frequency, so a short CJK screen touches many of them. The issue asks for ≤ 60 KB render-blocking and ≤ 250 KB of fonts for the cover and the first page, with no glyph falling back to the system font.
+
+**Decision.**
+1. **Self-host** Chiron GoRound TC 700/900, Noto Serif TC 700/900 and Fredoka 500/600/700, the faces and weights the old link loaded. The look does not change. All three are SIL OFL 1.1 without a Reserved Font Name, so subsetting and self-hosting are allowed; the licenses ship in `public/fonts/`, and each file keeps its copyright and license name records.
+2. **Sources.** The variable fonts in google/fonts at a pinned commit, checked by SHA-256. Each weight is instanced the way Google builds its static files (`wght`; `wdth` 100 for Fredoka). The subsets keep the layout features a browser applies on its own, plus `tnum` (`tabular-nums`) and `halt`/`chws`/`vhal`/`vchw` (Chrome's `text-spacing-trim`). Stylistic sets and alternates are dropped: with them, the first file was 72 KB instead of 37 KB.
+3. **The character set** comes from the source, not the build, so the test runs before `vite build`. It counts string literals, templates and JSX text in the shipped modules plus printable ASCII, and skips comments (`src/fonts/charset.ts`): 1,049 characters. The dev tools (the art lab with the RPG, PageLab) add 316 more, in a `dev.css` that only they import.
+4. **Slices in play order.** File 0 holds 239 characters, ≈ 35–40 KB a face:
+   - printable ASCII;
+   - every punctuation mark and symbol. Chrome trims the space between CJK punctuation (`text-spacing-trim`) only within one font file, so 『一起』。 set wide when 』 and 。 were in different slices;
+   - what a first session actually shows, recorded in a browser (`npm run fonts:session`: cover → 開始 → page 0-1 with its lines, 114 characters).
+
+   The other characters follow by the chapter that first prints them (script keys, page folders, chapter tables), then by use, 110 to a file. Each `@font-face` lists its file's exact `unicode-range`. The chapter guess only decides *which* file a glyph is in, never *whether* it is covered.
+5. **The guard is a test, not CI tooling.** CI has no Python, so the generated files are committed. `fonts.test.ts` parses each WOFF2's cmap in JS (brotli from `node:zlib`). It fails when the source prints a character some CJK weight has no file for, and when a range promises a glyph its file lacks. Only ✗ ❗ ❚ ⟲, which neither font ever drew, fall back to the system font, as before.
+6. **`check:prod` gates the payload.** It fails over 60 KB of external font stylesheets or 250 KB of font files for the cover and page 0-1, and lists each request.
+
+**Result** (`npm run check:prod`, throttled 4G, cold cache). These are single runs on a dev container, so the timings are ±50 ms.
+
+| | Before | After |
+|---|---|---|
+| Render-blocking font CSS | 141 KB (Google `css2`) | 0 KB external. The `@font-face` rules add ≈ 4.5 KB gzip to the app stylesheet. |
+| Font files: cover | 189 KB, 3 files | 76 KB, 2 files |
+| Font files: 開始 → page 0-1 | 1447 KB, 15 files | 85 KB, 3 files |
+| First load to the cover | 818 KB | 595 KB |
+| 開始 → page 0-1 | +1676 KB | +639 KB |
+
+The whole game's fonts are 1.0 MB over 39 files, fetched a slice at a time as chapters bring new characters. The repo holds 1.5 MB of WOFF2, dev slices included.
+
+**Why.** Text subsetting through Google's `text=` parameter would need one URL per screen and keeps the render-blocking stylesheet. Dropping a weight changes the look. A subset of the game's own text is the smallest option, and it removes the site's only external dependency.
+
+**Consequences.**
+- New text with a new character fails `npm run test` until `npm run fonts` is run and committed. This needs Python with fonttools and brotli.
+- Re-run `npm run fonts:session` when the cover or page 0-1 change their text.
+- The art bakes (`bake:popup`, `docs/art/popup/src/render.mjs`) keep loading Google Fonts. They are offline tools, and their lettering ends up as bitmaps.
+
