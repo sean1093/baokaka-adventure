@@ -67,11 +67,18 @@ export function Credits({ photos, registry: reg, reduced, still = false, startSl
   const ready = useSpritesPreload(PHOTO_SPRITES);
   const doneRef = useRef(onDone);
   doneRef.current = onDone;
+  // Ends once, whether the last card ran out, a tap went past it or 「跳過」 was pressed
+  const ended = useRef(false);
+  const finish = () => {
+    if (ended.current) return;
+    ended.current = true;
+    doneRef.current();
+  };
   const next = () => setI((n) => n + 1);
   useEffect(() => {
     if (still) return undefined;
     if (i >= slides.length) {
-      doneRef.current();
+      finish();
       return undefined;
     }
     const t = window.setTimeout(next, CREDITS_SLIDE_MS);
@@ -108,13 +115,13 @@ export function Credits({ photos, registry: reg, reduced, still = false, startSl
           <>
             {slide.chapter !== null && slide.photo !== null && <Print reg={reg} chapter={slide.chapter} photo={slide.photo} tilt={i % 2 ? 2.4 : -2.2} reduced={reduced} />}
             {slide.credit?.role === CAMEO_ROLE && <Cameo ctx={ctx} reduced={reduced} />}
-            {slide.credit !== null && <CreditText credit={slide.credit} reduced={reduced} />}
+            {slide.credit !== null && <CreditText credit={slide.credit} />}
           </>
         )}
         {slide.kind === 'end' && (
           <>
             {slide.photo !== null && <Print reg={reg} chapter={ENDING_LEAF_CHAPTER} photo={slide.photo} tilt={-1.2} reduced={reduced} />}
-            <p className={`text-center font-serif text-[28px] font-black leading-snug ${reduced ? 'credits-fade' : 'credits-fade'}`} style={{ color: C.goldLight }} data-credits-end="">
+            <p className="credits-fade text-center font-serif text-[28px] font-black leading-snug" style={{ color: C.goldLight }} data-credits-end="">
               {CREDITS_DEDICATION}
             </p>
           </>
@@ -122,7 +129,7 @@ export function Credits({ photos, registry: reg, reduced, still = false, startSl
       </div>
       <button
         type="button"
-        onClick={() => doneRef.current()}
+        onClick={finish}
         className="kit-press absolute right-3 flex min-h-[56px] min-w-[88px] items-center justify-center rounded-[12px] px-4 text-[20px] font-black"
         style={{ top: 'calc(12px + env(safe-area-inset-top))', backgroundColor: withAlpha(C.page, 0.94), color: C.ink, boxShadow: cardShadow(0.6) }}
         data-button="skip"
@@ -156,9 +163,9 @@ function Print({ reg, chapter, photo, tilt, reduced }: { reg: PageRegistry; chap
 }
 
 /** A credit: its role small in gold, its names big in cream. */
-function CreditText({ credit, reduced }: { credit: Credit; reduced: boolean }) {
+function CreditText({ credit }: { credit: Credit }) {
   return (
-    <div className={`flex flex-col items-center gap-1 text-center ${reduced ? 'credits-fade' : 'credits-fade'}`} data-credit={credit.role}>
+    <div className="credits-fade flex flex-col items-center gap-1 text-center" data-credit={credit.role}>
       <span className="text-[20px] font-bold tracking-[0.08em]" style={{ color: C.goldLight }}>
         {credit.role}
       </span>
