@@ -172,7 +172,8 @@ export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1, n
   // The chip's top: on the title row, or lifted to straddle the card's top edge (大字, a long title)
   const chipTop = title.chipUp ? CARD.y - 22 : CARD.y + 12;
   const vignette = cardVignette(chapter);
-  const [vignetteReady, setVignetteReady] = useState(false);
+  // The url that has loaded (a new chapter's vignette is loading again)
+  const [loaded, setLoaded] = useState<string | null>(null);
   return (
     <div
       className="cb-card"
@@ -192,10 +193,10 @@ export function ChapterBoard({ chapter, hidden = false, top = 0, scale: s = 1, n
             draggable={false}
             className="absolute block"
             style={{ left: u(VIGNETTE_AT.x), top: u(VIGNETTE_AT.y), width: u(VIGNETTE_CARD.w), height: u(VIGNETTE_CARD.h) }}
-            onLoad={() => setVignetteReady(true)}
-            onError={() => setVignetteReady(true)}
+            onLoad={() => setLoaded(vignette)}
+            onError={() => setLoaded(vignette)}
             data-card-vignette={chapter}
-            data-sprites={vignetteReady ? 'ready' : 'loading'}
+            data-sprites={loaded === vignette ? 'ready' : 'loading'}
           />
         )}
         <svg width={u(BOARD_W)} height={u(BOARD_H + STRING_TOP)} viewBox={`0 ${-STRING_TOP} ${BOARD_W} ${BOARD_H + STRING_TOP}`} style={{ top: -u(STRING_TOP) }} className="absolute left-0 top-0 block overflow-visible" dangerouslySetInnerHTML={{ __html: art }} />
