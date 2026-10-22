@@ -3,6 +3,7 @@ import { brad, depth, f1, ref, type KitCtx } from '../../art';
 import { LEDGE_DEPTH } from '../stage';
 import { bridgeSection } from './airport';
 import { carriage } from './placeholders';
+import { sectionLedge } from './taipei101';
 
 /**
  * Carriage art by part art key (#108): the card a tab or slider moves that Baokaka rides (the
@@ -114,6 +115,9 @@ const CARRIAGES: Readonly<Record<string, CarriageArt>> = {
   'c6/bridge-extend': bridgeSection,
   // 8-6's abacus rods (#129)
   'c8/abacus-rod': abacusBeads,
+  // 10-3's ledges on 101's sections (#134, `taipei101.ts`): the bottom and top sections', and the middle's (its crank's key)
+  'c10/tower-section': sectionLedge,
+  'c10/section-crank': sectionLedge,
 };
 
 /** The carriage drawing for a part art key (the placeholder carriage when it has none). */

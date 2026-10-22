@@ -1827,6 +1827,100 @@ export const POPUP_TAMSUI = {
   tubeLit: '#6A6280',
 } as const;
 
+/**
+ * Chapter 10's kit (台北101, 05:10; popup bible § 6 row 10, #134): dawn violet and teal glass
+ * dominant, the peach of first light and gold the accents. 101's eight sections each show three
+ * facets (left indigo, front teal glass, right peach), a cyan rim and gold 如意; fixed bands are
+ * grey-lilac. These are **screen colours** (D-99): the chapter's backdrops pre-divide the bake's
+ * grade (`ungradeSvg`), so a backdrop and a part (never graded) show the same values. Every colour
+ * stays ≥ ΔE 12 from marigold (`affordance.test.ts`).
+ */
+export const POPUP_101 = {
+  // Dawn violet: the dominant, the shade side, the far city
+  violet: '#4A4592',
+  violetLight: '#6A66AE',
+  violetDeep: '#2C2A62',
+  indigo: '#34347A',
+  // Teal glass: 101's curtain wall, its lit rim
+  teal: '#4E8E96',
+  tealLight: '#7CB4B8',
+  tealLit: '#B6DCD8',
+  tealDeep: '#2E5E6C',
+  cyanRim: '#9EE6EA',
+  // First light: the peach on right-facing faces, the rose of the clouds, the sun's glow
+  peach: '#E6A89A',
+  peachLight: '#F6CDBC',
+  peachDeep: '#B87A80',
+  rose: '#D08EA8',
+  sunGlow: '#FFD9A0',
+  sunCore: '#FFF1D2',
+  // The fixed sections' grey-lilac bands
+  band: '#A69CC2',
+  bandDeep: '#6E6690',
+  // 信義's towers and the basin's city, far to near
+  cityFar: '#5A5694',
+  cityMid: '#403E7E',
+  cityNear: '#2C2C60',
+  // 象山 and the 四獸山 hills behind the sunrise
+  hillFar: '#5E5296',
+  hill: '#3E3878',
+  hillNear: '#2A2658',
+  // Steel, glass balustrades, the plaza's granite, the deck
+  steel: '#A8AAC6',
+  steelLight: '#D4D6E6',
+  steelDeep: '#5C5E86',
+  granite: '#7A7898',
+  graniteLight: '#9A98B4',
+  graniteDeep: '#545272',
+  deck: '#6E6A92',
+  deckLight: '#8E8AB0',
+  // The elevator car's dark lacquer and the 89F floor's stone
+  lacquer: '#2E2C58',
+  lacquerLight: '#4A4680',
+  stone: '#C8C2D8',
+  stoneShade: '#948CB0',
+  // Wood (the gift shop's shelves, the party table)
+  wood: '#8A6450',
+  woodLight: '#A8826A',
+  woodDeep: '#5A3E34',
+  // The 月亮線 car (信義線 red band) and its cream wall
+  carWall: '#C4BAD2',
+  carWallShade: '#958AAE',
+  lineRed: '#C8484E',
+  lineRedDeep: '#8A2E38',
+  seat: '#5E7AB0',
+  // The cast: the 清潔阿伯's pale-blue uniform and cap, his mop and bucket; the 上班族's suit and tie
+  uniform: '#8EB4D8',
+  uniformDeep: '#5E86AE',
+  cap: '#B4D2EC',
+  mop: '#E6E0D2',
+  bucket: '#3E8A8E',
+  suit: '#4A4E6A',
+  suitDeep: '#33364E',
+  shirt: '#E8E6F0',
+  tie: '#B04A5A',
+  // 咻咻's party: the cake, its frosting and berries, the candles' stripes, paper lanterns, gifts
+  cake: '#F2E6D8',
+  cakeShade: '#D4C2B4',
+  frosting: '#E8A6B8',
+  berry: '#C04A5E',
+  candle: '#9EC8E8',
+  lantern: '#C8504A',
+  lanternDeep: '#8E3036',
+  giftMint: '#7CC0A8',
+  giftLilac: '#A88ED0',
+  ribbon: '#E86A7A',
+  // 咻咻, the baby typhoon (cast sheet): a pale blue-grey cloud, its shade, big blue eyes; white once calm
+  cloud: '#C6D2EA',
+  cloudShade: '#8E9CC6',
+  cloudDeep: '#5E6A9A',
+  cloudCalm: '#F8F6FC',
+  cloudCalmShade: '#D2D4EA',
+  eye: '#2E5CB8',
+  eyeLight: '#8EC0F4',
+  tear: '#9ED0F6',
+} as const;
+
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
 export type GradientStop = readonly [offset: number, color: string];
 

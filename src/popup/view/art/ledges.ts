@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_AIRPORT as A, POPUP_BEITOU as BE, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MAOKONG as G, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, POPUP_TAMSUI as W, mixHex } from '../../../art/palette';
+import { POPUP as C, POPUP_AIRPORT as A, POPUP_BEITOU as BE, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MAOKONG as G, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, POPUP_TAMSUI as W, POPUP_101 as X, mixHex } from '../../../art/palette';
 import { depth, f1, ref, seeded, softEllipse, type KitCtx } from '../../art';
 import { PAGE_W, towardVp } from '../geometry';
 import { LEDGE_DEPTH, type LedgeRun, type Slope } from '../stage';
@@ -1194,6 +1194,112 @@ function boatDeck(ctx: KitCtx, run: LedgeRun): string {
   return depth(ctx, 4, body, boxOutline(b));
 }
 
+// ——— Chapter 10 (台北101, #134): screen colours (the kit is never graded live) ———
+
+/** 10-2's 89F observatory floor: polished dark stone on top catching the dawn, the slab cut through in front (hatched). */
+function observatoryFloor(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  let hatch = '';
+  for (let x = b.x0 - 8; x < b.x1; x += 7) hatch += `M${f1(Math.max(b.x0, x))} ${f1(b.y + 14 + Math.max(0, b.x0 - x))}L${f1(Math.min(b.x1, x + 14))} ${f1(b.y + 14 - 14 + Math.max(0, x + 14 - b.x1))}`;
+  const body = (b.side ? `<path d="${b.side}" fill="${X.graniteDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(X.violetDeep, X.lacquer, 0.4)}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="16" fill="${X.graniteDeep}"/><path d="${hatch}" stroke="${X.granite}" stroke-width=".9" opacity=".55"/>`
+    + `<path d="M${b.x0} ${b.y + 30}H${b.x1}M${b.x0} ${b.y + 42}H${b.x1}" stroke="${X.lacquerLight}" stroke-width="2"/>`
+    + `<path d="${b.top}" fill="${X.stone}"/><path d="${b.top}" fill="${X.peach}" opacity=".18"/><path d="${topJoints(b, 22)}" stroke="${X.stoneShade}" stroke-width=".8" opacity=".6"/>` + rim(b.x0, b.x1, b.y, 0.7);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 10-2's 5F ticket hall: pale marble on top, its face of marble with a gold inlay line. */
+function ticketHall(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${X.stoneShade}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(X.stoneShade, X.violet, 0.25)}"/>`
+    + `<path d="M${b.x0} ${b.y + 12}H${b.x1}" stroke="${C.gold}" stroke-width="1.6" opacity=".75"/>`
+    + `<path d="${boardJoints(b.x0, b.x1, b.y + 14, b.y + b.t, 40)}" stroke="${X.stoneShade}" stroke-width="1" opacity=".6"/>`
+    + `<path d="${b.top}" fill="${X.stone}"/><path d="${topJoints(b, 30)}" stroke="${X.stoneShade}" stroke-width=".8" opacity=".55"/>` + rim(b.x0, b.x1, b.y, 0.7);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 10-3's terrace at the tower's foot (信義's plaza): granite pavers on top, a granite step in front. */
+function plaza101(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${X.graniteDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${X.granite}"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="10" fill="${X.graniteLight}"/>`
+    + `<path d="M${b.x0} ${b.y + 26}H${b.x1}${boardJoints(b.x0, b.x1, b.y + 10, b.y + 26, 34)}" stroke="${X.graniteDeep}" stroke-width="1" opacity=".6"/>`
+    + `<path d="${b.top}" fill="${mixHex(X.graniteLight, X.peach, 0.2)}"/><path d="${topJoints(b, 24)}" stroke="${X.granite}" stroke-width=".8" opacity=".7"/>` + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 10-4's viewing balconies round the damper's atrium: a carpeted top, a glass balustrade on the face under a gold handrail. */
+function atriumBalcony(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${X.lacquer}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${X.lacquer}"/>`
+    + `<rect x="${b.x0 + 3}" y="${b.y + 8}" width="${b.x1 - b.x0 - 6}" height="${b.t - 14}" fill="${X.tealLit}" opacity=".22"/>`
+    + `<path d="M${f1(b.x0 + (b.x1 - b.x0) * 0.2)} ${b.y + b.t - 6}L${f1(b.x0 + (b.x1 - b.x0) * 0.3)} ${b.y + 8}H${f1(b.x0 + (b.x1 - b.x0) * 0.36)}L${f1(b.x0 + (b.x1 - b.x0) * 0.26)} ${b.y + b.t - 6}Z" fill="${C.glassine}" opacity=".25"/>`
+    + `<rect x="${b.x0}" y="${b.y + 4}" width="${b.x1 - b.x0}" height="4" fill="${C.gold}"/>`
+    + `<path d="${b.top}" fill="${X.lacquerLight}"/><path d="${b.top}" fill="${X.peach}" opacity=".12"/>` + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 10-4's display case on the far balcony (the bead's): a lacquer plinth under a glass case with gold trim. */
+function damperCase(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${X.lacquer}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${X.lacquerLight}"/>`
+    + `<rect x="${b.x0 + 4}" y="${b.y + 10}" width="${b.x1 - b.x0 - 8}" height="20" fill="${X.tealLit}" opacity=".3"/>`
+    + `<circle cx="${f1((b.x0 + b.x1) / 2)}" cy="${b.y + 20}" r="6" fill="${C.gold}"/>`
+    + `<path d="M${b.x0} ${b.y + 2}H${b.x1}M${b.x0} ${b.y + 34}H${b.x1}" stroke="${C.gold}" stroke-width="2"/>`
+    + `<path d="${b.top}" fill="${X.tealLit}" opacity=".7"/>` + rim(b.x0, b.x1, b.y, 0.8);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 10-5's roof terrace: deck tiles wet with 咻咻's rain (glassine sheen), the parapet's grey face in front. */
+function roofTerrace(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${X.graniteDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(X.granite, X.violet, 0.3)}"/>`
+    + `<path d="M${b.x0} ${b.y + 18}H${b.x1}${boardJoints(b.x0, b.x1, b.y + 18, b.y + b.t, 26)}" stroke="${X.graniteDeep}" stroke-width="1" opacity=".6"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="5" fill="${X.cyanRim}" opacity=".5"/>`
+    + `<path d="${b.top}" fill="${X.deck}"/><path d="${topJoints(b, 20)}" stroke="${X.violetDeep}" stroke-width=".8" opacity=".5"/>`
+    + `<path d="${b.top}" fill="${C.glassine}" opacity=".12"/>` + rim(b.x0, b.x1, b.y, 0.6);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 10-5's back of the ring round 咻咻's table: a low step of the same wet tiles (thin, so the table shows in front). */
+function roofStep(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = `<path d="${b.top}" fill="${X.deck}"/><path d="${topJoints(b, 20)}" stroke="${X.violetDeep}" stroke-width=".8" opacity=".5"/><path d="${b.top}" fill="${C.glassine}" opacity=".12"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="8" fill="${mixHex(X.granite, X.violet, 0.3)}"/><path d="M${b.x0} ${b.y + 0.6}H${b.x1}" stroke="${X.cyanRim}" stroke-width="1.4" opacity=".6"/>`;
+  return depth(ctx, 3, body, `<path d="${b.top}"/><rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="8"/>`);
+}
+
+/** 10-6's outdoor deck at first light: pale tiles on top warmed peach, a steel fascia in front with the sunrise along its edge. */
+function skyDeck(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${X.steelDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${mixHex(X.steel, X.peach, 0.2)}"/>`
+    + `<rect x="${b.x0}" y="${b.y + b.t - 14}" width="${b.x1 - b.x0}" height="14" fill="${X.steelDeep}" opacity=".45"/>`
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="9" fill="${X.steelLight}"/><path d="M${b.x0} ${b.y + 9}H${b.x1}" stroke="${X.peach}" stroke-width="2" opacity=".7"/>`
+    + `<path d="M${b.x0} ${b.y + 30}H${b.x1}" stroke="${X.steel}" stroke-width="1" opacity=".5"/>`
+    + `<path d="${b.top}" fill="${mixHex(X.steelLight, X.peachLight, 0.45)}"/><path d="${topJoints(b, 18)}" stroke="${X.steel}" stroke-width=".8" opacity=".7"/>` + rim(b.x0, b.x1, b.y, 0.8);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** 10-6's railing footing: a low concrete plinth (the rail stands on it), lit peach on its top. */
+function railFooting(ctx: KitCtx, run: LedgeRun): string {
+  const b = box(run);
+  const body = (b.side ? `<path d="${b.side}" fill="${X.graniteDeep}"/>` : '')
+    + `<rect x="${b.x0}" y="${b.y}" width="${b.x1 - b.x0}" height="${b.t}" fill="${X.granite}"/>`
+    + `<path d="M${b.x0} ${b.y + 24}H${b.x1}" stroke="${X.graniteDeep}" stroke-width="1" opacity=".6"/>`
+    + `<path d="${b.top}" fill="${mixHex(X.graniteLight, X.peach, 0.3)}"/>` + rim(b.x0, b.x1, b.y, 0.7);
+  return depth(ctx, 4, body, boxOutline(b));
+}
+
+/** Chapter 10's ledge styles (#134): a single node is a short box of the same material; climbs need no ramp. */
+const CHAPTER10_STYLES: ReadonlySet<LedgeStyle> = new Set<LedgeStyle>(['observatoryFloor', 'ticketHall', 'plaza101', 'atriumBalcony', 'damperCase', 'roofTerrace', 'roofStep', 'skyDeck', 'railFooting']);
+
 /** Chapter 9's ledge styles (#132): a single node is a short box of the same material; climbs need no ramp. */
 const CHAPTER9_STYLES: ReadonlySet<LedgeStyle> = new Set<LedgeStyle>(['mrtSeat', 'windowSill', 'oldStreetLane', 'arcadeStep', 'eggCounter', 'pierDeck', 'ferryDeck', 'wharfBoardwalk', 'wharfPier', 'bridgeWalkway', 'towerBase', 'quay', 'boatDeck']);
 
@@ -1215,10 +1321,28 @@ export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme
     if (style === 'marketLane') return marketLane(ctx, run);
     if (style === 'stallFloor' || style === 'stallShelf' || style === 'stallCounter') return styledLedge(ctx, { ...run, single: false }, style, theme);
     if (style === 'terminalFloor' || style === 'deckBoards' || style === 'bridgeFloor' || style === 'catwalk' || style === 'carBodyWenhu') return styledLedge(ctx, { ...run, single: false }, style, theme);
-    if (CHAPTER7_STYLES.has(style) || CHAPTER8_STYLES.has(style) || CHAPTER9_STYLES.has(style)) return styledLedge(ctx, { ...run, single: false }, style, theme);
+    if (CHAPTER7_STYLES.has(style) || CHAPTER8_STYLES.has(style) || CHAPTER9_STYLES.has(style) || CHAPTER10_STYLES.has(style)) return styledLedge(ctx, { ...run, single: false }, style, theme);
     return plainLedge(ctx, run, theme);
   }
   switch (style) {
+    case 'observatoryFloor':
+      return observatoryFloor(ctx, run);
+    case 'ticketHall':
+      return ticketHall(ctx, run);
+    case 'plaza101':
+      return plaza101(ctx, run);
+    case 'atriumBalcony':
+      return atriumBalcony(ctx, run);
+    case 'damperCase':
+      return damperCase(ctx, run);
+    case 'roofTerrace':
+      return roofTerrace(ctx, run);
+    case 'roofStep':
+      return roofStep(ctx, run);
+    case 'skyDeck':
+      return skyDeck(ctx, run);
+    case 'railFooting':
+      return railFooting(ctx, run);
     case 'mrtSeat':
       return mrtSeat(ctx, run);
     case 'windowSill':
@@ -1379,7 +1503,7 @@ export function styledRamp(ctx: KitCtx, slope: Pick<Slope, 'from' | 'to'>, style
   if (style === 'cabinBench' || style === 'cabinRack' || style === 'cabinGlass') return '';
   if (style === 'gardenPath' || style === 'gardenPathJar' || style === 'gardenTerrace') return '';
   // 北投 (#130), 淡水 (#132): the benches, decks and steps are their own boxes
-  if (CHAPTER8_STYLES.has(style) || CHAPTER9_STYLES.has(style)) return '';
+  if (CHAPTER8_STYLES.has(style) || CHAPTER9_STYLES.has(style) || CHAPTER10_STYLES.has(style)) return '';
   if (style !== 'parkPath' && style !== 'boardwalk') return plainRamp(ctx, slope, theme);
   const [[ax, ay], [bx, by]] = [slope.from, slope.to];
   const t = 12;
