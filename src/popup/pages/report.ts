@@ -22,6 +22,16 @@ export const PAR_BAND: Readonly<Record<PageDef['difficulty'], readonly [number, 
 /** GDD § 3.7 / § 8: the whole solver suite must run in under 60 s. */
 export const CI_BUDGET_MS = 60_000;
 
+/** GDD § 3.7's calibration: the solver explores about 7,000 states a second (D-46). */
+export const STATES_PER_SECOND = 7_000;
+
+/**
+ * The same budget as work, not time (#133, D-98): 60 s at the calibrated throughput, 420,000
+ * states for the whole suite. `pages.test.ts` asserts this, since the wall clock depends on the
+ * machine — the CI runner explores ≈ 2,100 states a second, a third of the calibration.
+ */
+export const CI_BUDGET_STATES = (CI_BUDGET_MS / 1000) * STATES_PER_SECOND;
+
 /** One page's line in the report. */
 export interface PageReport {
   readonly id: string;
