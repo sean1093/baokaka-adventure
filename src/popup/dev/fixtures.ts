@@ -161,6 +161,8 @@ const ON_SPREAD_C10: NavState = { base: { kind: 'page', id: 'c10p6', run: 0 }, l
 // 尾聲 (#135): page E open (the book's ten chapters done), then done with its 抓周 photo and its 淘氣
 const ON_PAGE_E: NavState = { base: { kind: 'page', id: 'c11p1', run: 0 }, layer: null };
 const E_DONE = keepPhoto(completePage(C10_DONE, 'c11p1', { mischief: true, moves: 1 }), 11, { frame: 'A', mocha: true, at: Date.UTC(2026, 9, 20, 2, 0) });
+/** …and every 土地公 of the book found: the bonus page 「象山的日出」 is open (#135, a debug save for it). */
+const E_ALL_TUDIGONG = gameRegistry.pages.reduce((sv: SaveV1, p) => earnSticker(sv, p.id, 'tudigong'), E_DONE);
 /** The album's fixtures (#103): a fixed time, so the stills never change. */
 const SHOT_AT = Date.UTC(2026, 9, 19, 16, 20);
 /** Chapter 1 with 1-2 solved (淘氣 too) and its photo kept: Frame A with 摩卡 in it. */
@@ -389,6 +391,20 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 0 } }, save: E_DONE },
     note: 'The 目錄 after the ending (#135): the 家 station\'s strip — the prologue\'s four pages, then page E 「抓周」 marked 尾聲, solved with its 淘氣; its 淘氣 「讓摩卡坐在抓周盤上」 in the list.',
+  },
+  {
+    name: 'bonus-xiangshan',
+    page: 'c12p1',
+    steps: [{ wait: 'settle' }, { say: 'whoosh' }],
+    note: 'The bonus page 「象山的日出」 (GDD § 4.4; #135), 番外: the top of the 象山 trail at sunrise — 101 across the basin with the sun coming up behind it. Baokaka rides the huge fallen leaf; 咻咻, the breeze, has blown it out over the gully (咻——), on its way to the 六巨石 boulders where the 金珠珠 shines; the 土地公 in his 登山帽 on the boulders; Mocha on the mossy rock by the trail.',
+    expect: { event: 'partEnter' },
+  },
+  {
+    name: 'contents-bonus-open',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 10, bonus: true } }, save: E_ALL_TUDIGONG },
+    note: 'The 「象山的日出」 postcard tapped with every 土地公 found (#135): the panel holds the bonus page, 番外 「象山的日出」, 象山 · 05:30 — tap its card to play it.',
   },
   {
     name: 'credits',
@@ -2132,7 +2148,7 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     page: 'c1p2',
     steps: [],
     screen: { nav: { base: { kind: 'cover' }, layer: { kind: 'contents', chapter: 1, bonus: true } }, save: EVERYTHING, rewardTotal: BOOK },
-    note: 'The 「象山的日出」 postcard tapped (#113): ringed on the map; the panel names it and, until #135 builds the bonus page, says 「下一站還在畫……未完待續。」',
+    note: 'The 「象山的日出」 postcard tapped (#113, #135): ringed on the map; the panel names it — 番外 「象山的日出」, 象山 · 05:30 — with the bonus page\'s card to play.',
   },
   {
     name: 'page-hud',

@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, test, vi } from 'vitest';
 import { kitCtx } from '../../art';
 import { initialState } from '../../core';
-import { PAGES, pageById } from '../../pages';
+import { ALL_PAGES as PAGES, pageById } from '../../pages';
 import { PageView } from '../PageView';
 import { stageOf } from '../stage';
 import { STAGE_DRESS, dressOf, ledgeStyleOf, ownsPost } from './dress';

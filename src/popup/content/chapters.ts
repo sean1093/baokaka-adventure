@@ -101,6 +101,8 @@ const END_LINES: Readonly<Record<number, readonly LineKey[]>> = {
   10: ['c10p6.end.1', 'c10p6.end.2', 'c10p6.end.3', 'c10p6.end.4'],
   // § 5.5 page E: after the tail is grabbed, his first word, then the second (#135)
   11: ['e.end.1', 'e.end.2', 'e.end.3', 'e.end.4', 'e.end.5', 'e.end.6', 'e.end.7', 'e.end.8', 'e.end.9', 'e.end.10'],
+  // 番外 (§ 4.4 bonus page): the 土地公 stamps the 「台北走透透」 card
+  12: ['x.stamp.1', 'x.stamp.2'],
 };
 
 /**

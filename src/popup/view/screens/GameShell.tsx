@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { REDUCE_MOTION_CLASS, ReducedMotionContext, usePrefersReducedMotion } from '../../../components/motion';
-import { DAWN_BEATS, ENDING_CHAPTER, POST_BEATS, SOON_LINES, cardLines, chapterName, endGroups, hasNextChapter, loadLines, UI } from '../../content';
+import { BONUS_CHAPTER, DAWN_BEATS, ENDING_CHAPTER, POST_BEATS, SOON_LINES, cardLines, chapterName, endGroups, hasNextChapter, loadLines, UI } from '../../content';
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
 import { COVER, chapterStickers, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
@@ -520,6 +520,11 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
               }),
           }),
         );
+      // The bonus page (#135): the 土地公's stamp (its end lines), then the card and the 目錄 at its postcard
+      if (from.chapter === BONUS_CHAPTER) {
+        holdTimer.current = window.setTimeout(() => void endChapter(from.chapter, false).then(turnOn), GRAB_HOLD_MS);
+        return;
+      }
       if (from.chapter === ENDING_CHAPTER) {
         holdTimer.current = window.setTimeout(() => {
           void endChapter(from.chapter, false).then(() => {

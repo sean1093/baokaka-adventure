@@ -529,7 +529,11 @@ export function tudigong(ctx: KitCtx, hat = ''): string {
     + `<circle cx="-4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/><circle cx="4.6" cy="3" r="1.3" fill="${S.blush}" opacity=".7"/>`;
   // Chapter 5's 鴨舌帽 (#121; #122): a night-market duck-bill cap worn peak forward — a two-tone crown
   // (a cream front panel, a vermilion back), a button on top, a long dark peak jutting out
-  const cap = hat === '清潔帽'
+  const cap = hat === '登山帽'
+    // 番外's 登山帽 (#135): a khaki bucket hat for the 象山 trail, a green band, its brim all round
+    ? `<path d="M-12 -2.4Q0 .8 12 -2.4Q10 -.6 0 0Q-10 -.6 -12 -2.4Z" fill="${C.corrugatedDark}"/><path d="M-7.6 -2.6q0 -7.4 7.6 -7.4q7.6 0 7.6 7.4z" fill="${C.corrugatedLight}"/>`
+      + `<path d="M-7.8 -3.6h15.6v1.6h-15.6z" fill="${C.quiltLeaf}"/><path d="M-4.4 -8q2 -1.6 4.4 -1.8" stroke="${C.chalk}" stroke-width=".8" fill="none" opacity=".6"/>`
+    : hat === '清潔帽'
     // Chapter 10's 清潔帽 (#133): a soft pale-blue cotton cap, a white band, a short peak
     ? `<path d="M-8.2 -3.2q-.6 -7 8.2 -7.4q8.8 .4 8.2 7.4z" fill="${C.noteSky}"/><path d="M-8.4 -4.2h16.8v1.8h-16.8z" fill="${C.standeeCard}"/>`
       + `<path d="M3.4 -2.6q5.4 -.4 8 1.4l-8 .5z" fill="${mixHex(C.noteSky, C.printDark, 0.35)}"/><circle cx="0" cy="-10.4" r="1.1" fill="${C.standeeCard}"/>`

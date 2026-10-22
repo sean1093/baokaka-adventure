@@ -2046,6 +2046,32 @@ export const POPUP_ENDING_SCENES = {
   dawnDoor: '#2A2448',
 } as const;
 
+/**
+ * 番外's kit (the bonus page 「象山的日出」, #135): the trail's greens against the dawn, its earth and
+ * stone, the fallen leaf's green-gold, 咻咻 white as the breeze. Screen colours (D-99), with chapter
+ * 10's dawn (`POPUP_101`) for the sky and 101. Every colour stays ≥ ΔE 12 from marigold.
+ */
+export const POPUP_XIANGSHAN = {
+  leaf: '#4E7A5C',
+  leafDeep: '#2E4E46',
+  fern: '#5E8C5A',
+  earth: '#8A6A58',
+  earthLit: '#B08A70',
+  earthDeep: '#5E4640',
+  gully: '#4A4450',
+  stone: '#9A929A',
+  stoneLit: '#C8C0C0',
+  stoneShade: '#6E6670',
+  moss: '#6E9A5E',
+  wood: '#6E4A36',
+  woodLit: '#A8805E',
+  leafGold: '#9AB45A',
+  leafLit: '#D8E6A0',
+  cloud: '#FFFFFF',
+  blush: '#F2A0A8',
+} as const;
+
+
 
 
 /** One gradient stop: offset in [0, 1] and a `#RRGGBB` colour. */
@@ -2093,6 +2119,7 @@ export const POPUP_CHAPTER_CLOCK: readonly PopupChapterSky[] = [
   { chapter: 9, label: '9', place: '淡水 / 淡江大橋', time: '04:40', top: '#1E2A66', horizon: '#C88AB8', feeling: 'the first violet light, sea glassine' },
   { chapter: 10, label: '10', place: '台北101', time: '05:10', top: '#3A3A80', horizon: '#F4B49A', feeling: 'dawn peach, gold rim' },
   { chapter: 11, label: 'E', place: '家 (抓周)', time: '10:00', top: '#8EC8E8', horizon: '#FFF0C8', feeling: 'the only daytime page' },
+  { chapter: 12, label: '象', place: '象山 (番外)', time: '05:30', top: '#5A5AA8', horizon: '#FFD2B0', feeling: 'a sunrise over the basin, 101 against it' },
 ];
 
 // ---------------------------------------------------------------------------------------------

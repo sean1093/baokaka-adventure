@@ -5,7 +5,7 @@
  */
 import { ENV_MANIFEST } from '../src/popup/env/env.gen';
 import { FIRST_LOAD_BUDGET, PAGE_ART_BUDGET, firstLoad, formatReport, pageArt } from '../src/popup/env/report';
-import { PAGES } from '../src/popup/pages';
+import { ALL_PAGES as PAGES } from '../src/popup/pages';
 
 console.log(formatReport(PAGES, ENV_MANIFEST));
 const over = PAGES.some((p) => pageArt(p, ENV_MANIFEST).bytes > PAGE_ART_BUDGET) || firstLoad(PAGES, ENV_MANIFEST).bytes > FIRST_LOAD_BUDGET;

@@ -849,6 +849,19 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "345d692db455d443"
+    },
+    "bonus/xiangshan": {
+      "file": "backdrops/bonus/xiangshan",
+      "bytes": 119504,
+      "chapter": 12,
+      "grade": [1.818, 1.754, 1.389],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "c605a13418683c6e"
     }
   },
   "parts": {
@@ -4241,6 +4254,30 @@ export const ENV_MANIFEST: EnvManifest = {
         }
       },
       "source": "319851f6e1a7fb87"
+    },
+    "bonus/leaf": {
+      "preset": "blowable",
+      "box": {
+        "x": -214,
+        "y": -75,
+        "w": 323,
+        "h": 103
+      },
+      "states": {
+        "near": {
+          "file": "parts/bonus/leaf.near",
+          "bytes": 6202
+        },
+        "mid": {
+          "file": "parts/bonus/leaf.mid",
+          "bytes": 6236
+        },
+        "far": {
+          "file": "parts/bonus/leaf.far",
+          "bytes": 6358
+        }
+      },
+      "source": "81e2d2165be1e135"
     }
   },
   "cutouts": {

@@ -14,6 +14,7 @@ import { C8_BACKDROPS, C8_PARTS } from './art/c8';
 import { C9_BACKDROPS, C9_CUTOUTS, C9_PARTS } from './art/c9';
 import { C10_BACKDROPS, C10_PARTS } from './art/c10';
 import { END_BACKDROPS } from './art/end';
+import { BONUS_BACKDROPS, BONUS_PARTS } from './art/bonus';
 import { SCREEN_ART, type ScreenSource } from './art/screens';
 import type { EnvBox } from './manifest';
 
@@ -59,7 +60,7 @@ export interface CutoutSource {
 export type BackdropDraw = (ctx: KitCtx, def: Pick<PageDef, 'chapter'>) => string;
 
 /** Backdrops with their own drawing (chapter art issues add theirs; until then the placeholder stage). */
-export const BACKDROP_ART: Readonly<Record<string, BackdropDraw>> = { ...C0_BACKDROPS, ...C1_BACKDROPS, ...C2_BACKDROPS, ...C3_BACKDROPS, ...C4_BACKDROPS, ...C5_BACKDROPS, ...C6_BACKDROPS, ...C7_BACKDROPS, ...C8_BACKDROPS, ...C9_BACKDROPS, ...C10_BACKDROPS, ...END_BACKDROPS };
+export const BACKDROP_ART: Readonly<Record<string, BackdropDraw>> = { ...C0_BACKDROPS, ...C1_BACKDROPS, ...C2_BACKDROPS, ...C3_BACKDROPS, ...C4_BACKDROPS, ...C5_BACKDROPS, ...C6_BACKDROPS, ...C7_BACKDROPS, ...C8_BACKDROPS, ...C9_BACKDROPS, ...C10_BACKDROPS, ...END_BACKDROPS, ...BONUS_BACKDROPS };
 
 /** Part art keys with their own drawing. */
 export const PART_SOURCES: Readonly<Record<string, PartSource>> = {
@@ -74,6 +75,7 @@ export const PART_SOURCES: Readonly<Record<string, PartSource>> = {
   ...C8_PARTS,
   ...C9_PARTS,
   ...C10_PARTS,
+  ...BONUS_PARTS,
 };
 
 /** Standing cut-outs by key (e.g. 'c1/lamp-post'). */
