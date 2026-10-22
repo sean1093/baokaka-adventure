@@ -42,6 +42,8 @@ describe('the page registry', () => {
     const states = rows.reduce((sum, { solved }) => sum + solved.statesExplored, 0);
     expect(states, table()).toBeLessThan(CI_BUDGET_STATES);
     const ms = rows.reduce((sum, { solved }) => sum + (solved.ms ?? 0), 0);
+    // Reported on every run, so the CI log carries the runner's solver time (#137)
+    console.info(`solver suite: ${rows.length} pages, ${states.toLocaleString('en-US')} states of ${CI_BUDGET_STATES.toLocaleString('en-US')}, ${(ms / 1000).toFixed(1)} s on this machine`);
     if (ms >= CI_BUDGET_MS) console.warn(`the solver suite took ${(ms / 1000).toFixed(1)} s on this machine (${states.toLocaleString('en-US')} states of ${CI_BUDGET_STATES.toLocaleString('en-US')})`);
   });
 });

@@ -146,7 +146,7 @@ export const STAGE_DRESS: Readonly<Record<string, StageDress>> = {
   // 淡水 (#132): the 淡水信義線 car — the end window's sill, the bench seats, the car's red-banded body (the racks are the backdrop's)
   'c9/tamsui-line': { ledge: [{ below: 450, style: 'windowSill' }, { below: 470, style: 'mrtSeat' }, { below: 999, style: 'carBodyXinyi' }], ownPosts: ['rack1', 'rack2'], foreground: null },
   // The old street's lane, the 鐵蛋 shop's arcade step and its counter (the 阿婆 is the way up)
-  'c9/old-street': { ledge: [{ below: 430, style: 'eggCounter' }, { below: 470, style: 'arcadeStep' }, { below: 999, style: 'oldStreetLane' }], ownPosts: ['lamp', 'sign'], foreground: null, crossing: 'none' },
+  'c9/old-street': { ledge: [{ below: 430, style: 'eggCounter' }, { below: 470, style: 'arcadeStep' }, { below: 999, style: 'oldStreetLane' }], ownPosts: ['sign'], foreground: null, crossing: 'none' },
   // The pier's planks, then the ferry's deck past the gate
   'c9/ferry': { ledge: 'pierDeck', ledgeSplit: { x: 170, style: 'ferryDeck' }, ownPosts: ['booth', 'rail', 'horn'], foreground: null },
   // The boardwalk (under repair between W2 and W3), the far pier (the dinghy is the way across)

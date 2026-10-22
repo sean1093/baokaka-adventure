@@ -1,10 +1,12 @@
-// Solver report for every page (issue #88, GDD § 3.7): `npm run solve [-- --page c1p2 | --chapter 1] [--json] [--cap N]`.
+// Solver report for every page (issue #88, GDD § 3.7): `npm run solve [-- --page c1p2 | --chapter 1] [--json | --curve] [--cap N]`.
+// `--curve` prints the difficulty curve as Markdown (#137: docs/project/difficulty.md).
 // Lints, replays and solves each registered page and prints one row per page plus the total runtime
 // against the 60 s CI budget. Exits 1 on any failing page, on a page over its state cap (at once,
 // naming the page) or when the total is over budget. The logic lives in src/popup/pages/report.ts.
 import { ALL_PAGES as PAGES } from '../src/popup/pages';
 import {
   CI_BUDGET_MS,
+  formatCurve,
   formatDetails,
   formatSummary,
   formatTable,
@@ -39,6 +41,9 @@ function finish(code: number, note?: string): never {
   const totalMs = clock() - started;
   if (args.json) {
     console.log(JSON.stringify({ pages: rows, totalMs: Math.round(totalMs), budgetMs: CI_BUDGET_MS, ok: code === 0, note: note ?? null }, null, 2));
+  } else if (args.curve) {
+    console.log(formatCurve(rows));
+    console.log(`\n${formatSummary(rows, totalMs)}`);
   } else {
     console.log(formatTable(rows));
     const details = formatDetails(rows);
@@ -49,7 +54,7 @@ function finish(code: number, note?: string): never {
   process.exit(code);
 }
 
-const progress = !args.json && process.stderr.isTTY;
+const progress = !args.json && !args.curve && process.stderr.isTTY;
 for (const def of pages) {
   if (progress) process.stderr.write(`solving ${def.id}…\r`);
   const row = reportPage(def, { clock, cap: args.cap });

@@ -852,13 +852,10 @@ const SCENARIOS = {
     { settle: 1200 },
     { readTalk: true },
   ],
-  // 9-2 「淡水老街」: Mocha onto the 鐵蛋 shop's signboard (he sets off and sees the 招財貓), the 阿給
-  // shop's shutter down (he turns back to Mocha: the 背包客 in the way), 掰掰 (the 背包客's question),
+  // 9-2 「淡水老街」: he sets off for Mocha on the 鐵蛋 shop's signboard and sees the 招財貓 (#137), the
+  // 阿給 shop's shutter down (he turns back to Mocha: the 背包客 in the way), 掰掰 (the 背包客's question),
   // the 鐵蛋 shop's shutter up (the bead on the counter), 抱抱 (the 阿婆 lifts him up)
   c9p2: [
-    { wait: 'cuddling' },
-    { tap: [262, 352] },
-    { settle: 1500 },
     { wait: 'reaching' },
     { tap: [178, 328] },
     { settle: 1200 },
