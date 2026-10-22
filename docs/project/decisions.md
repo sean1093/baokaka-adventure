@@ -1487,10 +1487,10 @@ Open: how a live layer can pass *behind* what hangs in front of a window (straps
 | | Before | After |
 |---|---|---|
 | Render-blocking font CSS | 141 KB (Google `css2`) | 0 KB external. The `@font-face` rules add ≈ 4.5 KB gzip to the app stylesheet. |
-| Font files: cover | 189 KB, 3 files | 70 KB, 2 files |
-| Font files: 開始 → page 0-1 | 1447 KB, 15 files | 80 KB, 3 files |
-| First load to the cover | 818 KB | 589 KB |
-| 開始 → page 0-1 | +1676 KB | +634 KB |
+| Font files: cover | 189 KB, 3 files | 76 KB, 2 files |
+| Font files: 開始 → page 0-1 | 1447 KB, 15 files | 85 KB, 3 files |
+| First load to the cover | 818 KB | 595 KB |
+| 開始 → page 0-1 | +1676 KB | +639 KB |
 
 The whole game's fonts are 1.0 MB over 39 files, fetched a slice at a time as chapters bring new characters. The repo holds 1.5 MB of WOFF2, dev slices included.
 
