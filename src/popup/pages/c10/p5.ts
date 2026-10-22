@@ -13,7 +13,7 @@ import { definePage } from '../../core/define';
  * hops down beside him, and they are linked. Tap the floor past the puddle: Mocha walks **through the
  * puddle for him** (C7 suspended), Baokaka following, and 咻咻 — `lonely` — comes down off its cloud
  * to them. 抱抱: it lets go of the bead (it held it) and floats up toward the deck (10-6), and he
- * picks the bead up. The 淘氣: lead them round 咻咻's table, all four corners: the cake's candles light.
+ * picks the bead up. The 淘氣: lead them round 咻咻's table, corner by corner from the front left: the cake's candles light.
  *
  * ```
  *   lamp (Mocha; wet while 咻咻 rains) ─────────────jump───────────── gift (Mocha; wet)
@@ -47,9 +47,10 @@ export default definePage({
     { a: 'lampTop', b: 'giftTop', kind: 'jump' },
   ],
   parts: [
-    // 咻咻's birthday cake: a candle lights at each corner of the table they are led to (the 淘氣)
+    // 咻咻's birthday cake: led round its table corner by corner (front left, back left, back right, front
+    // right — the way from the puddle), a candle lights at each (the 淘氣)
     { id: 'cake', preset: 'section', states: ['0', '1', '2', '3', '4'], hit: { x: 256, y: 428, w: 56, h: 56 }, art: 'c10/cake',
-      react: RING.map((id) => ({ on: { type: 'lead' as const, id }, when: { not: { flag: id } }, to: 'next', setFlag: id })) },
+      react: RING.map((id, k) => ({ on: { type: 'lead' as const, id }, when: { part: 'cake', in: [String(k)] }, to: 'next' })) },
   ],
   perches: [
     // Wet while 咻咻 rains overhead (C7): Mocha's fur puffs up, 「不要。」

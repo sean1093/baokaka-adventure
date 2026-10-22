@@ -71,6 +71,9 @@ export default definePage({
   attractors: [{ id: 'bead', kind: 'shiny', node: 'T', goal: true }],
   baby: { start: 'F1', facing: 'r' },
   mocha: { start: 'beam' },
+  // A pure puzzle (§ 4.4): no words up the tower's face. With all seven offered the page explored
+  // 13,340 states (a refusal or a cry in every alignment) for nothing the puzzle uses; without, 667
+  words: [],
   mischief: { text: '讓101的三節轉到同一邊', when: { type: 'partEnter', when: SAME_SIDE } },
   // In a window of the top section, seen when it is turned to the left
   tudigong: { x: 150, y: 270, visibleWhen: { part: 'top', in: ['0'] }, hat: '清潔帽' },
