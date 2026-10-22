@@ -4,7 +4,7 @@ import { UI, WORD_LABEL } from '../../content';
 import type { PageDef } from '../../core/types';
 import { AUTO_SNAP_MS, PHOTO_LOOP_MS, approachAt, photoFrameAt, wowMeter, type Shot } from '../../game/photo';
 import { useSpritesPreload } from '../../sprites';
-import { PHOTO_H, PHOTO_SPRITES, PHOTO_W, PhotoScene } from './PhotoScene';
+import { PHOTO_H, PHOTO_W, PhotoScene, photoSprites } from './PhotoScene';
 import { useTextScale } from '../textSize';
 import './photo.css';
 import { useSound } from '../sound';
@@ -56,7 +56,8 @@ export function PhotoMoment({ chapter, def, mocha, reduced, still = false, at, v
   const t0 = useRef(0);
   const onSnapRef = useRef(onSnap);
   onSnapRef.current = onSnap;
-  const ready = useSpritesPreload(PHOTO_SPRITES);
+  const sprites = useMemo(() => photoSprites([chapter]), [chapter]);
+  const ready = useSpritesPreload(sprites);
 
   // The slow-motion clock: from the moment the camera is up (rAF), unless held for a still
   useEffect(() => {

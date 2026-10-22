@@ -78,6 +78,11 @@ export const POSE_CONFIG: Readonly<Record<string, PoseConfig>> = {
   'baokaka.watch': { mode: 'pingpong', fps: 1.5 },
   'baokaka.carried': { group: 5 },
   'baokaka.climb': { group: 7 },
+  // 哇！ (learnt on 4-3) has its own pose since #193 (it was `point`, mouth open)
+  'baokaka.wow': { group: 4 },
+  // The album photo frames (#193, GDD § 2.9): per chapter A / B / C with the chapter's treasure, drawn
+  // in photo space at the photo's print scale; the photo, the album and the credits load them
+  ...Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`baokaka.photo${i + 1}`, { group: 'ui', noMirror: true } as const])),
   // ——— 摩卡 ———
   'mocha.walk': { group: 10, easel: true },
   'mocha.sit': { easel: true },
@@ -98,6 +103,8 @@ export const POSE_CONFIG: Readonly<Record<string, PoseConfig>> = {
   // In a box: a head-and-paws frame cut flat at the rim, drawn in front of the box art
   'mocha.inbox': {},
   'mocha.album': { group: 'ui', noMirror: true, easel: true },
+  // +M in the photo frames (#193): A 哇！ with him, B sat for the camera, C the glare
+  'mocha.photo': { group: 'ui', noMirror: true, easel: true },
 };
 
 /**

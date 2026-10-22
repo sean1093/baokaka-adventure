@@ -119,12 +119,14 @@ export const BABY_MODE_ANIM: Readonly<Record<BabyMode, ActorAnim>> = {
   done: clock('baokaka.clap', null),
 };
 
-/** Words with their own pose (Art v2 § 5); the rest say with `point` (mouth open). */
+/** Words with their own pose (Art v2 § 5; 哇！ since #193); the rest say with `point` (mouth open). */
 export const WORD_POSE: Readonly<Partial<Record<Word, SpriteId>>> = {
   bye: 'baokaka.wave',
   no: 'baokaka.refuse',
   hug: 'baokaka.hug',
   plane: 'baokaka.wonder',
+  // 哇！ (#193): arms flung up, eyes wide, mouth a big O
+  wow: 'baokaka.wow',
 };
 
 export interface BabyAnimInput {
@@ -390,6 +392,12 @@ export const FRAME_REPORT: readonly FrameNeed[] = [
   { char: 'baokaka', id: 'walk', label: 'walk (wobbly)', frames: 8, when: 'later', delivered: [d('baokaka.walk', 0, 1, 2, 3, 4, 5, 6, 7)] },
   // The sit-down plop at the end of the first walk (#128): `sit`, landed with a squash (`.bk-plop`)
   { char: 'baokaka', id: 'plop', label: 'sit-down plop', frames: 1, when: 'later', delivered: [d('baokaka.sit', 0)] },
+  // #193: 哇！ (chapter 4) said with its own pose, and the album photo frames A / B / C per chapter (§ 2.9)
+  { char: 'baokaka', id: 'wow', label: 'say 哇！ (arms flung up)', frames: 1, when: 'later', delivered: [d('baokaka.wow', 0)] },
+  {
+    char: 'baokaka', id: 'photo', label: 'album photo A / B / C, per chapter', frames: 30, when: 'later',
+    delivered: ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((n) => d(`baokaka.photo${n}`, 0, 1, 2)),
+  },
   { char: 'mocha', id: 'sit', label: 'sit', frames: 1, when: 'M1', delivered: [d('mocha.sit', 0)] },
   { char: 'mocha', id: 'loaf', label: 'loaf', frames: 1, when: 'M1', delivered: [d('mocha.loaf', 0)] },
   { char: 'mocha', id: 'hop', label: 'hop', frames: 3, when: 'M1', delivered: [d('mocha.jump', 0, 1, 2)] },
@@ -401,6 +409,7 @@ export const FRAME_REPORT: readonly FrameNeed[] = [
   { char: 'mocha', id: 'purr', label: 'purr', frames: 1, when: 'M1', delivered: [d('mocha.purr', 0)] },
   { char: 'mocha', id: 'inBox', label: 'in-box', frames: 1, when: 'M1', delivered: [d('mocha.inbox', 0)] },
   { char: 'mocha', id: 'walk', label: 'walk (linked)', frames: 8, when: 'later', delivered: [d('mocha.walk', 0, 1, 2, 3, 4, 5, 6, 7)] },
+  { char: 'mocha', id: 'photo', label: 'album photo +M (A / B / C)', frames: 3, when: 'later', delivered: [d('mocha.photo', 0, 1, 2)] },
 ];
 
 export type FrameStatus = 'ok' | 'missing' | 'later';

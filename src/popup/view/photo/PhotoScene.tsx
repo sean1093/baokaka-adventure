@@ -5,7 +5,7 @@ import { kitCtx, kitDefs, sparkle, type KitCtx } from '../../art';
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
 import type { PhotoFrame } from '../../game/progress';
-import { SpriteAnim, type SpriteId } from '../../sprites';
+import { SPRITE_IDS, SpriteAnim, type SpriteId } from '../../sprites';
 import { chapterSky } from '../art/placeholders';
 import { GUTTER_Y, PAGE_W } from '../geometry';
 import { ArtG } from '../parts/common';
@@ -17,15 +17,21 @@ import { ENDING_LEAF_CHAPTER } from '../../content/album';
  * frame, with 寶咖咖 and the treasure (and 摩卡, for +M) composed in front of it. A photo is stored
  * as `{ frame, mocha, at }` (§ 3.8), so the album re-draws it from this, never from an image.
  *
- * The poses are placeholder composites from the baked character frames until the character artist
- * draws the photo frames (D-66):
- * - **B** (reaching, smiling): `reach`, crawling the last stretch toward the treasure on the floor;
- * - **A** (the 「哇！」 face): `bounce`, arms up, the treasure held high over his head;
- * - **C** (chewing it, a funny face): `eat`, the treasure at his mouth;
- * - **+M**: 摩卡 sitting for the photo (`mocha.album`) in the bottom-left corner.
+ * **The photo frames** (#193, D-102): every chapter with a spread has its own, drawn by the character
+ * artist with the treasure in his hands or mouth (`baokaka.photo<N>`, composed in photo space and
+ * baked at the photo's print scale, so they are drawn 1 : 1 with their anchor on the crop's floor
+ * centre):
+ * - **A** (the 「哇！」 face): the treasure lifted high in both hands, eyes wide, mouth open;
+ * - **B** (reaching, smiling): crawling the last stretch, his hand out to it on the floor ahead
+ *   (chapter 10, the photo of the first steps: walking in);
+ * - **C** (chewing it, a funny face): sat with it in his mouth, eyes shut in glee;
+ * - **+M**: 摩卡 in the bottom-left corner (`mocha.photo`): A 「哇！」 with him, B sat for the
+ *   camera, C the glare.
  *
- * The live viewfinder (`PhotoMoment`) passes `approach` (0 → 1 over the slow-motion loop) to slide
- * him in during B. Flat SVG, no filters (bible § 9).
+ * A chapter without frames (a later chapter, the lab stage) falls back to #103's composite of the
+ * gameplay poses with `treasureArt` laid over them (D-66). The live viewfinder (`PhotoMoment`)
+ * passes `approach` (0 → 1 over the slow-motion loop) to slide him in during the composite's B.
+ * Flat SVG, no filters (bible § 9).
  */
 
 /** The photo's aspect, 4 : 3 (an instant print's picture). */
@@ -66,8 +72,26 @@ const ENDING_POSE: Readonly<Record<PhotoFrame, { baby: SpriteId; mocha: SpriteId
   C: { baby: 'baokaka.eat', mocha: 'mocha.glare' },
 };
 
-/** The sprites a photo can show (preload them before the moment). */
-export const PHOTO_SPRITES: readonly SpriteId[] = ['baokaka.bounce', 'baokaka.reach', 'baokaka.eat', 'baokaka.hug', 'mocha.album', 'mocha.sit', 'mocha.glare'];
+/** A photo frame's index in its chapter's pose (`docs/art/v2/src/ph_poses.py`: frames A, B, C). */
+const FRAME_INDEX: Readonly<Record<PhotoFrame, number>> = { A: 0, B: 1, C: 2 };
+
+/** The chapter's own photo frames (#193), or null when it has none (the composite is drawn). */
+export function photoFrames(chapter: number): SpriteId | null {
+  const id = `baokaka.photo${chapter}`;
+  return (SPRITE_IDS as readonly string[]).includes(id) ? (id as SpriteId) : null;
+}
+
+/** The composite's sprites (a chapter without frames; the 抓周 pair). */
+const COMPOSITE_SPRITES: readonly SpriteId[] = ['baokaka.bounce', 'baokaka.reach', 'baokaka.eat', 'baokaka.hug', 'mocha.album', 'mocha.sit', 'mocha.glare'];
+
+/** The sprites the photos of these chapters show (preload them before the moment, the leaf, the print). */
+export function photoSprites(chapters: readonly number[]): SpriteId[] {
+  const own = chapters.map(photoFrames);
+  const out = new Set<SpriteId>(own.filter((id): id is SpriteId => id !== null));
+  if (own.some((id) => id !== null)) out.add('mocha.photo');
+  if (own.some((id) => id === null)) for (const id of COMPOSITE_SPRITES) out.add(id);
+  return [...out];
+}
 
 export interface PhotoSceneProps {
   readonly chapter: number;
@@ -106,6 +130,7 @@ export function PhotoScene({ chapter, def, frame, mocha, approach = 1, width = P
   const foot = crop.y + FOOT_Y;
   const pose = POSE[frame];
   const ending = chapter === ENDING_LEAF_CHAPTER;
+  const own = ending ? null : photoFrames(chapter);
   // B: he crawls in from the left; A and C: he has it, centre stage
   const babyX = crop.x + (frame === 'B' ? 92 + 46 * approach : 150);
   // The treasure: on the floor ahead of him (B), held over his head (A), at his mouth (C)
@@ -125,6 +150,11 @@ export function PhotoScene({ chapter, def, frame, mocha, approach = 1, width = P
       <ArtG html={art} />
       {ending ? (
         <EndingPair frame={frame} x={crop.x} foot={foot} approach={approach} glints={glints} />
+      ) : own !== null ? (
+        <g data-photo-frames={own}>
+          {mocha && <SpriteAnim sprite="mocha.photo" frame={FRAME_INDEX[frame]} x={crop.x + 48} y={foot + 6} playing={false} floor={false} />}
+          <SpriteAnim sprite={own} frame={FRAME_INDEX[frame]} x={crop.x + PHOTO_W / 2} y={foot} playing={false} floor={false} />
+        </g>
       ) : (
         <>
       {mocha && <SpriteAnim sprite="mocha.album" x={crop.x + 48} y={foot + 6} scale={MOCHA_SCALE} playing={false} />}

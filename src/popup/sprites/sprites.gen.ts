@@ -2,7 +2,7 @@
 import type { SpriteDef, SpriteManifest } from './manifest';
 
 /** Every sprite id: `<char>.<pose>` for gameplay poses, the artist's names for stills. */
-export const SPRITE_IDS = ["baokaka.crawl","baokaka.sit","baokaka.clap","baokaka.reach","baokaka.hold","baokaka.eat","baokaka.point","baokaka.wave","baokaka.hug","baokaka.cry","baokaka.refuse","baokaka.wonder","baokaka.sleep","baokaka.pull","baokaka.wobble","baokaka.walk","baokaka.bounce","baokaka.zhuazhou","baokaka.look","baokaka.watch","baokaka.giggle","baokaka.touchwatch","baokaka.carried","baokaka.climb","baokaka.cruise","mocha.walk","mocha.sit","mocha.loaf","mocha.sleep","mocha.jump","mocha.perch","mocha.squeeze","mocha.push","mocha.lure","mocha.stretch","mocha.puff","mocha.rub","mocha.glare","mocha.purr","mocha.inbox","mocha.album","baokaka-stand","mocha-sit","baokaka-head-neutral","baokaka-head-happy","baokaka-head-laugh","baokaka-head-teary","baokaka-head-surprised","baokaka-head-cry","mocha-head-content","mocha-head-smug","mocha-head-happy","mocha-head-surprised"] as const;
+export const SPRITE_IDS = ["baokaka.crawl","baokaka.sit","baokaka.clap","baokaka.reach","baokaka.hold","baokaka.eat","baokaka.point","baokaka.wave","baokaka.hug","baokaka.cry","baokaka.refuse","baokaka.wonder","baokaka.sleep","baokaka.pull","baokaka.wobble","baokaka.walk","baokaka.bounce","baokaka.zhuazhou","baokaka.look","baokaka.watch","baokaka.giggle","baokaka.touchwatch","baokaka.carried","baokaka.climb","baokaka.cruise","baokaka.wow","baokaka.photo1","baokaka.photo2","baokaka.photo3","baokaka.photo4","baokaka.photo5","baokaka.photo6","baokaka.photo7","baokaka.photo8","baokaka.photo9","baokaka.photo10","mocha.walk","mocha.sit","mocha.loaf","mocha.sleep","mocha.jump","mocha.perch","mocha.squeeze","mocha.push","mocha.lure","mocha.stretch","mocha.puff","mocha.rub","mocha.glare","mocha.purr","mocha.inbox","mocha.album","mocha.photo","baokaka-stand","mocha-sit","baokaka-head-neutral","baokaka-head-happy","baokaka-head-laugh","baokaka-head-teary","baokaka-head-surprised","baokaka-head-cry","mocha-head-content","mocha-head-smug","mocha-head-happy","mocha-head-surprised"] as const;
 export type SpriteId = (typeof SPRITE_IDS)[number];
 
 export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Record<SpriteId, SpriteDef>> } = {
@@ -1891,6 +1891,356 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
         }
       }
     },
+    "baokaka.wow": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "「哇！」雙手舉高",
+      "size": [76, 103],
+      "anchor": [28.19, 83.67],
+      "head": [32.11, 2.33],
+      "foot": [18.33, 64],
+      "mapScale": 1,
+      "group": 4,
+      "noMirror": false,
+      "files": ["poses/baokaka-wow-0"],
+      "bytes": [
+        [7642, 13558]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "12e7d138f0f7bfb2",
+      "graded": {
+        "788-789-869": {
+          "bytes": [
+            [7392, 12930]
+          ],
+          "source": "b26239273fa47566"
+        },
+        "794-794-871": {
+          "bytes": [
+            [7468, 13106]
+          ],
+          "source": "6eff360dc6869550"
+        },
+        "799-799-874": {
+          "bytes": [
+            [7476, 12946]
+          ],
+          "source": "1f0b91a255514360"
+        },
+        "810-808-883": {
+          "bytes": [
+            [7502, 13044]
+          ],
+          "source": "af07ffad93f754aa"
+        },
+        "820-815-890": {
+          "bytes": [
+            [7496, 13040]
+          ],
+          "source": "deac62ed02366e63"
+        },
+        "863-850-907": {
+          "bytes": [
+            [7436, 13114]
+          ],
+          "source": "d3fa1e06e49615e5"
+        },
+        "917-890-927": {
+          "bytes": [
+            [7532, 13190]
+          ],
+          "source": "6a3b80886f500f3c"
+        }
+      }
+    },
+    "baokaka.photo1": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第1章 合照 A／B／C",
+      "size": [170, 181],
+      "anchor": [105.08, 157.11],
+      "head": [145.9, 4.33],
+      "foot": [92, 155.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo1-0", "poses/baokaka-photo1-1", "poses/baokaka-photo1-2"],
+      "bytes": [
+        [14538, 25440],
+        [15124, 26474],
+        [11980, 20798]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "6862bd3ecfbe0f72"
+    },
+    "baokaka.photo2": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第2章 合照 A／B／C",
+      "size": [173, 152],
+      "anchor": [105.08, 130.77],
+      "head": [138.04, 5],
+      "foot": [92, 155.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo2-0", "poses/baokaka-photo2-1", "poses/baokaka-photo2-2"],
+      "bytes": [
+        [13046, 23162],
+        [14536, 25510],
+        [12350, 21598]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "319734baea930d79"
+    },
+    "baokaka.photo3": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第3章 合照 A／B／C",
+      "size": [169, 144],
+      "anchor": [105.08, 122.44],
+      "head": [115.56, 3.33],
+      "foot": [92, 155.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo3-0", "poses/baokaka-photo3-1", "poses/baokaka-photo3-2"],
+      "bytes": [
+        [13430, 23422],
+        [15084, 26472],
+        [11796, 20632]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "1ef2c7fcb17b001e"
+    },
+    "baokaka.photo4": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第4章 合照 A／B／C",
+      "size": [169, 157],
+      "anchor": [105.08, 135.77],
+      "head": [142.97, 4.33],
+      "foot": [92, 155.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo4-0", "poses/baokaka-photo4-1", "poses/baokaka-photo4-2"],
+      "bytes": [
+        [13320, 23386],
+        [14352, 26076],
+        [11900, 20800]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "f62628ce14e13459"
+    },
+    "baokaka.photo5": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第5章 合照 A／B／C",
+      "size": [169, 172],
+      "anchor": [105.08, 151.11],
+      "head": [135.9, 5.33],
+      "foot": [92, 155.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo5-0", "poses/baokaka-photo5-1", "poses/baokaka-photo5-2"],
+      "bytes": [
+        [14084, 25462],
+        [15274, 26592],
+        [12188, 21070]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "f02258d4a8e709d5"
+    },
+    "baokaka.photo6": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第6章 合照 A／B／C",
+      "size": [169, 147],
+      "anchor": [105.08, 120.44],
+      "head": [123.77, 1.33],
+      "foot": [92, 155.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo6-0", "poses/baokaka-photo6-1", "poses/baokaka-photo6-2"],
+      "bytes": [
+        [12716, 22400],
+        [14972, 26492],
+        [12138, 21656]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "e044050d5c2312b2"
+    },
+    "baokaka.photo7": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第7章 合照 A／B／C",
+      "size": [176, 167],
+      "anchor": [105.08, 145.44],
+      "head": [144.22, 5],
+      "foot": [92, 155.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo7-0", "poses/baokaka-photo7-1", "poses/baokaka-photo7-2"],
+      "bytes": [
+        [14670, 25964],
+        [15774, 27840],
+        [13188, 23252]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "5db84b20ee488a57"
+    },
+    "baokaka.photo8": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第8章 合照 A／B／C",
+      "size": [184, 142],
+      "anchor": [105.08, 120.44],
+      "head": [116.27, 1.33],
+      "foot": [92, 155.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo8-0", "poses/baokaka-photo8-1", "poses/baokaka-photo8-2"],
+      "bytes": [
+        [15150, 27276],
+        [14932, 26136],
+        [12604, 22198]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "df1e81cfbc0e5293"
+    },
+    "baokaka.photo9": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第9章 合照 A／B／C",
+      "size": [171, 145],
+      "anchor": [105.08, 123.44],
+      "head": [115.68, 4.33],
+      "foot": [92, 155.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo9-0", "poses/baokaka-photo9-1", "poses/baokaka-photo9-2"],
+      "bytes": [
+        [13630, 24028],
+        [15710, 26970],
+        [11834, 20464]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "ea03229517ab6dec"
+    },
+    "baokaka.photo10": {
+      "kind": "pose",
+      "char": "baokaka",
+      "label": "第10章 合照 A／B／C",
+      "size": [160, 184],
+      "anchor": [89.74, 157.11],
+      "head": [93.59, 1.67],
+      "foot": [78.33, 109.67],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/baokaka-photo10-0", "poses/baokaka-photo10-1", "poses/baokaka-photo10-2"],
+      "bytes": [
+        [13990, 24698],
+        [15418, 26578],
+        [11998, 21120]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "56efbc90da307d17"
+    },
     "mocha.walk": {
       "kind": "pose",
       "char": "mocha",
@@ -3001,6 +3351,34 @@ export const SPRITE_MANIFEST: SpriteManifest & { readonly sprites: Readonly<Reco
         }
       },
       "source": "3460bbef278bcdd4"
+    },
+    "mocha.photo": {
+      "kind": "pose",
+      "char": "mocha",
+      "label": "合照 A／B／C（+M）",
+      "size": [78, 104],
+      "anchor": [40.75, 84.57],
+      "head": [48.54, 10.33],
+      "foot": [20.67, 56],
+      "mapScale": 1,
+      "group": "ui",
+      "noMirror": true,
+      "files": ["poses/mocha-photo-0", "poses/mocha-photo-1", "poses/mocha-photo-2"],
+      "bytes": [
+        [8000, 13810],
+        [7768, 13794],
+        [8088, 14358]
+      ],
+      "anims": {
+        "main": {
+          "frames": [0, 1, 2],
+          "fps": 4,
+          "mode": "once",
+          "hold": 0,
+          "events": []
+        }
+      },
+      "source": "05601e11062b42d1"
     },
     "baokaka-stand": {
       "kind": "still",

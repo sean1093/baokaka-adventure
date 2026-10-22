@@ -210,6 +210,7 @@ Hence the bitmap pass.
 | File | What |
 |---|---|
 | `poses-baokaka.png`, `poses-mocha.png` | Labelled pose sheets. Every frame shown is the baked bitmap. |
+| `poses-photo.png` | The album photo frames, per chapter A／B／C, and 摩卡's +M frames (#193). |
 | `poses-cycles.png` | Contact sheet of the three cycles. Each row shows frames 1–8, then frame 1 again (green box) so the loop seam is visible, an onion skin of the last frame over the first, and the numeric loop check. |
 | `preview-baokaka-crawl.gif`, `preview-baokaka-walk.gif`, `preview-mocha-walk.gif` | Animated previews of the cycles. |
 | `baked/poses/<char>-<pose>-<i>@2x.webp` / `@3x.webp` | 41 poses and 79 frames (Baokaka 25 poses / 52 frames, Mocha 16 / 27). About 550 KB total @2x and 710 KB @3x. |
@@ -246,7 +247,7 @@ Hence the bitmap pass.
 | grab | `hold` |
 | eat | `eat` |
 | cuddle | `hug` |
-| say | `point` (mouth open) |
+| say | `point` (mouth open); 哇！ `wow` (arms flung up, #193) |
 | stand-cruise | `pull` / `wobble` (2) / `cruise` (2: the sidestep along a rail, #127) |
 | walk | `walk` (8) |
 | Mocha sit / loaf / hop (3) / land / push (2) | `sit` / `loaf` / `jump` (3) / `jump` frame 3 / `push` (2) |
@@ -276,6 +277,8 @@ He does not stand on the step: climbing a step (growth 1) comes before standing 
 **Cruise (#127).** Standing, both hands on a rail at chest height (`RAIL` = 540 units, ≈ 50 pt) ahead of him; the rail is the page's art, not the frame's. Frame 1 reaches the near foot out along the rail with the weight still back; frame 2 closes the far foot up under him. A cruise edge plays them over the step (`CRUISE_AT`). A bead grabbed by reachHigh from the node next to it shows `pull` (up on his feet, hands up on the ledge).
 
 **Engineers' note (#95, D-57).** The game maps its modes onto these poses in `src/popup/view/actors/animMap.ts`. `#/pagelab?section=sprites` lists every GDD § 3.9 frame as ✓ / ✗ / later, so you can see what is left. Cycles are 8 frames; the GDD table now says so. Since #141 (D-58) no M1 row is ✗ and no fallback is left.
+
+**Photo frames (#193, D-102).** `src/ph_poses.py` draws the album photo frames: per chapter with a spread, `photo<N>` with frames A (the treasure held high, the 「哇！」 face), B (crawling in, his hand out to it on the floor; chapter 10 walks in) and C (chewing it, eyes shut in glee). The ten treasures are drawn there as character-art props (雞腿, 畫筆, 書, 麥克風, 蔥, 印章, 芹菜, 算盤, 聽診器, 金鎖片), and the hands are IK'd to each treasure's grips (`HOLD`); C puts its bitten end at the mouth point the head rig gives. The frames are composed in photo space (the anchor is the photo's floor centre, the box `POSE_VB`) and baked at the photo's print scale (`POSE_PT` ×1.45); `mo_poses.py`'s `photo` is +M at the same scale (A looking up at the treasure, B the album figure, C the glare). `poses-photo.png` is their sheet. A pose with `reach` in its arm spec stretches the arm (the anime convention, so his hands clear his head). 哇！ has its own pose, `wow` (arms flung up, the `wow` mouth).
 
 **Rebuild:** `python3 docs/art/v2/tools/bake_poses.py`, then `npm run sync:sprites` in the repo root.
 - Only poses whose drawing changed are re-rendered (a few seconds per pose). Chromium's blurs are not bit-exact from run to run, so re-rendering an untouched pose would churn its files.

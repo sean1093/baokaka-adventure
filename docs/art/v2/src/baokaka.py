@@ -222,6 +222,14 @@ def mouth(doc, mode="pout"):
         o += P(d, MOUTH) + clipped(doc, d, f'<ellipse cx="200" cy="365" rx="7" ry="5" fill="{TONGUE}"/>')
         o += P(outline(sh, 1.8, 1), SKIN_LN)
         o += P(smooth([(190, 366), (200, 370), (210, 366), (200, 373)]), LIP, opacity=.7)
+    elif mode == "wow":      # 哇！ (#193): a big round open mouth, the tongue low
+        sh = [(184, 344), (200, 340), (216, 344), (222, 360), (214, 380), (200, 386), (186, 380), (178, 360)]
+        d = smooth(sh)
+        o += P(d, MOUTH)
+        o += clipped(doc, d, f'<ellipse cx="200" cy="386" rx="15" ry="11" fill="{TONGUE}"/>'
+                     f'<ellipse cx="200" cy="352" rx="13" ry="6" fill="#5E211B" opacity=".6" filter="{doc.blur(3)}"/>')
+        o += P(outline(sh, 2.0, 1), SKIN_LN)
+        o += P(smooth([(188, 390), (200, 394), (212, 390), (200, 397)]), LIP, opacity=.6)
     elif mode == "cry":
         sh = [(178, 352), (190, 344), (200, 343), (210, 344), (222, 352), (218, 372), (200, 380), (182, 372)]
         d = smooth(sh)
@@ -382,6 +390,9 @@ EXPR = {
     "refuse": dict(eyes="squeeze", brows="worried", mouth="frown", blush=.85),
     "wail": dict(eyes="squeeze", brows="worried", mouth="cry", blush=.95, tears=True),
     "chew": dict(eyes="smile", brows="soft", mouth="pout", blush=.75),
+    # #193: 哇！ — eyes wide, brows up, the mouth a big round O; and the photo's chomp (eyes shut tight in glee)
+    "wow": dict(eyes="wide", brows="up", mouth="wow", blush=.8),
+    "chomp": dict(eyes="smile", brows="up", mouth="pout", blush=.9),
 }
 
 

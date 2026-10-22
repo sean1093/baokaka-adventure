@@ -176,6 +176,16 @@ const RETAKEN_C: Photo = { frame: 'C', mocha: false, at: SHOT_AT + 60_000 };
  * are built (a save keeps a chapter's photo whatever is registered; their stickers wait for their pages).
  */
 const ALBUM_MULTI = keepPhoto(keepPhoto(C1_DONE, 2, { frame: 'A', mocha: true, at: SHOT_AT + 3_600_000 }), 3, { frame: 'B', mocha: false, at: SHOT_AT + 7_200_000 });
+/**
+ * Every chapter's own photo frames (#193): the book's ten chapters done, each chapter's photo a
+ * different frame so the leaves show A, B and C, with and without 摩卡, across the chapters.
+ */
+const ALBUM_FRAMES: Readonly<Record<number, Photo>> = {
+  2: { frame: 'B', mocha: true, at: SHOT_AT }, 3: { frame: 'C', mocha: false, at: SHOT_AT }, 4: { frame: 'A', mocha: true, at: SHOT_AT },
+  5: { frame: 'B', mocha: false, at: SHOT_AT }, 6: { frame: 'C', mocha: true, at: SHOT_AT }, 7: { frame: 'A', mocha: false, at: SHOT_AT },
+  8: { frame: 'B', mocha: true, at: SHOT_AT }, 9: { frame: 'C', mocha: true, at: SHOT_AT }, 10: { frame: 'A', mocha: true, at: SHOT_AT },
+};
+const ALBUM_ALL = Object.entries(ALBUM_FRAMES).reduce((sv: SaveV1, [ch, photo]) => keepPhoto(sv, Number(ch), photo), C10_DONE);
 /** Every registered page solved with every sticker, chapter 1's photo kept (#113): with `rewardTotal` the size of the registry, both § 2.8 rewards show. */
 const ALL_IDS = gameRegistry.pages.map((p) => p.id);
 const EVERYTHING = keepPhoto(
@@ -433,6 +443,69 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     steps: [],
     screen: { nav: ON_PAGE_E, save: E_DONE, scene: { kind: 'post' } },
     note: 'Post-credits (GDD § 5.5; #135): the little 土地公 shrine at the mouth of the lane in a summer 西北雨 — the statue smiling, a dab of red 印泥 on his fingertip, a stamp card full of his stamps on the altar, 咻咻 playing in the rain over the roofs. 「巷口的小廟裡，土地公的手指上，」「沾著一點點，蓋章的印泥。」; then 「呵呵，囡仔，慢慢仔大。」, the summer rain, and 廣播姊姊: 「下一站：兩歲。」',
+  },
+  {
+    name: 'album-c2',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(2), save: ALBUM_ALL },
+    note: 'Chapter 2\'s album leaf with its own photo frames (#193): Frame B (crawling in, his hand out to it) + 摩卡, drawn by the character artist with the chapter\'s treasure in his hands or mouth.',
+  },
+  {
+    name: 'album-c3',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(3), save: ALBUM_ALL },
+    note: 'Chapter 3\'s album leaf with its own photo frames (#193): Frame C (chewing it, eyes shut in glee), drawn by the character artist with the chapter\'s treasure in his hands or mouth.',
+  },
+  {
+    name: 'album-c4',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(4), save: ALBUM_ALL },
+    note: 'Chapter 4\'s album leaf with its own photo frames (#193): Frame A (the treasure held high, 「哇！」) + 摩卡, drawn by the character artist with the chapter\'s treasure in his hands or mouth.',
+  },
+  {
+    name: 'album-c5',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(5), save: ALBUM_ALL },
+    note: 'Chapter 5\'s album leaf with its own photo frames (#193): Frame B (crawling in, his hand out to it), drawn by the character artist with the chapter\'s treasure in his hands or mouth.',
+  },
+  {
+    name: 'album-c6',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(6), save: ALBUM_ALL },
+    note: 'Chapter 6\'s album leaf with its own photo frames (#193): Frame C (chewing it, eyes shut in glee) + 摩卡, drawn by the character artist with the chapter\'s treasure in his hands or mouth.',
+  },
+  {
+    name: 'album-c7',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(7), save: ALBUM_ALL },
+    note: 'Chapter 7\'s album leaf with its own photo frames (#193): Frame A (the treasure held high, 「哇！」), drawn by the character artist with the chapter\'s treasure in his hands or mouth.',
+  },
+  {
+    name: 'album-c8',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(8), save: ALBUM_ALL },
+    note: 'Chapter 8\'s album leaf with its own photo frames (#193): Frame B (crawling in, his hand out to it) + 摩卡, drawn by the character artist with the chapter\'s treasure in his hands or mouth.',
+  },
+  {
+    name: 'album-c9',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(9), save: ALBUM_ALL },
+    note: 'Chapter 9\'s album leaf with its own photo frames (#193): Frame C (chewing it, eyes shut in glee) + 摩卡, drawn by the character artist with the chapter\'s treasure in his hands or mouth.',
+  },
+  {
+    name: 'album-c10',
+    page: 'c1p2',
+    steps: [],
+    screen: { nav: ALBUM_AT(10), save: ALBUM_ALL },
+    note: 'Chapter 10\'s album leaf with its own photo frames (#193): Frame A (the treasure held high, 「哇！」) + 摩卡, drawn by the character artist with the chapter\'s treasure in his hands or mouth.',
   },
   {
     name: 'album-c1-retake',

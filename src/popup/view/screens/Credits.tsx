@@ -8,7 +8,7 @@ import { spreadPage } from '../../game/photo';
 import type { Photo } from '../../game/progress';
 import type { PageRegistry } from '../../pages';
 import { backpackerFound } from '../art/ending';
-import { PHOTO_H, PHOTO_W, PhotoScene, PHOTO_SPRITES } from '../photo/PhotoScene';
+import { PHOTO_H, PHOTO_W, PhotoScene, photoSprites } from '../photo/PhotoScene';
 import { useSpritesPreload } from '../../sprites';
 import { Endpaper } from './Contents';
 import { cardShadow } from './paper';
@@ -64,7 +64,8 @@ export function Credits({ photos, registry: reg, reduced, still = false, startSl
   const [i, setI] = useState(Math.min(startSlide, slides.length - 1));
   const ids = useSvgIds('credits');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('credits'), id: ids }), [ids]);
-  const ready = useSpritesPreload(PHOTO_SPRITES);
+  const sprites = useMemo(() => photoSprites(photoChapters(photos)), [photos]);
+  const ready = useSpritesPreload(sprites);
   const doneRef = useRef(onDone);
   doneRef.current = onDone;
   // Ends once, whether the last card ran out, a tap went past it or 「跳過」 was pressed

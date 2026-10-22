@@ -175,7 +175,9 @@ describe('agreement with the artist’s manifests (docs/art/v2/baked)', () => {
     const dy = s.anchor[1] - e.anchor_pt[1];
     expect(dx).toBeGreaterThanOrEqual(0);
     expect(dx).toBeLessThanOrEqual(BAKE_PAD.l + 1e-9);
-    expect(dy).toBeGreaterThanOrEqual(0);
+    // (The bake's core trims hairline strands — his cowlick's tips — which at the photo frames' ×1.45
+    // print scale (#193) can stand a point above the rest of the drawing.)
+    expect(dy).toBeGreaterThanOrEqual(id.includes('.photo') ? -1.5 : 0);
     expect(dy).toBeLessThanOrEqual(BAKE_PAD.t + 1e-9);
     expect(s.size[0]).toBeGreaterThanOrEqual(e.size_pt[0] - 2);
     expect(s.size[0]).toBeLessThanOrEqual(e.size_pt[0] + BAKE_PAD.l + BAKE_PAD.r);
