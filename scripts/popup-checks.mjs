@@ -26,8 +26,9 @@
  *                  what is drawn.
  *   A11y           (#136) the document is `lang="zh-Hant"` and has a `<title>`; every control on
  *                  screen has an accessible name (aria-label, its label or its text) and every button
- *                  carries an icon (`<svg>` / `<img>`; `data-icon-text` marks a choice whose words are
- *                  its picture), GDD § 2.11 "icons on all buttons".
+ *                  carries an icon (`<svg>` / `<img>`, or a `[data-icon]` picture: a page thumbnail, a
+ *                  station drawn on the map under its button). A radio option is a choice, not a
+ *                  command: its row carries the icon, GDD § 2.11 "icons on all buttons".
  *   Reduced motion under `prefers-reduced-motion: reduce`, with the fixture live, no running CSS or
  *                  Web Animations animation changes anything but opacity (fades are allowed).
  *   Flashing       with the fixture live and motion on, no animation flashes above 3 Hz (opacity or
@@ -279,9 +280,8 @@ function collect({ waivers, artText, minText, minTextBig }) {
  * Screen-reader basics and R5's "icons on every button" (#136; GDD § 2.11), in the browser: the
  * document is `lang="zh-Hant"` with a `<title>`; every control on screen (a button, a link, a
  * switch, a slider, a tab) has an accessible name, and every button carries an icon (an `<svg>` or
- * an `<img>` inside it, or it is one), so it reads without reading. A control can say its icon is
- * its words (`data-icon-text`: a segmented choice whose options are the words 慢 / 普通 / 快, a
- * volume's digits).
+ * an `<img>` inside it, or a `[data-icon]` picture), so it reads without reading. A radio option
+ * (a segmented choice: 慢 / 普通 / 快) is not a command: the row it sits in carries the icon.
  */
 export function a11yAudit() {
   // On screen (a see-through tap layer, e.g. the chapter card's 「下一句」, is a control too: it needs a
@@ -322,8 +322,9 @@ export function a11yAudit() {
   for (const el of document.querySelectorAll('button, a[href], input, select, [role="button"], [role="link"], [role="switch"], [role="tab"], [role="slider"], [role="radio"]')) {
     if (!present(el) || (modal && !modal.contains(el)) || el.closest('[data-pagelab-chrome]')) continue;
     const name = nameOf(el);
-    const button = el.matches('button, [role="button"]') && drawn(el);
-    const icon = el.matches('svg, img') || el.querySelector('svg, img, [data-icon]') !== null || el.closest('[data-icon-text]') !== null;
+    // A command (a `<button>` with no other role); a radio option (設定's 慢 / 普通 / 快) is a choice in a row that carries the icon
+    const button = el.matches('button:not([role]), [role="button"]') && drawn(el);
+    const icon = el.matches('svg, img') || el.querySelector('svg, img, [data-icon]') !== null;
     controls.push({ tag: el.tagName.toLowerCase(), role: el.getAttribute('role'), name: name.slice(0, 20), named: name.length > 0, button, icon });
   }
   return {

@@ -288,7 +288,8 @@ export function Contents({ save, registry: reg, chapter, locked, bonus = false, 
                 className="absolute flex flex-col items-center"
                 style={{ left: x - 50, top: y - 22, width: 100, minHeight: 88, WebkitTapHighlightColor: 'transparent' }}
               >
-                <span className="h-[40px]" aria-hidden="true" />
+                {/* Its icon is the station drawn on the map right here (its landmark medallion, or the lock) */}
+                <span className="h-[40px]" aria-hidden="true" data-icon="" />
                 <span className="whitespace-nowrap rounded-[4px] px-[3px] text-[20px] font-black leading-[24px]" style={{ color: C.ink, backgroundColor: withAlpha(C.page, 0.88) }}>
                   {c.station}
                 </span>
@@ -310,7 +311,7 @@ export function Contents({ save, registry: reg, chapter, locked, bonus = false, 
               className="absolute flex flex-col items-center"
               style={{ left: BONUS_AT[0] - 54, top: BONUS_AT[1] - 30, width: 108, minHeight: 92, WebkitTapHighlightColor: 'transparent' }}
             >
-              <span className="h-[50px]" aria-hidden="true" />
+              <span className="h-[50px]" aria-hidden="true" data-icon="" />
               <span className="whitespace-nowrap rounded-[4px] px-[3px] text-[20px] font-black leading-[24px]" style={{ color: C.ink, backgroundColor: withAlpha(C.page, 0.88) }}>
                 {UI.bonus}
               </span>
@@ -446,7 +447,7 @@ function PageThumb({ card, current, onPlay }: { card: PageCard; current: boolean
       className="kit-press flex min-w-[48px] flex-col items-center gap-[6px]"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
-      <span className="relative block rounded-[3px]" style={{ width: W, height: H, ...thumb, boxShadow: cardShadow(0.45), outline: `1.5px solid ${card.open ? C.standeeCard : C.kraftDark}`, outlineOffset: -1.5 }}>
+      <span className="relative block rounded-[3px]" data-icon="" style={{ width: W, height: H, ...thumb, boxShadow: cardShadow(0.45), outline: `1.5px solid ${card.open ? C.standeeCard : C.kraftDark}`, outlineOffset: -1.5 }}>
         {!card.open && (
           <span className="absolute inset-0 flex items-center justify-center">
             <LockIcon size={22} color={C.ink} />
