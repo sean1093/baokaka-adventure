@@ -29,6 +29,17 @@ describe('book layout', () => {
     expect(l.x).toBeGreaterThanOrEqual(COVER_MARGIN);
   });
 
+  test('the safe-area insets keep the HUD under the notch and the bar over the home indicator (#136)', () => {
+    const inset = { top: 47, bottom: 34 };
+    const l = bookLayout(390, 844, inset);
+    expect(l.hudTop).toBe(47);
+    expect(l.barTop).toBe(844 - 34 - BAR_H);
+    expect(toScreen(l, [0, BOOK_EXTENT.top])[1]).toBeGreaterThanOrEqual(47 + HUD_H);
+    expect(toScreen(l, [0, BOOK_EXTENT.bottom])[1]).toBeLessThanOrEqual(l.barTop);
+    expect(l.scale).toBeLessThan(bookLayout(390, 844).scale);
+    expect(bookLayout(390, 844)).toMatchObject({ hudTop: 0, barTop: 844 - BAR_H });
+  });
+
   test('every part on every page has a hit area ≥ 48 × 48 px after the book scale at 390 × 844 (GDD R6)', () => {
     const l = bookLayout(390, 844);
     for (const def of PAGES) {

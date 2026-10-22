@@ -509,8 +509,15 @@ Keep sounds **dry and close**, like paper on a table, with no reverb tails. The 
 *Engineers' note (#104, D-67):*
 - 長輩模式 (`affordance.elder`) also keeps the hold-to-reveal outlines on all the time and draws Mocha's perch markers bolder: a 1.4× paw with an ink edge on a stronger halo.
 - The tilt is the 書本傾斜 setting, off by default. `useTilt` leans the page box by up to ±3°; per-layer parallax is #136's.
-- Low power (`useLowPower`) latches for the session when the frames of the last 2 s average over 20 ms and most of them are over it.
+- Low power (`useLowPower`) turns on when the frames of the last 2 s average over 20 ms and most of them are over it.
 - Proofs: `docs/screenshots/104/`.
+
+*Engineers' note (#136, D-106):*
+- **Tilt parallax:** each layer slides by `PARALLAX[z] − PARALLAX[4]` × 8 px at the full lean (`layerParallax`, `useTilt`); the play plane and the hit layer stay put.
+- **Low power recovers once:** off again after 10 s of frames averaging under 17.5 ms; the second time it stays on for the session.
+- **Gates:** `npm run check:perf` replays each chapter's heaviest pages on the production build at 4× CPU throttle (≥ 55 fps, ≤ 150 live animated nodes, no `feTurbulence`, no `preserve-3d` in play); `check:prod` gates page art and the first load; the page-turn DOM is torn down after each turn (`playTurn`'s cleanup; `check:play` turns pages on every chapter).
+- **Decoded memory** stays one page and one chapter deep: pages claim their bitmaps and frames from the loader by scope and let go of the page before's (`SpriteLoader.claim`).
+- On the live path a die-cut's and a `depth` stack's silhouette is drawn once and reused through `<use>` (the same pixels, a third of the nodes); the bake draws them in full.
 
 ---
 

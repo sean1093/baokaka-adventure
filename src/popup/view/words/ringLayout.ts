@@ -45,8 +45,8 @@ export interface SafeArea {
 }
 
 /** The area the ring's discs stay inside: the screen less the gutters, the HUD and the bottom bar. */
-export function ringSafeArea(layout: Pick<BookLayout, 'vw' | 'barTop'>): SafeArea {
-  const top = HUD_H + 4;
+export function ringSafeArea(layout: Pick<BookLayout, 'vw' | 'barTop'> & Partial<Pick<BookLayout, 'hudTop'>>): SafeArea {
+  const top = (layout.hudTop ?? 0) + HUD_H + 4;
   return { x: RING_GUTTER, y: top, w: layout.vw - 2 * RING_GUTTER, h: layout.barTop - 4 - top };
 }
 

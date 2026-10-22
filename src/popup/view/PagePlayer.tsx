@@ -20,7 +20,9 @@ import { usePagePreload } from '../sprites';
 import { usePageArt } from '../env/loader';
 import { nextPage } from '../pages';
 import { chapterSky } from './art/placeholders';
-import { bookLayout, toScreen, type BookLayout } from './geometry';
+import { BAR_H, bookLayout, toScreen, type BookLayout } from './geometry';
+import { parseViewport, readViewport, subscribeViewport } from './safeArea';
+import { pageText, warmFonts } from './fontWarm';
 import { BottomBar, STICKER_POP_MS } from './hud/BottomBar';
 import { TopHud } from './hud/TopHud';
 import { wearsMarigold, type AffordanceFlags } from './affordance/look';
@@ -121,14 +123,12 @@ const BIG_BEAT_K = 1.4;
 /** A part the player moved sounded on release; its tick within this long stays quiet for it (ms; > the slowest tick) */
 const MOVED_MS = 1500;
 
+/** How long after a page is ready its lines' font slices are fetched (#136, `fontWarm.ts`). */
+const WARM_FONTS_MS = 1200;
+
 /** Chapters where Mocha squints at the 土地公 on the first tap (GDD § 5.3: 4-x, 7-x, 10-x). */
 const SQUINT_CHAPTERS: ReadonlySet<number> = new Set([4, 7, 10]);
 
-const subscribeResize = (onChange: () => void) => {
-  window.addEventListener('resize', onChange);
-  return () => window.removeEventListener('resize', onChange);
-};
-const readSize = () => `${window.innerWidth}x${window.innerHeight}`;
 
 /**
  * The page's scripted tutorial (#106, `game/tutorial.ts`): what to show once its cue has held for
@@ -150,11 +150,11 @@ function useScriptedTutorial(def: PageDef, state: SimState, live: boolean): Tuto
 
 /** The viewport, as a layout. */
 function useBookLayout(): BookLayout {
-  const size = useSyncExternalStore(subscribeResize, readSize, () => '390x844');
+  const key = useSyncExternalStore(subscribeViewport, readViewport, () => '390x844|0|0');
   return useMemo(() => {
-    const [w, h] = size.split('x').map(Number);
-    return bookLayout(w, h);
-  }, [size]);
+    const { w, h, inset } = parseViewport(key);
+    return bookLayout(w, h, inset);
+  }, [key]);
 }
 
 /** The HUD's chapter line, e.g. 「第一章 · 第 2 頁 / 6」 (the prologue is 序章, 4 pages). */
@@ -684,6 +684,14 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   const next = useMemo(() => nextPage(def.id), [def.id]);
   const artReady = usePageArt(def, next);
 
+  // The font slices its lines need, fetched a moment after its bitmaps are in (the page is up and
+  // playing) rather than mid-line (#136); never ahead of what the first paint needs
+  useEffect(() => {
+    if (!artReady || !spritesReady || still) return undefined;
+    const t = window.setTimeout(() => warmFonts(pageText(def)), WARM_FONTS_MS);
+    return () => window.clearTimeout(t);
+  }, [def, artReady, spritesReady, still]);
+
   const ids = useSvgIds('book');
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('book'), id: ids }), [ids]);
   const sky = chapterSky(def.chapter);
@@ -693,6 +701,16 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
       cover: defs + cover(ctx, layout.vw, layout.vh),
     };
   }, [ctx, layout.vw, layout.vh]);
+
+  // A meaningful <title> while the page plays (#136: what a screen reader and the tab switcher say)
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const was = document.title;
+    document.title = `${chapterInfo(def.chapter).landmark}「${def.title}」・《翻翻台北》`;
+    return () => {
+      document.title = was;
+    };
+  }, [def.chapter, def.title]);
 
   const { scale } = layout;
   const page: CSSProperties = {
@@ -760,10 +778,12 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         coins={pageChrome?.coins ?? 0}
         fill={pageChrome?.trayFill}
         scale={hudScale}
+        top={layout.hudTop}
         textScale={textScale}
       />
       <BottomBar
         scale={hudScale}
+        bottom={layout.vh - layout.barTop - BAR_H}
         textScale={textScale}
         stickers={pageChrome?.stickers}
         leftHand={pageChrome?.leftHand}

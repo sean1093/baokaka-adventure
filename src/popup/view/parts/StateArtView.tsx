@@ -3,6 +3,7 @@ import { POPUP as C } from '../../../art/palette';
 import { PRESET_ART, VERBS, brad, circleOutline, depth, doubleOutline, f1, lockVeil, rectOutline, ref, seal, sealR, wheelRim } from '../../art';
 import { wiggleClass } from '../affordance/look';
 import { partArt, partBitmap } from '../art/registry';
+import { liveArt } from '../art/creatures';
 import { lerp, partProgress } from '../interp';
 import { ArtG, artOpts, bakedImage, fitToHit, hitBox, r2, squashFor, stateAt, type PartViewProps } from './common';
 import { turnDelta } from './WheelView';
@@ -25,7 +26,7 @@ export function StateArtView(props: PartViewProps) {
   const baked = partBitmap(part.art, to);
   const hb = hitBox(part);
   const fit = baked ? { tx: hb.cx, ty: hb.cy, s: 1 } : fitToHit(part, PRESET_ART[part.preset].box);
-  const html = useMemo(() => (baked ? bakedImage(baked) : art.draw(ctx, artOpts(part, to, touchable))), [baked?.url, art, ctx, part, to, touchable]);
+  const html = useMemo(() => (baked ? bakedImage(baked) : liveArt(() => art.draw(ctx, artOpts(part, to, touchable)))), [baked?.url, art, ctx, part, to, touchable]);
   const sq = squashFor(props);
   const box = baked?.box ?? PRESET_ART[part.preset].box;
   const [px, py] = [box.x + box.w / 2, box.y + box.h / 2];

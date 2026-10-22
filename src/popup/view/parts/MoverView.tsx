@@ -5,8 +5,9 @@ import { nodePos } from '../../core/graph';
 import type { PageDef, PartDef, SimState } from '../../core/types';
 import { partEntry } from '../../env/loader';
 import { partArt, partBitmap } from '../art/registry';
+import { liveArt } from '../art/creatures';
 import type { Pt } from '../geometry';
-import { ArtG, artOpts, bakedImage, hitBox, r2, squashFor, stateAt, tweened, type PartViewProps } from './common';
+import { artOpts, bakedImage, hitBox, r2, squashFor, stateAt, tweened, type PartViewProps } from './common';
 
 /**
  * Parts that travel between places per state (GDD § 2.1): a `lift` between floors, a `pushable`
@@ -69,7 +70,7 @@ export function MoverView(props: MoverProps) {
   // Its baked bitmap for the state (#96; a carrier's look), else the live kit art
   const html = useMemo(() => {
     const img = partBitmap(part.art, look);
-    return img ? bakedImage(img) : art.draw(ctx, artOpts(part, to));
+    return img ? bakedImage(img) : liveArt(() => art.draw(ctx, artOpts(part, to)));
   }, [art, ctx, part, to, look]);
   const a = moverPoint(def, part, from, prev);
   const b = moverPoint(def, part, to, state);
@@ -78,9 +79,7 @@ export function MoverView(props: MoverProps) {
   const sq = squashFor(props);
   return (
     <g data-part={part.id} data-preset={part.preset}>
-      <g data-anim="" transform={`translate(${r2(x)} ${r2(y)}) scale(${r2(sq)})`}>
-        <ArtG html={html} />
-      </g>
+      <g data-anim="" transform={`translate(${r2(x)} ${r2(y)}) scale(${r2(sq)})`} dangerouslySetInnerHTML={{ __html: html }} />
     </g>
   );
 }

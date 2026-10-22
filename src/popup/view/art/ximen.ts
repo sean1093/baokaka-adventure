@@ -1,6 +1,6 @@
 import { POPUP as C, POPUP_NEON as N, POPUP_STAGE as S, mixHex } from '../../../art/palette';
 import { depth, f1, softEllipse, type KitCtx } from '../../art';
-import { dieCut } from './creatures';
+import { cutShadow, dieCut } from './creatures';
 
 /**
  * Chapter 4's cast (西門町, #119; bible § 5), drawn live like the park's and the campus's: feet at
@@ -39,7 +39,7 @@ export function face(x: number, y: number, { eyes = 'open' as 'open' | 'shut' | 
 
 /** A die-cut figure: a dropped shadow of its silhouette under the card (`dieCut`). */
 export const figure = (outline: string, print: string) =>
-  `<g fill="${C.shadow}" opacity=".3" transform="translate(1.8 2.8)">${outline}</g>` + dieCut(outline, print);
+  cutShadow(outline) + dieCut(outline, print);
 
 /** Chalk motion ticks round a mover. */
 export const ticks = (d: string) => `<path d="${d}" stroke="${C.chalk}" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".85"/>`;

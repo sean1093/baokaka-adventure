@@ -136,6 +136,7 @@ Every UI or art PR attaches screenshots made with this tooling (issue #4; decisi
   - **R6 hit areas.** Every `[data-hit]` (the page's grown hit shapes) and every button, link, input, switch, tab or slider is ≥ 48×48 CSS px. A fixture without `[data-hit]` fails. At 390×844 no page hit shape may be grown (`[data-hit-grown]`): each touchable's own hit area must be ≥ 48 px after the ≈ 0.91 book scale (bible § 4.2, #140). Text and touchables under an open modal (`aria-modal`: the pause menu, the chapter card while its lines play) are out of reach and are not measured (#102).
   - **Marks seen (#183).** Mocha's perch paws and the hint halo are never under anything: the topmost thing drawn at a paw's centre is the paw (or the L2 ghost hand tapping it; a subtitle is allowed and counted), and most points of a halo show the halo, its own target, a paw, the hand or a subtitle. The affordance lint's A08 holds the drawing order in unit tests.
   - **Talk clear (#197).** No subtitle card (its label tab included, `[data-subtitle-card]`) or narration strip covers Baokaka's thought bubble (`[data-bubble-cloud]`) or Baokaka (his frame cut at his feet); a subtitle that draws no card marker fails too. `layoutTalk` keeps them clear and splits a beat too big for the page (D-88); its unit test covers 5-3's learn beat and 6-2's cameo.
+  - **A11y (#136).** The document is `lang="zh-Hant"` with a `<title>`; every control on screen has an accessible name (`aria-label`, its label or its text; a see-through tap layer such as the chapter card's 「下一句」 too); every drawn button carries an icon (`<svg>`/`<img>`, or a `[data-icon]` picture such as a page thumbnail or a 目錄 station drawn on the map under its button; a radio option such as 設定's 慢 / 普通 / 快 is a choice in a row that carries the icon), GDD § 2.11.
   - **Reduced motion.** With the fixture live under `prefers-reduced-motion: reduce`, no running animation may change anything but opacity (fades are allowed).
   - **Flashing.** With motion on, nothing may flash above 3 Hz.
   - **Self-test.** Before the motion rules run, a self-test injects a 5 Hz blink, a slide and a slow fade, and checks that the detectors judge them correctly.
@@ -288,8 +289,7 @@ Run `npm run dev` and open `http://localhost:5173/baokaka-adventure/#/artlab`. I
 npm run visual          # start a dev server, screenshot, diff against tests/visual-baseline/
 npm run visual:update   # same, but accept the new screenshots as baselines
 node scripts/visual-check.mjs --serve --only title,battle   # a subset
-node scripts/visual-check.mjs --serve --perf                # also measure frame times (report only)
-node scripts/visual-check.mjs --serve --perf --perf-fixture world-follower --only title   # walk the park instead
+node scripts/visual-check.mjs --serve --perf                # also run the perf gate on the production build (#136)
 node scripts/visual-check.mjs --url http://localhost:5173/baokaka-adventure/   # use a server you started
 ```
 
@@ -301,7 +301,20 @@ node scripts/visual-check.mjs --url http://localhost:5173/baokaka-adventure/   #
 - **Browsers:** the agent environment has Chromium preinstalled (`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). Elsewhere run `npx playwright install chromium` once. `npm ci` never downloads browsers (the `playwright` package has no install script), and the deploy workflow never runs this check.
 - **Fonts.** Since #68 the web fonts are self-hosted (`src/fonts/`, D-105), so the check needs no network. Baselines were made in the agent environment (Linux Chromium); emoji and font rendering still differ slightly across OSes, so on another machine run `npm run visual:update` first and don't commit those baselines.
 - **`npm run check:ui`** (`scripts/ui-check.mjs`, #12) checks in the browser that dialogue typing never changes the box height, that every visible button/link/switch/tab on every fixture is at least 44×44 px (battle commands exactly 70 px) at both viewports, and that reduced motion (the OS setting, and the 「減少動態」 toggle via `chapter-card-reduced`) leaves no looping, flipping or drawing animation running. Since #14 it also plays three turns of `battle-4v3` and fails if the static backdrop (`[data-stage-static]`) is mutated or remounted, or if any animating element in the battle has a CSS filter, and checks the 布袋戲 frame shows on `battle-boss`/`battle-final` only. Since #15 it plays `battle-fx` (an all-target skill on three foes) and fails if more than 40 FX nodes are in flight, and, under reduced motion, if anything in the battle moves (a running animation whose keyframes change `transform`) or flashes (a blink, a wash or a `steps()` timing), or if the effects play anything but the `fx-still` fade. Since #92 it also runs the 翻翻台北 rules (see *翻翻台北 visual QA fixtures* above). Run it with the visual check for UI work (`npm run qa`).
-- **`--perf`** walks the party around the `world` fixture (or `--perf-fixture <name>`) at 4× CPU throttle for 3 s and prints the median/p95/max rAF interval, the main-thread time per frame (CDP `TaskDuration`), the DOM node count, the number of ground SVGs and how many times the ground was mutated while walking (must be 0, #13) against art direction § 8.5. It runs on the dev build (React development mode), so numbers are pessimistic, and rAF intervals bottom out at the 16.7 ms vsync floor. It reports only; #57 makes it a gate.
+- **`--perf`** (since #136) runs the perf gate below after the screenshots and fails the run when it fails. (Until #136 it walked the RPG's `world` fixture on the dev build and reported only.)
+
+### The perf and budget gates: `npm run check:perf`, `npm run check:prod` (#136)
+
+```sh
+npm run check:perf                                   # build, then the heaviest pages of every chapter (≈ 7 min)
+node scripts/perf-check.mjs --pages c8p6,c9p2        # some pages, on the dist/ already built
+node scripts/perf-check.mjs --pages all              # every page (≈ 20 min): regenerate PERF_PAGES from it
+npm run check:prod                                   # build, then the production smoke test and the load budgets
+```
+
+- **`check:perf`** (`scripts/perf-check.mjs`) runs on the **production build** (`vite preview` over `dist/`). Each page opens at `#/?page=<id>&demo=1` (its authored solution through the session) at 390×844 @3x with the CPU throttled 4×; lines that hold the world are read away with a tap. It fails a page under **55 fps** over the replay (GDD § 8), under **45 fps in its worst 1 s window**, over **150 animated nodes** in the live DOM (`[data-anim]` and everything in them, barks and subtitles included; GDD § 3.9), on a live grain filter (`feTurbulence`) or on `preserve-3d` in play (bible § 9), or on a console error. `PERF_PAGES` lists each chapter's slowest page and its busiest one, from a `--pages all` run. Headless Chromium rasterises on the CPU, so the numbers are a floor; run-to-run noise is ≈ ±2 fps on the average and ±6 on the worst window.
+- **`check:prod`** (`scripts/prod-check.mjs`) since #136 also gates the load budgets on throttled 4G (first load ≤ 2.5 MB, the cover and 「開始」 → page 0-1 each interactive ≤ 3 s), checks that the first load fetches no later chapter's bitmap, audits page 0-1 for `lang`, `<title>` and named controls, emulates notch insets (CDP `Emulation.setSafeAreaInsetsOverride`) to check that the HUD and bar sit inside them, and turns the phone sideways for the upright guard.
+- **Animated nodes** are also unit-tested (`PageView.test.ts`, static markup without barks); the live gate is the stricter one. When a page is near the limit, look at what the live DOM holds (a `[data-anim]` breakdown by layer) before cutting art: die-cuts and `depth` stacks already share one silhouette through `<use>` on the live path.
 
 ---
 

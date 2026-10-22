@@ -465,6 +465,8 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 
 **For engineers.** #104 built it (D-67). `game/settings.ts` holds the rules: `effectiveSettings` applies 長輩模式 over the player's own values and never writes them, so turning it off restores them; while it is on, changes to the settings it holds are dropped. It also has the low-power `FrameWatch` and the `pulse` vibrations. The screen is `view/screens/Settings.tsx` (設定 from the cover and the pause menu). 大字 is `TextScaleContext` plus `[data-text-size="big"]`, and every screen passes `npm run check:ui:big`. The extras of 長輩模式 are the reveal outlines always on, bolder perch markers, 28 px seals and a stronger L1 halo. It always sets the auto-hint to 15 s, even over 關. The optional gyro tilt (bible § 2.3) is the 書本傾斜 row, `Settings.tilt`. 「重新開始」 keeps the settings (D-55).
 
+**For engineers.** #136 audited this section and § 1.3 (D-106): the tilt separates the layers by depth; low power recovers once; the HUD and bar sit inside the phone's safe-area insets; a phone held sideways gets an upright guard (「請把手機轉直，再繼續玩喔」, with a turning-phone icon); every control has an accessible name and every button an icon (`check:ui`); a page titles the document 「landmark「title」・《翻翻台北》」. The § 8 technical gates are scripts on the production build: `npm run check:perf` (≥ 55 fps at 4× CPU throttle, ≤ 150 animated nodes) and `npm run check:prod` (first load, first page on 4G).
+
 ### 2.12 Audio cues
 
 All sound is **synthesised with WebAudio**, extending `src/shared/audio.ts` (no mp3s). Music is a tiny music-box sequencer, one 8–16 bar loop per chapter in a pentatonic key. Baby barks are pitched "voice blips" plus a bubble; there are no recorded voices.

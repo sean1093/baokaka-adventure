@@ -1125,3 +1125,36 @@ Format:
 - **QA.** `npm test`, build, `check:prod`, and the full `npm run visual` at both sizes: every target passes against the existing baselines, so none were regenerated (worst diff 0.007 %). The first cut split CJK punctuation across files, and `album-c10` caught 『一起』。 set wide (Chrome's `text-spacing-trim` works only within one file). Punctuation now stays in slice 0, and a test enforces it.
 - **Decision.** D-105 (supersedes D-17's Google Fonts). Art direction § 7.1 *Loading* is marked superseded.
 - **Follow-ups.** #136 can count fonts as done in its perf audit. A new character in any text now needs `npm run fonts` (Python + fonttools) before the tests pass.
+
+### 2026-10-22 · Staff engineer · #136 Performance, reduced-motion and accessibility audit
+- **Measured on the production build** (new `npm run check:perf`, `scripts/perf-check.mjs`; `visual --perf` runs it): every page's authored solution replayed at `#/?page=<id>&demo=1`, 390×844 @3x, 4× CPU throttle, rAF sampler plus the live `[data-anim]` count. A full run of all 66 pages: every page ≥ 54.7 fps on average (the dev-build numbers in this log, 8-6 at 45–49 and 7-6 at ≈ 41, were React's development mode: 8-6 58.5, 7-6 59.1 here); four pages over 150 live animated nodes. `PERF_PAGES` keeps each chapter's slowest and busiest page (25).
+- **Found and fixed.**
+  - **Animated nodes over 150 live** on 2-6 (162), 4-5 (169), 8-6 (163) and 9-2 (166): two barks and a subtitle on top of a change of mind in the bubble, which the static unit test never renders. Die-cut figures and `depth` stacks now draw their silhouette once and `<use>` it on the live path; the bubble, barks, subtitle cards, creatures, movers, carriages, riders and tab seals lost wrapper groups. Now 147–149; 1-6 134, 9-2 138. Pixels unchanged (full visual run), bake hashes unchanged.
+  - **A mid-line font fetch** on 6-2 (the clerk's line printed a later #68 slice: a 45 ms re-layout, worst 1 s window 38.6 fps). A page fetches its lines' slices 1.2 s after it is ready (`fontWarm.ts`); the first-load font budget is unchanged (161 KB).
+  - **Decoded bitmaps grew without bound** across a session (the loader kept every image). Pages claim their art and frames by scope and let go of the page before's; a test plays all 66 pages through the loader.
+  - **Low power never recovered** (D-67). It now turns off once after 10 s of smooth frames; the second time it stays on.
+  - **Safe-area insets**: an installed app on a notched phone drew the HUD under the status bar and the bar under the home indicator. `bookLayout` fits the book between the insets.
+  - **No orientation guard** in the new game (the RPG had one): `UprightGuard`, a cream card with a turning-phone icon.
+  - The credits' 「跳過」 had no icon, and the 目錄's stations and page cards drew their pictures outside the button (found by the new `check:ui` a11y rule: they mark them `data-icon`; a radio option such as 慢 / 普通 / 快 is a choice in a row that carries the icon).
+  - **A carried baby was laid out at his node** (`check:ui:big` on `c10p2-carried`: 「清潔阿伯來，阿伯抱你」 over his head held high, 9×6 px; also on main). The talk layout now places him where he is drawn on the carrier's arm (`carriedPose` at the tick's end). One baseline changed on purpose: `c5p6-over` at 375×667 (Mocha's 「……不要問我。」 moves off his raised head).
+- **Built (routed here by #104).** Per-layer tilt parallax by depth; the play plane and the hit layer stay put.
+- **Gates.** `check:perf` (≥ 55 fps, worst 1 s ≥ 45, ≤ 150 live nodes, no `feTurbulence`, no `preserve-3d` in play); `check:prod` now fails on the load budgets, a later chapter's bitmap on the first load, a11y on page 0-1, the safe area and the upright guard; `check:ui` gained the a11y rule (lang, `<title>`, named controls, an icon on every button) on every fixture.
+- **Checked, already fine.** Reduced motion (fold → 0.25 s cross-fade, no confetti, no wobble, loops hold; `check:ui`'s rule on every fixture), no flashing > 3 Hz, page art ≤ 350 KB (`env.test.ts`; max 5-1 326 KB), first load 598 KB of 2.5 MB, cover 1.5 s and 0-1 2.0 s on 4G, the page-turn DOM torn down (`playTurn`), no `preserve-3d` or live grain in play (the perf gate), `lang="zh-Hant"`, muted play (every `check:play` scenario runs without audio).
+- **Decision.** D-106.
+- **QA (every fixture, every scenario, both viewports; in chunks against one dev server).**
+  - `npm run visual`: all 386 targets × 390×844 and 375×667 pass; baselines changed on purpose: `credits`, `credits-cameo`, `credits-end` (the skip icon), `c5p6-over` 375×667 (above).
+  - `check:play`: all 91 scenarios, mouse and touch, at both sizes, in four chunks: pass.
+  - `check:ui --popup` and `check:ui:big`: every fixture in eight chunks of 50: pass (after the fixes above; the a11y rule's first run flagged the 目錄 and 設定 fixtures, rerun green).
+  - `check:ui`'s RPG part times out on the art lab's `chapter-card-reduced` (20 s) on this machine, on main as well; the RPG checks go with #111.
+  - `check:perf` (25 pages) and `check:prod` pass; `npm test` (4035) and `npm run build` pass.
+- **Measured vs budget** (production build; table in the PR):
+
+  | Budget | Measured |
+  |---|---|
+  | ≥ 55 fps at 4× throttle, heaviest page per chapter | 58.0–60.0 (25 pages); full 66-page run ≥ 54.7 before the fixes |
+  | ≤ 150 animated nodes (live DOM) | ≤ 148 (8-6); 2-6, 4-5 147 |
+  | Page art ≤ 350 KB | max 326 KB (5-1) |
+  | First load ≤ 2.5 MB | 598 KB |
+  | First interactive page ≤ 3 s on 4G | cover 1.5 s; 開始 → 0-1 2.0 s |
+  | Fonts, cover + 0-1 ≤ 250 KB | 161 KB |
+- **Follow-ups.** #138: the device pass (a 2021 mid-range Android and an iPhone: frame rate with a GPU, low power turning on and back off, `navigator.vibrate` on Android (iOS Safari has none), the tilt, the notch insets and the upright guard). #111: the RPG's `check:ui` part.

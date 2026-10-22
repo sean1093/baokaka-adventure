@@ -1,6 +1,6 @@
 import { POPUP as C, POPUP_PARK as P, POPUP_STAGE as S } from '../../../art/palette';
 import { depth, f1, softEllipse, type KitCtx } from '../../art';
-import { dieCut } from './creatures';
+import { cutShadow, dieCut } from './creatures';
 
 /**
  * Chapter 2's cast and creatures (大安森林公園, #115; bible § 5), drawn live like the slice's
@@ -29,7 +29,7 @@ function face(x: number, y: number, { asleep = false, s = 1, smile = false }: { 
  * nodes on pages with two or three of them (the animated budget, GDD § 3.9).
  */
 const figure = (outline: string, print: string) =>
-  `<g fill="${C.shadow}" opacity=".3" transform="translate(1.8 2.8)">${outline}</g>` + dieCut(outline, print);
+  cutShadow(outline) + dieCut(outline, print);
 
 /** Chalk "z Z" over a sleeper's head at (x, y). */
 const zzz = (x: number, y: number, s = 1) =>

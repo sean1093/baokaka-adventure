@@ -21,15 +21,23 @@
  *              cover and page 0-1 pull (after `document.fonts.ready`) ≤ 250 KB; each request is
  *              listed in the report.
  *
- * Report only (GDD § M1 budgets, printed, never failing): the bytes transferred until the cover is
- * ready (first load, budget 2.5 MB) and the time until the cover, then page 0-1, is interactive on
- * a throttled 4G link (budget 3 s). The throttle is WebPageTest's "4G" profile: 9 Mbps down,
- * 9 Mbps up, 170 ms round trip, applied through the Chrome DevTools protocol, cache disabled.
+ *   - budgets  (#136, GDD § 8 and bible § 9; reported before #136, gates since) on a throttled
+ *              4G link: the bytes transferred until the cover is ready (first load) ≤ 2.5 MB; the
+ *              cover interactive ≤ 3 s; 「開始」 → page 0-1 interactive (the first page) ≤ 3 s.
+ *   - safe area (#136) with notch insets emulated, page 0-2's HUD and bar sit inside them.
+ *   - upright  (#136) a phone held sideways gets the upright guard over the game, and only then.
+ *   - a11y     (#136) page 0-1 on the real build: `lang="zh-Hant"`, a `<title>`, every control named.
+ *   - lazy     (#136) the first load and page 0-1 fetch no bitmap of a later chapter: each page
+ *              pulls its own art (and the next page's backdrop), never the book's.
+ *
+ * The throttle is WebPageTest's "4G" profile: 9 Mbps down, 9 Mbps up, 170 ms round trip, applied
+ * through the Chrome DevTools protocol, cache disabled.
  */
 import { spawn } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { a11yAudit } from './popup-checks.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const { values: args } = parseArgs({ options: { build: { type: 'boolean' }, url: { type: 'string' } } });
@@ -114,8 +122,10 @@ async function checkPlay(browser, base) {
     // Font traffic (#68): the font files, and any external font stylesheet (render-blocking)
     const fontRequests = new Map();
     const fonts = [];
+    const images = [];
     cdp.on('Network.requestWillBeSent', (e) => {
       if (e.type === 'Font' || FONT_CSS.test(e.request.url)) fontRequests.set(e.requestId, { url: e.request.url, css: e.type !== 'Font' });
+      if (/\.webp(\?|$)/.test(e.request.url)) images.push(e.request.url);
     });
     cdp.on('Network.loadingFinished', (e) => {
       bytes += e.encodedDataLength;
@@ -143,12 +153,18 @@ async function checkPlay(browser, base) {
     report.pageBytes = bytes;
     ok(`開始 → page 0-1 renders with its characters in ${report.pageMs} ms (${kb(report.pageBytes)} in total)`);
     report.pageFonts = await fontsSettled();
+    // Screen-reader basics on the real build (#136; check:ui runs the same audit on every fixture)
+    const audit = await page.evaluate(a11yAudit);
+    const unnamed = audit.controls.filter((c) => !c.named).length;
+    if (audit.lang !== 'zh-Hant' || !audit.title || unnamed > 0) fail('a11y', `lang="${audit.lang}", title 「${audit.title}」, ${unnamed} unnamed control(s) on page 0-1`);
+    else ok(`a11y on page 0-1: zh-Hant, titled 「${audit.title}」, ${audit.controls.length} controls named`);
     const cssBytes = sum([...report.coverFonts, ...report.pageFonts].filter((f) => f.css));
     const fileBytes = sum([...report.coverFonts, ...report.pageFonts].filter((f) => !f.css));
     if (cssBytes > BUDGET.fontCssBytes) fail('font payload', `render-blocking font stylesheets ${kb(cssBytes)} > ${kb(BUDGET.fontCssBytes)}`);
     else if (fileBytes > BUDGET.fontBytes) fail('font payload', `font files for the cover and page 0-1 ${kb(fileBytes)} > ${kb(BUDGET.fontBytes)}`);
     else ok(`font payload: ${kb(cssBytes)} of external font stylesheets, ${kb(fileBytes)} of font files for the cover and page 0-1`);
 
+    report.images = images.splice(0);
     if (errors.length) throw new Error(`console errors: ${errors.join(' | ')}`);
     ok('no console errors on the first launch');
   } catch (e) {
@@ -174,6 +190,61 @@ async function checkResume(browser, base) {
     ok('a returning player: 「繼續」 → page 0-2 renders, no console errors');
   } catch (e) {
     fail('resume', e.message.split('\n')[0]);
+  } finally {
+    await context.close();
+  }
+}
+
+/**
+ * A notched phone (#136): with safe-area insets (an installed app on an iPhone: 47 px under the
+ * status bar, 34 px over the home indicator), the page's HUD starts under the top inset and its
+ * bottom bar ends over the bottom one. Chromium emulates the insets through CDP.
+ */
+async function checkSafeArea(browser, base) {
+  const seed = (save) => {
+    if (!localStorage.getItem('popup.save.v1')) localStorage.setItem('popup.save.v1', save);
+  };
+  const { context, page, errors } = await openTab(browser, base, [seed, PLAYED_SAVE]);
+  const inset = { top: 47, bottom: 34, left: 0, right: 0 };
+  try {
+    const cdp = await context.newCDPSession(page);
+    await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: inset });
+    await page.goto(new URL('#/', base).href, { waitUntil: 'load' });
+    await page.waitForSelector(`${COVER_READY} [data-button="resume"]`, { timeout: 20_000 });
+    await page.click('[data-button="resume"]');
+    await page.waitForSelector('[data-popup-page="c0p2"][data-sprites="ready"] [data-slot="hud"]', { timeout: 20_000 });
+    await page.waitForTimeout(500);
+    const { hud, bar } = await page.evaluate(() => ({
+      hud: document.querySelector('[data-slot="hud"]').getBoundingClientRect().top,
+      bar: document.querySelector('[data-slot="bottom-bar"]').getBoundingClientRect().bottom,
+    }));
+    if (hud < inset.top - 0.5) throw new Error(`the HUD starts at ${hud} px, under the ${inset.top} px top inset`);
+    if (bar > VIEWPORT.height - inset.bottom + 0.5) throw new Error(`the bar ends at ${bar} px, over the ${inset.bottom} px bottom inset`);
+    if (errors.length) throw new Error(`console errors: ${errors.join(' | ')}`);
+    ok(`safe area: the HUD starts at ${Math.round(hud)} px and the bar ends at ${Math.round(bar)} px of ${VIEWPORT.height} (insets ${inset.top} / ${inset.bottom})`);
+  } catch (e) {
+    fail('safe area', e.message.split('\n')[0]);
+  } finally {
+    await context.close();
+  }
+}
+
+/** The phone held sideways (#136): the upright guard covers the game, and only then. */
+async function checkUpright(browser, base) {
+  const { context, page, errors } = await openTab(browser, base);
+  try {
+    await page.goto(new URL('#/', base).href, { waitUntil: 'load' });
+    await page.waitForSelector(COVER_READY, { timeout: 20_000 });
+    const shown = () => page.$eval('[data-upright-guard]', (el) => getComputedStyle(el).display !== 'none');
+    if (await shown()) throw new Error('the guard shows on an upright phone');
+    await page.setViewportSize({ width: VIEWPORT.height, height: VIEWPORT.width });
+    if (!(await shown())) throw new Error('no guard on a phone held sideways');
+    await page.setViewportSize(VIEWPORT);
+    if (await shown()) throw new Error('the guard stayed after the phone was turned back');
+    if (errors.length) throw new Error(`console errors: ${errors.join(' | ')}`);
+    ok('sideways: the upright guard covers the game, and goes when the phone is upright again');
+  } catch (e) {
+    fail('upright', e.message.split('\n')[0]);
   } finally {
     await context.close();
   }
@@ -209,6 +280,40 @@ async function checkFarewell(browser, base) {
 
 const kb = (n) => `${Math.round(n / 1024)} KB`;
 
+/**
+ * The file names (Vite flattens the folders: `<name>@2x-<hash>.webp`) of the bitmaps that belong to
+ * a later chapter than the prologue (`backdrops|parts|cutouts/c1…c10|end|bonus/<name>` in the
+ * baked manifest), less any name the prologue or the screens also use.
+ */
+async function laterChapterStems() {
+  const { readFile } = await import('node:fs/promises');
+  const src = await readFile(resolve(ROOT, 'src/popup/env/env.gen.ts'), 'utf8');
+  const later = new Set();
+  const early = new Set();
+  for (const m of src.matchAll(/"file":\s*"([^"]+)"/g)) {
+    const parts = m[1].split('/');
+    const name = parts[parts.length - 1];
+    const folder = parts.length > 2 ? parts[1] : '';
+    if (/^(c([1-9]|1\d)|end|bonus)$/.test(folder)) later.add(name);
+    else early.add(name);
+  }
+  for (const name of early) later.delete(name);
+  return later;
+}
+
+function checkBudgets(report) {
+  if (report.coverMs === undefined || report.pageMs === undefined) return;
+  if (report.coverBytes > BUDGET.firstLoadBytes) fail('first load', `${kb(report.coverBytes)} > ${kb(BUDGET.firstLoadBytes)}`);
+  else ok(`first load ${kb(report.coverBytes)} ≤ ${kb(BUDGET.firstLoadBytes)}`);
+  if (report.coverMs > BUDGET.interactiveMs) fail('cover interactive', `${report.coverMs} ms > ${BUDGET.interactiveMs} ms on 4G`);
+  else ok(`cover interactive in ${report.coverMs} ms ≤ ${BUDGET.interactiveMs} ms on 4G`);
+  if (report.pageMs > BUDGET.interactiveMs) fail('first page interactive', `開始 → 0-1 ${report.pageMs} ms > ${BUDGET.interactiveMs} ms on 4G`);
+  else ok(`開始 → page 0-1 interactive in ${report.pageMs} ms ≤ ${BUDGET.interactiveMs} ms on 4G`);
+  const later = (report.images ?? []).filter((url) => report.laterStems?.has(url.replace(/^.*\//, '').replace(/@\dx-.*$/, '')));
+  if (later.length) fail('lazy chapters', `the first load and 0-1 fetched later chapters' bitmaps: ${later.map((u) => u.replace(/^.*\//, '')).join(', ')}`);
+  else ok(`lazy chapters: the cover and 0-1 fetched ${(report.images ?? []).length} bitmaps, none of a later chapter`);
+}
+
 async function main() {
   if (args.build && !args.url) await run('npm', ['run', 'build']);
   let server = null;
@@ -220,10 +325,14 @@ async function main() {
   try {
     await checkRoutes(browser, base);
     const report = await checkPlay(browser, base);
+    report.laterStems = await laterChapterStems();
     await checkResume(browser, base);
     await checkFarewell(browser, base);
+    await checkUpright(browser, base);
+    await checkSafeArea(browser, base);
+    checkBudgets(report);
     if (report.coverMs !== undefined) {
-      console.log('\nLoad report (throttled 4G: 9 Mbps, 170 ms RTT; report only)');
+      console.log('\nLoad report (throttled 4G: 9 Mbps, 170 ms RTT)');
       console.log(`  first load (to the cover)   ${kb(report.coverBytes)} of ${kb(BUDGET.firstLoadBytes)}${report.coverBytes > BUDGET.firstLoadBytes ? '  OVER' : ''}`);
       console.log(`  cover interactive           ${report.coverMs} ms of ${BUDGET.interactiveMs}${report.coverMs > BUDGET.interactiveMs ? '  OVER' : ''}`);
       if (report.pageMs !== undefined) console.log(`  開始 → page 0-1 interactive  ${report.pageMs} ms (${kb(report.pageBytes - report.coverBytes)} more)`);

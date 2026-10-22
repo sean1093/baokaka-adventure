@@ -116,9 +116,7 @@ export function TabView(props: PartViewProps) {
         </g>
         {look.outline && <ArtG html={states.outline} />}
       </g>
-      <g data-anim="" transform={`translate(${r2(x + ox)} ${r2(y + oy - lift)})`}>
-        <ArtG html={sealSvg} />
-      </g>
+      <g data-anim="" transform={`translate(${r2(x + ox)} ${r2(y + oy - lift)})`} dangerouslySetInnerHTML={{ __html: sealSvg }} />
     </g>
   );
 }

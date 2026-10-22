@@ -58,27 +58,42 @@ export interface BookLayout {
   /** Screen position of page unit (0, 0) */
   readonly x: number;
   readonly y: number;
-  /** The top of the bottom bar slot */
+  /** The top of the HUD slot: under the notch / status bar (the safe-area inset, #136) */
+  readonly hudTop: number;
+  /** The top of the bottom bar slot (above the home indicator) */
   readonly barTop: number;
 }
 
+/** The phone's safe-area insets in CSS px (`env(safe-area-inset-*)`; 0 on most browsers). */
+export interface SafeInsets {
+  readonly top: number;
+  readonly bottom: number;
+}
+
+export const NO_INSETS: SafeInsets = { top: 0, bottom: 0 };
+
 /**
  * Fits the book between the HUD and the bottom bar: as wide as the cover margin allows (≈ 0.91 at
- * 390), smaller when the viewport is short, centred in the leftover height (which is cover).
+ * 390), smaller when the viewport is short, centred in the leftover height (which is cover). The
+ * HUD starts under the top safe-area inset and the bar ends over the bottom one (#136: with
+ * `viewport-fit=cover`, an installed app on a notched phone draws under the status bar and the
+ * home indicator).
  */
-export function bookLayout(vw: number, vh: number): BookLayout {
+export function bookLayout(vw: number, vh: number, inset: SafeInsets = NO_INSETS): BookLayout {
   const extent = BOOK_EXTENT.bottom - BOOK_EXTENT.top;
+  const room = vh - inset.top - inset.bottom;
   const byWidth = (vw - 2 * COVER_MARGIN) / PAGE_W;
-  const byHeight = (vh - HUD_H - BAR_H - 2 * FRAME_GAP) / extent;
+  const byHeight = (room - HUD_H - BAR_H - 2 * FRAME_GAP) / extent;
   const scale = Math.max(0.1, Math.min(byWidth, byHeight, MAX_SCALE));
-  const spare = Math.max(0, vh - HUD_H - BAR_H - 2 * FRAME_GAP - extent * scale);
+  const spare = Math.max(0, room - HUD_H - BAR_H - 2 * FRAME_GAP - extent * scale);
   return {
     vw,
     vh,
     scale,
     x: (vw - PAGE_W * scale) / 2,
-    y: HUD_H + FRAME_GAP + spare / 2 - BOOK_EXTENT.top * scale,
-    barTop: vh - BAR_H,
+    y: inset.top + HUD_H + FRAME_GAP + spare / 2 - BOOK_EXTENT.top * scale,
+    hudTop: inset.top,
+    barTop: vh - inset.bottom - BAR_H,
   };
 }
 

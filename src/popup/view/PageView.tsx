@@ -45,6 +45,7 @@ import { Fireflies } from './Fireflies';
 import { WindowStrip } from './WindowStrip';
 import { attractorArt, chapterSky, decoyArt, firstFootprint, floorMark, spine, perchMark, perchPost, rail, ramp, spotPool, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
+import { liveArt } from './art/creatures';
 import { riderArt } from './art/riders';
 import { puddle } from './art/creatures';
 import { PAGE_VIEW_BOX, type Hit, type Pt } from './geometry';
@@ -254,7 +255,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   // What rides a loop's slots (#124: suitcases, a tray), drawn at their nodes over the belt
   const slotRiders = useMemo(() => def.parts.filter((p) => p.preset === 'loop').flatMap((p) => def.nodes.filter((n) => n.attach?.part === p.id).flatMap((n) => {
     const art = riderArt(p.art, n.id);
-    return art === null ? [] : [{ node: n.id, html: art(ctx) }];
+    return art === null ? [] : [{ node: n.id, html: liveArt(() => art(ctx)) }];
   })), [def, ctx]);
   const lookOf = (part: PageDef['parts'][number]): PartLook | undefined => {
     const marigold = wearsMarigold(part);
@@ -524,13 +525,20 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const goalAt = goalNode === null ? undefined : nodePos(def, state, goalNode);
   const barks = useMemo(() => barksProp ?? barksOf(prev, state, events), [barksProp, prev, state, events]);
   const beat = talk?.beat ?? null;
+  // Where he is drawn at the tick's end: his node, or up on a carrier's arm (#136: a carried baby
+  // was laid out at his node, so 10-2's 大字 line covered his head held high)
+  const babyAt = useMemo((): Pt | undefined => {
+    if (babyEnd === undefined) return undefined;
+    const p = carriedPose(def, prev, state, { x: babyEnd[0], y: babyEnd[1], moving: false }, tickMs, true, 1);
+    return [p.x, p.y];
+  }, [def, prev, state, babyEnd?.[0], babyEnd?.[1], tickMs]);
   // Laid out at the tick's end positions: the layout changes once a tick, not every frame
   const said = useMemo(() => {
     const actor = (at: Pt | undefined, head: Pt, box: { x: number; y: number; w: number; h: number }): TalkActor | null =>
       at === undefined ? null : { at, head: [at[0] + head[0], at[1] + head[1]], box: { ...box, x: at[0] + box.x, y: at[1] + box.y } };
     return layoutTalk({
       k,
-      baby: actor(babyEnd, babyHead, babyBox),
+      baby: actor(babyAt, babyHead, babyBox),
       mocha: mochaHidden ? null : actor(mochaEnd, mochaHead, mochaBox),
       goal: goalAt === undefined ? null : goalBox(goalAt),
       tudigong: [def.tudigong.x, def.tudigong.y],
@@ -541,13 +549,13 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       // The paw prints and the hinted target: the thought bubble and the barks keep off them too (#183)
       marks: targets.filter((tg) => tg.kind === 'perch' || tg.key === hinted?.key).map((tg) => hitBox(tg.hit)),
     });
-  }, [k, state, def, bAnim.sprite, mAnim.sprite, mochaFacing, mochaHidden, showKey(show), barks, beat, hinted?.key]);
+  }, [k, state, def, bAnim.sprite, mAnim.sprite, mochaFacing, mochaHidden, showKey(show), barks, beat, hinted?.key, babyAt?.[0], babyAt?.[1]]);
   // A beat too big for the page (#197) is split before it is painted: the rest follow on the next tap
   const onCrowded = talk?.onCrowded;
   useLayoutEffect(() => {
     if (beat !== null && said.fit < beat.length) onCrowded?.(beat, said.fit);
   }, [beat, said.fit, onCrowded]);
-  const babyOff: Pt = babyPose && babyEnd ? [babyPose.x - babyEnd[0], babyPose.y - babyEnd[1]] : [0, 0];
+  const babyOff: Pt = babyPose && babyAt ? [babyPose.x - babyAt[0], babyPose.y - babyAt[1]] : [0, 0];
   const mochaOff: Pt = mochaPose && mochaEnd ? [mochaPose.x - mochaEnd[0], mochaPose.y - mochaEnd[1]] : [0, 0];
   const mochaEl = mochaPose && (
     <Mocha x={mochaPose.x} y={mochaPose.y} anim={mAnim} frame={mFrame} glare={locked?.serial} facing={mochaFacing} tilt={mochaTilt} opacity={mochaOpacity} reduced={reduced} still={still} tapping={cue === 'wait'} />

@@ -42,6 +42,8 @@ export interface TopHudProps {
   readonly moon?: boolean;
   /** The HUD's scale (≤ 1 on phones narrower than 390) */
   readonly scale?: number;
+  /** CSS px from the top of the screen: the safe-area inset (#136) */
+  readonly top?: number;
   /** 大字 (#104): 1, or 1.25 */
   readonly textScale?: number;
   /** The newest coin fills its slot now (#107): a serial that replays it; 0 / absent: no fill */
@@ -63,7 +65,7 @@ export function runWidth(text: string, px: number, spacing = 0): number {
   return ems * px + spacing * [...text].length;
 }
 
-export function TopHud({ landmark, title, chapter, index, time, coins, moon = true, scale = 1, textScale = 1, fill = 0 }: TopHudProps) {
+export function TopHud({ landmark, title, chapter, index, time, coins, moon = true, scale = 1, top = 0, textScale = 1, fill = 0 }: TopHudProps) {
   const ids = useSvgIds('hud');
   const filling = fill > 0 && coins >= 1 && coins <= 9;
   const ctx: KitCtx = useMemo(() => ({ ...kitCtx('hud'), id: ids }), [ids]);
@@ -93,8 +95,8 @@ export function TopHud({ landmark, title, chapter, index, time, coins, moon = tr
   const chipAt = k > 1 ? `translate(${376 - 96 * k} ${17 - 17 * (k - 1)}) scale(${k})` : 'translate(268 17)';
   return (
     <svg
-      className="absolute left-1/2 top-0 font-body"
-      style={{ transform: 'translateX(-50%)' }}
+      className="absolute left-1/2 font-body"
+      style={{ top, transform: 'translateX(-50%)' }}
       width={390 * scale}
       height={HUD_H * scale}
       viewBox={`0 0 390 ${HUD_H}`}
