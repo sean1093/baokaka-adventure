@@ -66,6 +66,34 @@ export const STATIONS: readonly (readonly [number, number])[] = [
   [300, 350], [181, 350],
 ];
 
+/** An open station's landmark medallion (#193, D-103): its radius on the map, CSS px. */
+const MEDAL_R = 18;
+/** The screen art key of a station's medallion (`env/art/vignettes.ts`). */
+export const stationMedal = (chapter: number): string => `vignette-map-${chapter}`;
+const medal = (chapter: number): string | undefined => screenImage(stationMedal(chapter))?.url;
+
+/**
+ * An open station drawn with its landmark (#193): the baked medallion (the landmark against the
+ * chapter's night) in a ring — foil when every page is solved, cream with the ribbon's red edge
+ * when open — and the chapter's number on a little foil tag at its shoulder.
+ */
+function StationMedal({ chapter, done, url }: { chapter: number; done: boolean; url: string }) {
+  const r = MEDAL_R;
+  return (
+    <g data-station-medal={chapter}>
+      <image href={url} x={-r - 1} y={-r - 1} width={2 * r + 2} height={2 * r + 2} />
+      <circle r={r} fill="none" stroke={done ? C.goldDeep : C.ribbonDeep} strokeWidth={2.6} />
+      <circle r={r - 2} fill="none" stroke={done ? C.goldLight : C.standeeCard} strokeWidth={1.4} opacity={0.9} />
+      <g transform={`translate(${-r + 2} ${-r + 3})`}>
+        <circle r={8.5} fill={done ? C.goldLight : C.standeeCard} stroke={done ? C.goldDeep : C.ribbonDeep} strokeWidth={1.6} />
+        <text data-art-text="" y={chapter === 0 ? 4 : 4.4} textAnchor="middle" fontFamily={chapter === 0 ? "'Noto Serif TC'" : 'Fredoka'} fontWeight={chapter === 0 ? 900 : 700} fontSize={chapter === 0 ? 10 : chapter === 10 ? 10 : 12} fill={done ? C.foilInk : C.sealInk}>
+          {chapter === 0 ? '序' : chapter}
+        </text>
+      </g>
+    </g>
+  );
+}
+
 /** The bonus postcard's place on the map: the serpentine's free slot, past 101 (#113). */
 export const BONUS_AT: readonly [number, number] = [62, 350];
 
@@ -146,7 +174,9 @@ export function Contents({ save, registry: reg, chapter, locked, bonus = false, 
     const def = spriteDef('baokaka-head-happy');
     return { url: frameUrl(def.files[0], deviceScale()), w: def.size[0], h: def.size[1] };
   }, []);
-  const ready = useScreenReady(['map-sheet'], head.url ? [head.url] : []);
+  // The open stations' landmark medallions (#193) load with the map
+  const medals = useMemo(() => STATIONS.map((_, ch) => ch).filter((ch) => isChapterUnlocked(save, ch, reg) && screenImage(stationMedal(ch)) !== null).map(stationMedal), [save, reg]);
+  const ready = useScreenReady(['map-sheet', ...medals], head.url ? [head.url] : []);
   // Page E is listed on 家's strip (#135): its bookmark is 家's station
   const resumeChapter = stationOf(reg.chapterOf(resumeId) ?? 0);
   // How far the line runs: to the furthest open station
@@ -210,9 +240,11 @@ export function Contents({ save, registry: reg, chapter, locked, bonus = false, 
               const selected = ch === shown && !showBonus;
               return (
                 <g key={ch} transform={`translate(${x} ${y})`} data-station={ch} data-open={open ? '' : undefined} data-complete={done ? '' : undefined}>
-                  {selected && <circle r={24} fill="none" stroke={C.gold} strokeWidth={3} opacity={0.9} />}
-                  <circle r={16} cx={1} cy={2.5} fill={C.shadow} opacity={0.35} />
-                  {open ? (
+                  {selected && <circle r={open && medal(ch) ? MEDAL_R + 6 : 24} fill="none" stroke={C.gold} strokeWidth={3} opacity={0.9} />}
+                  <circle r={open && medal(ch) ? MEDAL_R : 16} cx={1} cy={2.5} fill={C.shadow} opacity={0.35} />
+                  {open && medal(ch) ? (
+                    <StationMedal chapter={ch} done={done} url={medal(ch)!} />
+                  ) : open ? (
                     <>
                       <circle r={16} fill={done ? C.goldLight : C.standeeCard} stroke={done ? C.goldDeep : C.ribbonDeep} strokeWidth={2.4} />
                       <circle r={11.5} fill="none" stroke={done ? C.goldDeep : C.gold} strokeWidth={1.2} strokeDasharray={done ? undefined : '2 2.5'} />

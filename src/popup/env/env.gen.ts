@@ -4454,6 +4454,248 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 500
       },
       "source": "122c4a90e849c397"
+    },
+    "vignette-card-0": {
+      "file": "screens/vignette-card-0",
+      "bytes": 4176,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "8ebea04d753260cd"
+    },
+    "vignette-map-0": {
+      "file": "screens/vignette-map-0",
+      "bytes": 2218,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "88c2e4ea33b0dd86"
+    },
+    "vignette-card-1": {
+      "file": "screens/vignette-card-1",
+      "bytes": 4080,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "a862648db06b1b33"
+    },
+    "vignette-map-1": {
+      "file": "screens/vignette-map-1",
+      "bytes": 1750,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "8cfabdf468228730"
+    },
+    "vignette-card-2": {
+      "file": "screens/vignette-card-2",
+      "bytes": 5148,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "02f538b4171fb70d"
+    },
+    "vignette-map-2": {
+      "file": "screens/vignette-map-2",
+      "bytes": 1630,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "de74df60394051b1"
+    },
+    "vignette-card-3": {
+      "file": "screens/vignette-card-3",
+      "bytes": 6942,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "c50f4fbad110908a"
+    },
+    "vignette-map-3": {
+      "file": "screens/vignette-map-3",
+      "bytes": 1602,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "13dccba0db287c8e"
+    },
+    "vignette-card-4": {
+      "file": "screens/vignette-card-4",
+      "bytes": 4288,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "9665ed62275c5cf3"
+    },
+    "vignette-map-4": {
+      "file": "screens/vignette-map-4",
+      "bytes": 1884,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "a618449fdb93ec5b"
+    },
+    "vignette-card-5": {
+      "file": "screens/vignette-card-5",
+      "bytes": 5634,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "07752af3a96c9139"
+    },
+    "vignette-map-5": {
+      "file": "screens/vignette-map-5",
+      "bytes": 2166,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "6d7500b371da083f"
+    },
+    "vignette-card-6": {
+      "file": "screens/vignette-card-6",
+      "bytes": 5488,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "049d7e9371bca4b8"
+    },
+    "vignette-map-6": {
+      "file": "screens/vignette-map-6",
+      "bytes": 1718,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "b1e2b8c32e47a9f1"
+    },
+    "vignette-card-7": {
+      "file": "screens/vignette-card-7",
+      "bytes": 5016,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "e2c169bd379cda6a"
+    },
+    "vignette-map-7": {
+      "file": "screens/vignette-map-7",
+      "bytes": 1798,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "d07cb94dffa284da"
+    },
+    "vignette-card-8": {
+      "file": "screens/vignette-card-8",
+      "bytes": 4386,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "118d230309fdae40"
+    },
+    "vignette-map-8": {
+      "file": "screens/vignette-map-8",
+      "bytes": 1980,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "0cc1ae92dfd51878"
+    },
+    "vignette-card-9": {
+      "file": "screens/vignette-card-9",
+      "bytes": 4790,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "1684c89377cf784a"
+    },
+    "vignette-map-9": {
+      "file": "screens/vignette-map-9",
+      "bytes": 2426,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "3770451a4a2bc7eb"
+    },
+    "vignette-card-10": {
+      "file": "screens/vignette-card-10",
+      "bytes": 4084,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 150,
+        "h": 76
+      },
+      "source": "d4b12d46bec44330"
+    },
+    "vignette-map-10": {
+      "file": "screens/vignette-map-10",
+      "bytes": 1898,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 48,
+        "h": 48
+      },
+      "source": "fa0587d70ae9acc0"
     }
   }
 };

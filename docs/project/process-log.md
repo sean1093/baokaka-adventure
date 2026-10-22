@@ -1087,3 +1087,12 @@ Format:
 - **Found.** The standee bake's core trims hairline strands (his cowlick's tips); at ×1.45 they stand 1 pt above the rest, so the manifest test allows 1.5 pt for the photo frames only.
 - **Decision.** D-102.
 - **Next (part 2).** The chapter-card landmark vignettes and the 目錄 station illustrations; then the 月亮線 window strip.
+
+### 2026-10-22 · Staff engineer · #193 part 2: the chapter-card vignettes and the 目錄 station medallions
+- **Art.** `env/art/vignettes.ts`: one landmark drawing per chapter (家 and 1–10), in the chapter kits' colours, graded like the backdrops. It is baked twice as screen art: a die-cut pop-up for the card and a round medallion with the chapter's night sky for the map. Floating things (cables, steam, mist, bulbs, fireflies) are drawn over the die-cut, so the border never turns them into blobs. New palette block `POPUP_VIGNETTE` (the 公寓's tiles and grilles, the tank, the belfry).
+- **Card.** The vignette stands behind the card and rises over its top edge between the strings. No text, size or contrast on the card changed. 尾聲 reuses 家.
+- **目錄.** Open stations are medallions: a foil ring when complete, a cream ring with the ribbon's red edge when open, the number on a foil tag. Locked ones are unchanged.
+- **Fixtures.** `chapter-card-c2` … `c9`. Baselines refreshed for every chapter card and 目錄 fixture.
+- **QA.** `npm test` (new `env/vignettes.test.ts`), build; `check:ui` (+big) on the cards and the 目錄; `check:play` prologue-card, bonus-open, photo-spread-c9; visual on the cards and the 目錄 (both sizes).
+- **Decision.** D-103.
+- **Next (part 3).** The 月亮線 window strip.

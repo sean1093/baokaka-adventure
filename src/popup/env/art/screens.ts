@@ -2,6 +2,7 @@ import { POPUP as C } from '../../../art/palette';
 import { f1, fibers, grain, pinholes, ref, seal, seeded, softEllipse, sparkle, translate, washi, type KitCtx } from '../../art';
 import type { EnvBox } from '../manifest';
 import { SCENE_BOX, dawnScene, shrineScene } from './end';
+import { VIGNETTE_ART } from './vignettes';
 
 /**
  * The art outside the pages (#97; popup art bible § 3.1 花布, § 7 UI framing), baked by
@@ -282,4 +283,6 @@ export const SCREEN_ART: Readonly<Record<string, ScreenSource>> = {
   // 尾聲 (#135): 05:30 at home before page E, and the 土地公's shrine after the credits
   'dawn-scene': { box: SCENE_BOX, draw: dawnScene },
   'shrine-scene': { box: SCENE_BOX, draw: shrineScene },
+  // #193: each chapter's landmark vignette, on its chapter card and as its 目錄 station
+  ...VIGNETTE_ART,
 };
