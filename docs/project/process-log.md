@@ -1096,3 +1096,15 @@ Format:
 - **QA.** `npm test` (new `env/vignettes.test.ts`), build; `check:ui` (+big) on the cards and the 目錄; `check:play` prologue-card, bonus-open, photo-spread-c9; visual on the cards and the 目錄 (both sizes).
 - **Decision.** D-103.
 - **Next (part 3).** The 月亮線 window strip.
+
+### 2026-10-22 · Staff engineer · #193 part 3: the 月亮線 window strip
+- **Bake.** `env/art/strips.ts` draws one seamless period of each moving car's view. `windowStrips.ts` holds the geometry: band, period, seconds. The car's frame is cut by difference matting: `windowView()` round each car's view, `WINDOW_MATTE` white then black, alpha from the difference in `bake-popup.ts`. Both are baked as cut-outs, graded, counted in page art and preloaded.
+- **View.** A new animated layer `strip` (`WindowStrip.tsx`): one `data-anim` group per car slides left one period on a CSS loop, under the frame. It is still under reduced motion, 減少動態, low power and stills.
+- **Cars.** 1-1, 5-1 (the tunnel), 6-1 (the side window), 8-1, 9-1, 10-1. 2-1, 3-1 and 4-1 are stopped at a platform, so their windows stay still (D-104 § 4).
+- **QA.**
+  - `npm test`: new `windowStrip.test.tsx`; the `PageView` layer snapshot is updated.
+  - `check:ui` (motion: reduced motion and ≤ 3 Hz) and `check:play` on the six pages.
+  - Visual baselines for every fixture on those pages.
+  - Perf at 4× CPU throttle: c5p1 59.6 fps, c8p1 58.5, c1p1 55.2.
+- **Payload.** 5-1 is the highest at 326 of 350 KB.
+- **Decision.** D-104.

@@ -42,5 +42,9 @@ exports[`PageView layers and budget > node counts per layer (1-2 is far below th
     "animated": 29,
     "elements": 49,
   },
+  "strip": {
+    "animated": 0,
+    "elements": 1,
+  },
 }
 `;

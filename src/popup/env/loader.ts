@@ -3,6 +3,7 @@ import type { PageDef } from '../core/types';
 import { spriteLoader, type SpriteLoader } from '../sprites/loader';
 import { ENV_MANIFEST } from './env.gen';
 import { envFile, type EnvBox, type EnvManifest, type PartEntry } from './manifest';
+import { stripCutouts } from './windowStrips';
 
 /**
  * The environment bitmaps in the game (#96; bible § 9.1; D-59).
@@ -87,7 +88,7 @@ export function pageArtUrls(def: Pick<PageDef, 'backdrop' | 'parts' | 'cutouts'>
     const e = m.parts[key];
     if (e) stems.push(...[...Object.values(e.states), ...Object.values(e.lifted ?? {})].map((f) => f.file));
   }
-  for (const key of new Set((def.cutouts ?? []).map((c) => c.art))) {
+  for (const key of new Set([...(def.cutouts ?? []).map((c) => c.art), ...stripCutouts(def.backdrop)])) {
     const e = m.cutouts[key];
     if (e) stems.push(e.file);
   }

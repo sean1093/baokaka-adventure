@@ -7,6 +7,7 @@ import type { PartPreset } from '../core/types';
  * | Layer        | GDD § 3.9                 | Bible z | What                                                     |
  * |--------------|---------------------------|---------|----------------------------------------------------------|
  * | `backdrop`   | 1 baked backdrop           | z0–z2   | sky, pinholes, moon, clouds, skyline, landmark (V-fold), floor page, gutter, page block |
+ * | `strip`      | (1, #193)                  | z0      | a moving 月亮線 car's window strip: the view sliding past, under the car's frame |
  * | `cutouts`    | 2 standing cut-outs        | z2      | track pits, the 土地公 when shown                        |
  * | `parts-mid`  | 4 parts (z3)               | z3      | carriages (the train), sections, lifts, loops: behind the ledges they run past |
  * | `floor`      | 3 floor plane              | z4      | the gameplay ledges, ramps, crossing rails, perch furniture |
@@ -20,11 +21,11 @@ import type { PartPreset } from '../core/types';
  * GDD § 3.9 draws the floor before every part; the bible's z table puts mid parts (z3, the train)
  * behind the near ledges (z4) they slide past, so parts split around the floor by their z.
  */
-export const LAYERS = ['backdrop', 'cutouts', 'parts-mid', 'floor', 'parts-near', 'creatures', 'actors', 'fx', 'foreground', 'hit'] as const;
+export const LAYERS = ['backdrop', 'strip', 'cutouts', 'parts-mid', 'floor', 'parts-near', 'creatures', 'actors', 'fx', 'foreground', 'hit'] as const;
 export type LayerId = (typeof LAYERS)[number];
 
 /** Layers whose content moves between ticks (what the animated-node budget counts). */
-export const ANIMATED_LAYERS: ReadonlySet<LayerId> = new Set<LayerId>(['parts-mid', 'floor', 'parts-near', 'creatures', 'actors', 'fx']);
+export const ANIMATED_LAYERS: ReadonlySet<LayerId> = new Set<LayerId>(['strip', 'parts-mid', 'floor', 'parts-near', 'creatures', 'actors', 'fx']);
 
 export type Z = 0 | 1 | 2 | 3 | 4 | 5;
 

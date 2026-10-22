@@ -4,7 +4,7 @@ import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, VANISHING_POINT, floorWiden } from '../
 import type { BackdropDraw, PartSource } from '../sources';
 import { bathUncleArt, grannyFigure } from '../../view/art/beitou';
 import { clerk } from './c1';
-import { FLOOR_RECT, bakedFlap, bookCues, calmMoon, floorPage, kraftBack, lin, rad, shushuPeek, standingPage } from './common';
+import { FLOOR_RECT, bakedFlap, bookCues, calmMoon, floorPage, kraftBack, lin, rad, shushuPeek, standingPage, windowView } from './common';
 
 /**
  * Chapter 8 (北投, 04:00) environment art, drawn in the kit's paper language and baked by
@@ -193,7 +193,7 @@ export function planks(x0: number, y0: number, x1: number, y1: number, { vertica
 }
 
 /** The night hills over 北投 in three layers (大屯山 far, 紗帽山, the near slope), steam drifting between them. */
-function beitouHills(ctx: KitCtx, base: number, seed: number, { far = base - 120, mid = base - 74, near = base - 30 } = {}): string {
+export function beitouHills(ctx: KitCtx, base: number, seed: number, { far = base - 120, mid = base - 74, near = base - 30 } = {}): string {
   const band = (y: number, h: number, o: number, s: number) => {
     const r = seeded(s);
     let top = `M-30 ${f1(y + 6)}`;
@@ -273,7 +273,7 @@ function tiledRoof(ctx: KitCtx, x0: number, x1: number, y: number, h: number, in
  * a timber upper floor with its long veranda lit warm, a tiled hipped roof; `s` × a 120-unit house,
  * its foot at (x, y).
  */
-function springMuseum(ctx: KitCtx, x: number, y: number, s: number): string {
+export function springMuseum(ctx: KitCtx, x: number, y: number, s: number): string {
   const P = (dx: number, dy: number) => `${f1(x + dx * s)} ${f1(y + dy * s)}`;
   const k = (n: number) => f1(n * s);
   let arches = '';
@@ -399,13 +399,13 @@ const hotSpringTrain: BackdropDraw = (ctx) => {
   const wins: [number, number][] = [[12, 98], [178, 98], [304, 98]];
   const winPath = wins.map(([x, w]) => `M${x} ${winTop}h${w}v${winBottom - winTop}h${-w}z`).join('');
   const outside = `<clipPath id="${clip}"><path d="${winPath}"/></clipPath><g clip-path="url(#${clip})">`
-    + `<rect x="0" y="${winTop}" width="${PAGE_W}" height="${winBottom - winTop}" fill="${ref(ctx, 'sky')}"/>`
-    + pinholes(ctx, 0, winTop, PAGE_W, 50, 22, 81)
-    + calmMoon(ctx, 336, 168, 13, { halo: 0.06, cloud: false })
-    + beitouHills(ctx, winBottom + 6, 82, { far: 196, mid: 214, near: 236 })
-    + springMuseum(ctx, 220, 252, 0.62)
-    + steamPlume(ctx, 92, 250, 70, 34, 83, { o: 0.5, lean: 12 }) + steamPlume(ctx, 330, 252, 60, 30, 84, { o: 0.45, lean: 10 })
-    + [40, 150, 286, 372].map((x) => softEllipse(ctx, x, 238, 8, 8, 'lamp', 0.4) + `<circle cx="${x}" cy="238" r="2" fill="${C.lamp}"/><path d="M${x} 240V262" stroke="${B.hillNear}" stroke-width="1.6"/>`).join('')
+    + windowView(`<rect x="0" y="${winTop}" width="${PAGE_W}" height="${winBottom - winTop}" fill="${ref(ctx, 'sky')}"/>`
+      + pinholes(ctx, 0, winTop, PAGE_W, 50, 22, 81)
+      + calmMoon(ctx, 336, 168, 13, { halo: 0.06, cloud: false })
+      + beitouHills(ctx, winBottom + 6, 82, { far: 196, mid: 214, near: 236 })
+      + springMuseum(ctx, 220, 252, 0.62)
+      + steamPlume(ctx, 92, 250, 70, 34, 83, { o: 0.5, lean: 12 }) + steamPlume(ctx, 330, 252, 60, 30, 84, { o: 0.45, lean: 10 })
+      + [40, 150, 286, 372].map((x) => softEllipse(ctx, x, 238, 8, 8, 'lamp', 0.4) + `<circle cx="${x}" cy="238" r="2" fill="${C.lamp}"/><path d="M${x} 240V262" stroke="${B.hillNear}" stroke-width="1.6"/>`).join(''), 0, winTop, PAGE_W, winBottom - winTop)
     // The glass: a cool sheen across each pane
     + wins.map(([x, w]) => `<path d="M${x + w * 0.15} ${winBottom}L${x + w * 0.45} ${winTop}H${x + w * 0.55}L${x + w * 0.25} ${winBottom}Z" fill="${C.glassine}" opacity=".1"/>`).join('')
     + `</g>`;

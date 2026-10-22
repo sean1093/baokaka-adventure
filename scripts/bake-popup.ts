@@ -36,7 +36,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, type Page } from 'playwright';
 import { PNG } from 'pngjs';
-import { ENCODE, backdropHash, backdropSvg, cutoutHash, cutoutSvg, paddedBox, partHash, partVariants, screenHash, screenSvg } from '../src/popup/env/bake';
+import { ENCODE, backdropHash, backdropSvg, cutoutHash, cutoutSvg, matteSvgs, paddedBox, partHash, partVariants, screenHash, screenSvg } from '../src/popup/env/bake';
 import { envGrade } from '../src/popup/env/grade';
 import { ENV_SCALE, envFile, type BackdropEntry, type CutoutEntry, type EnvBox, type EnvFile, type EnvManifest, type PartEntry, type ScreenEntry } from '../src/popup/env/manifest';
 import { formatReport } from '../src/popup/env/report';
@@ -218,12 +218,33 @@ async function bakeParts(page: Page, prev: EnvManifest | null): Promise<[Record<
   return [out, baked];
 }
 
+// ——— The window matte (#193) ———
+
+/**
+ * Difference matting: over white and over black the windows differ by their whole range, whatever
+ * covers them not at all; the alpha is 1 − (white − black), the colour the black render over it.
+ * So the frames, the straps across the windows and the glass's soft sheen keep exactly their own
+ * coverage, and the windows are clear.
+ */
+function cutByMatte(white: PNG, black: PNG): PNG {
+  const out = new PNG({ width: black.width, height: black.height });
+  for (let i = 0; i < black.data.length; i += 4) {
+    const diff = (white.data[i] - black.data[i] + white.data[i + 1] - black.data[i + 1] + white.data[i + 2] - black.data[i + 2]) / 3;
+    const a = Math.max(0, Math.min(1, 1 - diff / 255)) * (black.data[i + 3] / 255);
+    out.data[i + 3] = Math.round(a * 255);
+    for (let c = 0; c < 3; c++) out.data[i + c] = a > 0.004 ? Math.min(255, Math.round(black.data[i + c] / a)) : 0;
+  }
+  return out;
+}
+
 async function bakeCutouts(page: Page, prev: EnvManifest | null): Promise<[Record<string, CutoutEntry>, number]> {
   const out: Record<string, CutoutEntry> = {};
   let baked = 0;
   for (const [key, src] of cutoutSources(PAGES)) {
     const grade = envGrade(src.chapter);
-    const svg = cutoutSvg(src);
+    // A 月亮線 car's frame (#193): its windows' view as a white and as a black matte
+    const mattes = src.matte ? matteSvgs(src) : null;
+    const svg = mattes ? mattes.join('') : cutoutSvg(src);
     const source = cutoutHash(key, src, svg);
     const old = prev?.cutouts[key];
     if (old && old.source === source && fileOk(old)) {
@@ -231,7 +252,8 @@ async function bakeCutouts(page: Page, prev: EnvManifest | null): Promise<[Recor
       continue;
     }
     process.stdout.write(`bake cutout ${key}\n`);
-    const [webp] = pillowWebp([await renderPng(page, svg, src.box)], ENCODE.part);
+    const png = mattes ? cutByMatte(await renderPng(page, mattes[0], src.box), await renderPng(page, mattes[1], src.box)) : await renderPng(page, svg, src.box);
+    const [webp] = pillowWebp([png], ENCODE.part);
     out[key] = { ...write(stemOf('cutouts', key), webp), chapter: src.chapter, grade, box: src.box, source };
     baked++;
   }

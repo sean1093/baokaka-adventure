@@ -1,6 +1,7 @@
 import type { PageDef } from '../core/types';
 import { chapterGradeKey, pageSprites, payloadBytes } from '../sprites/loader';
 import type { EnvFile, EnvManifest } from './manifest';
+import { stripCutouts } from './windowStrips';
 
 /**
  * The art payload report (#96; GDD § 3.9 budget, bible § 9): what each page downloads, checked
@@ -43,7 +44,8 @@ export function pageArt(def: Pick<PageDef, 'id' | 'backdrop' | 'parts' | 'cutout
     else parts.push(...Object.values(e.states), ...Object.values(e.lifted ?? {}));
   }
   const cutouts: EnvFile[] = [];
-  for (const key of new Set((def.cutouts ?? []).map((c) => c.art))) {
+  // Its cut-outs, and a moving 月亮線 car's window strip and frame (#193)
+  for (const key of new Set([...(def.cutouts ?? []).map((c) => c.art), ...stripCutouts(def.backdrop)])) {
     const e = m.cutouts[key];
     if (e === undefined) placeholders.push(key);
     else cutouts.push(e);

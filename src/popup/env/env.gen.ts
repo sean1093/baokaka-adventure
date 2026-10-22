@@ -4397,6 +4397,162 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 66
       },
       "source": "e65710f17bc5a1f9"
+    },
+    "c1/car-strip": {
+      "file": "cutouts/c1/car-strip",
+      "bytes": 6696,
+      "chapter": 1,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 360,
+        "h": 116
+      },
+      "source": "b7b88096f2a99431"
+    },
+    "c1/car-frame": {
+      "file": "cutouts/c1/car-frame",
+      "bytes": 60814,
+      "chapter": 1,
+      "grade": [1, 1, 1],
+      "box": {
+        "x": 66,
+        "y": 144,
+        "w": 308,
+        "h": 116
+      },
+      "source": "a95b8c7b52fc89f8"
+    },
+    "c5/red-car-strip": {
+      "file": "cutouts/c5/red-car-strip",
+      "bytes": 2502,
+      "chapter": 5,
+      "grade": [1.067, 1.03, 1.032],
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 240,
+        "h": 102
+      },
+      "source": "07e98c0e501e8a52"
+    },
+    "c5/red-car-frame": {
+      "file": "cutouts/c5/red-car-frame",
+      "bytes": 59400,
+      "chapter": 5,
+      "grade": [1.067, 1.03, 1.032],
+      "box": {
+        "x": 2,
+        "y": 122,
+        "w": 388,
+        "h": 102
+      },
+      "source": "3df1a9b6ee649025"
+    },
+    "c6/front-car-strip": {
+      "file": "cutouts/c6/front-car-strip",
+      "bytes": 8714,
+      "chapter": 6,
+      "grade": [1.085, 1.047, 1.039],
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 300,
+        "h": 112
+      },
+      "source": "7a0e4e3487e8a9f7"
+    },
+    "c6/front-car-frame": {
+      "file": "cutouts/c6/front-car-frame",
+      "bytes": 25462,
+      "chapter": 6,
+      "grade": [1.085, 1.047, 1.039],
+      "box": {
+        "x": 202,
+        "y": 120,
+        "w": 104,
+        "h": 112
+      },
+      "source": "d1393fc63cf31263"
+    },
+    "c8/hot-spring-train-strip": {
+      "file": "cutouts/c8/hot-spring-train-strip",
+      "bytes": 5394,
+      "chapter": 8,
+      "grade": [1.164, 1.105, 1.083],
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 420,
+        "h": 142
+      },
+      "source": "749fb5918273e065"
+    },
+    "c8/hot-spring-train-frame": {
+      "file": "cutouts/c8/hot-spring-train-frame",
+      "bytes": 107946,
+      "chapter": 8,
+      "grade": [1.164, 1.105, 1.083],
+      "box": {
+        "x": 2,
+        "y": 130,
+        "w": 388,
+        "h": 142
+      },
+      "source": "b71dae9e8ad0b75d"
+    },
+    "c9/tamsui-line-strip": {
+      "file": "cutouts/c9/tamsui-line-strip",
+      "bytes": 13572,
+      "chapter": 9,
+      "grade": [1.322, 1.228, 1.129],
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 480,
+        "h": 138
+      },
+      "source": "fb26ed15106d517c"
+    },
+    "c9/tamsui-line-frame": {
+      "file": "cutouts/c9/tamsui-line-frame",
+      "bytes": 66462,
+      "chapter": 9,
+      "grade": [1.322, 1.228, 1.129],
+      "box": {
+        "x": 8,
+        "y": 130,
+        "w": 262,
+        "h": 138
+      },
+      "source": "850b7a4fe6ce9517"
+    },
+    "c10/xinyi-line-strip": {
+      "file": "cutouts/c10/xinyi-line-strip",
+      "bytes": 11586,
+      "chapter": 10,
+      "grade": [1.515, 1.368, 1.185],
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 420,
+        "h": 130
+      },
+      "source": "5635c676bec4b502"
+    },
+    "c10/xinyi-line-frame": {
+      "file": "cutouts/c10/xinyi-line-frame",
+      "bytes": 56560,
+      "chapter": 10,
+      "grade": [1.515, 1.368, 1.185],
+      "box": {
+        "x": 6,
+        "y": 126,
+        "w": 286,
+        "h": 130
+      },
+      "source": "a74dd840ac224266"
     }
   },
   "screens": {

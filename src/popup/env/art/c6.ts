@@ -3,7 +3,7 @@ import { depth, f1, filterAttr, pageBlock, pinholes, ref, seeded, skyline, softE
 import { FLOOR_BOTTOM, GUTTER_Y, PAGE_W, VANISHING_POINT, floorWiden } from '../../view/geometry';
 import type { BackdropDraw, PartSource } from '../sources';
 import { clerk } from './c1';
-import { FLOOR_RECT, bookCues, calmMoon, floorPage, lin, paperFibres, rad, shushuPeek, standingPage } from './common';
+import { FLOOR_RECT, bookCues, calmMoon, floorPage, lin, paperFibres, rad, shushuPeek, standingPage, windowView } from './common';
 import { crewArt } from '../../view/art/airport';
 
 /**
@@ -33,7 +33,7 @@ type Pt = readonly [number, number];
 // ——— The palette kit ———
 
 /** The airport's gradient defs, shared by the chapter's backdrops and parts. */
-function airportDefs(ctx: KitCtx): string {
+export function airportDefs(ctx: KitCtx): string {
   return `<defs>`
     + lin(ctx, 'glassG', [[0, mixHex(A.glassDeep, C.shadow, 0.3)], [0.55, A.glassDeep], [1, A.glass]])
     + lin(ctx, 'tarmacG', [[0, mixHex(A.tarmacDeep, C.shadow, 0.3)], [0.45, A.tarmac], [1, A.tarmacLight]])
@@ -396,10 +396,10 @@ const frontCar: BackdropDraw = (ctx) => {
   const sideId = ctx.id('sideWin');
   const city = skyline(206, 304, 196, 67, { minH: 14, maxH: 44, winP: 0.4, winOpacity: 0.9 });
   const sideWin = `<clipPath id="${sideId}"><rect x="210" y="128" width="88" height="96" rx="10"/></clipPath><g clip-path="url(#${sideId})">`
-    + `<rect x="206" y="124" width="96" height="104" fill="${ref(ctx, 'sky')}"/>` + pinholes(ctx, 210, 128, 88, 30, 6, 68)
-    + `<path d="${city.d}" fill="${mixHex(A.runwayDeep, C.shadow, 0.3)}"/>` + city.windows
-    + `<rect x="206" y="196" width="96" height="30" fill="${mixHex(A.tarmacDeep, C.shadow, 0.3)}"/>`
-    + `<path d="M206 208h96" stroke="${C.lampAmber}" stroke-width="2" stroke-dasharray="10 5" opacity=".7"/><path d="M206 216h96" stroke="${A.wingRed}" stroke-width="1.6" stroke-dasharray="6 8" opacity=".6"/>`
+    + windowView(`<rect x="206" y="124" width="96" height="104" fill="${ref(ctx, 'sky')}"/>` + pinholes(ctx, 210, 128, 88, 30, 6, 68)
+      + `<path d="${city.d}" fill="${mixHex(A.runwayDeep, C.shadow, 0.3)}"/>` + city.windows
+      + `<rect x="206" y="196" width="96" height="30" fill="${mixHex(A.tarmacDeep, C.shadow, 0.3)}"/>`
+      + `<path d="M206 208h96" stroke="${C.lampAmber}" stroke-width="2" stroke-dasharray="10 5" opacity=".7"/><path d="M206 216h96" stroke="${A.wingRed}" stroke-width="1.6" stroke-dasharray="6 8" opacity=".6"/>`, 206, 124, 96, 104)
     + `<path d="M216 228L262 128H270L224 228Z" fill="${C.glassine}" opacity=".07"/></g>`
     + `<rect x="207" y="125" width="94" height="102" rx="12" fill="none" stroke="${A.steelDeep}" stroke-width="5"/>`;
   // The doors, slid open on the platform's light

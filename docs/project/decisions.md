@@ -1429,3 +1429,37 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 **Why.** A drawing behind the card is the only place that changes nothing on the card. Sharing one drawing between the card and the map gives each chapter one recognisable picture, and keeps the cost small.
 
 **Consequences.** A new chapter adds a `LANDMARKS` row. Part 3 draws the 月亮線 window strip.
+
+### D-104 · 2026-10-22 · The 月亮線 window strip: a baked loop behind a matte-cut frame, only on the cars that are moving (#193, part 3)
+
+**Context.** The bible (§ 6, the cars row) says a page-1 car's window shows the chapter's skyline sliding by as a looping strip, "the only scrolling backdrop". Until now the window was part of the baked backdrop and stood still (D-78 § 9). The strip has to be:
+- a baked looping skyline moved by a CSS transform loop;
+- still in screenshots and under reduced motion / 減少動態;
+- counted in the animated budget;
+- one transformed group per car.
+
+Open: how a live layer can pass *behind* what hangs in front of a window (straps, poles, frames, the glass's sheen) without redrawing each backdrop's foreground.
+
+**Decision.**
+1. **Two baked cut-outs per moving car** (`env/art/strips.ts`, `env/windowStrips.ts`). Both are graded with the chapter. Chapter 10's strip, like its backdrops, is drawn in screen colours, so its grade is undone first.
+   - **The strip** (`<backdrop>-strip`): one period of the view. The tile is drawn at −P, 0 and +P and clipped to [0, P], so whatever overhangs one edge comes back in at the other, and the loop is seamless by construction. Ridges are sums of whole-period waves.
+   - **The frame** (`<backdrop>-frame`): the backdrop over the window band, with the windows cut out.
+2. **The frame is cut by difference matting.** Each car's window view goes through `windowView()`. While the frame bakes, `WINDOW_MATTE` replaces the view with a flat white matte, then a flat black one (`rgb()`, so the grade leaves it alone). `bake-popup.ts` computes alpha = 1 − (white − black) and colour = black / alpha. Straps, poles and frames keep their exact coverage, and the sheen stays as a soft overlay, with no per-backdrop layer surgery. The backdrop itself is unchanged: the turn's leaves and the 目錄's page cards still show its still view.
+3. **The live layer** `strip` (new, between `backdrop` and `cutouts`; animated; not a fold group, since it lies flat on the page): `WindowStrip` repeats the strip across the band inside one `data-anim` group, which moves left one period on a linear CSS loop (`--ws-period`). The frame image lies over it. It holds still under reduced motion (the OS's or 減少動態), in low-power mode and in stills (`[data-still]`). The strip's clip is inset 2 units from the band, so no sliver shows along the frame bitmap's soft edge.
+4. **Which cars:** the moving ones.
+
+   | Page | View in the strip | Period |
+   |---|---|---|
+   | 1-1 | the night city (a tiny 101 once a period) | 9 s |
+   | 5-1 | the tunnel's lamps streaking past | 3.2 s |
+   | 6-1 | the side window: the city from the 文湖線's viaduct and the apron's lights; the big front window stays as it was | 11 s |
+   | 8-1 | the 北投 hills, steam and park lamps | 14 s |
+   | 9-1 | 觀音山 across the river at dawn | 18 s |
+   | 10-1 | 信義 and the hills going peach | 14 s |
+
+   **2-1, 3-1 and 4-1 keep their still windows.** Their cars stand at a platform with the doors opening (their windows show the station's far wall), and a sliding view would say the train is moving. 7-1 is a station, not a car. This is a reading of the issue's "every page-1 car": the strip goes on every car that is travelling.
+5. **Cost.** Strip and frame together: 1-1 66 KB, 5-1 61 KB, 6-1 33 KB, 8-1 110 KB, 9-1 78 KB, 10-1 67 KB. They are counted in page art (`pageArt`) and preloaded with the page (`pageArtUrls`). Every page stays ≤ 350 KB (5-1 is the highest at 326 KB). Animated nodes: one group and two or three images per page.
+
+**Why.** Matting the frame from two renders works on any backdrop, whatever crosses its windows. The strip is two small bitmaps and one transform, which is cheap at 4× CPU throttle (≈ 55–60 fps on 1-1, 5-1 and 8-1).
+
+**Consequences.** A new moving car adds a `WINDOW_STRIPS` row, a tile in `TILES`, and `windowView()` round its view.

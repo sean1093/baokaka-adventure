@@ -42,6 +42,7 @@ import { treasureOnPage } from './photo/treasureArt';
 import { dressOf, ledgeStyleOf, ownsPost } from './art/dress';
 import { dressedLedge, foregroundCard, styledRamp } from './art/ledges';
 import { Fireflies } from './Fireflies';
+import { WindowStrip } from './WindowStrip';
 import { attractorArt, chapterSky, decoyArt, firstFootprint, floorMark, spine, perchMark, perchPost, rail, ramp, spotPool, stageDefs, themeOf, trackPit, tudigong } from './art/placeholders';
 import { backdropArt, backdropBitmap, cutoutBitmap } from './art/registry';
 import { riderArt } from './art/riders';
@@ -593,6 +594,10 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       aria-label={def.title}
     >
       <Layer id="backdrop" html={statics.backdrop} />
+      {/* A moving 月亮線 car's window strip, just over the backdrop (#193) */}
+      <Layer id="strip">
+        <WindowStrip def={def} reduced={reduced || lowPower} />
+      </Layer>
       <Layer id="cutouts">
         <ArtG html={statics.cutouts} />
         {/* Cut-outs that appear with a state (#115: 2-6's portrait of Mocha once all three flaps are open) */}

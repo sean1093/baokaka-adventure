@@ -5,7 +5,7 @@ import { abeArt, auntieArt, bossArt, vendorArt } from '../../view/art/market';
 import type { BackdropDraw, PartSource } from '../sources';
 import { neonTube } from './c4';
 import { clerk } from './c1';
-import { FLOOR_RECT, bookCues, calmMoon, floorPage, lin, paperFibres, rad, shushuPeek, standingPage } from './common';
+import { FLOOR_RECT, bookCues, calmMoon, floorPage, lin, paperFibres, rad, shushuPeek, standingPage, windowView } from './common';
 
 /**
  * Chapter 5 (士林夜市, 02:20) environment art, drawn in the kit's paper language and baked by
@@ -31,7 +31,7 @@ const block = () => {
 // ——— The palette kit ———
 
 /** The market's gradient defs, shared by the chapter's backdrops. */
-function marketDefs(ctx: KitCtx): string {
+export function marketDefs(ctx: KitCtx): string {
   return `<defs>`
     + lin(ctx, 'vermG', [[0, M.vermilionLight], [0.5, M.vermilion], [1, M.vermilionDeep]])
     + lin(ctx, 'laneG', [[0, mixHex(M.laneDeep, C.shadow, 0.3)], [0.4, M.lane], [1, M.laneLight]])
@@ -254,7 +254,7 @@ const redCar: BackdropDraw = (ctx) => {
   };
   const win = (x: number, y: number, w: number, h: number, seed: number) => {
     const id = ctx.id(`c5win${seed}`);
-    return `<clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9"/></clipPath><g clip-path="url(#${id})">${tunnel(x, y, w, h, seed)}`
+    return `<clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9"/></clipPath><g clip-path="url(#${id})">${windowView(tunnel(x, y, w, h, seed), x, y, w, h)}`
       + `<path d="M${x} ${y + h * 0.6}L${x + w * 0.5} ${y}H${x + w * 0.66}L${x} ${y + h}Z" fill="${C.cutRim}" opacity=".05"/></g>`
       + `<rect x="${x - 3}" y="${y - 3}" width="${w + 6}" height="${h + 6}" rx="11" fill="none" stroke="${M.tinDeep}" stroke-width="5"/>`;
   };
