@@ -1,15 +1,15 @@
 import { definePage } from '../../core/define';
 
 /**
- * GDD § 4.4, page 10-5 「咻咻的派對」 · difficulty 4 · par 5 · **learn 一起**. 101's roof terrace
+ * GDD § 4.4, page 10-5 「咻咻的派對」 · difficulty 4 · par 4 · **learn 一起**. 101's roof terrace
  * before dawn: 咻咻's sad party, made of everything it ever blew away (balloons, a paper banner, a
- * birthday cake on a little table, a string of paper lanterns). 咻咻 sits in its cloud over the table
+ * birthday cake on a little table). 咻咻 sits in its cloud over the table
  * and cries rain: puddles on the floor, and both of Mocha's perches are `wet` (C7), so he can't move.
  * Built on #128's `toy-party`.
  *
- * He cuddles Mocha on the party lamp at the near end. 不要！: he wants the lanterns instead, and
- * crawls under them to watch; 不要！ again (or 哇！, the lanterns off): nothing left to want, and he
- * cries — the cloud is crying too — and says 「……一起。」 (learns 一起 on the cry). Say 一起: Mocha
+ * He cuddles Mocha on the party lamp at the near end. Nothing on the page helps, and Mocha can't
+ * move. 不要！ to Mocha, the only thing he wants: nothing left to want, and he cries — the cloud is
+ * crying too — and says 「……一起。」 (learns 一起 on the cry). Say 一起: Mocha
  * hops down beside him, and they are linked. Tap the floor past the puddle: Mocha walks **through the
  * puddle for him** (C7 suspended), Baokaka following, and 咻咻 — `lonely` — comes down off its cloud
  * to them. 抱抱: it lets go of the bead (it held it) and floats up toward the deck (10-6), and he
@@ -18,7 +18,7 @@ import { definePage } from '../../core/define';
  * ```
  *   lamp (Mocha; wet while 咻咻 rains) ─────────────jump───────────── gift (Mocha; wet)
  *                                          cloud (咻咻, the bead held)        Q2 ──── Q3
- *   A (start) ── B (under the lanterns) ── P (puddle) ── Q1 ─ (table) ─ Q4    (the ring round the table)
+ *   A (start) ── B ── P (puddle) ── Q1 ─ (table) ─ Q4    (the ring round the table)
  * ```
  */
 const RAINING = { creature: 'shushu', at: 'cloud' };
