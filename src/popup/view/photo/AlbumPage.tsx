@@ -12,7 +12,7 @@ import { useFramesReady, useSpritesPreload } from '../../sprites';
 import { STICKER_KINDS } from '../hud/stickerArt';
 import { AlbumIcon, BackIcon, LockIcon, PageArrowIcon, RetakeIcon } from '../screens/icons';
 import { wordSeal } from '../words';
-import { PHOTO_H, PHOTO_SPRITES, PHOTO_W, PhotoScene } from './PhotoScene';
+import { PHOTO_H, PHOTO_W, PhotoScene, photoSprites } from './PhotoScene';
 import { useTextScale } from '../textSize';
 import './photo.css';
 import { useSound } from '../sound';
@@ -99,7 +99,8 @@ export function AlbumPage({ chapter, def, shots, chosen = shots.length - 1, stic
   const shows: LeafState = state ?? (shot === null ? 'open' : 'photo');
   const locked = shows === 'locked';
   const notes = useMemo(() => (shot === null ? [] : albumNotes(chapter, shot)), [chapter, shot]);
-  const spritesReady = useSpritesPreload(PHOTO_SPRITES);
+  const sprites = useMemo(() => photoSprites([chapter]), [chapter]);
+  const spritesReady = useSpritesPreload(sprites);
   const back = def === undefined ? null : backdropImage(def.backdrop);
   const backReady = useFramesReady(back ? [back.url] : []);
   const ready = spritesReady && (back === null || backReady);

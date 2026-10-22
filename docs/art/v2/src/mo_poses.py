@@ -471,10 +471,25 @@ def frame_pose(name, i):
 VB = (-560, -900, 1120, 960)
 
 
+# The photo frames (+M, GDD § 2.9, #193): 摩卡 in the album photo's corner, at the photo's print
+# scale (×1.45, as the photo frames in ph_poses.py). A: 「哇！」 with him — sat bolt upright, head
+# up and turned to the treasure, eyes round; B: sat for the camera (the album figure); C: the
+# glare — 「那是阿嬤的，不能吃。」
+POSE_VB = {"photo": VB}
+POSE_PT = {"photo": 1.45}
+
+
+def P_photo_a():
+    tail = [(-160, -60), (-230, -130), (-250, -230), (-230, -320), (-190, -360), (-150, -350)]
+    return sit(head=dict(expr="surprised", rot=-24, turn=-.55), tail_t=tail)
+
+
 def frame_svg(name, i, guides=False):
     d = Doc(0, 0, " ".join(map(str, VB)))
-    if name == "album":
+    if name == "album" or (name == "photo" and i == 1):
         d.add(f'<g transform="translate(-300,-724)">{Mo.figure(d, "content")}</g>')
+    elif name == "photo":
+        d.add(figure(d, P_photo_a() if i == 0 else P_glare()))
     else:
         d.add(figure(d, frame_pose(name, i)))
     if guides:
@@ -483,6 +498,7 @@ def frame_svg(name, i, guides=False):
 
 
 POSES["album"] = (None, 1, "合照（陪寶咖咖坐）", None)
+POSES["photo"] = (None, 3, "合照 A／B／C（+M）", None)
 
 
 if __name__ == "__main__":

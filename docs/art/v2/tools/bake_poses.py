@@ -67,16 +67,22 @@ def render_svg(svg, w, h, tmp, name):
 
 def bake_char(cname, cfg, tmp, prev_man, prev_src, src):
     mod = cfg["mod"]
-    vb = mod.VB
-    s3 = cfg["pt"] * 3                      # px per unit @3x
-    W3, H3 = round(vb[2] * s3), round(vb[3] * s3)
+
+    def geo(pose):
+        """the pose's viewBox and px per unit @3x: a module may give a pose its own box
+        (`POSE_VB`) and a larger print scale (`POSE_PT`, the photo frames, #193)"""
+        vb = getattr(mod, "POSE_VB", {}).get(pose, mod.VB)
+        s3 = cfg["pt"] * getattr(mod, "POSE_PT", {}).get(pose, 1.0) * 3
+        return vb, s3, round(vb[2] * s3), round(vb[3] * s3)
     jobs = []
     svgs = {}
     man = {}
     for pose, (_, n, label, keys) in mod.POSES.items():
         svgs.update({(pose, i): mod.frame_svg(pose, i) for i in range(n)})
         key = f"{cname}-{pose}"
-        src[key] = svg_key([svgs[(pose, i)] for i in range(n)], vb, cfg["pt"], PAD, label, keys, cfg["fps"].get(pose, DEFAULT_FPS))
+        vb, s3, _, _ = geo(pose)
+        extra = (vb, cfg["pt"], PAD, label, keys, cfg["fps"].get(pose, DEFAULT_FPS)) + ((s3,) if vb != mod.VB or s3 != cfg["pt"] * 3 else ())
+        src[key] = svg_key([svgs[(pose, i)] for i in range(n)], *extra)
         old = prev_man.get(pose)
         if not FORCE and old and prev_src.get(key) == src[key] and all(
                 os.path.exists(os.path.join(OUT, f.replace("@{2x,3x}.webp", "") + x)) for f in old["files"] for x in ("@2x.webp", "@3x.webp")):
@@ -90,14 +96,16 @@ def bake_char(cname, cfg, tmp, prev_man, prev_src, src):
 
     def work(job):
         pose, i = job
+        _, _, W3, H3 = geo(pose)
         return job, render_svg(svgs[job], W3, H3, tmp, f"{cname}-{pose}-{i}")
     with ThreadPoolExecutor(4) as ex:
         imgs = dict(ex.map(work, jobs))
-    ax3 = (-vb[0]) * s3                     # anchor (0,0) in canvas px @3x
-    ay3 = (-vb[1]) * s3
     for pose, (_, n, label, keys) in mod.POSES.items():
         if pose in man:
             continue
+        vb, s3, W3, H3 = geo(pose)
+        ax3 = (-vb[0]) * s3                 # anchor (0,0) in canvas px @3x
+        ay3 = (-vb[1]) * s3
         frames = [imgs[(pose, i)] for i in range(n)]
         bb = None
         for im in frames:
@@ -272,7 +280,10 @@ def adopt():
     for cn, cfg in CHARS.items():
         mod = cfg["mod"]
         for pose, (_, n, label, keys) in mod.POSES.items():
-            src[f"{cn}-{pose}"] = svg_key([mod.frame_svg(pose, i) for i in range(n)], mod.VB, cfg["pt"], PAD, label, keys, cfg["fps"].get(pose, DEFAULT_FPS))
+            vb = getattr(mod, "POSE_VB", {}).get(pose, mod.VB)
+            s3 = cfg["pt"] * getattr(mod, "POSE_PT", {}).get(pose, 1.0) * 3
+            extra = (vb, cfg["pt"], PAD, label, keys, cfg["fps"].get(pose, DEFAULT_FPS)) + ((s3,) if vb != mod.VB or s3 != cfg["pt"] * 3 else ())
+            src[f"{cn}-{pose}"] = svg_key([mod.frame_svg(pose, i) for i in range(n)], *extra)
     json.dump(src, open(SRC_HASH, "w"), indent=1)
     print("wrote", SRC_HASH)
 
@@ -289,10 +300,17 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         for cn, cfg in CHARS.items():
             allman[cn] = bake_char(cn, cfg, tmp, prev.get("characters", {}).get(cn, {}), prev_src, src)
-    pose_sheet("baokaka", "寶咖咖　動作表", "《翻翻台北》遊戲動作｜3/4 側面朝右（遊戲左右翻轉）｜每格都是烘焙好的 WebP，錨點＝腳底接地點",
-               allman["baokaka"], os.path.join(V2, "poses-baokaka.png"))
-    pose_sheet("mocha", "摩卡貓　動作表", "《翻翻台北》遊戲動作｜3/4 側面朝右｜貓的側對角步態（左後→左前→右後→右前）",
-               allman["mocha"], os.path.join(V2, "poses-mocha.png"))
+    play = lambda cn: {k: v for k, v in allman[cn].items() if not k.startswith("photo")}
+    photos = {f"{cn}.{k}": v for cn in allman for k, v in allman[cn].items() if k.startswith("photo")}
+    if any(v["_new"] for v in allman["baokaka"].values()) or not os.path.exists(os.path.join(V2, "poses-baokaka.png")):
+        pose_sheet("baokaka", "寶咖咖　動作表", "《翻翻台北》遊戲動作｜3/4 側面朝右（遊戲左右翻轉）｜每格都是烘焙好的 WebP，錨點＝腳底接地點",
+                   play("baokaka"), os.path.join(V2, "poses-baokaka.png"))
+    if any(v["_new"] for v in allman["mocha"].values()) or not os.path.exists(os.path.join(V2, "poses-mocha.png")):
+        pose_sheet("mocha", "摩卡貓　動作表", "《翻翻台北》遊戲動作｜3/4 側面朝右｜貓的側對角步態（左後→左前→右後→右前）",
+                   play("mocha"), os.path.join(V2, "poses-mocha.png"))
+    if any(v["_new"] for v in photos.values()) or not os.path.exists(os.path.join(V2, "poses-photo.png")):
+        pose_sheet("photo", "相簿合照　各章 A／B／C（+M）", "《翻翻台北》第 2.9 節｜A「哇！」高舉寶物　B 爬向寶物　C 咬咬｜照片座標：錨點＝照片地面中點，×1.45 印製",
+                   photos, os.path.join(V2, "poses-photo.png"))
     cycles = [("baokaka", "crawl"), ("baokaka", "walk"), ("mocha", "walk")]
     old_report = prev.get("loop_check", {})
     if any(allman[cn][pose]["_new"] for cn, pose in cycles) or any(f"{cn}-{pose}" not in old_report for cn, pose in cycles):

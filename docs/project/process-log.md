@@ -1076,3 +1076,14 @@ Format:
 - **QA.** `npm test`; `check:play` `c12p1` and `bonus-open`; `check:ui` (+big) on the bonus fixtures. 「番外」 / 「尾聲」 under a page card were at 6.9:1 in seal ink, so they now use ink. Visual baselines updated.
 - **Decision.** D-101.
 - **Follow-ups.** #136 audits the ending's screens; #137 sees page E's par 0 and the bonus page's par 2.
+
+### 2026-10-22 · Staff engineer · #193 Cross-chapter art follow-ups, part 1: the photo frames and 哇！'s pose
+- **Photo frames.** Every chapter with a spread (1–10) has its own frames, drawn through the art v2 rig (`docs/art/v2/src/ph_poses.py`): the ten treasures drawn as character-art props, held in his hands (A, lifted high with the 「哇！」 face), lying ahead of his reaching hand (B) and in his mouth (C, eyes shut in glee). Chapter 10 is the photo of the first steps (B walks, A stands). 摩卡's +M frame per photo frame (`mocha.photo`). Composed in photo space and baked at the photo's ×1.45 print scale (per-pose box and scale in `bake_poses.py`; no other pose re-rendered). `PhotoScene` draws one sprite; the composite stays as the fallback (and for the 抓周 pair). `poses-photo.png` is the sheet.
+- **哇！** has its own pose `baokaka.wow` (`WORD_POSE.wow`, group 4): arms flung up, eyes wide, the new `wow` mouth.
+- **Rig additions.** `wow` and `chomp` expressions; an arm `reach` factor; the sleeve and hand as separate layers (a hand in front of what it holds).
+- **Loading.** A photo preloads only its chapter's frames (`photoSprites`); ≈ 57–65 KB a chapter @3x, outside every page. Core set unchanged (381 KB @3x). `sync:sprites` idempotent (second run: 0 baked).
+- **Fixtures.** `album-c2` … `album-c10` (each leaf a different frame, with and without 摩卡). Baselines refreshed: photo-moment, album-*, credits, credits-cameo, pagelab-sprites.
+- **QA.** `npm test`, build; `check:ui` (+big) on the photo and album fixtures; `check:play` photo-spread (c1, c4, c8, c10) and album-flip; full visual run.
+- **Found.** The standee bake's core trims hairline strands (his cowlick's tips); at ×1.45 they stand 1 pt above the rest, so the manifest test allows 1.5 pt for the photo frames only.
+- **Decision.** D-102.
+- **Next (part 2).** The chapter-card landmark vignettes and the 目錄 station illustrations; then the 月亮線 window strip.

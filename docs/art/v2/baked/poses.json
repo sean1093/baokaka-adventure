@@ -538,6 +538,235 @@
      "baokaka-cruise-1@{2x,3x}.webp"
     ],
     "bytes_3x": 22248
+   },
+   "wow": {
+    "label": "「哇！」雙手舉高",
+    "frames": 1,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     60.0,
+     90.0
+    ],
+    "anchor_pt": [
+     20.19,
+     83.67
+    ],
+    "files": [
+     "baokaka-wow-0@{2x,3x}.webp"
+    ],
+    "bytes_3x": 10108
+   },
+   "photo1": {
+    "label": "第1章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     154.0,
+     166.0
+    ],
+    "anchor_pt": [
+     97.08,
+     155.11
+    ],
+    "files": [
+     "baokaka-photo1-0@{2x,3x}.webp",
+     "baokaka-photo1-1@{2x,3x}.webp",
+     "baokaka-photo1-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 59072
+   },
+   "photo2": {
+    "label": "第2章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     157.0,
+     136.0
+    ],
+    "anchor_pt": [
+     97.08,
+     127.77
+    ],
+    "files": [
+     "baokaka-photo2-0@{2x,3x}.webp",
+     "baokaka-photo2-1@{2x,3x}.webp",
+     "baokaka-photo2-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 56468
+   },
+   "photo3": {
+    "label": "第3章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     155.0,
+     129.0
+    ],
+    "anchor_pt": [
+     97.08,
+     121.44
+    ],
+    "files": [
+     "baokaka-photo3-0@{2x,3x}.webp",
+     "baokaka-photo3-1@{2x,3x}.webp",
+     "baokaka-photo3-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 57328
+   },
+   "photo4": {
+    "label": "第4章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     153.0,
+     142.0
+    ],
+    "anchor_pt": [
+     97.08,
+     133.77
+    ],
+    "files": [
+     "baokaka-photo4-0@{2x,3x}.webp",
+     "baokaka-photo4-1@{2x,3x}.webp",
+     "baokaka-photo4-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 56764
+   },
+   "photo5": {
+    "label": "第5章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     153.0,
+     156.0
+    ],
+    "anchor_pt": [
+     97.08,
+     148.11
+    ],
+    "files": [
+     "baokaka-photo5-0@{2x,3x}.webp",
+     "baokaka-photo5-1@{2x,3x}.webp",
+     "baokaka-photo5-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 59580
+   },
+   "photo6": {
+    "label": "第6章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     153.0,
+     135.0
+    ],
+    "anchor_pt": [
+     97.08,
+     121.44
+    ],
+    "files": [
+     "baokaka-photo6-0@{2x,3x}.webp",
+     "baokaka-photo6-1@{2x,3x}.webp",
+     "baokaka-photo6-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 56268
+   },
+   "photo7": {
+    "label": "第7章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     161.0,
+     150.0
+    ],
+    "anchor_pt": [
+     97.08,
+     142.44
+    ],
+    "files": [
+     "baokaka-photo7-0@{2x,3x}.webp",
+     "baokaka-photo7-1@{2x,3x}.webp",
+     "baokaka-photo7-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 63832
+   },
+   "photo8": {
+    "label": "第8章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     169.0,
+     129.0
+    ],
+    "anchor_pt": [
+     97.08,
+     121.44
+    ],
+    "files": [
+     "baokaka-photo8-0@{2x,3x}.webp",
+     "baokaka-photo8-1@{2x,3x}.webp",
+     "baokaka-photo8-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 65678
+   },
+   "photo9": {
+    "label": "第9章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     156.0,
+     129.0
+    ],
+    "anchor_pt": [
+     97.08,
+     121.44
+    ],
+    "files": [
+     "baokaka-photo9-0@{2x,3x}.webp",
+     "baokaka-photo9-1@{2x,3x}.webp",
+     "baokaka-photo9-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 59824
+   },
+   "photo10": {
+    "label": "第10章 合照 A／B／C",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     145.0,
+     171.0
+    ],
+    "anchor_pt": [
+     81.74,
+     158.11
+    ],
+    "files": [
+     "baokaka-photo10-0@{2x,3x}.webp",
+     "baokaka-photo10-1@{2x,3x}.webp",
+     "baokaka-photo10-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 60996
    }
   },
   "mocha": {
@@ -860,6 +1089,27 @@
      "mocha-album-0@{2x,3x}.webp"
     ],
     "bytes_3x": 6910
+   },
+   "photo": {
+    "label": "合照 A／B／C（+M）",
+    "frames": 3,
+    "keyframes": null,
+    "loop": false,
+    "fps": 4,
+    "size_pt": [
+     67.0,
+     88.0
+    ],
+    "anchor_pt": [
+     32.75,
+     81.57
+    ],
+    "files": [
+     "mocha-photo-0@{2x,3x}.webp",
+     "mocha-photo-1@{2x,3x}.webp",
+     "mocha-photo-2@{2x,3x}.webp"
+    ],
+    "bytes_3x": 35156
    }
   }
  }

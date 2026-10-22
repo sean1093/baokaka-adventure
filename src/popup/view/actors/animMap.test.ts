@@ -113,6 +113,14 @@ describe('寶咖咖', () => {
     for (const [word, sprite] of Object.entries(WORD_POSE)) expect(babyAnim({ mode: 'saying', edge: null, growth: 0, word: word as Word }).sprite).toBe(sprite);
   });
 
+  test('哇！ has its own pose (#193): arms flung up, held while he says it, chapter 4\'s preload group', () => {
+    const wow = babyAnim({ mode: 'saying', edge: null, growth: 0, word: 'wow' });
+    expect(wow.sprite).toBe('baokaka.wow');
+    expect(wow.gdd).toBe('say');
+    expect(SPRITE_MANIFEST.sprites['baokaka.wow'].group).toBe(4);
+    expect(FRAME_REPORT.find((r) => r.id === 'wow')?.delivered).toEqual([{ sprite: 'baokaka.wow', frames: [0] }]);
+  });
+
   test('growth guard: no standing pose before its stage (bible § 5)', () => {
     for (const a of everyBabyAnim()) expect(a.sprite).toBeDefined();
     for (const mode of BABY_MODES)

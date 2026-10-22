@@ -98,12 +98,15 @@ def foot(doc, A, a, far=False):
 def arm(doc, S, spec, far=False):
     """spec: dict(a1, a2) angles, or dict(ik=target_wrist, bend=+1/-1);
     hand kind 'hand', hand angle offset 'ha'"""
+    # `reach` stretches the arm (a held-up photo treasure, #193: the anime convention, so the
+    # big-headed toddler's hands can clear his head)
+    ua, fa_ = UA * spec.get("reach", 1.0), FA * spec.get("reach", 1.0)
     if "ik" in spec:
-        E = ik2(S, spec["ik"], UA, FA, spec.get("bend", -1))
-        W = pt(E, ang(E, spec["ik"]), FA)
+        E = ik2(S, spec["ik"], ua, fa_, spec.get("bend", -1))
+        W = pt(E, ang(E, spec["ik"]), fa_)
     else:
-        E = pt(S, spec["a1"], UA)
-        W = pt(E, spec["a2"], FA)
+        E = pt(S, spec["a1"], ua)
+        W = pt(E, spec["a2"], fa_)
     fa = ang(E, W)
     o = ""
     ha = fa + spec.get("ha", 0)
@@ -261,9 +264,12 @@ def figure(doc, p):
     if "f" in arms:
         a, hand_f, Wf, _ = arm(doc, S_f, arms["f"], far=True)
         L["arm_f"] = a + hand_f
+        # the sleeve and the hand apart, for a hand in front of what it holds (#193)
+        L["sleeve_f"], L["hand_f"] = a, hand_f
     if "n" in arms:
         a, hand_n, Wn, _ = arm(doc, S_n, arms["n"])
         L["arm_n"] = a + hand_n
+        L["sleeve_n"], L["hand_n"] = a, hand_n
     L["torso"] = torso(doc, F, rot)
     L["head"] = headg(doc, F.o, p.get("head", {}))
     for k, v in p.get("extra", {}).items():
@@ -611,6 +617,16 @@ def P_cruise(k):
                 head=head, order=["arm_f", "leg_f", "torso", "leg_n", "head", "arm_n"])
 
 
+def P_wow():
+    """哇！ (#193): sat, both arms flung up and out in a wide V, fingers spread, leaning back a
+    little, eyes wide and mouth a big round O"""
+    hip, legs = sit_base()
+    return dict(hip=hip, torso=-10, legs=legs, shadow_w=230, shadow_x=60,
+                arms={"n": dict(a1=-132, a2=-152, hand="open", ha=-14), "f": dict(a1=146, a2=160, hand="open", ha=8)},
+                head=dict(expr="wow", rot=-12, turn=-.4, look=(4, -6), dx=8, dy=10),
+                order=["arm_f", "leg_f", "torso", "leg_n", "head", "arm_n"])
+
+
 POSES = {
     # name: (builder(k) or builder, frames, label, keyframes)
     "crawl": (crawl, 8, "爬行循環", [0, 2, 4, 6]),
@@ -640,6 +656,8 @@ POSES = {
     "climb": (P_climb, 3, "爬上台階", None),
     # #127: stand-cruise's sidestep along a rail (with pull + wobble, stand-cruise is complete)
     "cruise": (P_cruise, 2, "扶著橫著走", None),
+    # #193: 哇！ gets its own pose (it was `point` with the mouth open)
+    "wow": (lambda k: P_wow(), 1, "「哇！」雙手舉高", None),
 }
 
 
@@ -653,12 +671,24 @@ def frame_pose(name, i):
 VB = (-560, -1500, 1120, 1560)   # x, y, w, h around the anchor
 
 
+# Poses with their own box and print scale (bake_poses.py reads both): the photo frames (#193)
+POSE_VB = {}
+POSE_PT = {}
+
+
 def frame_svg(name, i, guides=False):
-    d = Doc(0, 0, " ".join(map(str, VB)))
-    d.add(figure(d, frame_pose(name, i)))
+    vb = POSE_VB.get(name, VB)
+    d = Doc(0, 0, " ".join(map(str, vb)))
+    p = frame_pose(name, i)
+    d.add(p(d) if callable(p) else figure(d, p))
     if guides:
-        d.add(f'<path d="M-560,0 L560,0" stroke="#c33" stroke-width="2"/><circle cx="0" cy="0" r="6" fill="#c33"/>')
+        d.add(f'<path d="M{vb[0]},0 L{vb[0] + vb[2]},0" stroke="#c33" stroke-width="2"/><circle cx="0" cy="0" r="6" fill="#c33"/>')
     return d.svg()
+
+
+# The photo frames (GDD § 2.9, #193): per chapter, A / B / C with the chapter's treasure
+import ph_poses  # noqa: E402
+ph_poses.register(POSES, POSE_VB, POSE_PT)
 
 
 if __name__ == "__main__":

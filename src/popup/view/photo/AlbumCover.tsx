@@ -9,7 +9,7 @@ import type { CoverLeaf } from '../../game/album';
 import type { Photo } from '../../game/progress';
 import { deviceScale, frameUrl, spriteDef, useFramesReady, useSpritesPreload } from '../../sprites';
 import { AlbumScreen, type AlbumAction, type AlbumNav } from './AlbumPage';
-import { PHOTO_H, PHOTO_SPRITES, PHOTO_W, PhotoScene } from './PhotoScene';
+import { PHOTO_H, PHOTO_W, PhotoScene, photoSprites } from './PhotoScene';
 
 /**
  * The album's cover, its first leaf (GDD § 2.9, § 2.8; bible § 7 「a linen album」; #113): the navy
@@ -63,7 +63,8 @@ export function AlbumCover({ leaf, photo, def, reduced, still, nav, turn, leftHa
   const heads = useMemo(() => (king ? [headUrl('baokaka-head-laugh'), headUrl('mocha-head-smug')] : photo === null ? [headUrl('baokaka-head-happy')] : []), [king, photo]);
   const headsReady = useFramesReady(heads.map((h) => h.url).filter((u): u is string => u !== undefined));
   const showPhoto = !king && photo !== null;
-  const spritesReady = useSpritesPreload(showPhoto ? PHOTO_SPRITES : []);
+  const sprites = useMemo(() => (showPhoto ? photoSprites([leaf.latest ?? 1]) : []), [showPhoto, leaf.latest]);
+  const spritesReady = useSpritesPreload(sprites);
   const back = showPhoto && def !== undefined ? backdropImage(def.backdrop) : null;
   const backReady = useFramesReady(back ? [back.url] : []);
   const ready = (heads.length === 0 || headsReady) && (!showPhoto || (spritesReady && (back === null || backReady)));

@@ -424,6 +424,8 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 
 *Engineers' note (#113, D-76):* the album is a book of leaves (`game/album.ts`): its cover, then a page per chapter — the photo, an empty print (reached, not photographed) or a placeholder for a chapter the 月亮線 hasn't reached (name, title and time; a padlocked print, 「？」 for the word, 「月亮線還沒開到這裡。」). 相簿 opens at the latest chapter with a photo, else at the cover. The page arrows and dots sit in a fixed row above the buttons; a one-finger horizontal swipe across the leaf or ← / → turns it too (no wrap-around). The cover is the navy linen board with the latest photo in a round window; with every 淘氣 earned it is the 「淘氣大王」 cover (a crown, a ring of 嘿 stickers, 寶咖咖 and 摩卡 in the window, the ribbon).
 
+*Engineers' note (#193, D-102):* the composite is gone for every chapter with a spread. Each has its own frames drawn by the character artist (`baokaka.photo<N>`): A the treasure held high in both hands with the 「哇！」 face, B crawling in with his hand out to it (chapter 10: walking in), C chewing it; +M is 摩卡's own photo frame (A looking up at it, B for the camera, C the glare). The composite remains only as the fallback for a chapter without frames; the 抓周 photo keeps its pair.
+
 ### 2.10 Save and progress
 
 - **Storage:** `localStorage` key `popup.save.v1`, via the existing `src/shared/storage.ts` (`loadJson` / `browserStorage`). It must work when storage is unavailable (private mode); the session just doesn't persist.
