@@ -1321,3 +1321,13 @@ D-01 to D-33 describe the RPG and stay as history. Where they conflict with the 
 **Why.** Every page is solver-green with no dead ends, soft traps, walkable decoys or ties and 0 lint warnings, and a check proved each key word and perch necessary. Chapter 10 costs ≈ 3.1 s of the solver budget (10-3, 13,340 states, the largest); the suite is ≈ 23 s of 60 for 64 pages. The engine is unchanged; the three shell fixes are game-layer and unit-tested.
 
 **Consequences.** #134 draws the chapter (the tower's sections and crank, the damper and atrium, the elevator, the party, the deck, the 金鎖片) and keeps the hit areas; the sections' ledges currently render as rider tracks over a pit. #135's page E follows 10-6's end. A page that wants Mocha's joke for a word said while linked (none yet) would need a page field.
+
+### D-98 · 2026-10-22 · The solver budget counts CPU time; chapter 10 made cheaper (#133 fix-forward)
+
+**Context.** #209's deploy failed `pages.test.ts`'s budget: 67.6 s of 60 on the GitHub runner, where this machine measured ≈ 23 s. The test sums each page's solve on the wall clock, and vitest runs the test files in parallel worker processes: on the 4-vCPU runner the hint tests (which solve every page again) and the rest run beside it, and the same pages took ≈ 2.9× as long (c4p2 6.4 s there, ≈ 2 s here). The suite was already near the line before chapter 10.
+
+**Decision.** (1) `pages.test.ts` measures each solve with this worker's own CPU time (`process.cpuUsage`), not the wall clock: the budget is the solver's work on the pages, not the neighbours' contention. The 60 s budget and `npm run solve`'s wall-clock report are unchanged. (2) Chapter 10 cheaper, with no change to how it plays: 10-3 offers no words (`words: []`, a pure puzzle: 13,340 → 667 states); 10-5's cake lights its candles corner by corner in turn instead of in any order (10,064 → 3,989). Chapter 10 is ≈ 1.5 s here (was 3.1), the suite ≈ 20.3 s.
+
+**Why.** A wall-clock budget under parallel load fails on the runner's neighbours, not on the content; CPU time is what the GDD's throughput (§ 3.7, ≈ 7,000 states/s) was calibrated on.
+
+**Consequences.** Page E and the bonus page (#135) still have the budget's headroom to respect; #137's full-game run can revisit both numbers.

@@ -21,7 +21,16 @@ interface Row {
   readonly solved: SolveResult;
 }
 
-const clock = () => performance.now();
+/**
+ * The budget counts the solver's own CPU time (#133, D-98): vitest runs the test files in parallel
+ * worker processes, and on a 4-vCPU CI runner the wall clock of this file's solves was ≈ 2.9× this
+ * machine's while the hint tests solved every page beside it. `process.cpuUsage` is this worker's
+ * alone, so the 60 s budget measures the pages, not the neighbours.
+ */
+const clock = () => {
+  const { user, system } = process.cpuUsage();
+  return (user + system) / 1000;
+};
 const rows: Row[] = PAGES.map((def) => ({ def, lint: lintPage(def, SCRIPT), solved: solve(def, undefined, { clock }) }));
 
 /** The report designers read when a page fails: `npm run solve`'s table (replay is checked by its own test). */
