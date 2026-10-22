@@ -621,7 +621,7 @@ const towerSections: BackdropDraw = (ctx) => {
     outline += s.outline;
   }
   art += `<path d="M206 44L208.4 -12H211.6L214 44Z" fill="${ref(ctx, 'silver')}"/><path d="M204 30h12M205 18h10" stroke="${K.steelDeep}" stroke-width="1.4"/>`;
-  // 如意 on the bottom section's front, the coin on the podium's lip
+  // 如意 on the bottom section's front
   art += ruyi(ctx, T3.cx - 30, 470, 1.1) + ruyi(ctx, T3.cx + 30, 470, 1.1);
   const tower = depth(ctx, 2, art, outline);
   // Vellum cloud wrapping the tower (in front of its upper sections, behind the gondola)
