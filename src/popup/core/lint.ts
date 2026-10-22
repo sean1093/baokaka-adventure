@@ -60,8 +60,8 @@ import { inReach, WORDS } from './words';
  * | `L09-hit-overlap` | error | 9: two interactive hit areas overlap by more than 30 % of the smaller |
  * | `L10-title-too-long` | error | 10: `title` over 10 characters |
  * | `L10-text-too-long` | error | 10: a script line or the 淘氣 text over 30 characters |
- * | `L11-goal-count` | error | 11: not exactly one `goal` attractor |
- * | `L11-bad-goal` | error | 11: the goal is a decoy, or not `shiny` (only a grab completes a page) |
+ * | `L11-goal-count` | error | 11: not exactly one `goal` attractor (none on a `mochaGoal` page) |
+ * | `L11-bad-goal` | error | 11: the goal is a decoy, or not `shiny` (only a grab completes a page); on a `mochaGoal` page (page E, #135): Mocha starts off the page, a perch hides him, or 一起 can be said |
  * | `L11-no-tudigong` / `L11-no-mischief` | error | 11: the 土地公 or the 淘氣 is missing |
  * | `L12-cascade-loop` | error | 12: parts that re-trigger each other with unconditional `next`/`prev`/`toggle` reactions: every cascade through them overflows |
  * | `L12-cascade-cycle` | warning | 12: parts whose reactions can trigger each other in a cycle; the solver (#87) proves it stays under 32 |
@@ -745,7 +745,15 @@ class Linter {
 
     // Rule 11: goal, 土地公.
     const goals = [...this.attractors.values()].filter((a) => a.goal === true);
-    if (goals.length !== 1) {
+    if (def.mochaGoal === true) {
+      // Page E (#135): Mocha himself is the goal — no goal attractor, and he must be there to want
+      if (goals.length > 0) this.error('L11-goal-count', goals.map((g) => g.id), `the page's goal is Mocha (mochaGoal); it can't also have goal attractors`);
+      if (def.mocha?.start == null) this.error('L11-bad-goal', [this.page], 'the goal is Mocha (mochaGoal), but he starts off the page');
+      for (const p of this.list(def.perches)) {
+        if (p.hidesMocha === true || this.list(def.nodes).some((n) => n.id === p.node && n.tags?.includes('box'))) this.error('L11-bad-goal', [p.id], `perch '${p.id}' hides Mocha, the page's goal (mochaGoal): no box perches`);
+      }
+      if (this.linkable()) this.error('L11-bad-goal', [this.page], 'the goal is Mocha (mochaGoal), but 一起 can be said: linked, he follows Mocha and never grabs him');
+    } else if (goals.length !== 1) {
       this.error('L11-goal-count', goals.length > 0 ? goals.map((g) => g.id) : [this.page], `the page has ${goals.length} goal attractors; it needs exactly one`);
     }
     for (const g of goals) {

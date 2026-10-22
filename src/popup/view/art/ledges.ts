@@ -1,4 +1,4 @@
-import { POPUP as C, POPUP_AIRPORT as A, POPUP_BEITOU as BE, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_MAOKONG as G, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, POPUP_TAMSUI as W, POPUP_101 as X, mixHex } from '../../../art/palette';
+import { POPUP as C, POPUP_AIRPORT as A, POPUP_BEITOU as BE, POPUP_CAMPUS as K, POPUP_HOME as H, POPUP_HOME_DAY as HD, POPUP_MAOKONG as G, POPUP_MARKET as M, POPUP_NEON as N, POPUP_PARK as P, POPUP_STATION as T, POPUP_TAMSUI as W, POPUP_101 as X, mixHex } from '../../../art/palette';
 import { depth, f1, ref, seeded, softEllipse, type KitCtx } from '../../art';
 import { PAGE_W, towardVp } from '../geometry';
 import { LEDGE_DEPTH, type LedgeRun, type Slope } from '../stage';
@@ -32,10 +32,13 @@ function box(run: LedgeRun) {
 const rim = (x0: number, x1: number, y: number, o = 0.6) => `<path d="M${x0} ${y + 0.5}H${x1}" stroke="${C.cutRim}" stroke-width="1" opacity="${o}"/>`;
 
 /** 巧拼: a pile of two thick foam play-mat slabs, pastel tiles interlocking along each one. */
-function playmat(ctx: KitCtx, run: LedgeRun): string {
+function playmat(ctx: KitCtx, run: LedgeRun, day = false): string {
   const b = box(run);
-  // Dusky pastels in the lamplight: calm under the squint test (bible § 4.2), so the touchables and standees lead
-  const tiles = [H.matPink, H.matMint, H.matSky, H.matLilac, H.matCream].map((c) => mixHex(c, H.wallMid, 0.36));
+  // Dusky pastels in the lamplight: calm under the squint test (bible § 4.2), so the touchables and standees lead.
+  // In the morning sun (尾聲, #135) the same tiles, lit
+  const tiles = day
+    ? [HD.matPink, HD.matMint, HD.matSky, HD.matLilac, HD.matCream]
+    : [H.matPink, H.matMint, H.matSky, H.matLilac, H.matCream].map((c) => mixHex(c, H.wallMid, 0.36));
   const tw = 46;
   const slab = b.t / 2;
   // One path per colour (front tiles and top tiles), so the ledge stays a handful of nodes
@@ -1312,7 +1315,7 @@ const CHAPTER7_STYLES: ReadonlySet<LedgeStyle> = new Set<LedgeStyle>(['zooPlatfo
 
 export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme: StageTheme): string {
   if (run.single) {
-    if (style === 'playmat' || style === 'crib') return pillow(ctx, (run.x0 + run.x1) / 2, run.y);
+    if (style === 'playmat' || style === 'playmatDay' || style === 'crib') return pillow(ctx, (run.x0 + run.x1) / 2, run.y);
     if (style === 'parkPath' || style === 'boardwalk') return archBridge(ctx, (run.x0 + run.x1) / 2, run.y);
     if (style === 'lakeside') return nestMound(ctx, (run.x0 + run.x1) / 2, run.y);
     if (style === 'bookPage' || style === 'desk') return bookPile(ctx, (run.x0 + run.x1) / 2, run.y);
@@ -1465,6 +1468,8 @@ export function styledLedge(ctx: KitCtx, run: LedgeRun, style: LedgeStyle, theme
       return balcony(ctx, run);
     case 'playmat':
       return playmat(ctx, run);
+    case 'playmatDay':
+      return playmat(ctx, run, true);
     case 'crib':
       return crib(ctx, run);
     case 'carBody':

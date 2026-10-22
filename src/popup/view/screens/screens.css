@@ -41,3 +41,61 @@
 [data-folded] [data-layer='hit'] {
   visibility: hidden;
 }
+
+/*
+ * 尾聲 (#135). A story scene's picture settles onto the quilt; the credits' prints drift in and the
+ * cards fade. With reduced motion only the fades stay (the reduced-motion rule: opacity only).
+ */
+@keyframes story-in {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) rotate(-3deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(-0.8deg);
+  }
+}
+.story-in {
+  animation: story-in 0.7s cubic-bezier(0.2, 0.8, 0.3, 1.1) both;
+}
+@keyframes credits-print {
+  from {
+    opacity: 0;
+    transform: translate(-30px, 14px) rotate(calc(var(--tilt, 0deg) - 6deg));
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) rotate(var(--tilt, 0deg));
+  }
+}
+@keyframes credits-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.credits-print {
+  transform: rotate(var(--tilt, 0deg));
+  animation: credits-print 0.9s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.credits-fade {
+  animation: credits-fade 0.7s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-in,
+  .credits-print {
+    animation: credits-fade 0.5s ease-out both;
+  }
+}
+.reduce-motion .story-in,
+.reduce-motion .credits-print {
+  animation: credits-fade 0.5s ease-out both;
+}
+[data-still] .story-in,
+[data-still] .credits-print,
+[data-still] .credits-fade {
+  animation: none;
+}

@@ -140,8 +140,8 @@ describe('the photo and album fixtures (#103)', () => {
     expect(leafOf('album-locked')).toMatchObject({ kind: 'chapter', chapter: 4, state: 'locked' });
     expect(leafOf('album-cover')).toMatchObject({ kind: 'cover', mischiefKing: false, latest: 1 });
     expect(leafOf('album-cover-unlocked')).toMatchObject({ kind: 'cover', mischiefKing: true });
-    // Without the fixture's book size the game's 65 pages are needed: no 淘氣大王 yet
-    expect(coverLeaf(screen('album-cover-unlocked').save).mischiefKing).toBe(false);
+    // The book is whole since page E (#135): the fixture's every-sticker save is the game's 65
+    expect(coverLeaf(screen('album-cover-unlocked').save).mischiefKing).toBe(true);
     expect(screen('album-left-big').save.settings).toMatchObject({ leftHand: true, bigText: true });
     const all = screen('contents-all');
     expect(all.nav.layer).toEqual({ kind: 'contents', chapter: 1 });

@@ -60,7 +60,7 @@ export interface MochaResult {
   readonly events: SimEvent[];
 }
 
-function findPerch(def: PageDef, id: Id | null | undefined): PerchDef | undefined {
+export function findPerch(def: PageDef, id: Id | null | undefined): PerchDef | undefined {
   return id == null ? undefined : def.perches.find((p) => p.id === id);
 }
 

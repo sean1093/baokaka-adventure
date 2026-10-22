@@ -502,7 +502,7 @@ All sound is **synthesised with WebAudio**, extending `src/shared/audio.ts` (no 
 5. **Spread + photo**: §2.9.
 6. **Album**: §2.9.
 7. **Settings**: §2.11.
-8. **Ending**: the interactive 抓周 (page E, §4.4), then credits over album photos, then the 土地公 post-credits.
+8. **Ending**: the interactive 抓周 (page E, §4.4), then credits over album photos, then the 土地公 post-credits. *(#135, D-100)* Before page E, the 05:30 scene (a picture laid on the quilt, its lines a tap a beat); the credits are cards — each kept print drifting onto the endpapers with a credit — 4.2 s each or a tap, 「跳過」 skips; reduced motion fades only.
 
 **For engineers (#97, D-60).** `src/popup/game/nav.ts` is the flow as a pure state machine (a base: the cover or a page; one layer over it: the menu, the 目錄, the album, the settings; a layer over a page holds its session). `GameShell` renders it on one `ProgressStore`. The cover's 「繼續」 opens `save.current` in one tap; the page fold and the chapter turn are `view/transitions/pageTurn.ts`.
 
@@ -646,6 +646,7 @@ export interface PageDef {
   solution: SolutionStep[];             // intended solution, replayed in tests
   allowTrivial?: boolean;               // tutorial beats / page E only
   priorityOverride?: Partial<Record<Kind, number>>;   // page E only
+  mochaGoal?: true;                     // page E only: Mocha himself is the goal (#135, D-100)
   lines?: { intro?: LineKey[]; onEvent?: { when: EventPredicate; line: LineKey; pause?: boolean }[] };   // pause: the world holds while it is up (#128)
   backdrop: string;                     // baked art key
   cutouts?: { art: string; x: number; y: number; visibleWhen?: Cond }[];   // standing cut-outs (§ 3.9 layer 2), placed by their origin (#96); shown only while `visibleWhen` holds (#115)
@@ -1338,6 +1339,8 @@ Each row gives the page's key mechanic and its aha. Full specs (in the §4.3 for
 | 淘氣 | 「讓摩卡坐在抓周盤上」: Mocha on the `tray` perch (he still gets his tail grabbed) |
 | 土地公 | The street-shrine statue outside the window winks when tapped |
 | Solvability | Trivially solvable (`allowTrivial: true`): even with no input, Mocha starts visible on `sofaArm`. |
+
+*Engineers' note (#135, D-100).* Page E is chapter 11, **尾聲** (`c11p1`, `pages/end/e.ts`), a spread at 10:00 (`end/zhuazhou-day`, the only daytime page). The goal is **Mocha's own candidate** (`mochaGoal: true`, not an attractor: he moves): arriving at him he grabs his tail (`grab` of `'mocha'`, `done`); while he hops between perches he is still wanted, at the perch he is heading for, so no treasure is ever grabbed. The ten treasures are shiny attractors drawn on the 抓周盤 in the backdrop (`art: 'baked'`). No words (一起 would link them, and linked he never grabs; lint rule 11 also forbids a goal attractor, a box perch and Mocha off the page on a `mochaGoal` page). The cheers are the intro, held (`lines.introPause`); 「……經過了書／算盤／雞腿？」 are held `babyEnter` lines on the mat (T1–T3). Flow: 10-6's end → sticker card → **05:30 scene** → page E's card (「早上十點，抓周開始了！」) → page E (the photo moment frames the grab) → his first words (the end lines) → the **抓周 photo** in the album (its last leaf) → sticker card → **credits** over the album photos → **post-credits** → the cover. The 目錄 lists page E on 家's strip.
 
 #### Bonus page 「象山的日出」
 

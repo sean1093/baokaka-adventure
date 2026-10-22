@@ -175,7 +175,10 @@ describe('the music box', () => {
     expect(chapterTrack(8)).toBe('chapter8');
     expect(chapterTrack(9)).toBe('chapter9');
     expect(chapterTrack(10)).toBe('chapter10');
-    expect(chapterTrack(11)).toBeNull();
+    // 尾聲 is home again, 番外 101's dawn (#135)
+    expect(chapterTrack(11)).toBe('chapter0');
+    expect(chapterTrack(12)).toBe('chapter10');
+    expect(chapterTrack(13)).toBeNull();
     for (const t of ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5', 'chapter6', 'chapter7', 'chapter8', 'chapter9', 'chapter10'] as const) {
       const spec = TRACKS[t];
       const bars = spec.melody.length / BAR;

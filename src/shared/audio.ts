@@ -638,7 +638,8 @@ export const TRACKS: Readonly<Record<Track, TrackSpec>> = {
 
 /** 翻翻台北's music box for a chapter (0–10), or null for any other. */
 export function chapterTrack(chapter: number): Track | null {
-  const tracks: readonly Track[] = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5', 'chapter6', 'chapter7', 'chapter8', 'chapter9', 'chapter10'];
+  // 尾聲 (page E, 11) is home again: the prologue's music box; 番外 (the 象山 sunrise, 12) 101's dawn (#135)
+  const tracks: readonly Track[] = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5', 'chapter6', 'chapter7', 'chapter8', 'chapter9', 'chapter10', 'chapter0', 'chapter10'];
   return tracks[chapter] ?? null;
 }
 

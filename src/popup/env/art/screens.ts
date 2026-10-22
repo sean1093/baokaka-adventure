@@ -1,6 +1,7 @@
 import { POPUP as C } from '../../../art/palette';
 import { f1, fibers, grain, pinholes, ref, seal, seeded, softEllipse, sparkle, translate, washi, type KitCtx } from '../../art';
 import type { EnvBox } from '../manifest';
+import { SCENE_BOX, dawnScene, shrineScene } from './end';
 
 /**
  * The art outside the pages (#97; popup art bible § 3.1 花布, § 7 UI framing), baked by
@@ -278,4 +279,7 @@ export const SCREEN_ART: Readonly<Record<string, ScreenSource>> = {
   quilt: { box: { x: 0, y: 0, w: 430, h: 932 }, draw: (ctx) => quilt(ctx, 430, 932) },
   'cover-scene': { box: COVER_SCENE, draw: coverScene },
   'map-sheet': { box: MAP_SHEET, draw: mapSheet },
+  // 尾聲 (#135): 05:30 at home before page E, and the 土地公's shrine after the credits
+  'dawn-scene': { box: SCENE_BOX, draw: dawnScene },
+  'shrine-scene': { box: SCENE_BOX, draw: shrineScene },
 };

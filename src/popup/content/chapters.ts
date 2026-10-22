@@ -41,6 +41,21 @@ export const CHAPTERS: readonly ChapterInfo[] = [
 ];
 
 /**
+ * Page E 「抓周」 (GDD § 4.4; #135) is its own chapter after the book's ten, **尾聲**: the 10:00
+ * birthday at home, one page. The bonus page 「象山的日出」 (post-game, every 土地公 found) is
+ * **番外**, outside the linear order. Neither is a station on the 月亮線 map (`CHAPTERS` is the
+ * book's eleven): page E is listed under 家, the bonus page is the map's postcard.
+ */
+export const ENDING_CHAPTER = 11;
+export const BONUS_CHAPTER = 12;
+
+/** 尾聲 and 番外 (#135): what the chapter card, the HUD and the album name them. */
+export const EXTRA_CHAPTERS: readonly ChapterInfo[] = [
+  { chapter: ENDING_CHAPTER, title: '抓周', landmark: '家', station: '家', time: '10:00', next: '寶咖咖的家', pages: 1, pageTitles: ['抓周'] },
+  { chapter: BONUS_CHAPTER, title: '象山的日出', landmark: '象山', station: '象山', time: '05:30', next: '象山', pages: 1, pageTitles: ['象山的日出'] },
+];
+
+/**
  * The lines the chapter card plays under the board, tap by tap (GDD § 5.2: "the lines below play
  * over the card or the first page"). The prologue's card plays its first five lines (the eve of
  * the birthday, 阿嬤, Mocha falls asleep); page 0-1 opens on the rest (midnight, the little cloud,
@@ -60,6 +75,9 @@ const CARD_LINES: Readonly<Record<number, readonly LineKey[]>> = {
   9: ['c9.intro.1', 'c9.intro.2', 'c9.intro.3'],
   // Chapter 10's last two lines (「ㄅㄚ！」 and Mocha's) play on 10-1, as 101 comes into the window
   10: ['c10.intro.1', 'c10.intro.2'],
+  // 尾聲 (§ 5.5): 「早上十點，抓周開始了！」 on the card; the family's cheers open page E
+  11: ['e.intro.1'],
+  12: ['x.intro.1', 'x.intro.2'],
 };
 
 /** The chapter card's lines (none for a chapter not written yet). */
@@ -81,6 +99,8 @@ const END_LINES: Readonly<Record<number, readonly LineKey[]>> = {
   8: ['c8p6.end.1'],
   9: ['c9p6.end.1'],
   10: ['c10p6.end.1', 'c10p6.end.2', 'c10p6.end.3', 'c10p6.end.4'],
+  // § 5.5 page E: after the tail is grabbed, his first word, then the second (#135)
+  11: ['e.end.1', 'e.end.2', 'e.end.3', 'e.end.4', 'e.end.5', 'e.end.6', 'e.end.7', 'e.end.8', 'e.end.9', 'e.end.10'],
 };
 
 /**
@@ -88,7 +108,12 @@ const END_LINES: Readonly<Record<number, readonly LineKey[]>> = {
  * four are two beats — 「一起。」 and Mocha's one exact translation together, then the sunrise and
  * 廣播姊姊's 「本列車直達：寶咖咖的家。」
  */
-const END_BEATS: Readonly<Record<number, readonly number[]>> = { 10: [2, 2] };
+const END_BEATS: Readonly<Record<number, readonly number[]>> = {
+  10: [2, 2],
+  // Page E (#135): the grab and 「……摩卡。」; the family; 爸爸 and Mocha; the little wind and 「咻咻！」;
+  // 爸爸 again; the two birthdays
+  11: [2, 1, 2, 2, 1, 2],
+};
 
 /** A chapter's end lines (none for a chapter not written yet). */
 export const endLines = (chapter: number): readonly LineKey[] => END_LINES[chapter] ?? [];
@@ -117,21 +142,24 @@ export const SOON_LINES: readonly LineKey[] = ['rec.soon.1'];
 /** Whether chapter `chapter + 1` exists in the book (the 未完待續 card can name it). */
 export const hasNextChapter = (chapter: number): boolean => CHAPTERS.some((c) => c.chapter === chapter + 1);
 
-/** A chapter's info (the prologue's for an unknown chapter). */
+/** A chapter's info (尾聲 and 番外 included; the prologue's for an unknown chapter). */
 export function chapterInfo(chapter: number): ChapterInfo {
-  return CHAPTERS.find((c) => c.chapter === chapter) ?? CHAPTERS[0];
+  return CHAPTERS.find((c) => c.chapter === chapter) ?? EXTRA_CHAPTERS.find((c) => c.chapter === chapter) ?? CHAPTERS[0];
 }
 
 /** Chinese numerals for chapter names (第一章 …). */
 const NUMERALS = ['〇', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 
-/** 「序章」, 「第一章」 … 「第十章」 */
+/** 「序章」, 「第一章」 … 「第十章」, 「尾聲」 (page E), 「番外」 (the bonus page) */
 export function chapterName(chapter: number): string {
+  if (chapter === ENDING_CHAPTER) return '尾聲';
+  if (chapter === BONUS_CHAPTER) return '番外';
   return chapter === 0 ? '序章' : `第${NUMERALS[chapter] ?? chapter}章`;
 }
 
-/** The HUD's chapter line, e.g. 「第一章 · 第 2 頁 / 6」 (the prologue is 序章, 4 pages). */
+/** The HUD's chapter line, e.g. 「第一章 · 第 2 頁 / 6」 (the prologue is 序章, 4 pages; 尾聲 and 番外 just their name). */
 export function chapterLine(chapter: number, index: number): string {
+  if (chapter === ENDING_CHAPTER || chapter === BONUS_CHAPTER) return chapterName(chapter);
   return `${chapterName(chapter)} · 第 ${index} 頁 / ${chapterInfo(chapter).pages}`;
 }
 

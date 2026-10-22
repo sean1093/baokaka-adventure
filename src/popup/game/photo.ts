@@ -1,9 +1,9 @@
-import { selectTarget } from '../core/baby';
+import { MOCHA, selectTarget } from '../core/baby';
 import { nodePos } from '../core/graph';
 import { mochaNode } from '../core/mocha';
 import { stepGrowth } from '../core/step';
 import type { Id, PageDef, SimState } from '../core/types';
-import { CHAPTER_NOTES, NOTE_POOL, NOTE_SPEAKERS, type NoteSpeaker } from '../content/album';
+import { CHAPTER_NOTES, ENDING_LEAF_CHAPTER, NOTE_POOL, NOTE_SPEAKERS, type NoteSpeaker } from '../content/album';
 import type { PageRegistry } from '../pages';
 import type { Photo, PhotoFrame } from './progress';
 
@@ -71,8 +71,9 @@ export function approachAt(ms: number): number {
   return k * k * (3 - 2 * k);
 }
 
-/** The page's treasure: its goal attractor (a spread has one). */
+/** The page's treasure: its goal attractor (a spread has one) — on page E, Mocha himself (`'mocha'`, #135). */
 export function treasureOf(def: PageDef): Id | null {
+  if (def.mochaGoal === true) return MOCHA;
   return def.attractors.find((a) => a.goal)?.id ?? null;
 }
 
@@ -93,6 +94,8 @@ export function photoReady(def: PageDef, state: SimState): boolean {
  * standing still on a floor node inside it (#133: 10-6's photo of the first steps, Mocha beside him).
  */
 export function mochaInFrame(def: PageDef, state: SimState): boolean {
+  // Page E (#135): he is what the photo is of
+  if (def.mochaGoal === true) return true;
   const rect = def.photoRect;
   if (rect === undefined) return false;
   const { perch, floorNode, path } = state.mocha;
@@ -124,7 +127,8 @@ export const poolIndex = (chapter: number, frame: PhotoFrame, size: number): num
  * pool, 摩卡's in or out by `mocha`. A chapter without a row uses the pool for every frame.
  */
 export function albumNotes(chapter: number, photo: Shot): AlbumNote[] {
-  const row = photo.frame === 'A' ? CHAPTER_NOTES[chapter] : undefined;
+  // The 抓周 photo (§ 5.6 row E, #135) is the ending: its row whatever the frame
+  const row = photo.frame === 'A' || chapter === ENDING_LEAF_CHAPTER ? CHAPTER_NOTES[chapter] : undefined;
   return NOTE_SPEAKERS.map((speaker) => {
     if (row !== undefined) return { speaker, text: row[speaker] };
     const pool = speaker === 'mocha' ? (photo.mocha ? NOTE_POOL.mochaIn : NOTE_POOL.mochaOut) : NOTE_POOL[speaker];

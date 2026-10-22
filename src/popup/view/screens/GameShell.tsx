@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { POPUP as C } from '../../../art/palette';
 import { REDUCE_MOTION_CLASS, ReducedMotionContext, usePrefersReducedMotion } from '../../../components/motion';
-import { SOON_LINES, cardLines, chapterName, endGroups, hasNextChapter, loadLines, UI } from '../../content';
+import { DAWN_BEATS, ENDING_CHAPTER, POST_BEATS, SOON_LINES, cardLines, chapterName, endGroups, hasNextChapter, loadLines, UI } from '../../content';
 import type { PageDef } from '../../core/types';
 import { backdropImage } from '../../env/loader';
 import { COVER, chapterStickers, holdsPage, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from '../../game/nav';
@@ -21,6 +21,8 @@ import { Cover } from './Cover';
 import { PauseMenu } from './PauseMenu';
 import { Quilt } from './paper';
 import { Settings } from './Settings';
+import { StoryScene } from './StoryScene';
+import { Credits } from './Credits';
 import { effectiveSettings, pulse } from '../../game/settings';
 import { TextScaleContext, textSizeAttr } from '../textSize';
 import '../textSize.css';
@@ -115,6 +117,18 @@ export interface GameShellProps {
   readonly rewardTotal?: number;
   /** The playtest log (#110, `#/?debug=metrics`): the shell records pages, live time, hints, 重來 and stickers into it and shows its chip */
   readonly playtest?: PlaytestLog | null;
+  /** Visual QA fixtures (#135): one of 尾聲's screens up — the 05:30 scene, the credits (at a card), the post-credits — at a beat */
+  readonly scene?: { readonly kind: EndingScene; readonly at?: number };
+}
+
+/** 尾聲's screens (#135): 05:30 before page E, the credits over the album photos, the 土地公 after them. */
+export type EndingScene = 'dawn' | 'credits' | 'post';
+
+/** One of 尾聲's screens on screen, and what comes after it. */
+interface SceneShow {
+  readonly kind: EndingScene;
+  readonly at?: number;
+  readonly go: () => void;
 }
 
 const SPEEDS: readonly TickSpeed[] = ['slow', 'normal', 'fast'];
@@ -169,7 +183,7 @@ interface AlbumAfter {
   readonly go: () => void;
 }
 
-export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter, endLinesOf, soonCard, farewell = false, rewardTotal = GAME_PAGES, playtest = null }: GameShellProps) {
+export function GameShell({ store: given, registry: reg = gameRegistry, initial = COVER, still = false, reduced: reducedProp, stickerCard = false, chapterCard, albumAfter, endLinesOf, soonCard, farewell = false, rewardTotal = GAME_PAGES, playtest = null, scene: fixtureScene }: GameShellProps) {
   const [store] = useState(() => given ?? new ProgressStore({ registry: reg }));
   useEffect(() => (given ? undefined : () => store.dispose()), [given, store]);
   const save = useSyncExternalStore(store.subscribe, store.get);
@@ -431,6 +445,9 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   /** The chapter-end lines are up: a modal, a tap is the next beat */
   const ending = currentBeat(endTalk) !== null;
 
+  // ——— 尾聲 (#135): the 05:30 scene, the credits, the post-credits ———
+  const [scene, setScene] = useState<SceneShow | null>(() => (fixtureScene === undefined ? null : { ...fixtureScene, go: () => undefined }));
+
   // ——— The spread's photo and the album after it (#103) ———
   const shotRef = useRef<{ readonly id: string; readonly shot: Shot } | null>(null);
   const [after, setAfter] = useState<AlbumAfter | null>(() =>
@@ -456,6 +473,20 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
       setTurning(true);
       window.clearTimeout(holdTimer.current);
       const turnOn = () => {
+        // 尾聲 (#135): after the book's last chapter, 05:30 at home, then page E opens with its card
+        if (next !== null && next.chapter === ENDING_CHAPTER && from.chapter !== ENDING_CHAPTER) {
+          void showCard(from.id).then(() =>
+            setScene({
+              kind: 'dawn',
+              go: () => {
+                setScene(null);
+                setTurning(false);
+                go({ t: 'next', id: next.id });
+              },
+            }),
+          );
+          return;
+        }
         // The book's last chapter so far (#107): the next chapter's card reads 「未完待續」, then the 目錄
         if (next === null && from.spread && hasNextChapter(from.chapter)) {
           const soon = { chapter: from.chapter + 1, soon: true };
@@ -472,6 +503,41 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
       };
       const shot = shotRef.current?.id === from.id ? shotRef.current.shot : null;
       shotRef.current = null;
+      // Page E (#135): his first word and his second (the end lines) over the page, then the 抓周
+      // photo into the album, the sticker card, the credits over the album photos, the 土地公, the cover
+      const credits = () =>
+        void showCard(from.id).then(() =>
+          setScene({
+            kind: 'credits',
+            go: () =>
+              setScene({
+                kind: 'post',
+                go: () => {
+                  setScene(null);
+                  setTurning(false);
+                  go({ t: 'cover' });
+                },
+              }),
+          }),
+        );
+      if (from.chapter === ENDING_CHAPTER) {
+        holdTimer.current = window.setTimeout(() => {
+          void endChapter(from.chapter, false).then(() => {
+            if (shot === null) return credits();
+            setAfter({
+              chapter: from.chapter,
+              photo: store.get().photos[from.chapter] ?? null,
+              mocha: shot.mocha,
+              fresh: true,
+              go: () => {
+                setAfter(null);
+                credits();
+              },
+            });
+          });
+        }, GRAB_HOLD_MS);
+        return;
+      }
       holdTimer.current = window.setTimeout(() => {
         // A spread: the album page first (the photo flies in), then on
         if (from.spread && shot !== null) {
@@ -550,7 +616,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
     playtest.add({ t: 'open', page: def.id, at: Date.now(), replay: store.get().pages[def.id]?.solved === true });
     // Only a new attempt (the page, or 重來) opens one: `def` and the save follow it
   }, [playtest, attempt]);
-  const live = attempt !== null && !holdsPage(nav) && !turning && !opening && !reading && !ending && after === null && card === null && visible && !logOpen;
+  const live = attempt !== null && !holdsPage(nav) && !turning && !opening && !reading && !ending && after === null && card === null && scene === null && visible && !logOpen;
   useEffect(() => {
     if (playtest === null || attempt === null) return;
     playtest.add({ t: 'live', on: live, at: Date.now() });
@@ -595,7 +661,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                     still={still}
                     reduced={reduced}
                     // A page that opens with its chapter card is held from its first frame (its intro waits for the card)
-                    hold={holdsPage(nav) || turning || opening || fixtureBoard !== null || endLinesOf !== undefined || logOpen}
+                    hold={holdsPage(nav) || turning || opening || fixtureBoard !== null || endLinesOf !== undefined || scene !== null || logOpen}
                     onDone={(_, result) => onDone(def, result)}
                     onPhoto={(shot) => onPhoto(def, shot)}
                     onSticker={(sticker) => onSticker(def.id, sticker)}
@@ -689,6 +755,13 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                   onDone={after.go}
                 />
               </div>
+            )}
+            {scene?.kind === 'dawn' && (
+              <StoryScene art="dawn-scene" beats={DAWN_BEATS} label={UI.ending.dawn} time="05:30" reduced={reduced} still={still} startBeat={scene.at} nextLabel={UI.ending.next} onDone={scene.go} />
+            )}
+            {scene?.kind === 'credits' && <Credits photos={save.photos} registry={reg} reduced={reduced} still={still} startSlide={scene.at} onDone={scene.go} />}
+            {scene?.kind === 'post' && (
+              <StoryScene art="shrine-scene" beats={POST_BEATS} label={UI.ending.post} reduced={reduced} still={still} startBeat={scene.at} nextLabel={UI.ending.next} onDone={scene.go} />
             )}
             {layer?.kind === 'album' && (
               <div className="fixed inset-0 z-50">

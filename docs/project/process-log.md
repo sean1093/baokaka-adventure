@@ -1054,3 +1054,17 @@ Format:
 - **Screenshots.** `docs/screenshots/134/`.
 - **Decision.** D-99.
 - **Follow-ups.** The photo frames, the chapter-card vignette, the 目錄 station illustration and the 月亮線 window strip stay with #193.
+
+### 2026-10-22 · Staff engineer · #135 Ending, part 1: page E 「抓周」, 05:30, credits, post-credits (PR #213)
+- **Engine.** `mochaGoal` (page E): Mocha's own candidate is the goal. He is wanted even while hopping, at the perch he is heading for, so no treasure is ever grabbed. Rule 11 covers it: no goal attractor, no box perch, no 一起. `lines.introPause` added. The hint fallback answers a wait on a trivial page. Par 0 is in band for `allowTrivial`.
+- **Page E** (`c11p1`, 尾聲, chapter 11): a spread at 10:00. Ten baked treasures on the 抓周盤, three perches, no words. The cheers and the 「……經過了…」 lines hold the world. 19 solver states, par 0 (allowed).
+- **Shell.** Order: 10-6 → sticker card → 05:30 `StoryScene` → page E card → page E → photo → first words (end lines) → 抓周 photo (album leaf 11, 「第一個字」 摩卡) → sticker card → `Credits` (cards over the kept prints, the 背包客's 「I found it!」; skippable, fades only with reduced motion) → post-credits `StoryScene` → cover. The 目錄 lists page E on 家.
+- **Art.** The 10:00 home in screen colours (`POPUP_HOME_DAY`), the family as die-cuts, the tray, the dawn and shrine scenes (`POPUP_ENDING_SCENES`), `playmatDay`, the sun chip.
+- **Found on the way.**
+  - A page node at y 598 failed lint: the page is 560 tall, so the mat moved up to y 462.
+  - `check:play`'s `readTalk` stopped between two held lines one tick apart.
+  - The 05:30 chip failed contrast while it was tilted with the picture.
+  - The container ran out of disk during a full visual run. It was rerun in chunks; nothing was lost (WIP pushed).
+- **QA.** `npm test`, build, solve (65 green, 23.5 s), `check:play` (all scenarios, in chunks), `check:ui` (+big) on the new fixtures, visual baselines.
+- **Decision.** D-100.
+- **Next (part 2).** The bonus page 「象山的日出」 (chapter 12, outside the linear order, `isBonusUnlocked`), the postcard opening it, fixture `bonus-xiangshan`.

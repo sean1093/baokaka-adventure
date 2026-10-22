@@ -98,7 +98,7 @@ describe.each(rows.map((row) => [row.def.id, row] as const))('page %s', (_id, { 
 
   test('par is within the difficulty band (warning only)', () => {
     const [lo, hi] = PAR_BAND[def.difficulty];
-    if (r.par === null || r.par < lo || r.par > hi) {
+    if (r.par === null || ((r.par < lo || r.par > hi) && !(def.allowTrivial && r.par === 0))) {
       console.warn(`${def.id}: par ${r.par ?? '-'} is outside difficulty ${def.difficulty}'s band ${lo}–${hi}${table()}`);
     }
   });

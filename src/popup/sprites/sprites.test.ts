@@ -7,7 +7,7 @@ import { BAKE_PAD, POSE_CONFIG } from './config';
 import { eventsBetween, frameAt, frameOfStep, manualClock, rafClock, stepAt } from './clock';
 import { bundledFiles, chapterGradeKey, floorUrl, frameUrl, pageSprites, payloadBytes, shownStem, spriteDef, SpriteLoader, SpriteGrade, spriteUrls } from './loader';
 import { fromAnchor, framePoint, gradedStem, isMirrored, pickScale, spriteTransform, toPage, validateManifest, type SpriteAnimDef, type SpriteDef } from './manifest';
-import { gradeKey, standeeGrade } from '../env/grade';
+import { gradeKey, isIdentity, standeeGrade } from '../env/grade';
 import { PAGES } from '../pages';
 import { SpriteAnim, spriteHead } from './SpriteAnim';
 import { SPRITE_IDS, SPRITE_MANIFEST } from './sprites.gen';
@@ -103,7 +103,8 @@ describe('manifest ↔ committed files', () => {
 describe('the half grade (#96, D-59)', () => {
   test('every chapter with pages and a grade has its variant; chapters 0–2 share one (×0.775, 0.785, 0.86)', () => {
     const chapters = [...new Set(PAGES.map((p) => p.chapter))];
-    for (const ch of chapters) expect(chapterGradeKey(ch), `chapter ${ch}`).toBe(gradeKey(standeeGrade(ch)));
+    // 尾聲's daylight (#135) is no grade at all: its chapter draws the plain frames
+    for (const ch of chapters) expect(chapterGradeKey(ch), `chapter ${ch}`).toBe(isIdentity(standeeGrade(ch)) ? undefined : gradeKey(standeeGrade(ch)));
     expect(gradeKey(standeeGrade(0))).toBe('775-785-860');
     expect(gradeKey(standeeGrade(2))).toBe(gradeKey(standeeGrade(0)));
     expect(M.grades['775-785-860'].by).toEqual([0.775, 0.785, 0.86]);

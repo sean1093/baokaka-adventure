@@ -94,8 +94,9 @@ export function judge(
   extra: { readonly replayOk: boolean; readonly replayError?: string; readonly cap?: number },
 ): PageReport {
   const band = PAR_BAND[def.difficulty];
-  const parInBand = r.par !== null && r.par >= band[0] && r.par <= band[1];
   const allowTrivial = def.allowTrivial === true;
+  // A page allowed to be trivial (page E, #135) may have par 0
+  const parInBand = r.par !== null && ((r.par >= band[0] && r.par <= band[1]) || (allowTrivial && r.par === 0));
   const failures: string[] = [];
   for (const e of lint.errors) failures.push(`lint ${e.message}`);
   if (!extra.replayOk) failures.push(`the authored solution does not reach done${extra.replayError ? `: ${extra.replayError}` : ''}`);

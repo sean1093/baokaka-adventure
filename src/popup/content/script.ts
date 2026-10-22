@@ -304,6 +304,44 @@ export const SCRIPT: Readonly<Record<LineKey, ScriptLine>> = {
   'c10p5.hug.2': { who: 'nar', text: '小雲放下珠珠，飄到更高的地方。' },
   // 10-5: all four of the cake's candles lit, led round 咻咻 (the 淘氣)
   'c10p5.mocha.1': { who: 'mocha', text: '繞一圈。……蠟燭都亮了。' },
+  // § 5.5 尾聲 (#135). 05:30, home: the tray complete, Mocha asleep on it (the scene before page E)
+  'e.dawn.1': { who: 'nar', text: '清晨五點半。阿嬤起床了。' },
+  'e.dawn.2': { who: 'grandma', text: '哎唷，摩卡真乖，顧規暝。' },
+  'e.dawn.3': { who: 'nar', text: '摩卡睜開一隻眼睛。' },
+  'e.dawn.4': { who: 'mocha', text: '……喵。' },
+  // 10:00, page E 「抓周」: the card's line, then the family cheers for their pick (page E's intro)
+  'e.intro.1': { who: 'nar', text: '早上十點，抓周開始了！' },
+  'e.cheer.1': { who: 'dad', text: '書！拿書！' },
+  'e.cheer.2': { who: 'grandma', text: '算盤啦，會賺錢！' },
+  'e.cheer.3': { who: 'mom', text: '拿什麼都好，慢慢來。' },
+  // He crawls past every treasure (page E's `onEvent`, each held)
+  'e.pass.1': { who: 'dad', text: '……經過了書。' },
+  'e.pass.2': { who: 'grandma', text: '……經過了算盤。' },
+  'e.pass.3': { who: 'mom', text: '……經過了雞腿？' },
+  // The tail grabbed: his first word, and his second (the end lines, `END_LINES[11]`)
+  'e.end.1': { who: 'nar', text: '寶咖咖抓住了——摩卡的尾巴。' },
+  'e.end.2': { who: 'baby', text: '……摩卡。' },
+  'e.end.3': { who: 'nar', text: '全家人，都叫了起來！' },
+  'e.end.4': { who: 'dad', text: '第一個字……不是爸爸。' },
+  'e.end.5': { who: 'mocha', text: '眼睛……進沙子了。' },
+  'e.end.6': { who: 'nar', text: '窗外，一陣小小的風吹過。' },
+  'e.end.7': { who: 'baby', text: '咻咻！' },
+  'e.end.8': { who: 'dad', text: '第二個字，也不是爸爸！' },
+  'e.end.9': { who: 'nar', text: '生日快樂，寶咖咖。' },
+  'e.end.10': { who: 'nar', text: '生日快樂，咻咻。' },
+  // § 4.1 / § 5.3: the 背包客 in the credits, at 101 at last
+  'e.credits.pack': { who: 'pack', text: 'I found it!' },
+  // Post-credits (after the credits roll over the album photos)
+  'e.post.1': { who: 'nar', text: '巷口的小廟裡，土地公的手指上，' },
+  'e.post.2': { who: 'nar', text: '沾著一點點，蓋章的印泥。' },
+  'e.post.3': { who: 'uncle', text: '呵呵，囡仔，慢慢仔大。' },
+  'e.post.4': { who: 'nar', text: '每年夏天的午後，台北會下一場西北雨。' },
+  'e.post.5': { who: 'nar', text: '那是咻咻，回來玩了。' },
+  'e.post.6': { who: 'pa', text: '下一站：兩歲。' },
+  // 番外 「象山的日出」 (§ 4.4 bonus page, #135): the card's lines, and the 土地公's stamp
+  'x.intro.1': { who: 'nar', text: '象山。爬了好多好多階梯。' },
+  'x.intro.2': { who: 'nar', text: '從這裡看101，剛剛好。' },
+  'x.stamp.1': { who: 'uncle', text: '呵呵，囡仔，慢慢仔大。' },
   // § 5.3 recurring lines (those chapters 0–1 use; the hint lines are `hints.ts`, the barks
   // `barks.ts`, the sticker pops and 「下一頁！」 `ui.ts`)
   'rec.pa.ride.1': { who: 'pa', text: '請緊握扶手。' },

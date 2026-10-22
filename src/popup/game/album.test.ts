@@ -16,16 +16,22 @@ const finished = keepPhoto(ALL.reduce((s, id) => completePage(s, id), fresh), 1,
 const naughty = ALL.reduce((s: SaveV1, id) => earnSticker(s, id, 'mischief'), finished);
 
 describe('leaves', () => {
-  test('the cover, then a page for each of the ten chapters', () => {
+  test('the cover, then a page for each of the ten chapters, then the 抓周 photo (#135)', () => {
     const leaves = albumLeaves(fresh);
     expect(leaves).toHaveLength(ALBUM_LEAVES);
-    expect(ALBUM_LEAVES).toBe(11);
+    expect(ALBUM_LEAVES).toBe(12);
     expect(leaves[ALBUM_COVER].kind).toBe('cover');
-    expect(leaves.slice(1).map((l) => (l.kind === 'chapter' ? l.chapter : -1))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(leaves.slice(1).map((l) => (l.kind === 'chapter' ? l.chapter : -1))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  });
+
+  test('the 抓周 photo\'s page: page E\'s, locked until the line reaches home again, then open, then the photo', () => {
+    expect(chapterLeaf(fresh, 11)).toMatchObject({ state: 'locked', photo: null });
+    expect(chapterLeaf(finished, 11)).toMatchObject({ state: 'open', photo: null, stickers: [[true, false, false]] });
+    expect(chapterLeaf(keepPhoto(finished, 11, A), 11)).toMatchObject({ state: 'photo', photo: A });
   });
 
   test('a fresh save: every chapter is a placeholder (chapter 1 opens once the prologue is done)', () => {
-    expect(albumLeaves(fresh).slice(1).map((l) => (l.kind === 'chapter' ? l.state : ''))).toEqual(Array(10).fill('locked'));
+    expect(albumLeaves(fresh).slice(1).map((l) => (l.kind === 'chapter' ? l.state : ''))).toEqual(Array(11).fill('locked'));
   });
 
   test('a chapter reached without its photo is open (an empty print); with one, the photo', () => {
@@ -53,15 +59,16 @@ describe('leaves', () => {
 
   test('albumLeaf clamps out-of-range leaves', () => {
     expect(albumLeaf(finished, -3).kind).toBe('cover');
-    expect(albumLeaf(finished, 99)).toMatchObject({ kind: 'chapter', chapter: 10 });
+    expect(albumLeaf(finished, 99)).toMatchObject({ kind: 'chapter', chapter: 11 });
   });
 });
 
 describe('the cover', () => {
   test('the plain cover until every 淘氣 of the game is earned', () => {
     expect(coverLeaf(fresh)).toMatchObject({ mischiefKing: false, mischief: 0, total: GAME_PAGES, latest: null });
-    // All the registered pages' 淘氣 is not all the game's 65
-    expect(coverLeaf(naughty)).toMatchObject({ mischiefKing: false, mischief: ALL.length, total: 65, latest: 1 });
+    // Since page E (#135) the registry is the whole book: every page's 淘氣 is the game's 65
+    expect(ALL).toHaveLength(65);
+    expect(coverLeaf(naughty)).toMatchObject({ mischiefKing: true, mischief: 65, total: 65, latest: 1 });
   });
 
   test('「淘氣大王」 once every page of the book has its 淘氣 (a book the size of the registry, as fixtures show it)', () => {
@@ -80,9 +87,10 @@ describe('opening and paging', () => {
   test('相簿 opens at the latest chapter with a photo, else at the album\'s cover', () => {
     expect(albumHome({})).toBe(ALBUM_COVER);
     expect(albumHome({ 1: A, 3: B })).toBe(3);
-    // The ending's photo (a later issue) or junk keys never decide it
-    expect(albumHome({ 2: A, 11: B, 0: B })).toBe(2);
-    expect(photoChapters({ 4: A, 1: B, 12: A })).toEqual([1, 4]);
+    // The 抓周 photo is the last leaf (#135); junk keys never decide it
+    expect(albumHome({ 2: A, 11: B, 0: B })).toBe(11);
+    expect(albumHome({ 2: A, 12: B, 0: B })).toBe(2);
+    expect(photoChapters({ 4: A, 1: B, 12: A, 11: B })).toEqual([1, 4, 11]);
   });
 
   test('one leaf a turn, no wrap-around', () => {
@@ -92,6 +100,6 @@ describe('opening and paging', () => {
     expect(flipLeaf(ALBUM_LEAVES - 1, 1)).toBeNull();
     expect(clampLeaf(4.4)).toBe(4);
     expect(clampLeaf(-1)).toBe(0);
-    expect(clampLeaf(40)).toBe(10);
+    expect(clampLeaf(40)).toBe(11);
   });
 });

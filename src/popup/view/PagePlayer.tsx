@@ -468,7 +468,10 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
   }, [def, frame]);
   // A story beat the world waits for (#128, GDD § 5.2's 10-6 first steps): while a line its page
   // marks `pause` is on the page, nothing moves; reading it on lets the next tick run
-  const pauseKeys = useMemo(() => new Set((def.lines?.onEvent ?? []).filter((l) => l.pause === true).map((l) => l.line)), [def]);
+  const pauseKeys = useMemo(
+    () => new Set([...(def.lines?.onEvent ?? []).filter((l) => l.pause === true).map((l) => l.line), ...(def.lines?.introPause ? (def.lines.intro ?? []) : [])]),
+    [def],
+  );
   const storyHolds = !still && (talk.beats[0]?.some((l) => pauseKeys.has(l.key)) ?? false);
   useEffect(() => {
     if (!storyHolds) return undefined;
@@ -752,6 +755,8 @@ export function PagePlayer({ def, speed = 'normal', from, prev, events, talk: op
         chapter={def.chapter}
         index={def.index}
         time={sky.time}
+        // 尾聲 and 番外 (#135) are by day: the clock chip's sun
+        moon={def.chapter <= 10}
         coins={pageChrome?.coins ?? 0}
         fill={pageChrome?.trayFill}
         scale={hudScale}

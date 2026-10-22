@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { PageDef } from '../core/types';
 import { buildRegistry, registry } from '../pages';
-import { COVER, chapterStickers, holdsPage, homeChapter, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, treasuresFound, type NavAction, type NavState } from './nav';
+import { COVER, chapterStickers, holdsPage, homeChapter, opensChapter, isFirstLaunch, navigate, pageStickers, resumeTarget, stationOf, treasuresFound, type NavAction, type NavState } from './nav';
 import { completePage, freshSave, openPage, type SaveV1 } from './progress';
 
 /** The navigation state machine (#97; GDD § 2.13): cover → page → menu → contents, and the resume target. */
@@ -166,5 +166,16 @@ describe('the HUD and the bar read the save', () => {
   test('a page’s stickers', () => {
     expect(pageStickers(fresh, 'c0p1')).toEqual([false, false, false]);
     expect(pageStickers({ ...fresh, pages: { c0p1: { solved: true, tudigong: true } } }, 'c0p1')).toEqual([true, false, true]);
+  });
+
+  test('page E (#135): after 10-6 the next page is 尾聲\'s; the 目錄 lists it on 家, its station', () => {
+    expect(registry.nextPage('c10p6')?.id).toBe('c11p1');
+    expect(registry.nextPage('c11p1')).toBeNull();
+    expect(stationOf(11)).toBe(0);
+    expect(stationOf(10)).toBe(10);
+    const atE = { ...fresh, furthest: 'c11p1', current: 'c11p1' };
+    expect(homeChapter(atE)).toBe(0);
+    // Done with page E: the 目錄 at 家
+    expect(navigate({ base: { kind: 'page', id: 'c11p1', run: 0 }, layer: null }, { t: 'next', id: null }, atE).layer).toEqual({ kind: 'contents', chapter: 0 });
   });
 });

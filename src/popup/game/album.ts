@@ -13,16 +13,17 @@ import { GAME_PAGES, rewardFlags } from './stickers';
  *   chapter's word), `open` (the chapter is reached but its spread's photo isn't taken yet: an empty
  *   print) or `locked` (the 月亮線 hasn't reached it: a placeholder with 「月亮線還沒開到這裡。」).
  *   A kept photo always shows, whatever the registry holds.
- * - The ending's 抓周 photo (§ 5.6 row E) becomes the last leaf with #135.
+ * - **Leaf 11 is the ending's 抓周 photo** (§ 2.8: the album's eleventh photo; § 5.6 row E; #135):
+ *   page E's, a chapter page like the others (chapter 11, 尾聲) — his first word printed big.
  *
  * Paging is by one leaf, with no wrap-around: the arrows and a one-finger swipe (`flipLeaf`).
  */
 
 /** The cover's leaf index. */
 export const ALBUM_COVER = 0;
-/** The chapters with an album page (§ 2.9: ten chapter photos). */
-export const ALBUM_CHAPTERS_COUNT = 10;
-/** Leaves in the album: the cover and a page per chapter. */
+/** The chapters with an album page (§ 2.9: ten chapter photos, then the 抓周 photo, page E's, as chapter 11). */
+export const ALBUM_CHAPTERS_COUNT = 11;
+/** Leaves in the album: the cover and a page per chapter (the 抓周 photo last). */
 export const ALBUM_LEAVES = ALBUM_CHAPTERS_COUNT + 1;
 
 /** What a chapter's page shows. */
@@ -51,7 +52,7 @@ export interface ChapterLeaf {
 
 export type AlbumLeaf = CoverLeaf | ChapterLeaf;
 
-/** Chapters with a kept photo, in order (only 1–10 have album pages). */
+/** Chapters with a kept photo, in order (only 1–11 have album pages: 11 is the 抓周 photo). */
 export function photoChapters(photos: Readonly<Record<number, Photo>>): number[] {
   return Object.keys(photos)
     .map(Number)
@@ -91,7 +92,7 @@ export function coverLeaf(save: SaveV1, reg: PageRegistry = gameRegistry, total:
   return { kind: 'cover', mischiefKing: flags.mischiefCover, mischief: flags.mischief, total: flags.total, latest: chapters.length === 0 ? null : chapters[chapters.length - 1] };
 }
 
-/** The leaf at `leaf` (0: the cover, 1–10: the chapters). */
+/** The leaf at `leaf` (0: the cover, 1–10: the chapters, 11: the 抓周 photo). */
 export function albumLeaf(save: SaveV1, leaf: number, reg: PageRegistry = gameRegistry, total: number = GAME_PAGES): AlbumLeaf {
   const i = clampLeaf(leaf);
   return i === ALBUM_COVER ? coverLeaf(save, reg, total) : chapterLeaf(save, i, reg);

@@ -10,6 +10,7 @@ import { chapterSky } from '../art/placeholders';
 import { GUTTER_Y, PAGE_W } from '../geometry';
 import { ArtG } from '../parts/common';
 import { treasureArt } from './treasureArt';
+import { ENDING_LEAF_CHAPTER } from '../../content/album';
 
 /**
  * The chapter photo as a picture (GDD § 2.9; #103): the spread's backdrop, cropped to a 4 : 3
@@ -55,8 +56,18 @@ const BABY_SCALE = 1.45;
 const MOCHA_SCALE = 1.45;
 const POSE: Readonly<Record<PhotoFrame, SpriteId>> = { A: 'baokaka.bounce', B: 'baokaka.reach', C: 'baokaka.eat' };
 
+/**
+ * The 抓周 photo (page E, #135): Mocha is the treasure — B, crawling in on him as he sits; A, the
+ * grab: both hands round his tail as it shoots up (`mocha.glare`, tail up and stiff); C, chewing it.
+ */
+const ENDING_POSE: Readonly<Record<PhotoFrame, { baby: SpriteId; mocha: SpriteId }>> = {
+  A: { baby: 'baokaka.hug', mocha: 'mocha.glare' },
+  B: { baby: 'baokaka.reach', mocha: 'mocha.sit' },
+  C: { baby: 'baokaka.eat', mocha: 'mocha.glare' },
+};
+
 /** The sprites a photo can show (preload them before the moment). */
-export const PHOTO_SPRITES: readonly SpriteId[] = ['baokaka.bounce', 'baokaka.reach', 'baokaka.eat', 'mocha.album'];
+export const PHOTO_SPRITES: readonly SpriteId[] = ['baokaka.bounce', 'baokaka.reach', 'baokaka.eat', 'baokaka.hug', 'mocha.album', 'mocha.sit', 'mocha.glare'];
 
 export interface PhotoSceneProps {
   readonly chapter: number;
@@ -94,6 +105,7 @@ export function PhotoScene({ chapter, def, frame, mocha, approach = 1, width = P
 
   const foot = crop.y + FOOT_Y;
   const pose = POSE[frame];
+  const ending = chapter === ENDING_LEAF_CHAPTER;
   // B: he crawls in from the left; A and C: he has it, centre stage
   const babyX = crop.x + (frame === 'B' ? 92 + 46 * approach : 150);
   // The treasure: on the floor ahead of him (B), held over his head (A), at his mouth (C)
@@ -111,6 +123,10 @@ export function PhotoScene({ chapter, def, frame, mocha, approach = 1, width = P
       data-photo-scene={`${frame}${mocha ? '+M' : ''}`}
     >
       <ArtG html={art} />
+      {ending ? (
+        <EndingPair frame={frame} x={crop.x} foot={foot} approach={approach} glints={glints} />
+      ) : (
+        <>
       {mocha && <SpriteAnim sprite="mocha.album" x={crop.x + 48} y={foot + 6} scale={MOCHA_SCALE} playing={false} />}
       {frame === 'B' && <g transform={`translate(${tx} ${ty}) scale(${tScale})`} dangerouslySetInnerHTML={{ __html: treasure }} />}
       <SpriteAnim sprite={pose} x={babyX} y={foot} scale={BABY_SCALE} playing={false} />
@@ -121,7 +137,27 @@ export function PhotoScene({ chapter, def, frame, mocha, approach = 1, width = P
           <g transform={`translate(${tx + 30} ${ty - 22}) scale(.7)`} dangerouslySetInnerHTML={{ __html: glints }} />
         </g>
       )}
+        </>
+      )}
       <rect x={crop.x} y={crop.y} width={crop.w} height={crop.h} fill={vignette} />
     </svg>
+  );
+}
+
+/**
+ * The 抓周 photo's pair (#135), feet on the crop's floor line: Mocha on the right, turned to him;
+ * Baokaka on the left — crawling in (B), both hands round the tail Mocha shot up in surprise (A,
+ * 「哇！」, a glint on it), or the tail in his mouth (C).
+ */
+function EndingPair({ frame, x, foot, approach, glints }: { frame: PhotoFrame; x: number; foot: number; approach: number; glints: string }) {
+  const { baby, mocha } = ENDING_POSE[frame];
+  const mochaX = x + (frame === 'B' ? 214 : 186);
+  const babyX = frame === 'B' ? x + 70 + 52 * approach : frame === 'A' ? x + 112 : x + 116;
+  return (
+    <g data-photo-pair={frame}>
+      <SpriteAnim sprite={mocha} x={mochaX} y={foot + 4} scale={MOCHA_SCALE * 1.15} facing={frame === 'B' ? 'l' : 'r'} playing={false} />
+      <SpriteAnim sprite={baby} x={babyX} y={foot} scale={BABY_SCALE} playing={false} />
+      {frame === 'A' && <g transform={`translate(${mochaX - 40} ${foot - 104})`} dangerouslySetInnerHTML={{ __html: glints }} />}
+    </g>
   );
 }

@@ -836,6 +836,19 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 688
       },
       "source": "7034f371daeadf78"
+    },
+    "end/zhuazhou-day": {
+      "file": "backdrops/end/zhuazhou-day",
+      "bytes": 96074,
+      "chapter": 11,
+      "grade": [1.818, 1.754, 1.389],
+      "box": {
+        "x": -30,
+        "y": -12,
+        "w": 450,
+        "h": 688
+      },
+      "source": "345d692db455d443"
     }
   },
   "parts": {
@@ -4382,6 +4395,28 @@ export const ENV_MANIFEST: EnvManifest = {
         "h": 430
       },
       "source": "251546322d9d7a2c"
+    },
+    "dawn-scene": {
+      "file": "screens/dawn-scene",
+      "bytes": 22408,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 500
+      },
+      "source": "dcbb184e281db6e5"
+    },
+    "shrine-scene": {
+      "file": "screens/shrine-scene",
+      "bytes": 17594,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 500
+      },
+      "source": "122c4a90e849c397"
     }
   }
 };

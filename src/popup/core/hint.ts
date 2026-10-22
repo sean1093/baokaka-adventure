@@ -164,6 +164,8 @@ export function solutionAction(def: PageDef, state: SimState): Input | null {
   const puzzle = all.filter((id) => def.parts.find((p) => p.id === id)?.preset !== 'prop');
   // Waiting only helps while something is still moving: a settled page that matches nothing to do is lost
   const moving = waitMoves(def, state);
+  // A page solved by waiting (page E, `allowTrivial`, #135): nothing to show but the wait
+  if (gestures.length === 0 && def.allowTrivial === true) return moving ? NONE : null;
   const tiers = [[all, sameScene], [all, sameWorld], [all, sameParts], [puzzle, sameScene], [driven, sameParts]] as const;
   for (const [ids, same] of tiers) {
     const matches = gestures.filter((g) => same(g.before, state, ids) && sameRefusal(g, state));
