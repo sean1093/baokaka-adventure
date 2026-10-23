@@ -7,12 +7,13 @@ import type { Bark } from '../core/events';
  * Baokaka's barks are his vocabulary (§ 5.1): the ones the engine emits as `bark` events
  * (`core/events.ts` `Bark`: on choosing a target, and 「要！要！」 every 4 ticks while reaching),
  * plus 好吃！ (eating), 哇—— (starting to cry), and 這個！ / ㄅㄚ！ for pages' own lines. Mocha's are
- * his cat lines (§ 2.3): arrival, the stare before a push, an unreachable perch, water, cuddled.
+ * his cat lines (§ 2.3): arrival, the stare before a push, an unreachable perch, water, cuddled, and
+ * a swing too light to go on without him (#221).
  */
 
 /** Every bark Baokaka has (the engine's `Bark` ids and the view's own). */
 export type BabyBark = Bark | 'yum' | 'cry' | 'this' | 'papa';
-export type MochaBark = 'arrive' | 'stare' | 'nope' | 'puff' | 'purr';
+export type MochaBark = 'arrive' | 'stare' | 'nope' | 'puff' | 'purr' | 'ride';
 
 export const BABY_BARKS: Readonly<Record<BabyBark, string>> = {
   want: '要！',
@@ -32,4 +33,6 @@ export const MOCHA_BARKS: Readonly<Record<MochaBark, string>> = {
   nope: '喵？',
   puff: '不要。',
   purr: '呼嚕嚕……',
+  // A 咻—— the swing can't take on without a cat's weight (#221: 10-4's damper): he offers to ride it
+  ride: '我坐上去？',
 };

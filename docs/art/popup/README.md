@@ -269,6 +269,8 @@ Each touchable carries **four redundant cues**, so colour-blind players, low-vis
 | **Hold-to-reveal** | Every interactive part and prop gets a 2 px dashed outline in `#FFF7E0` |
 | **Reduced motion** | No wiggle. Instead, a permanent 1 px light double outline. |
 
+*Engineers' note (#221, D-108): machine cues.* Three printed cues read a machine off the page data (`view/parts/cues.ts`), in chalk, cream and brass so marigold stays on the touchables. A **level wheel** (a wheel of three or more stops that a lift follows: 7-5, 8-5, 9-4) prints a dial round its rim instead of the curved arrow: a cream level gauge per stop (the water drawn to that stop's level), dotted chalk arrows clockwise between them, the stop it is at (or a drag would land on) ringed in marigold, and a marigold pointer on the disc; the 轉 seal moves to the rim between two stops. A **coupled wheel** (10-3) prints a brass drive belt across to the column of the parts it turns and up or down to each; a part Mocha holds still shows its belt slack, grey and dotted, with the locked paw badge where it meets the part. A **blowable that carries a node** (10-4's damper) prints its stops as chalk dots on the floor under it, dotted arrows on to each next stop and the long arc back, the stop it is at filled, the next one ringed — or wearing the paw badge while its `stateWhen` wants Mocha aboard; a 咻—— it refuses wobbles the part, and Mocha looks at it: 「我坐上去？」.
+
 ### 4.2 Readability checks (every page, in PageLab)
 
 - **Squint test** at 25% scale: the marigold parts and the two standees must be the only things you see.

@@ -269,7 +269,7 @@ Mocha is the player's one movable "piece". He is a cat, so he only goes where ca
 | C8 | **Won't step on glass.** | Perches tagged `glass` are unreachable (used in 貓空's crystal gondola). |
 | C9 | **Is curious about boxes.** | A perch tagged `box` (a basket, a bento box): Mocha sits in it and is **hidden**, so he's not an attractor. This is the main way to take Mocha out of Baokaka's sight. |
 
-**Mocha's lines** (bark bubbles, no dialogue box): 「喵。」 on arrival; a slow 「……」 before a push; 「喵？」 at an unreachable perch; 「不要。」 at water; purring 「呼嚕嚕」 while cuddled.
+**Mocha's lines** (bark bubbles, no dialogue box): 「喵。」 on arrival; a slow 「……」 before a push; 「喵？」 at an unreachable perch; 「不要。」 at water; purring 「呼嚕嚕」 while cuddled; 「我坐上去？」 when a 咻—— can't swing a thing on without his weight (10-4's damper, #221).
 
 **For engineers.** `core/mocha.ts` (#83) implements this section as `mochaCommand` (§ 3.3 phase 1, input `mocha`), `mochaPet` (phase 1, input `pet`) and `mochaTick` (phase 3), plus `catLocked`, `catPath`, `perchRefusal` and `mochaAttractorNode` (C5/C9, read by `baby.ts`). The precise readings — the path is committed when tapped, the eye contact is a tick of its own (`mocha.stare`), push → `falling` the next tick → `landed` the tick after, a press or `set` always emits `partEnter` (so `pet` re-presses a held button), `wet`/`steam` perches use `blockedWhen` as the tag's condition (always, without one), refused perches are avoided en route, and the UI events `mochaNope` / `mochaPuff` / `mochaStare` — are in D-44.
 
@@ -381,7 +381,7 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 2. The simulation stops.
 3. The page **folds** (0.9 s paper animation and sound).
 4. A small sticker card shows the three page stickers.
-5. After 1.5 s or a tap, the next page unfolds.
+5. After 1.5 s or a tap, the next page unfolds. For 0.6 s after it has unfolded, touches are swallowed, so a late tap meant for the card never acts on the new page (#221, D-108).
 
 **Stickers per page** (stored per page, earned once, kept forever):
 
@@ -1624,8 +1624,8 @@ pa：「本列車直達：寶咖咖的家。」
 | 店員小哥 | One cameo per chapter | 「叮咚～歡迎光臨！」 then 「我們是連鎖的。」 (ch7: 「行動分店。」; ch10: 「我們在101也有分店。」) |
 | 土地公 (on tap) | Every page | 「呵呵，囡仔，慢慢仔來。」 |
 | 摩卡 (squinting at 土地公) | 4-x, 7-x, 10-x first tap | 「……我是不是在哪裡看過你？」 |
-| 摩卡 bark | Arrival / unreachable / water / cuddled | 「喵。」／「喵？」／「不要。」／「呼嚕嚕……」 |
-| Hint lines (≤ 12 chars) | §2.7 | 「拉拉看這裡」「讓摩卡上去」「試試看說話」「藏起來看看？」「等等看。」「轉轉看」「翻開看看」 |
+| 摩卡 bark | Arrival / unreachable / water / cuddled / a swing too light | 「喵。」／「喵？」／「不要。」／「呼嚕嚕……」／「我坐上去？」 |
+| Hint lines (≤ 12 chars) | §2.7 | 「拉拉看這裡」「讓摩卡上去」「試試看說話」（level 2 names the word: 「試試看說『咻——』」, #221）「藏起來看看？」「等等看。」「轉轉看」「翻開看看」 |
 | 淘氣 pop | Sticker earned | 「嘿嘿，淘氣！」 |
 | 土地公 sticker | Sticker earned | 「找到土地公！」 |
 | Page fold | Completion | 「下一頁！」 |

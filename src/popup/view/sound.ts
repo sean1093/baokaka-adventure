@@ -140,7 +140,7 @@ export function tickSounds(def: PageDef, prev: SimState, state: SimState, events
   }
 
   // A locked part, or a stop it can't reach: the low boop (with the wobble and Mocha's glare)
-  if (has('locked') || has('jam')) out.push({ cue: 'boop' });
+  if (has('locked') || has('jam') || has('strain')) out.push({ cue: 'boop' });
   return out;
 }
 

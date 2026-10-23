@@ -54,6 +54,8 @@ export function barksOf(prev: SimState, state: SimState, events: readonly SimEve
   if (has('mochaStare')) out.push(mocha('stare'));
   else if (has('mochaNope')) out.push(mocha('nope'));
   else if (has('mochaPuff')) out.push(mocha('puff'));
+  // A swing that strains without his weight (#221): 「我坐上去？」
+  else if (has('strain')) out.push(mocha('ride'));
   else if (has('catArrive')) out.push(mocha('arrive'));
   // 抱抱 with nobody to carry him (#120): his arms go up, and Mocha purrs instead
   else if (has('hugNobody') && (state.mocha.perch !== null || state.mocha.path.length > 0)) out.push(mocha('purr'));

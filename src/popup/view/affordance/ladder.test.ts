@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { HINT_LINE_MAX, HINT_LINES } from '../../content/hints';
+import { HINT_LINE_MAX, HINT_LINES, sayWordLine } from '../../content/hints';
+import { WORD_LABEL } from '../../content/words';
 import { textLength } from '../../core/lint';
 import c0p4 from '../../core/fixtures/c0p4';
 import c1p2 from '../../core/fixtures/c1p2';
@@ -61,6 +62,15 @@ describe('the hint line (§ 5.3, ≤ 12 characters)', () => {
 
   test('every line is ≤ 12 characters', () => {
     for (const text of Object.values(HINT_LINES)) expect(textLength(text), text).toBeLessThanOrEqual(HINT_LINE_MAX);
+  });
+
+  test('from level 2 a word\'s line names the word (#221, friction 16)', () => {
+    const say: Input = { t: 'say', word: 'whoosh' };
+    expect(hintLine(c1p3, say, 1)).toBe('試試看說話');
+    expect(hintLine(c1p3, say, 2)).toBe('試試看說『咻——』');
+    expect(hintLine(c1p3, say, 3)).toBe('試試看說『咻——』');
+    expect(hintDisplay(c1p3, { action: say, source: 'solver' }, 2).line).toBe('試試看說『咻——』');
+    for (const label of Object.values(WORD_LABEL)) expect(textLength(sayWordLine(label)), label).toBeLessThanOrEqual(HINT_LINE_MAX);
   });
 });
 

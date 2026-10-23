@@ -93,7 +93,8 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [197](https://github.com/sean1093/baokaka-adventure/issues/197) | Talk layout: a three-line beat over a reaching Baokaka covers his thought bubble at 375×667 | m3 | #123 | done (#200) |
 | [136](https://github.com/sean1093/baokaka-adventure/issues/136) | Performance, reduced-motion and accessibility audit for 翻翻台北 (supersedes #57) | chore, ui, m5 | #135, #68 | done (#219) |
 | [137](https://github.com/sean1093/baokaka-adventure/issues/137) | Full-game solver run, difficulty-curve review and par tuning | engine, content, m5 | #135 | done (#220) |
-| [138](https://github.com/sean1093/baokaka-adventure/issues/138) | Family beta, final QA checklist, docs and launch (supersedes #58) | docs, qa, m5 | #136, #137, #111 | todo |
+| [221](https://github.com/sean1093/baokaka-adventure/issues/221) | M5 polish: late-game friction from the AI playthrough (13–17) — level-wheel dials, 10-4's swing and strain, 10-3's drive belts, L2 names the word, a grace after the page turn | m5, ui, content | #137 | done (#222) |
+| [138](https://github.com/sean1093/baokaka-adventure/issues/138) | Family beta, final QA checklist, docs and launch (supersedes #58) | docs, qa, m5 | #136, #137, #221, #111 | todo |
 
 ## Dependency graph
 
@@ -175,6 +176,7 @@ graph TD
     I193["#193 art follow-ups"]
     I136["#136 perf/a11y"]
     I137["#137 solver tuning"]
+    I221["#221 late-game friction"]
     I138["#138 beta + launch"]
   end
   I79 --> I139
@@ -287,7 +289,8 @@ graph TD
   I68 --> I136
   I135 --> I137
   I136 --> I138
-  I137 --> I138
+  I137 --> I221
+  I221 --> I138
   I111 --> I138
 ```
 
