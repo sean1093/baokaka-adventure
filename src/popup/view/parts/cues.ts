@@ -227,11 +227,9 @@ export function swingPath(stops: readonly (readonly [number, number])[], dy: num
   // And the long way back, from the last stop to the first, lower down
   if (pts.length > 2) {
     const [ax, ay] = pts[pts.length - 1], [bx, by] = pts[0];
-    const dir = Math.sign(bx - ax) || -1;
     const low = Math.max(ay, by) + 34;
     out += `<path d="M${f1(ax)} ${f1(ay + 12)}C${f1(ax)} ${f1(low)} ${f1(bx)} ${f1(low)} ${f1(bx)} ${f1(by + 13)}" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5" opacity=".7"/>`
       + `<path d="M${f1(bx - 4.5)} ${f1(by + 19)}L${f1(bx)} ${f1(by + 13)}L${f1(bx + 4.5)} ${f1(by + 19)}" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>`;
-    void dir;
   }
   // The stops: a chalk dot each, the current one filled; the next one ringed (or the paw: Mocha's weight)
   pts.forEach(([x, y], i) => {
