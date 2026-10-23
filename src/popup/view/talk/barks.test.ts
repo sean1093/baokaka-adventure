@@ -37,6 +37,7 @@ describe('barksOf', () => {
     ['mochaStare', '……'],
     ['mochaNope', '喵？'],
     ['mochaPuff', '不要。'],
+    ['strain', '我坐上去？'],
   ] as const)('Mocha on %s: 「%s」', (type, text) => {
     expect(texts(at(0), at(1), [{ type, id: 'x' }])).toEqual([`mocha:${text}`]);
   });

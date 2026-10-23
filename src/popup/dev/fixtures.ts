@@ -2439,6 +2439,14 @@ export const POPUP_FIXTURES: readonly PopupFixture[] = [
     expect: { mode: 'reaching' },
   },
   {
+    name: 'hint-word',
+    page: 'c9p6',
+    steps: [{ mocha: 'basket' }, { wait: 'settle' }, { say: 'whoosh' }, { say: 'whoosh' }, { mocha: 'wheelhouse' }, { wait: 'settle' }],
+    show: { hint: 2 },
+    note: 'Hint level 2 on a word (#221, friction 16): 9-6 on deck with the gulls on the rail, the next move is 飛機！ — the halo on Baokaka and Mocha names the word: 「試試看說『飛機！』」 (level 1 says 「試試看說話」).',
+    expect: { mode: 'reaching' },
+  },
+  {
     name: 'hint-wait',
     page: 'c1p2',
     steps: [{ set: 'train', to: 'half' }, { wait: 'settle' }, { mocha: 'pillar' }, { wait: 'settle' }, { set: 'train', to: 'full' }],

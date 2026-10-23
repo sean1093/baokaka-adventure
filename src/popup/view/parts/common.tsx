@@ -30,6 +30,8 @@ export interface PartViewProps {
   readonly preview?: number;
   /** Its touchable state look (bible § 4.1, #140): wiggle, lift, locked veil, reduced outline, 長輩模式 */
   readonly look?: PartLook;
+  /** A level wheel (#221): where each stop leaves the lift that follows it, 0 … 1 (`cues.ts` `wheelLevels`) */
+  readonly levels?: readonly number[];
 }
 
 /** A memoised raw-SVG group: the art string is set once per change, not every frame. */

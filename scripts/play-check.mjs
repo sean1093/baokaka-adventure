@@ -797,8 +797,11 @@ const SCENARIOS = {
   // of drained (the far tub sinks with him and floats up by the far step)
   c8p5: [
     { wait: 'cuddling' },
+    // The tap's dial (#221): full ringed; one turn round, drained ringed
+    { expect: '[data-cue="dial"][data-dial-stop="2"]' },
     { tap: [72, 290] },
     { settle: 600 },
+    { expect: '[data-cue="dial"][data-dial-stop="0"]' },
     { tap: [352, 376] },
     { expect: '[data-subtitle]', timeout: 6_000 },
     { readTalk: true },
@@ -993,21 +996,34 @@ const SCENARIOS = {
   // with it): the ledges in line, and he climbs to the bead
   c10p3: [
     { wait: 'reaching' },
+    { expect: '[data-belt="trunk"]', absent: '[data-belt][data-held]' },
     { tap: [66, 374] },
     { settle: 500 },
     { tap: [66, 374] },
     { settle: 500 },
     { tap: [344, 300] },
     { settle: 1500 },
+    // Mocha holds the top section: its belt hangs slack under the paw (#221)
+    { expect: '[data-belt="top"][data-held]', absent: '[data-belt="low"][data-held]' },
     { tap: [66, 374] },
     { settle: 500 },
     { tap: [344, 420] },
     { settle: 1500 },
+    { expect: '[data-belt="low"][data-held]', absent: '[data-belt="top"][data-held]' },
     { tap: [66, 374] },
   ],
-  // 10-4 「阻尼球」: Mocha onto the sphere, then 咻—— four times: out with the cat, back to him (he
-  // climbs on), the centre, out to the far side (he climbs off to the bead)
+  // 10-4 「阻尼球」: first 咻—— without the cat — the sphere strains and stays, the floor's swing path
+  // marks the far stop with the paw and Mocha offers 「我坐上去？」 (#221) — then Mocha onto the sphere,
+  // and 咻—— four times: out with the cat, back to him (he climbs on), the centre, out to the far side
+  // (he climbs off to the bead)
   c10p4: [
+    { wait: 'reaching' },
+    { expect: '[data-cue="swing"][data-needs-mocha]' },
+    { tapEl: '[data-actor="baby"]' },
+    { tapEl: '[data-word="whoosh"]', paused: true },
+    { expect: '[data-bark-kind="ride"]', timeout: 4_000 },
+    { settle: 1200 },
+    { readTalk: true },
     { wait: 'reaching' },
     { tap: [218, 432] },
     { settle: 2000 },

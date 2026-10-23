@@ -6,6 +6,7 @@ import { checkKnot, kitCtx, pawBadge, type KitCtx } from '../art';
 import { attractorNode } from '../core/baby';
 import { holds, partState } from '../core/cond';
 import { partLocked, stepGrowth } from '../core/step';
+import { compilePart } from '../core/presets';
 import type { SimEvent } from '../core/events';
 import { nodePos } from '../core/graph';
 import { mochaLinked, mochaNode, perchHidesMocha } from '../core/mocha';
@@ -55,6 +56,7 @@ import { PRESET_Z, type LayerId } from './layers';
 import { ArtG, r2, tweened } from './parts/common';
 import { moverPoint } from './parts/MoverView';
 import { CarriageView, MOVERS, RiderView, partView, type MoverProps, type PartViewProps } from './parts';
+import { branchArt, dialBox, driveBelts, swingPath, swingStops, trunkArt, wheelLevels } from './parts/cues';
 import { foregroundSlot, stageOf } from './stage';
 import { SayRing } from './words/SayFx';
 import './hud/stickers.css';
@@ -135,6 +137,8 @@ export interface PageViewProps {
 }
 
 const NO_EVENTS: readonly SimEvent[] = [];
+/** A swing's printed path lies this far under the stops its rider stands on (#221). */
+const SWING_DROP = 128;
 const NO_TRAIL: readonly (readonly [Id, Id])[] = [];
 
 /** The footprints of a walk step from `a` to `b` (#128): one per `FOOTPRINTS_AT` already reached at `k`. */
@@ -252,6 +256,35 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
 
   // ——— Parts, split around the ledges by depth ———
   const riders = useMemo(() => new Set(def.nodes.filter((n) => n.attach).map((n) => n.attach!.part)), [def]);
+  // Level wheels (#221): the lift level each stop leaves, for the wheel's printed dial
+  const levels = useMemo(() => new Map(def.parts.flatMap((p) => {
+    const l = wheelLevels(def, p);
+    return l === null ? [] : [[p.id, l] as const];
+  })), [def]);
+  // Coupled wheels (#221): the printed drive belts to the parts they turn; a held part's hangs slack
+  const drives = useMemo(() => driveBelts(def), [def]);
+  const trunks = useMemo(() => drives.trunks.map(trunkArt).join(''), [drives]);
+  const heldKey = drives.branches.map((b) => (partLocked(def, state, b.part) ? '1' : '0')).join('');
+  const branches = useMemo(() => drives.branches.map((b, i) => branchArt(b, heldKey[i] === '1')).join(''), [drives, heldKey]);
+  // Swings (#221): a blowable's stops printed under it, the next one marked (the paw: it needs Mocha's weight)
+  const swings = useMemo(() => def.parts.flatMap((p) => {
+    const stops = swingStops(def, p);
+    return stops === null ? [] : [{ part: p, stops, states: compilePart(p).states }];
+  }), [def]);
+  const swingKey = swings.map(({ part, states }) => {
+    const i = Math.max(0, states.indexOf(partState(state, part.id) ?? ''));
+    const next = (i + 1) % states.length;
+    return `${i}${next}${holds(def, state, part.stateWhen?.[states[next]]) ? '' : 'm'}`;
+  }).join(',');
+  const swingHtml = useMemo(() => swings.map(({ stops }, k) => {
+    const [i, next, m] = swingKey.split(',')[k];
+    return swingPath(stops, SWING_DROP, Number(i), Number(next), m === 'm');
+  }).join(''), [swings, swingKey]);
+  const dials = useMemo(() => def.parts.filter((p) => levels.has(p.id)).map((p) => {
+    const hb = hitBox(p.hit);
+    const [cx, cy] = p.center ?? [hb.x + hb.w / 2, hb.y + hb.h / 2];
+    return dialBox(cx, cy, p.radius ?? Math.max(20, Math.min(hb.w, hb.h) / 2 - 8));
+  }), [def, levels]);
   // What rides a loop's slots (#124: suitcases, a tray), drawn at their nodes over the belt
   const slotRiders = useMemo(() => def.parts.filter((p) => p.preset === 'loop').flatMap((p) => def.nodes.filter((n) => n.attach?.part === p.id).flatMap((n) => {
     const art = riderArt(p.art, n.id);
@@ -269,6 +302,8 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     };
     return look.wiggle || look.lifted || look.locked || look.outline || look.elder ? look : undefined;
   };
+  // A swing that strained without Mocha's weight this tick (#221): it wobbles, and Mocha looks at it
+  const strained = events.find((e) => e.type === 'strain')?.id;
   const partEls = (z: 'mid' | 'near') =>
     def.parts
       .filter((p) => (PRESET_Z[p.preset] <= 3 ? 'mid' : 'near') === z)
@@ -280,7 +315,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         const View = partView(part);
         const held = preview?.part === part.id ? preview.index : undefined;
         const look = lookOf(part);
-        const base: PartViewProps = { part, ctx, from, to, ms, reduced, linked: riders.has(part.id), preview: held, look };
+        const base: PartViewProps = { part, ctx, from, to, ms, reduced, linked: riders.has(part.id), preview: held, look, levels: levels.get(part.id) };
         let el: JSX.Element;
         if (MOVERS.has(part.preset)) {
           const Mover = View as (p: MoverProps) => JSX.Element;
@@ -301,14 +336,14 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
           );
         }
         const dragging = gesture.dragging === part.id;
-        const wobble = locked?.part === part.id;
+        const wobble = locked?.part === part.id || strained === part.id;
         const badge = look?.locked ? 'locked' : affordance.done?.includes(part.id) ? 'done' : null;
         if (!dragging && !wobble && badge === null) return el;
         // Bible § 4.1 states: the drag's lift and the locked veil are the view's (`look`); here the
         // flags, the wobble on a locked touch (replays per touch) and the badge at the hit's corner
         return (
           <g
-            key={wobble ? `${part.id}:${locked.serial}` : part.id}
+            key={wobble ? `${part.id}:${locked?.part === part.id ? locked.serial : `s${state.tick}`}` : part.id}
             data-dragging={dragging ? '' : undefined}
             data-locked={wobble || look?.locked ? '' : undefined}
             className={wobble && !reduced ? 'gx-wobble' : undefined}
@@ -378,6 +413,9 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const nopePerch = nope === undefined ? undefined : def.perches.find((p) => p.id === nope);
   // A floor node he can't lead them to (#128): he looks at it too
   const nopeAt = nopePerch !== undefined ? nodePos(def, state, nopePerch.node) : nope !== undefined && linked ? nodePos(def, state, nope) : undefined;
+  // A swing that strained (#221): he looks at his paw on it, 「我坐上去？」
+  const strainPerch = strained === undefined ? undefined : def.perches.find((p) => def.nodes.find((n) => n.id === p.node)?.attach?.part === strained);
+  const strainAt = strainPerch !== undefined ? nodePos(def, state, strainPerch.node) : undefined;
 
   // ——— Creatures ———
   const shinyBeside = (p: Pt): Pt | undefined => {
@@ -511,7 +549,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
   const mochaTilt = still ? 0 : standeeTilt(ms, tickMs, mochaDir, reduced);
   // At rest he sits turned toward 寶咖咖 — or, with a hint's yawn or look, toward the hinted target;
   // travelling, toward where he is going (frames face right)
-  const lookAt: Pt | null = nopeAt ?? ((cue === 'yawn' || cue === 'look') && hinted !== undefined ? hitCenter(hinted.hit) : babyPose ? [babyPose.x, babyPose.y] : null);
+  const lookAt: Pt | null = nopeAt ?? strainAt ?? ((cue === 'yawn' || cue === 'look') && hinted !== undefined ? hitCenter(hinted.hit) : babyPose ? [babyPose.x, babyPose.y] : null);
   const mochaFacing = mochaDir !== 0 ? (mochaDir < 0 ? 'l' : 'r') : mochaPose && lookAt && lookAt[0] < mochaPose.x - 4 ? 'l' : 'r';
 
   // ——— What is said (#98): the thought bubble, barks, subtitles, placed off him and the goal ———
@@ -547,7 +585,8 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
       beat,
       touch: beat === null ? [] : targets.map((tg) => hitBox(tg.hit)),
       // The paw prints and the hinted target: the thought bubble and the barks keep off them too (#183)
-      marks: targets.filter((tg) => tg.kind === 'perch' || tg.key === hinted?.key).map((tg) => hitBox(tg.hit)),
+      // and the level wheels' dials (#221)
+      marks: [...targets.filter((tg) => tg.kind === 'perch' || tg.key === hinted?.key).map((tg) => hitBox(tg.hit)), ...dials],
     });
   }, [k, state, def, bAnim.sprite, mAnim.sprite, mochaFacing, mochaHidden, showKey(show), barks, beat, hinted?.key, babyAt?.[0], babyAt?.[1]]);
   // A beat too big for the page (#197) is split before it is painted: the rest follow on the next tap
@@ -620,6 +659,7 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
           <CarriageView key={c.part} def={def} prev={prev} state={state} carriage={c} ctx={ctx} ms={ms} reduced={reduced} preview={preview} />
         ))}
         {partEls('mid')}
+        {trunks !== '' && <ArtG html={trunks + branches} />}
         {slotRiders.map((r) => (
           <RiderView key={r.node} def={def} prev={prev} state={state} node={r.node} html={r.html} ms={ms} reduced={reduced} preview={preview} />
         ))}
@@ -631,6 +671,8 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
         {footprints && <ArtG html={footprints} />}
         {/* Linked (#128): the floor's marks lie on the floor, under whoever stands near them */}
         {floors.length > 0 && <g data-floor-marks="">{floors}</g>}
+        {/* A swing's stops printed on the floor under it (#221) */}
+        {swingHtml !== '' && <ArtG html={swingHtml} />}
       </Layer>
       <Layer id="parts-near">
         {!haloMid && !haloOnTop && halo}

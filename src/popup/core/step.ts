@@ -240,7 +240,11 @@ export function cascade(def: PageDef, state: SimState, events: readonly SimEvent
       const to = reactionTarget(compilePart(t.part), current, t.to);
       if (to === null || to === current) continue;
       if (t.part.lockedWhen !== undefined && evalCond(def, s, t.part.lockedWhen)) continue;
-      if (!allowed(def, s, t.part, to)) continue;
+      if (!allowed(def, s, t.part, to)) {
+        // A 咻—— that can't swing it on (#221): it strains and stays (the view shows it; no state changes)
+        if (ev.type === 'whoosh' && t.part.preset === 'blowable') queue.push({ type: 'strain', id: t.part.id, state: current });
+        continue;
+      }
       s = turn(def, s, t.part, current, to, queue);
     }
   }
