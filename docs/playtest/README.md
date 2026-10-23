@@ -10,6 +10,10 @@ How to run the M1 playtest (issue [#110](https://github.com/sean1093/baokaka-adv
 | [`owner-guide.md`](owner-guide.md) | The owner | A short summary in 繁體中文: how to play, what to watch, how to report |
 | [`ai-playtest.md`](ai-playtest.md) | Everyone | The automated first-time run (2026-10-20) and the friction it found: things to watch first |
 | [`m1-results.md`](m1-results.md) | The owner | The results: filled in after the session, with the go/no-go and the follow-up issues |
+| [`launch-checklist.md`](launch-checklist.md) | The owner | **Launch (#138):** the real-device pass and the family beta, in 繁體中文, then the sign-offs |
+| [`beta-results.md`](beta-results.md) | The owner | The device pass and family beta results (#138) |
+| [`final-qa.md`](final-qa.md) | Everyone | The final QA checklist: the automated part with its results, and what needs phones and people |
+| [`release-notes-zh.md`](release-notes-zh.md) | The owner | The release note in 繁體中文: what ships, what was fixed, what is left to do |
 
 ## 1. Who and what
 

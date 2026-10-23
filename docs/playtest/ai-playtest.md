@@ -112,3 +112,17 @@ The engineer on #137 played a sample of the later chapters the same way, to look
 | 15 | **Fixed** | 10-3's crank drives the two sections through a printed brass belt (across to the tower, then up and down); a section Mocha sits on shows its belt slack and grey under the locked paw, so it is plain which one won't turn. [04](../screenshots/221/04-c10p3-belts-held.jpg) |
 | 16 | **Fixed** | Level 2 on a word names it: 「試試看說『飛機！』」 (level 1 still says 「試試看說話」; level 3 says it for you). [07](../screenshots/221/07-hint-l2-names-word.jpg) |
 | 17 | **Fixed** | For 0.6 s after a page turn ends, touches are swallowed: a late tap meant for the sticker card never acts on the new page. `check:play`'s `turn-grace` taps 1-3 the moment it appears (nothing happens) and again a moment later (Mocha goes). |
+
+## The whole game on hints (#138), 2026-10-23
+
+The release candidate, on the **production build** (`vite preview` over `dist/`), at 390×844 with touch, one continuous save from a fresh phone: the cover, 開始, the prologue, chapters 1–10, page E, the credits and the post-credits back to the cover, then the 相簿 and the 目錄. The player is the hardest case for the hint ladder: a newcomer who looks at each page for 6 s, then presses 提示 every 2 s (level 1, level 2, then level 3 again and again) until the page is solved, reads every line, says cheese on every spread and keeps every photo. A second run plays the prologue and chapter 1 (and 2-1) with **長輩模式 + 大字** at **375×667**, the smallest supported phone; on a fresh save the cover shows only 開始, so it sets them from the page's 選單 → 設定.
+
+**Result.** Every page finishes on hints alone, in 15–32 s of play (4–8 presses; the spreads and chapter 10 are the longest), after one fix. The whole book takes ≈ 25 minutes this way; a person who plays rather than presses takes the GDD's 3–4 hours. No console error or warning on any screen; the credits, the post-credits, the album (every chapter's photo and page E's) and the 目錄 all show. In 長輩模式 + 大字 at 375×667 everything is legible and nothing is clipped; the album's notes scroll (four notes don't fit under the photo at that size).
+
+| # | Where | What happened | Severity | Status |
+|---|---|---|---|---|
+| 18 | 4-1 (and 3-4, 4-5, 4-6, 5-1, 7-1, 8-1) | **Level 3 looped forever.** With Mocha on the strap, 不要！ to the ad screen sends him to cuddle Mocha for one tick and straight back to the screen; only Mocha onto the header in that same tick keeps the gain. The hint's solver counts moves, not the time between them, so it kept choosing 不要！. 42 presses, never solved. A sweep at a person's pace found the same loop on six more pages. Levels 1–2 pointed at the same move, so a person following the glow would loop too. | **High** (the grandparents' safety net) | **Fixed** (D-109): a hint's move must still be progress after a 4-tick pause, or a move that is replaces it. Every page finishes at a person's pace (`hints.test.ts`). |
+| 19 | First launch | The cover shows only 開始 on a fresh save, so 長輩模式 can't be set before the first page; it is reached from the page's 選單 → 設定 (or the cover once a page is played). By design (#97), and the owner's guide now says so. | Low | Documented (`release-notes-zh.md`, `launch-checklist.md`) |
+| 20 | Album at 大字, 375×667 | The four family notes don't fit under the photo; the page scrolls, with no visible cue that it does. | Low | Watch in the beta (launch checklist A · 16) |
+
+Still to watch with people: everything in "Status after #221", and the seven pages of #18 (launch checklist B2).
