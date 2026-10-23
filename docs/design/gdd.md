@@ -368,6 +368,8 @@ Hints are a **ladder**. Using them costs nothing: no sticker is withheld and not
 
 **Hint source:** the next useful action is computed by running the **solver** (§3.7) from the *current* state, in a Web Worker, capped at 300 ms. If the cap is hit, the fallback is the stored `solution` step that matches the current part states, and failing that, an offer of 重來 followed by step 1 of the stored solution.
 
+**A move that lasts (#138, D-109):** the shortest path counts moves, not the time between them, so its first move can gain something for one tick that only an instant second move keeps. A person can't act that fast, so the hint's move is checked after a person's pause (≈ 2 s); when its gain doesn't last, the move whose gain does is offered instead. Level 3, pressed again and again at a person's pace, finishes every page.
+
 **Waiting as an action:** if the best next action is "wait" (for example, let him cry), the hint shows a little clock-free "等一下" animation: Mocha sits down and taps his paw, 「等等看。」
 
 **Hint text:** at most one short line (≤ 12 chars), always optional, for example 「拉拉看這裡」「讓摩卡上去」「試試看『嗶！』」.

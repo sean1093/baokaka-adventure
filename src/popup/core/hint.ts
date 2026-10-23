@@ -197,12 +197,62 @@ export function nextHint(def: PageDef, state: SimState, opts: HintOptions = {}):
       const r = solve(def, state, { cap, timeMs: opts.clock ? (opts.timeMs ?? HINT_TIME_MS) : undefined, clock: opts.clock, stopAtGoal: true });
       // Only a search that reached the goal knows the way from its start (no second, uncapped solve)
       const action = r.solvable ? r.nextAction(state) : null;
-      if (action !== null) return { action, source: 'solver' };
+      if (action !== null) return { action: patientAction(def, state, action, r.par, cap, opts), source: 'solver' };
     } catch {
       // A page error mid-search: the fallback, silently (§ 2.7)
     }
   }
   return fallbackHint(def, state);
+}
+
+/**
+ * Ticks a person takes before their next move (#138; GDD § 2.7): about 2 s at the normal speed. A
+ * hint's move must still be progress after that long a pause.
+ */
+export const PATIENCE_TICKS = 4;
+/** The pause check's own time budget (ms on the caller's clock), after the search's `HINT_TIME_MS`: both fit the client's 2 s timeout, with room for a phone 4× slower than a desktop. */
+export const PATIENCE_TIME_MS = 1000;
+
+/** `input`, then `ticks` of waiting (or until done). */
+export function afterPause(def: PageDef, state: SimState, input: Input, ticks = PATIENCE_TICKS): SimState {
+  let s = step(def, state, input).state;
+  for (let i = 0; i < ticks && !s.done; i++) s = step(def, s, NONE).state;
+  return s;
+}
+
+/**
+ * The solver's next move, unless its gain lasts only a tick (#138, the AI playthrough: on 4-1 with
+ * Mocha on the strap, 不要！ to the screen sends him to cuddle Mocha for one tick and straight back
+ * to the screen; only a move that same tick, Mocha onto the header, keeps it. A person can't act
+ * that fast, so level 3 played 不要！ forever and 4-1 never finished on hints alone). The shortest
+ * path counts moves, not the time between them; this checks the move once more after a person's
+ * pause (`PATIENCE_TICKS`): when fewer moves are left, it stands. Otherwise the first candidate
+ * input that does leave fewer moves after the pause (the most progress wins) replaces it; none does:
+ * the solver's move stays (a page that needs a quick follow-up is the page's problem, not the
+ * hint's). It has its own time budget (`PATIENCE_TIME_MS`); out of time, the solver's move stays.
+ */
+function patientAction(def: PageDef, state: SimState, action: Input, par: number | null, cap: number, opts: HintOptions): Input {
+  if (action.t === 'none' || par === null) return action;
+  const t0 = opts.clock?.();
+  const left = () => (opts.clock && t0 !== undefined ? PATIENCE_TIME_MS - (opts.clock() - t0) : undefined);
+  const parFrom = (s: SimState): number | null => {
+    if (s.done) return 0;
+    const time = left();
+    if (time !== undefined && time <= 0) return null;
+    const r = solve(def, s, { cap, timeMs: time, clock: opts.clock, stopAtGoal: true });
+    return r.solvable ? r.par : null;
+  };
+  const kept = parFrom(afterPause(def, state, action));
+  if (kept !== null && kept < par) return action;
+  let best: { input: Input; par: number } | null = null;
+  for (const c of candidateInputs(def, state)) {
+    if (c.t === 'none' || inputKey(c) === inputKey(action)) continue;
+    const t = left();
+    if (t !== undefined && t <= 0) break;
+    const p = parFrom(afterPause(def, state, c));
+    if (p !== null && p < par && (best === null || p < best.par)) best = { input: c, par: p };
+  }
+  return best?.input ?? action;
 }
 
 /** The hint without the solver (a worker that failed or timed out): the stored solution, else 重來 + step 1. */

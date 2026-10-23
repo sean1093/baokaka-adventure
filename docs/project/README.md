@@ -10,6 +10,7 @@ This folder is the project-management home for the game. It explains what we are
 | [`roadmap.md`](roadmap.md) | Milestones, the ordered issue list with status, dependency graph (and the superseded RPG plan) |
 | [`decisions.md`](decisions.md) | Decision log (append-only, dated) |
 | [`process-log.md`](process-log.md) | Chronological log of what happened; every agent appends an entry when it finishes a piece of work |
+| [`launch-readiness.md`](launch-readiness.md) | The release status: gates, evidence, known limits and what waits for the owner (#138) |
 
 > **2026-10-19 pivot.** Until 2026-10-19 this project was the RPG 《寶咖咖抓周大冒險》 (epic #1). The owner then judged the character art poor and the game still too shaped by the old design, and pivoted to concept A of [`docs/design/concepts.md`](../design/concepts.md), 《翻翻台北》 (decisions D-34–D-38, tracking epic [#78](https://github.com/sean1093/baokaka-adventure/issues/78)). The RPG code stays in the repo, unrouted after #109, until the M1 playtest sign-off; then #111 deletes it.
 
@@ -172,11 +173,12 @@ Backdrops, part art and standing cut-outs reach the game as baked WebP bitmaps (
 ```
 npm run bake:popup             # bake what changed into src/popup/assets/env/ + src/popup/env/env.gen.ts, then print the payload report
 npm run bake:popup -- --force  # re-bake everything
-npm run art:report             # the per-page payload report from the committed manifests (exits 1 over budget)
+npm run art:report             # the per-page payload report from the committed manifests, then the art-gap gate (exits 1 over budget or on a gap)
 ```
 
 - **Sources** live in `src/popup/env/sources.ts` (kit-style SVG drawn with filters on): `BACKDROP_ART` (a key without one bakes its chapter's placeholder stage, so every page ships a baked backdrop), `PART_SOURCES` (one drawing per state, local origin at the part's hit centre, `pivot` for rotary parts, `hinge` for flaps), `CUTOUT_SOURCES` (placed by a page's `cutouts`). Chapter art goes in `src/popup/env/art/cN.ts`. Touchables without a source keep their live kit art.
 - The bake grades backdrops and cut-outs with the chapter's environment grade (`src/popup/env/grade.ts`; lights, foil, touchables and the sky are never graded), crops parts to what was drawn, adds a lifted variant for dragged presets, encodes with Pillow and is **idempotent** (a source whose SVG is unchanged is skipped; a forced re-bake of unchanged sources is byte-identical).
+- **Art gaps** (#138, D-109): `view/art/gaps.ts` `artGaps` names every key that draws a stand-in (a backdrop on the placeholder stage, a part on its preset's stand-in, a cut-out that draws nothing, a carriage on the placeholder card, a creature on the origami bird). The kit's pull tab as a part's whole drawing (`KIT_TABS`) and carriages drawn by `carriages.ts` are live on purpose. `env.test.ts` holds every page at zero; a new key needs its art, or a reasoned entry in `KIT_TABS`.
 - `src/popup/env/env.test.ts` fails when files and `env.gen.ts` disagree, when a source changed without a re-bake (the source hashes), when a page's art passes **350 KB**, or when the first load passes **2.5 MB**.
 - The characters' half grade is baked by `npm run sync:sprites` per graded chapter (`g/<grade>/` variants); re-run it when a page in a new chapter is registered.
 - Needs Playwright's Chromium and Python 3 with Pillow, like `sync:sprites`; CI needs neither.
@@ -208,7 +210,7 @@ The word ring (a volvelle of 72 px discs round Baokaka, 「好了」 under him, 
 
 ### Hints: `core/hint.ts`, `workers/` and the ladder (#100, D-63)
 
-提示 climbs GDD § 2.7's ladder on every page: where (the halo, Mocha looks, his § 5.3 line), how (the ghost hand), show me (the hand, then the step played for real — again on every press). The next action is the solver's from the state now, in `workers/hint.worker.ts`; any failure or timeout falls back to the stored solution step, then to 重來 + step 1 (重來 glows). The auto nudge (Mocha yawns toward it, it shimmers once) comes after the 自動提示 delay without a change. Logic: `core/hint.ts` (pure), `view/affordance/ladder.ts` (pure), `useHintLadder.ts` (timers, the worker client). `pages/hints.test.ts` presses "show me" until `done` on every registered page — new pages get it for free. Fixtures: `hint-nudge`, `hint-level1`, `hint-ghost-hand`, `hint-wait`; `check:play` plays 1-2 with 提示 alone.
+提示 climbs GDD § 2.7's ladder on every page: where (the halo, Mocha looks, his § 5.3 line), how (the ghost hand), show me (the hand, then the step played for real — again on every press). The next action is the solver's from the state now, in `workers/hint.worker.ts`, checked once more after a person's pause (`PATIENCE_TICKS`, #138 / D-109: a move whose gain lasts a tick is replaced by one whose gain lasts; `hints.test.ts` proves every page at a person's pace); any failure or timeout falls back to the stored solution step, then to 重來 + step 1 (重來 glows). The auto nudge (Mocha yawns toward it, it shimmers once) comes after the 自動提示 delay without a change. Logic: `core/hint.ts` (pure), `view/affordance/ladder.ts` (pure), `useHintLadder.ts` (timers, the worker client). `pages/hints.test.ts` presses "show me" until `done` on every registered page — new pages get it for free. Fixtures: `hint-nudge`, `hint-level1`, `hint-ghost-hand`, `hint-wait`; `check:play` plays 1-2 with 提示 alone.
 
 ### The game shell: `#/` (#97, D-60; `#/` since #109)
 
