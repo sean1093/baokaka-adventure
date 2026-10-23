@@ -28,6 +28,7 @@ Live site: <https://sean1093.github.io/baokaka-adventure/> · Issue: [#138](http
 | Every screen at 390×844 and 375×667 | ✅ 774 / 774 | `npm run visual` |
 | Every page and flow plays (mouse, touch, both sizes) | ✅ 368 / 368 runs | `check:play` |
 | An AI first-time playthrough of the whole game | ✅ cover → post-credits on the production build; 長輩模式 + 大字 at 375×667 for the prologue and chapter 1 | `docs/playtest/ai-playtest.md` |
+| Deploy of the release candidate | ✅ [run 105](https://github.com/sean1093/baokaka-adventure/actions/runs/39961054630) (the #223 merge) | GitHub Actions |
 | Zero open bugs for the release | ✅ 0 open issues labelled `bug` | GitHub |
 | Device pass (Android + iPhone) | ⏳ owner | `docs/playtest/launch-checklist.md` A |
 | Family beta: sofa play, 阿嬤 asks again, the album shown to a relative | ⏳ owner | `launch-checklist.md` B → `docs/playtest/beta-results.md` |

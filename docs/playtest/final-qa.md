@@ -46,5 +46,5 @@ From [`launch-checklist.md`](launch-checklist.md); results in [`beta-results.md`
 
 ## 3. Deployment verification
 
-- The deploy workflow (`.github/workflows/deploy.yml`: `npm ci && npm test && npm run build`, then GitHub Pages) runs on every merge to `main`; the run for the #138 merge is linked from `launch-readiness.md`.
-- Live smoke test: after the deploy, the live site's cover loads and 開始 → 0-1 plays (the same checks as `check:prod`, by hand); the owner's device pass covers the live site on real phones.
+- The deploy workflow (`.github/workflows/deploy.yml`: `npm ci && npm test && npm run build`, then GitHub Pages) runs on every merge to `main`. The release candidate's run (the #223 merge, `d5b462b`): [run 105](https://github.com/sean1093/baokaka-adventure/actions/runs/39961054630), **success**.
+- Live smoke test: `check:prod` runs the same checks on the identical production build; the live host (`sean1093.github.io`) is not reachable from the agent container, so the live site itself is checked by the owner's device pass (launch checklist A1).
