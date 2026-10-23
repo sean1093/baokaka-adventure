@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { CARD_MS, CHAPTER_MS, FOLD_EACH_MS, FOLD_GROUPS, FOLD_MS, FOLD_STAGGER_MS, POPUP_LAYERS, REDUCED_MS, RISE_EACH_MS, RISE_GROUPS, STAGGER_MS, turnPlan } from './pageTurn';
+import { CARD_MS, CHAPTER_MS, FOLD_EACH_MS, FOLD_GROUPS, FOLD_MS, FOLD_STAGGER_MS, POPUP_LAYERS, REDUCED_MS, RISE_EACH_MS, RISE_GROUPS, STAGGER_MS, TURN_GRACE_MS, turnPlan } from './pageTurn';
 import { LAYERS } from '../layers';
 
 /** The page fold and the chapter turn's timelines (#97), pinned to popup art bible § 2.4 and § 8. */
@@ -82,5 +82,12 @@ describe('turnPlan', () => {
     // The rise lifts the same layers, the standees last
     expect([...RISE_GROUPS.flat()].sort()).toEqual([...POPUP_LAYERS].sort());
     expect(RISE_GROUPS[RISE_GROUPS.length - 1]).toContain('actors');
+  });
+});
+
+describe('the turn\'s grace (#221, D-108)', () => {
+  test('outlasts a quick second tap and stays under a second', () => {
+    expect(TURN_GRACE_MS).toBeGreaterThanOrEqual(400);
+    expect(TURN_GRACE_MS).toBeLessThanOrEqual(1000);
   });
 });

@@ -54,6 +54,12 @@ export const CHAPTER_MS = { dolly: 450, leafStart: 450 + 450, leaf: 1400, end: 2
 /** The chapter open (#102): the card drops at once over the book on the quilt; the camera comes in after it lifts. */
 export const OPEN_MS = { card: 200, dollyIn: 1200, end: 1900 } as const;
 export const REDUCED_MS = 250;
+/**
+ * After a turn ends, touches are swallowed this long (#221, D-108): a tap meant for the sticker card
+ * or the turn that lands just after the new page appeared must not act on it. Longer than a quick
+ * second tap (≈ 300 ms), short enough that a deliberate first touch on the new page isn't lost.
+ */
+export const TURN_GRACE_MS = 600;
 /** The chapter card starts dropping this long after the leaf starts to lift (#101). */
 export const CARD_AFTER_LEAF_MS = 60;
 /**

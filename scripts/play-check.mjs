@@ -20,6 +20,8 @@
  * `hints-c1p2` plays 1-2 with 提示 alone (#100: where, how, then show me until done);
  * `stickers-c1p2` earns all three of 1-2's stickers in the game shell (#101: four rides for the 淘氣,
  * the board flipped and the 土地公 tapped, the solve, the sticker card, then 1-3);
+ * `turn-grace` solves 1-2 in the shell and taps 1-3 the moment it appears after the sticker card's
+ * turn: the turn's grace swallows it, and the same tap a moment later acts (#221);
  * `photo-spread` plays 1-6 in the shell (#103, #107: the photo moment, the album, a retake, the
  * chapter-end lines, the tray's first coin, the sticker card, chapter 2's card, into 2-1); since #114
  * `photo-spread-c2` plays 2-6 the same way into chapter 3's card and 3-1 (#116), `photo-spread-c3`
@@ -1192,6 +1194,22 @@ const SCENARIOS = {
     // The card, then the page turns on to 1-3 (#107)
     { expect: '[data-popup-page="c1p3"]', timeout: 8_000 },
   ],
+  // The turn's grace (#221, friction 17): 1-2 solved in the game shell, its sticker card turns on by
+  // itself, and a tap that lands on 1-3 just as it appears (meant for the card) is swallowed: Mocha
+  // stays on the ticket machine. The same tap a moment later sends her to the counter
+  'turn-grace': [
+    { wait: 'reaching' },
+    { drag: [[80, 610], [142, 610]] },
+    { settle: 1500 },
+    { readTalk: true },
+    { tap: [280, 234] },
+    { settle: 2500 },
+    { readTalk: true },
+    { drag: [[140, 610], [205, 610]] },
+    { expect: 'svg[data-page][data-done]', timeout: 20_000 },
+    { expect: '[data-sticker-card]', timeout: 5_000 },
+    { tapInGrace: [100, 300], watch: '[data-popup-page="c1p3"] [data-actor="mocha"]' },
+  ],
   // The prologue's chapter card (#102, GDD § 2.13 / § 5.2 P) in the game shell, from a fresh save:
   // 「開始」 drops the card over the book on the quilt, its lines play a tap a beat (the world held),
   // then the card lifts, the camera comes in and 0-1 opens on the rest of the prologue
@@ -1657,7 +1675,7 @@ const SCENARIOS = {
 };
 
 /** Scenarios that end somewhere other than their page done (the shell moved on). */
-const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-popup-page="c7p1"]', 'photo-spread-c7': '[data-popup-page="c8p1"]', 'photo-spread-c8': '[data-popup-page="c9p1"]', 'photo-spread-c9': '[data-popup-page="c10p1"]', 'photo-spread-c10': '[data-popup-page="c11p1"]', ending: '[data-screen="cover"]', 'bonus-open': '[data-screen="contents"] [data-panel="bonus"] [data-page-card="c12p1"][data-solved]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
+const SCENARIO_ENDS = { 'album-flip': '[data-album-cover]', 'photo-spread': '[data-popup-page="c2p1"]', 'photo-spread-c2': '[data-popup-page="c3p1"]', 'photo-spread-c3': '[data-popup-page="c4p1"]', 'photo-spread-c4': '[data-popup-page="c5p1"]', 'photo-spread-c5': '[data-popup-page="c6p1"]', 'photo-spread-c6': '[data-popup-page="c7p1"]', 'photo-spread-c7': '[data-popup-page="c8p1"]', 'photo-spread-c8': '[data-popup-page="c9p1"]', 'photo-spread-c9': '[data-popup-page="c10p1"]', 'photo-spread-c10': '[data-popup-page="c11p1"]', ending: '[data-screen="cover"]', 'bonus-open': '[data-screen="contents"] [data-panel="bonus"] [data-page-card="c12p1"][data-solved]', 'stickers-c1p2': '[data-popup-page="c1p3"]', 'turn-grace': '[data-popup-page="c1p3"]', 'prologue-card': '[data-popup-page="c0p1"] [data-narration]' };
 /** Scenarios that start on a screen other than a page (the cover). */
 const SCENARIO_READY = { 'bonus-open': '[data-screen="contents"][data-screen-ready]', 'prologue-card': '[data-screen="cover"][data-screen-ready]', 'album-flip': '[data-screen="album"][data-screen-ready]' };
 
@@ -1665,6 +1683,7 @@ const SCENARIO_READY = { 'bonus-open': '[data-screen="contents"][data-screen-rea
 const SCENARIO_URLS = {
   'hints-c1p2': '#/popup?page=c1p2&speed=fast',
   'stickers-c1p2': '#/pagelab?fixture=page-hud',
+  'turn-grace': '#/pagelab?fixture=page-hud',
   'photo-spread': '#/pagelab?fixture=spread-shell',
   'photo-spread-c2': '#/pagelab?fixture=spread-shell-c2',
   'photo-spread-c3': '#/pagelab?fixture=spread-shell-c3',
@@ -1778,6 +1797,25 @@ async function run(page, base, id, kind, viewport, shots) {
       await page.waitForTimeout(60);
       await input.up();
       await shot('tap');
+    } else if (stepDef.tapInGrace) {
+      // A tap the moment the new page appears after a turn (#221): swallowed by the turn's grace, the
+      // page doesn't act (\`watch\` stays put); the same tap once the grace is over acts
+      await page.waitForSelector('[data-turn-grace]', { timeout: 15_000 });
+      const where = () => page.$eval(stepDef.watch, (el) => el.getAttribute('transform'));
+      const before = await where();
+      await input.down(toClient(stepDef.tapInGrace));
+      await page.waitForTimeout(60);
+      await input.up();
+      await shot('grace-tap');
+      await page.waitForSelector('[data-turn-grace]', { state: 'detached', timeout: 3_000 });
+      await page.waitForTimeout(1200);
+      if ((await where()) !== before) throw new Error(`a tap in the turn's grace acted on the new page (${stepDef.watch} moved)`);
+      await input.down(toClient(stepDef.tapInGrace));
+      await page.waitForTimeout(60);
+      await input.up();
+      await page.waitForTimeout(1500);
+      if ((await where()) === before) throw new Error(`the same tap after the grace did nothing (${stepDef.watch} stayed)`);
+      await shot('after-grace');
     } else if (stepDef.fresh) {
       // A first launch: no save
       await page.evaluate(() => localStorage.clear());

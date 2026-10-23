@@ -15,7 +15,7 @@ import { PagePlayer } from '../PagePlayer';
 import { PAGE_VIEW_BOX } from '../geometry';
 import { BOARD_H, CardTalk, ChapterBoard, boardScale } from '../hud/ChapterBoard';
 import { CARD_OUT_MS, FIRST_SLAP_MS, SLAP_GAP_MS, StickerCard, cardMs } from '../hud/StickerCard';
-import { CAMERA_ORIGIN, cameraTransform, playTurn, turnPlan, type TurnInterlude, type TurnKind, type TurnRun } from '../transitions/pageTurn';
+import { CAMERA_ORIGIN, TURN_GRACE_MS, cameraTransform, playTurn, turnPlan, type TurnInterlude, type TurnKind, type TurnRun } from '../transitions/pageTurn';
 import { Contents } from './Contents';
 import { Cover } from './Cover';
 import { PauseMenu } from './PauseMenu';
@@ -261,6 +261,9 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   const pageBoxRef = useRef<HTMLDivElement | null>(null);
   const turnRef = useRef<TurnRun | null>(null);
   const [turning, setTurning] = useState(false);
+  // Just after a turn (#221, friction 17): a touch on the new page is swallowed for TURN_GRACE_MS
+  const [grace, setGrace] = useState(false);
+  const graceTimer = useRef(0);
   const size = useSyncExternalStore(subscribeResize, readSize, () => '390x844');
 
   const holdTimer = useRef(0);
@@ -303,6 +306,7 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
   useEffect(
     () => () => {
       window.clearTimeout(holdTimer.current);
+      window.clearTimeout(graceTimer.current);
       clearCardTimers();
       turnRef.current?.skip();
     },
@@ -377,6 +381,9 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
         linesDone.current = null;
         setCardTalk(EMPTY_TALK);
         setTurning(false);
+        window.clearTimeout(graceTimer.current);
+        setGrace(true);
+        graceTimer.current = window.setTimeout(() => setGrace(false), TURN_GRACE_MS);
         finished?.();
       });
       return true;
@@ -714,6 +721,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                   <CardLayer title={reg.pageById(card?.id ?? def.id)?.title ?? def.title} stickers={pageStickers(save, card?.id ?? def.id)} leaving={card?.leaving ?? false} reduced={reduced} still={still} />
                 )}
                 {turning && !reading && <button type="button" className="fixed inset-0 z-40 cursor-default opacity-0" aria-label={card ? UI.card.next : UI.chapterCard.skip} onClick={onSkip} data-turn-skip="" />}
+                {/* The turn's grace (#221): a late tap for the card or the turn lands here, not on the new page */}
+                {grace && !turning && <div className="fixed inset-0 z-40" aria-hidden="true" data-turn-grace="" />}
               </>
             )}
             {playtest !== null && !still && <PlaytestPanel log={playtest} open={logOpen} onOpenChange={setLogOpen} />}
