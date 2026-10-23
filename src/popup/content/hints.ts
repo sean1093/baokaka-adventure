@@ -16,6 +16,12 @@ export const HINT_LINES: Readonly<Record<HintLineKey, string>> = {
   wait: '等等看。',
 };
 
+/**
+ * Level 2's line for a word (#221, friction 16): it names the word, so the player who never opens
+ * the word ring still learns which one (level 1 keeps 「試試看說話」: where, not how).
+ */
+export const sayWordLine = (label: string): string => `試試看說『${label}』`;
+
 /** § 2.7: a hint line is at most this many characters. */
 export const HINT_LINE_MAX = 12;
 

@@ -1,4 +1,5 @@
-import { HINT_LINES } from '../../content/hints';
+import { HINT_LINES, sayWordLine } from '../../content/hints';
+import { WORD_LABEL } from '../../content/words';
 import type { HintAnswer } from '../../core/hint';
 import { perchHidesMocha } from '../../core/mocha';
 import { compilePart } from '../../core/presets';
@@ -82,13 +83,16 @@ export function hintTarget(def: PageDef, action: Input): Pick<HintShow, 'key' | 
   }
 }
 
-/** Mocha's line for a hint's action (§ 5.3), or null when the list has none for it. */
-export function hintLine(def: PageDef, action: Input): string | null {
+/**
+ * Mocha's line for a hint's action (§ 5.3), or null when the list has none for it. A word's line
+ * names the word from level 2 (#221): 「試試看說『咻——』」.
+ */
+export function hintLine(def: PageDef, action: Input, level: HintLevel = 1): string | null {
   switch (action.t) {
     case 'none':
       return HINT_LINES.wait;
     case 'say':
-      return HINT_LINES.say;
+      return level >= 2 ? sayWordLine(WORD_LABEL[action.word]) : HINT_LINES.say;
     case 'mocha': {
       const perch = def.perches.find((p) => p.id === action.perch);
       return perch !== undefined && perchHidesMocha(def, perch) ? HINT_LINES.hide : HINT_LINES.perch;
@@ -127,7 +131,7 @@ export function hintDisplay(def: PageDef, answer: HintAnswer, level: HintLevel):
   return {
     show: { level: shown, ...target },
     mocha: level === 0 ? 'yawn' : 'look',
-    line: level === 0 ? null : hintLine(def, action),
+    line: level === 0 ? null : hintLine(def, action, level),
     retry: false,
     ringWord: action.t === 'say' && level >= 2 ? action.word : null,
   };
