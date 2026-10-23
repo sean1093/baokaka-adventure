@@ -100,3 +100,15 @@ The engineer on #137 played a sample of the later chapters the same way, to look
 | 15 | 10-3 | The three sections, their ledges and which one Mocha holds read as separate things; the hardest page of the book (by design, D-97). | Medium |
 | 16 | 9-6 (any L2 on a word) | L2 says 「試試看說話」 without the word; L3 shows it. | Low |
 | 17 | Sticker card → next page | The card turns to the next page on its own after a few seconds; a tap meant for the card that lands just after it left acts on the new page (here, on 10-4's sphere perch). A guard would need a design call on how long to ignore the first touch. | Low |
+
+## Status after #221 (before the family beta)
+
+[#221](https://github.com/sean1093/baokaka-adventure/issues/221) fixed 13–17 before the beta (#138), the way #183 did 1–12: every fix shows a rule the page data already holds, and no puzzle changed (every par and state count is as #137 left it; `npm run solve` 66 pages green, 0 dead ends, 0 soft traps). Decision D-108; screenshots in [`docs/screenshots/221/`](../screenshots/221/). Still watch every point in the beta: a fix is a guess until a person plays it.
+
+| # | Status | What changed |
+|---|---|---|
+| 13 | **Fixed** | A wheel that sets a level (7-5's teapot, 8-5's tap, 9-4's sun dial) prints a dial round its rim: a small level gauge at each stop (the water drawn to the level that stop gives), dotted arrows clockwise from stop to stop (the last one round to the first), the stop it is at ringed in marigold — live while it is dragged — and a pointer on the disc. The 轉 seal moved to the rim between two stops. Thought bubbles and barks keep off the dial. [01](../screenshots/221/01-c7p5-teapot-dial.jpg), [02](../screenshots/221/02-c8p5-tap-dial.jpg), [03](../screenshots/221/03-c9p4-sun-dial.jpg) |
+| 14 | **Fixed** | 10-4's damper prints its three stops on the floor under it: dotted arrows on, stop by stop, and the long arc back from the far side; the stop it is at filled, the next one ringed — or wearing the paw while the sphere needs Mocha's weight to go there. A 咻—— it can't take on wobbles the sphere (a boop), and Mocha turns to it: 「我坐上去？」. [05](../screenshots/221/05-c10p4-strain-ride.jpg), [06](../screenshots/221/06-c10p4-swing-path.jpg) |
+| 15 | **Fixed** | 10-3's crank drives the two sections through a printed brass belt (across to the tower, then up and down); a section Mocha sits on shows its belt slack and grey under the locked paw, so it is plain which one won't turn. [04](../screenshots/221/04-c10p3-belts-held.jpg) |
+| 16 | **Fixed** | Level 2 on a word names it: 「試試看說『飛機！』」 (level 1 still says 「試試看說話」; level 3 says it for you). [07](../screenshots/221/07-hint-l2-names-word.jpg) |
+| 17 | **Fixed** | For 0.6 s after a page turn ends, touches are swallowed: a late tap meant for the sticker card never acts on the new page. `check:play`'s `turn-grace` taps 1-3 the moment it appears (nothing happens) and again a moment later (Mocha goes). |
