@@ -1169,3 +1169,14 @@ Format:
 - **Decision.** D-107.
 - **QA.** `npm test`, `npm run build`, `npm run solve`; `visual --only` the six c9p2 fixtures (baselines updated: the lamp's paw is gone, the start is him setting off), `check:play --only c9p2` (mouse and touch, both sizes).
 - **Follow-ups.** #138: watch friction 13–17 in the family beta; re-run `npm run solve -- --curve` after any page change.
+
+### 2026-10-23 · Staff engineer · #221 M5 polish: late-game friction from the AI playthrough (13–17)
+- **Issue.** Opened #221 (sub-issue of #78, labels m5 · ui · content), put before #138 in the roadmap: fix #137's AI-playthrough friction 13–17 before the family beta, with no puzzle change.
+- **13, level wheels** (7-5's teapot, 8-5's tap, 9-4's sun dial): a printed dial round the rim (a level gauge per stop, clockwise arrows, the current or dragged-to stop ringed, a pointer on the disc), replacing the curved arrow; the 轉 seal moved between two stops; bubbles soft-avoid the dial.
+- **14, 10-4's damper:** the swing path printed on the floor (stops, arrows on, the arc back; the next stop ringed or wearing the paw while it needs Mocha); a refused 咻—— logs a new `strain` UI event (no state change): the sphere wobbles, a boop, Mocha looks at it and says 「我坐上去？」.
+- **15, 10-3:** brass drive belts from the crank to the sections; a section Mocha holds hangs its belt slack under the locked paw.
+- **16:** hint level 2 on a word names it, 「試試看說『飛機！』」.
+- **17:** a 600 ms grace after every page turn (`TURN_GRACE_MS`, a transparent layer), with `check:play`'s `turn-grace` (verified to fail without the layer).
+- **How.** `view/parts/cues.ts` derives every cue from the page data (no page file changed); `cues.test.ts` pins which wheels and blowables qualify. Decision D-108. Docs: `ai-playtest.md` status table, GDD § 2.3 / § 2.8 / text table, art README machine cues, screenshots `docs/screenshots/221/`.
+- **QA (chunks against one dev server).** `npm test` (4065), `npm run build`, `npm run solve` (66 pages green, pars and states unchanged); `npm run visual`: all 387 targets × both sizes pass after the intended updates (c7p5, c8p5, c9p4, c10p3, c10p4 fixtures; new `hint-word`); `check:play`: all 92 scenarios, mouse and touch, both sizes (368 runs) pass; `check:ui --popup` in eight chunks of 50 pass, plus `UI_TEXT=big` on the touched fixtures.
+- **Follow-ups.** #138: still watch 13–17 with people (a fix is a guess until a person plays it).
