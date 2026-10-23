@@ -4,7 +4,8 @@ import c0p4 from './fixtures/c0p4';
 import c1p2 from './fixtures/c1p2';
 import c1p3 from './fixtures/c1p3';
 import { jam, loop, threeNode } from './fixtures/solver';
-import { applyHint, fallbackHint, HINT_CAP, nextHint, restartAction, solutionAction, type HintOptions } from './hint';
+import { afterPause, applyHint, fallbackHint, HINT_CAP, nextHint, PATIENCE_TICKS, restartAction, solutionAction, type HintOptions } from './hint';
+import c4p1 from '../pages/c4/p1';
 import { candidateInputs, solve } from './solver';
 import { initialState } from './state';
 import { step } from './step';
@@ -82,6 +83,27 @@ describe('nextHint: the solver from the current state (GDD § 2.7)', () => {
 
   test('the runtime cap is GDD § 3.7\'s', () => {
     expect(HINT_CAP).toBe(200_000);
+  });
+});
+
+describe('a hint\'s move lasts a person\'s pause (#138)', () => {
+  test('4-1 reaching for the screen, Mocha on the strap: Mocha onto the header, not 不要！ (its gain lasts a tick)', () => {
+    let s = initialState(c4p1);
+    for (let i = 0; i < 20; i++) s = step(c4p1, s, { t: 'none' }).state;
+    expect(s.baby.target).toBe('ad');
+    // The shortest path's first move would be 不要！ (then Mocha up within the same tick)
+    const r = solve(c4p1, s, { cap: HINT_CAP, stopAtGoal: true });
+    expect(r.nextAction(s)).toEqual({ t: 'say', word: 'no' });
+    // …but after a pause it is undone: he cuddles Mocha and goes straight back to the screen
+    expect(afterPause(c4p1, s, { t: 'say', word: 'no' }).baby.target).toBe('ad');
+    expect(nextHint(c4p1, s)).toEqual({ action: { t: 'mocha', perch: 'header' }, source: 'solver' });
+    expect(PATIENCE_TICKS).toBeGreaterThanOrEqual(3);
+  });
+
+  test('a move that keeps its gain stands (1-2 from the start: the solver\'s own move)', () => {
+    const s = initialState(c1p2);
+    const r = solve(c1p2, s, { cap: HINT_CAP, stopAtGoal: true });
+    expect(nextHint(c1p2, s).action).toEqual(r.nextAction(s));
   });
 });
 

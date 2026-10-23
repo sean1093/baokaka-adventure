@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { applyHint, nextHint, type HintOptions } from '../core/hint';
+import { PATIENCE_TICKS, applyHint, nextHint, type HintOptions } from '../core/hint';
 import { candidateInputs } from '../core/solver';
 import { initialState } from '../core/state';
 import { step } from '../core/step';
@@ -12,6 +12,8 @@ import { ALL_PAGES as PAGES } from './index';
  * with the solver (the hint worker's logic, in-process) and with the stored-solution fallback alone
  * (a worker that failed or timed out). Content issues add pages to the registry, never to this file.
  * #137's spot check goes deeper: level 3 from 20 states per chapter reached by seeded random play.
+ * #138's AI playthrough presses at a person's pace: the world runs on between presses, and a move
+ * whose gain lasts a tick (4-1's 不要！ with Mocha on the strap) once looped level 3 forever.
  */
 
 const MAX_PRESSES = 400;
@@ -20,6 +22,16 @@ const clock = () => performance.now();
 function showMe(def: PageDef, from: SimState, opts: HintOptions): boolean {
   let state = from;
   for (let i = 0; i < MAX_PRESSES && !state.done; i++) state = applyHint(def, state, nextHint(def, state, opts));
+  return state.done;
+}
+
+/** Level 3 at a person's pace (#138): each press, then `PATIENCE_TICKS` of the world running on. */
+function showMeAtPace(def: PageDef, from: SimState, opts: HintOptions): boolean {
+  let state = from;
+  for (let i = 0; i < MAX_PRESSES / 10 && !state.done; i++) {
+    state = applyHint(def, state, nextHint(def, state, opts));
+    for (let k = 0; k < PATIENCE_TICKS && !state.done; k++) state = step(def, state, { t: 'none' }).state;
+  }
   return state.done;
 }
 
@@ -42,6 +54,10 @@ describe.each(PAGES.map((def) => [def.id, def] as const))('hints on page %s', (_
 
   test('…from one move away too', () => {
     for (const from of oneMoveAway(def)) expect(showMe(def, from, { clock })).toBe(true);
+  });
+
+  test('…at a person\'s pace too: the world runs on between presses (#138)', () => {
+    expect(showMeAtPace(def, initialState(def), { clock })).toBe(true);
   });
 
   test('…and with the fallback alone (no solver)', () => {
