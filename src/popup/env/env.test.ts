@@ -9,6 +9,7 @@ import { ALL_PAGES as PAGES, pageById } from '../pages';
 import { lintMarkup } from '../view/affordance/lint';
 import { backdropArt, backdropBitmap, cutoutBitmap, hasCreatureArt, isPlaceholder, partArt, partBitmap } from '../view/art/registry';
 import { placeholderBackdrop } from '../view/art/placeholders';
+import { KIT_TABS, artGaps } from '../view/art/gaps';
 import { PageView } from '../view/PageView';
 import { PAGE_VIEW_BOX } from '../view/geometry';
 import { backdropHash, cutoutHash, envHash, partHash, screenHash } from './bake';
@@ -139,6 +140,30 @@ describe('budgets (GDD § 3.9)', () => {
     const text = formatReport(PAGES, M);
     for (const p of PAGES) expect(text).toMatch(new RegExp(`^ok\\s+${p.id}\\b`, 'm'));
     expect(text).toContain('First load');
+  });
+});
+
+describe('the release\'s art-gap gate (#138)', () => {
+  test('no registered page draws a stand-in: every backdrop, part, cut-out, carriage and creature has its own art', () => {
+    expect(PAGES.flatMap((p) => artGaps(p, M))).toEqual([]);
+  });
+
+  test('a stand-in is a gap; the kit\'s pull tabs and drawn carriages are not', () => {
+    const c1p2 = pageById('c1p2')!;
+    // 1-2 as shipped: the tab is the kit's, the train is drawn (carriages.ts), neither has a bitmap
+    expect(pageArt(c1p2, M).placeholders).toEqual(['c1/train-blue']);
+    expect(artGaps(c1p2, M)).toEqual([]);
+    expect(KIT_TABS.has('c0/crib-rail')).toBe(true);
+    // The same page with unknown keys: its backdrop, the train's part and its carriage, a cut-out, a creature
+    const def: PageDef = {
+      ...c1p2,
+      backdrop: 'c9/nowhere',
+      cutouts: [{ art: 'c9/lamp', x: 10, y: 300 }],
+      parts: c1p2.parts.map((p) => ({ ...p, art: `c9/${p.id}` })),
+      creatures: [{ ...c1p2.creatures[0], art: 'c9/owl' }],
+    };
+    const kinds = artGaps(def, M).map((g) => `${g.kind} ${g.key}`);
+    expect(kinds).toEqual(expect.arrayContaining(['backdrop c9/nowhere', 'part c9/train', 'carriage c9/train', 'cutout c9/lamp', 'creature c9/owl']));
   });
 });
 

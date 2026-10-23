@@ -27,7 +27,7 @@ export interface PageArt {
   readonly backdrop: EnvFile | null;
   readonly parts: readonly EnvFile[];
   readonly cutouts: readonly EnvFile[];
-  /** Art keys the page names that have no bitmap (they draw the live placeholder) */
+  /** Art keys the page names that have no bitmap: drawn live (a stand-in, unless `view/art/gaps.ts` says it is on purpose) */
   readonly placeholders: readonly string[];
   readonly bytes: number;
 }
@@ -88,7 +88,7 @@ export function formatReport(pages: readonly PageDef[], m: EnvManifest): string 
     const chars = payloadBytes(pageSprites(p.chapter), 2, chapterGradeKey(p.chapter));
     return `${ok} ${p.id.padEnd(6)} backdrop ${kb(a.backdrop?.bytes ?? 0).padStart(9)} · parts ${kb(parts).padStart(8)} · cut-outs ${kb(cut).padStart(7)} · page art ${kb(a.bytes).padStart(9)} / ${kb(PAGE_ART_BUDGET)}`
       + `  (characters @2x ${kb(chars)})`
-      + (a.placeholders.length ? `\n       live placeholder: ${a.placeholders.join(', ')}` : '');
+      + (a.placeholders.length ? `\n       live (no bitmap): ${a.placeholders.join(', ')}` : '');
   });
   const f = firstLoad(pages, m);
   return [

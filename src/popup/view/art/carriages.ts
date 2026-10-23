@@ -120,6 +120,9 @@ const CARRIAGES: Readonly<Record<string, CarriageArt>> = {
   'c10/section-crank': sectionLedge,
 };
 
+/** True when a part art key has its own carriage drawing (#138: the release's art-gap gate). */
+export const hasCarriageArt = (key: string): boolean => key in CARRIAGES;
+
 /** The carriage drawing for a part art key (the placeholder carriage when it has none). */
 export function carriageArt(key: string): CarriageArt {
   return CARRIAGES[key] ?? ((ctx, w, linked) => carriage(ctx, w, 1, linked));
