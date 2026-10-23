@@ -271,14 +271,15 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
     const stops = swingStops(def, p);
     return stops === null ? [] : [{ part: p, stops, states: compilePart(p).states }];
   }), [def]);
+  // Each swing's stop, its next stop (a 咻—— moves it one on, wrapping) and whether that one wants Mocha aboard
   const swingKey = swings.map(({ part, states }) => {
-    const i = Math.max(0, states.indexOf(partState(state, part.id) ?? ''));
-    const next = (i + 1) % states.length;
-    return `${i}${next}${holds(def, state, part.stateWhen?.[states[next]]) ? '' : 'm'}`;
+    const at = Math.max(0, states.indexOf(partState(state, part.id) ?? ''));
+    const next = (at + 1) % states.length;
+    return `${at}:${next}:${holds(def, state, part.stateWhen?.[states[next]]) ? 0 : 1}`;
   }).join(',');
   const swingHtml = useMemo(() => swings.map(({ stops }, k) => {
-    const [i, next, m] = swingKey.split(',')[k];
-    return swingPath(stops, SWING_DROP, Number(i), Number(next), m === 'm');
+    const [at, next, needsMocha] = swingKey.split(',')[k].split(':').map(Number);
+    return swingPath(stops, SWING_DROP, at, next, needsMocha === 1);
   }).join(''), [swings, swingKey]);
   const dials = useMemo(() => def.parts.filter((p) => levels.has(p.id)).map((p) => {
     const hb = hitBox(p.hit);
@@ -345,7 +346,8 @@ export function PageView({ def, prev, state, ms, tickMs, scale = 1, reduced: red
           <g
             key={wobble ? `${part.id}:${locked?.part === part.id ? locked.serial : `s${state.tick}`}` : part.id}
             data-dragging={dragging ? '' : undefined}
-            data-locked={wobble || look?.locked ? '' : undefined}
+            data-locked={locked?.part === part.id || look?.locked ? '' : undefined}
+            data-strain={strained === part.id ? '' : undefined}
             className={wobble && !reduced ? 'gx-wobble' : undefined}
           >
             {el}
