@@ -134,6 +134,20 @@ export async function gotoAndWait(page, url, selector, { timeout = 20000, retryT
   }
 }
 
+/**
+ * Waits (≤ 3 s) for every one-shot animation still running to finish (#138). A still stops the
+ * shell's layers' entrances (`[data-still]`), but a layer that forgot it, or a slow first paint,
+ * once let R5 measure a line card mid-spring (scale 0.82 → 1: 「好吃！」 at 17.7 px on
+ * `chapter-end-c1` at 375×667). Idle loops (infinite) are left alone.
+ */
+export async function settleEntrances(page, timeout = 3000) {
+  await page.evaluate((ms) => {
+    const finite = document.getAnimations().filter((a) => a.playState === 'running' && Number.isFinite(a.effect?.getComputedTiming().endTime ?? Infinity));
+    if (finite.length === 0) return;
+    return Promise.race([Promise.allSettled(finite.map((a) => a.finished)), new Promise((done) => setTimeout(done, ms))]);
+  }, timeout);
+}
+
 export async function openPopupFixture(page, base, name, still = true) {
   await gotoAndWait(page, popupFixtureUrl(base, name, still), `[data-pagelab-fixture="${name}"]:not(:has([data-sprites="loading"])) :is(svg[data-page], [data-screen-ready])`);
   await page.evaluate(() => document.fonts.ready);
@@ -581,6 +595,7 @@ export async function checkPopup(browser, base, viewports, report) {
     for await (const [page, name] of freshPages(open, fixtures)) {
       await openPopupFixture(page, base, name);
       await page.waitForTimeout(300);
+      await settleEntrances(page);
       const audit = await page.evaluate(a11yAudit);
       const marks = await page.evaluate(coveredMarks);
       const talk = await page.evaluate(talkCover, TALK_SLACK);

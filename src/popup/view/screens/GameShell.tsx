@@ -709,7 +709,8 @@ export function GameShell({ store: given, registry: reg = gameRegistry, initial 
                 </div>
                 {/* The chapter-end lines (#107): over the finished spread, a modal; a tap is the next beat */}
                 {ending && def && (
-                  <div className="fixed inset-0 z-[45] flex items-center justify-center" role="dialog" aria-modal={true} aria-label={chapterName(def.chapter)} data-end-layer="">
+                  // A still (#138) stops the lines' entrance, as on the card layer: a screenshot never catches them mid-spring
+                  <div className="fixed inset-0 z-[45] flex items-center justify-center" role="dialog" aria-modal={true} aria-label={chapterName(def.chapter)} data-end-layer="" data-still={still ? '' : undefined}>
                     <div className="absolute inset-0" style={{ backgroundColor: C.nightInk, opacity: 0.34 }} data-end-scrim="" />
                     <div className="relative flex justify-center" style={{ width: '100%' }}>
                       <CardTalk beat={currentBeat(endTalk)} serial={endTalk.serial} width={Math.min(Number(size.split('x')[0]) - 24, 366)} reduced={reduced} />
