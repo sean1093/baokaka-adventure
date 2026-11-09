@@ -1,0 +1,233 @@
+/* The 3D page route (#225, the three.js spike). In its own chunk with the stage. */
+.p3d-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  color: #2a2350;
+  font-family: 'Chiron GoRound TC', system-ui, sans-serif;
+  /* The navy linen cover around the book (the 2D page's cover, bible § 7) */
+  background:
+    radial-gradient(120% 70% at 50% 42%, #2b2766 0%, #1c1946 58%, #120f30 100%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px),
+    #1c1946;
+  background-blend-mode: normal, soft-light, normal;
+}
+.p3d-stage {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.35s ease;
+}
+.p3d-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.p3d-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) rotate(-0.6deg);
+  width: min(354px, calc(100% - 36px));
+  padding: 10px 16px 9px;
+  background: #fbf3e2;
+  border-radius: 4px;
+  box-shadow: 0 2px 0 #e2d4b8, 0 6px 14px rgba(10, 6, 30, 0.45);
+  pointer-events: none;
+}
+.p3d-title {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 900;
+}
+.p3d-landmark { font-size: 24px; color: #2a2350; }
+.p3d-name { font-size: 19px; color: #c0392b; }
+.p3d-sub { margin-top: 2px; font-size: 15px; font-weight: 700; color: #5d567f; }
+.p3d-talk { position: absolute; inset: 0; pointer-events: none; }
+.p3d-anchor { position: absolute; left: 0; top: 0; will-change: transform; }
+.p3d-thought {
+  position: absolute;
+  left: 0;
+  bottom: 14px;
+  transform: translateX(-30%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  min-height: 40px;
+  background: #fffaf0;
+  border-radius: 22px;
+  box-shadow: 0 0 0 2px #fffaf0, 0 0 0 3.5px #c9bda3, 2px 4px 0 rgba(20, 12, 52, 0.28);
+  font-size: 20px;
+  white-space: nowrap;
+}
+.p3d-thought::after {
+  content: '';
+  position: absolute;
+  left: 26%;
+  bottom: -11px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fffaf0;
+  box-shadow: 0 0 0 1.5px #c9bda3, -5px 8px 0 -1.5px #fffaf0;
+}
+.p3d-thought b { color: #c0392b; font-weight: 900; }
+.p3d-bead {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, #fffbea 0 14%, #f2c94c 30%, #b8860b 78%, #8a6408 100%);
+  box-shadow: 1px 2px 0 rgba(20, 12, 52, 0.3);
+}
+.p3d-heart { display: block; }
+.p3d-bark {
+  position: absolute;
+  /* Beside his head, clear of the thought bubble above it */
+  bottom: -6px;
+  right: 34px;
+  transform-origin: 100% 100%;
+  padding: 4px 12px;
+  background: #fffaf0;
+  border-radius: 14px;
+  font-size: 20px;
+  font-weight: 900;
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px #c9bda3, 2px 3px 0 rgba(20, 12, 52, 0.28);
+  animation: p3d-pop 0.25s ease-out both;
+}
+.p3d-bark-mocha { right: auto; left: 50%; bottom: 10px; transform: translateX(-50%); color: #5b3d2e; }
+.p3d-line {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  transform: translateX(-70%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 48px;
+  max-width: 230px;
+  padding: 6px 12px;
+  background: #fffaf0;
+  border-radius: 12px;
+  border: 0;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2a2350;
+  text-align: left;
+  box-shadow: 0 0 0 2px #c9a24a, 2px 4px 0 rgba(20, 12, 52, 0.3);
+  pointer-events: auto;
+}
+.p3d-who { font-size: 14px; color: #8a6a1f; }
+.p3d-tag {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  padding: 6px 14px;
+  background: #c0392b;
+  color: #fffaf0;
+  font-weight: 900;
+  font-size: 18px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(10, 6, 30, 0.4);
+  pointer-events: none;
+  animation: p3d-pop 0.3s ease-out both;
+}
+.p3d-done { position: absolute; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; }
+.p3d-done-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 22px;
+  background: #fbf3e2;
+  border-radius: 8px;
+  box-shadow: 0 2px 0 #e2d4b8, 0 10px 24px rgba(10, 6, 30, 0.5);
+  pointer-events: auto;
+  animation: p3d-pop 0.35s ease-out both;
+}
+.p3d-done-card b { font-family: 'Noto Serif TC', serif; font-size: 26px; color: #c0392b; }
+.p3d-done-card span { font-size: 15px; color: #5d567f; font-weight: 700; }
+.p3d-done-card button {
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 24px;
+  background: #f2c94c;
+  color: #2a2350;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 3px 0 #b8860b;
+}
+.p3d-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+}
+.p3d-disc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 56px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  color: #fbf3e2;
+  text-decoration: none;
+}
+.p3d-disc svg {
+  width: 52px;
+  height: 52px;
+  padding: 13px;
+  border-radius: 50%;
+  background: #fbf3e2;
+  color: #2a2350;
+  box-shadow: 0 0 0 2px #c9a24a, 0 4px 0 rgba(10, 6, 30, 0.5);
+}
+.p3d-disc[aria-pressed='true'] svg { background: #f2c94c; }
+.p3d-lost, .p3d-note {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  background: #fbf3e2;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 18px;
+  color: #2a2350;
+  z-index: 5;
+}
+.p3d-fps {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  margin: 0;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #8cff9a;
+  font: 11px/1.25 ui-monospace, monospace;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 9;
+}
+@keyframes p3d-pop {
+  from { scale: 0.6; opacity: 0; }
+  to { scale: 1; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .p3d-bark, .p3d-tag, .p3d-done-card { animation: none; }
+}
+.p3d-root[data-reduced] .p3d-bark, .p3d-root[data-reduced] .p3d-tag, .p3d-root[data-reduced] .p3d-done-card { animation: none; }

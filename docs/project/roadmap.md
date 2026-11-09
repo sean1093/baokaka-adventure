@@ -98,6 +98,14 @@ Work the issues **in the order of the table below** (it is not numeric: #139–#
 | [221](https://github.com/sean1093/baokaka-adventure/issues/221) | M5 polish: late-game friction from the AI playthrough (13–17) — level-wheel dials, 10-4's swing and strain, 10-3's drive belts, L2 names the word, a grace after the page turn | m5, ui, content | #137 | done (#222) |
 | [138](https://github.com/sean1093/baokaka-adventure/issues/138) | Family beta, final QA checklist, docs and launch (supersedes #58) | docs, qa, m5 | #136, #137, #221, #111 | in progress: launch-ready (#223); waiting for the owner's device pass, family beta and sign-off ([`launch-readiness.md`](launch-readiness.md)) |
 
+## v2 investigations
+
+Spikes that decide a direction after launch; none of them changes the shipping game.
+
+| # | Title | Labels | Depends on | Status |
+|---|---|---|---|---|
+| [225](https://github.com/sean1093/baokaka-adventure/issues/225) | Spike: three.js page stage for 1-2 「月台的縫」 (option B go/no-go) | spike | — | done: go-with-conditions ([`spike-threejs.md`](spike-threejs.md)) |
+
 ## Dependency graph
 
 ```mermaid

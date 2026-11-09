@@ -50,6 +50,7 @@ npm run preview      # serve dist/
 | `npm run check:play` | Plays every page and screen flow with mouse and touch at both sizes (`--only a,b`) | ≈ 1 h |
 | `npm run check:perf` | ≥ 55 fps and ≤ 150 animated nodes on each chapter's heaviest pages, production build, 4× CPU throttle | ≈ 7 min |
 | `npm run check:prod` | Production smoke test, 4G load budgets (first load ≤ 2.5 MB, cover and page 0-1 ≤ 3 s), notch insets, the upright guard | ≈ 2 min |
+| `npm run check:3d` | The three.js spike (#225, `popup3d.html#/popup3d?page=c1p2`): touch targets, a playthrough, context loss, reduced motion, perf and media; see `docs/project/spike-threejs.md` | ≈ 10 min |
 | `npm run qa` | `visual` + `check:ui` + `check:play` | — |
 
 Playwright's Chromium is needed for the browser checks (`npx playwright install chromium` once; the agent environment has it at `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). The long checks are best run in chunks against one dev server (`--url`, `--only`, `UI_ONLY`); see the handbook § 5.

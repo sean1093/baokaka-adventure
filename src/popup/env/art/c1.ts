@@ -271,7 +271,7 @@ const car: BackdropDraw = (ctx) => {
 // ——— 1-2 「月台的縫」 ———
 
 /** A paper street lamp with a small vellum lantern (its glow kept small), standing at `foot`. */
-function stLamp(ctx: KitCtx, x: number, top: number, foot: number): string {
+export function stLamp(ctx: KitCtx, x: number, top: number, foot: number): string {
   return softEllipse(ctx, x, top + 6, 20, 20, 'lamp', 0.16, 'blur8')
     + depth(ctx, 3, `<rect x="${x - 2}" y="${top + 12}" width="4" height="${foot - top - 12}" fill="${S.lampPost}"/><path d="M${x - 7} ${foot}h14l-2 -6h-10z" fill="${S.lampPost}"/>`
       + `<path d="M${x - 9} ${top + 2}h18l-3 12h-12z" fill="${S.lampShade}"/><path d="M${x - 11} ${top + 2}h22l-11 -8z" fill="${S.lampPost}"/>`,
@@ -284,7 +284,7 @@ function stLamp(ctx: KitCtx, x: number, top: number, foot: number): string {
  * walls with tall slim windows lit behind vellum (calm), the 重簷 two-tier roof with its gold ridge
  * and upturned eaves, the drum's lit band, the foil 台北車站 plate and the lit arcade.
  */
-function stationFacade(ctx: KitCtx, x0: number, x1: number, top: number, base: number): string {
+export function stationFacade(ctx: KitCtx, x0: number, x1: number, top: number, base: number): string {
   const cx = (x0 + x1) / 2;
   const body = top + 44;
   const n = 9;
@@ -314,7 +314,7 @@ function stationFacade(ctx: KitCtx, x0: number, x1: number, top: number, base: n
 }
 
 /** The city night over the station: sky, pinholes, a calm moon, cloud bands, the skyline with a tiny 101. */
-function cityNight(ctx: KitCtx, moon: readonly [number, number, number], skyBase = 254): string {
+export function cityNight(ctx: KitCtx, moon: readonly [number, number, number], skyBase = 254): string {
   const sk = skyline(-4, PAGE_W + 4, skyBase, 33, { minH: 18, maxH: 58, winP: 0.12, winOpacity: 0.7 });
   const tower = `<g transform="translate(58 ${skyBase})"><path d="M-6 0V-64L-4 -66V-80H-3V-92H3V-80H4V-66L6 -64V0Z" fill="${mixHex(T.navyDeep, C.shadow, 0.15)}"/>`
     + `<path d="${Array.from({ length: 8 }, (_, i) => `M-7 ${-14 - i * 6.5}H7`).join('')}" stroke="${C.neonCyan}" stroke-width=".7" opacity=".45"/><circle cy="-94" r="1.4" fill="${C.neonPink}"/></g>`;

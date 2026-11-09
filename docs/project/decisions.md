@@ -1568,3 +1568,18 @@ The whole game's fonts are 1.0 MB over 39 files, fetched a slice at a time as ch
 **Why.** The hint ladder is the grandparents' safety net (GDD § 1.3, § 2.7): "level 3 always finishes the page" has to hold for a person, not for a test that presses faster than the world ticks. Checking the move after a pause keeps the solver's answer wherever it is fine and changes it only where it would loop, with no page change and no new tuning. The art gate turns M5's "zero placeholder art keys" exit criterion into a test, with the two intended live drawings named instead of hidden.
 
 **Consequences.** Hints cost one more solve; the worst page measured ≈ 0.4 s on a desktop (8-6), inside the client's 2 s. The beta still watches the seven pages (launch checklist B2 · 6). A new page whose hint loops at a person's pace fails `hints.test.ts`; a new key without its own art fails `env.test.ts`.
+
+### D-110 · 2026-11-09 · The three.js page stage: a spike on 1-2 says go-with-conditions; its own page and build, cards cut from the 2D renderer, a window camera (#225)
+
+**Context.** The owner asked whether the game's rendering should move to three.js. The director's option B keeps the pure-TS simulation (`core/`), the solver and hints, and every piece of text and UI as DOM (accessibility, the self-hosted fonts, 大字, `check:ui`), and renders only the pop-up page stage in WebGL. #225 is the 1–2 day spike on 1-2 「月台的縫」 that decides go / no-go.
+
+**Decision.**
+1. **Its own page and build.** The spike lives at `popup3d.html#/popup3d?page=c1p2`, built by `vite.popup3d.config.ts` after the game (`npm run build` runs both). A lazy route inside the game would have added Vite's preload helper and the shared-module exports to the game's entry (+0.9 KB gzip, measured); a second input to the same build would split shared modules into a common chunk. With a separate build the game's entry is byte-identical (same hash). Inside the spike's page three.js and the stage are a lazy chunk of their own.
+2. **Cards from the 2D renderer.** `npm run bake:3d` cuts the page into paper cards: the backdrop's own drawing functions per layer (sky page, station, lamps), the floor page drawn flat, and every other piece (ledges, pillar, bench, carriage, tab, board states, bead, pigeon, paw marks, the 土地公) isolated from `PageView`'s static markup in Chromium. No piece is redrawn by hand.
+3. **A window camera.** The default eye looks down −z through the standing page with an off-axis frustum, and every card is mapped along its rays (`camera.ts`), so the 3D page is pixel-for-pixel the 2D layout from the default eye, at any depth; moving the eye (pointer, gyro, the opening) gives true parallax while the window stays fixed for the DOM overlays and the 48 px rules.
+4. **Real sim, real gestures.** `PageSession` drives `step`; `GestureTracker` runs unchanged on page units taken from a raycast onto the touched target's plane. Hit planes are grown to ≥ 50 CSS px.
+5. **Recommendation: go-with-conditions** (`docs/project/spike-threejs.md` § 7): real-GPU frame rates from the owner's phones first; render on demand, a DPR cap and the 2D renderer kept as the fallback; a post-launch v2, not a launch blocker.
+
+**Why.** The spike had to answer "is it better, is it affordable, and does it break anything", so it reuses everything it can (art, sim, gestures, layout) and isolates itself completely from the shipping game.
+
+**Consequences.** The spike's code is self-contained (`src/popup3d/`, `scripts/bake-3d.ts`, `scripts/spike3d-check.mjs`); deleting it is deleting those plus the second build line. `env/art/c1.ts` exports three drawing helpers it used (`cityNight`, `stationFacade`, `stLamp`); nothing else in the game changed.
