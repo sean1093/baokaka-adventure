@@ -54,7 +54,7 @@ const run = (cmd, argv) => new Promise((ok, no) => {
 
 async function serve() {
   if (args.url) return { base: args.url, stop: () => {} };
-  const child = spawn('npx', ['vite', 'preview', '--port', '4317', '--strictPort'], { cwd: ROOT, stdio: 'ignore' });
+  const child = spawn(join(ROOT, 'node_modules', '.bin', 'vite'), ['preview', '--port', '4317', '--strictPort'], { cwd: ROOT, stdio: 'ignore' });
   for (let i = 0; i < 60; i++) {
     try {
       if ((await fetch('http://localhost:4317/baokaka-adventure/')).ok) break;
